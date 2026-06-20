@@ -1,0 +1,612 @@
+<odoo>
+    <template id="pf_customized_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row">
+                    <div class="col-8">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo"/>
+                    </div>
+                    <div class="col-4 offset-1" name="company_address">
+                        <ul class="list-unstyled">
+                            <li t-if="res_company.street">
+                                <span t-field="res_company.street"/>
+                            </li>
+                            <li t-if="res_company.street2">
+                                <span t-field="res_company.street2"/>
+                            </li>
+                            <li t-if="res_company.city and  res_company.country_id">
+                                <span t-field="res_company.city"/>,
+                                <span t-field="res_company.country_id.name"/>
+                            </li>
+                            <li t-elif="res_company.country_id">
+                                <span t-field="res_company.country_id.name"/>
+                            </li>
+                            <li t-else="">
+                                <span t-field="res_company.city"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="processing_form">
+        <t t-call="web.html_container">
+            <t t-call="real_estate.pf_customized_header"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .underline{
+                            text-decoration-color:gray
+                            }
+                            .container {
+                            border: 3px solid #fff;
+                            padding: 20px;
+                            }
+                            #rcorners3 {
+                            border-radius: 25px;
+                            border: 2px solid #011114 ;
+                            padding: 20px;
+                            width: 210px;
+                            height: 190px;
+                            align:center;
+                            }
+                            #rcorners4 {
+                            border-radius: 25px;
+                            border: 2px solid #011114 ;
+                            padding: 20px;
+                            width: 280px;
+                            height: 40px;
+                            align:center;
+                            }
+                            .rectangle {
+                            height: 130px;
+                            width: 310px;
+                            border: 1px solid black;
+                            }
+                            <!--                            .horizontal-line{-->
+                            <!--                            display: inline-block;-->
+                            <!--                            border-left: 1px solid #283075;-->
+                            <!--                            height: 188px;-->
+                            <!--                            }-->
+                        </style>
+                        <div class="row" style="text-align:center;">
+                            <div class="col-12">
+                                <h4 style="color:#283075; font-family:Octarine; font-style: oblique;">
+                                    <b>PROCESSING FORM</b>
+                                </h4>
+                                <h4 style="color:#283075; font-family:Octarine; font-style: oblique;">
+                                    <b>NEW CITY PHASE-II WAH CANTT</b>
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:30px;">
+                            <div class="col-12">
+                                <h6 style="margin-top:30px;color:#283075;font-family:Octarine Light;font-size:24px;">
+                                    Transferor Detail
+                                </h6>
+                                <p style="color:black;">Transferor Name
+                                    <b>
+                                        <span t-esc="o.member_name"/>
+                                    </b>
+                                    Father/Spouse Name
+                                    <b>
+                                        <span t-esc="o.membership_id.relation_name"/>
+                                    </b>
+                                    bearing CNIC NO.
+                                    <b>
+                                        <span t-esc="o.membership_id.cnic"/>
+                                    </b>
+                                    , being resident of
+                                    <b>
+                                        <span t-esc="o.membership_id.street"/>
+                                        <span t-esc="o.membership_id.city_id.name"/>,
+                                        <span t-esc="o.membership_id.country_id.name"/>
+                                    </b>
+                                    , do hereby undertake that I/We have sold Membership No./Reserve No /
+                                    <b><span t-esc="o.membership_id.ref"/>.
+                                    </b>
+
+                                </p>
+                                <h6 style="margin-top:30px;color:#283075;font-family:Octarine Light;font-size:24px;">
+                                    Unit Detail
+                                </h6>
+                                <div class="row" style="color:black;">
+                                    <div class="col-6">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Plot No:
+                                            </div>
+                                            <div class="col-7">
+                                                <b>
+                                                    <span t-esc="o.inventory_id.name"/>
+                                                </b>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Phase:
+                                            </div>
+                                            <div class="col-7">
+                                                <span t-esc="o.phase_id.name"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Sector:
+                                            </div>
+                                            <div class="col-7">
+                                                <span t-esc="o.sector_id.name"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Street:
+                                            </div>
+                                            <div class="col-7">
+                                                <span t-esc="o.street_id.name"/>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="margin-bottom:10px;">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Category:
+                                            </div>
+                                            <div class="col-7">
+                                                <b>
+                                                    <span t-esc="o.category_id.name"/>
+                                                </b>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Product:
+                                            </div>
+                                            <div class="col-7">
+                                                <b>
+                                                    <span t-esc="o.unit_category_type_id.name"/>
+                                                </b>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="black;line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Size:
+                                            </div>
+                                            <div class="col-7">
+                                                <span t-esc="o.size_id.name"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Total Area (SQFT):
+                                            </div>
+                                            <div class="col-7">
+                                                <span t-esc="'{0:,.2f}'.format(o.inventory_id.net_area)"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                Type:
+                                            </div>
+                                            <div class="col-7">
+                                                <span t-esc="o.unit_class_id.name"/>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="margin-bottom:10px;">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h6 style="margin-top:30px;color:#283075;font-family:Octarine Light;font-size:24px;">
+                                            Transferee Detail
+                                        </h6>
+                                        <p style="color:black;">Transferee Name
+                                            <b>
+                                                <t t-if="o.transferee_partner_id">
+                                                    <span t-esc="o.transferee_name"/>
+                                                </t>
+                                            </b>
+                                            Father/Spouse Name
+                                            <b>
+                                                <span t-esc="o.transferee_partner_id.relation_name"/>
+                                            </b>
+                                            bearing CNIC NO.
+                                            <b>
+                                                <t t-if="o.transferee_partner_id">
+                                                    <span t-esc="o.transferee_cnic_number"/>
+                                                </t>
+                                            </b>
+                                            , being resident of
+                                            <b>
+                                                <span t-esc="o.membership_id.street"/>
+                                                <span t-esc="o.membership_id.city_id.name"/>,
+                                                <span t-esc="o.membership_id.country_id.name"/>
+                                            </b>
+                                            and paid processing fee of<hr
+                                                    style="line-height:1;width:50px;color:black;"/>.
+
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <t t-if="o.transferee_partner_id">
+                                            <h6 style="margin-top:30px;color:#283075;font-family:Octarine Light;font-size:24px;">
+                                                Next of Kin
+                                            </h6>
+                                            <div class="row" style="color:black;">
+                                                <div class="col-5">
+                                                    Name:
+                                                </div>
+                                                <div class="col-7">
+                                                    <span t-esc="o.transferee_partner_id.relation_name"/>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5"/>
+                                                <div class="col-7">
+                                                    <hr style="line-height:1;"/>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="color:black;">
+                                                <div class="col-5">
+                                                    Relation With Member:
+                                                </div>
+                                                <t t-set="a" t-value="0"/>
+                                                <t t-foreach="o.transferee_partner_id.kin_line_ids" t-as="relative">
+                                                    <t t-if="a&lt;1">
+                                                        <div class="col-7">
+                                                            <span t-esc="relative.relation_with_member"/>
+                                                        </div>
+                                                        <t t-set="a" t-value="a+1"/>
+                                                    </t>
+                                                </t>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5"/>
+                                                <div class="col-7">
+                                                    <hr style="line-height:1;"/>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="color:black;">
+                                                <div class="col-5">
+                                                    CNIC:
+                                                </div>
+                                                    <t t-set="a" t-value="0"/>
+                                                    <t t-foreach="o.transferee_partner_id.kin_line_ids" t-as="relative">
+                                                        <t t-if="a&lt;1">
+                                                            <div class="col-7">
+                                                                <span t-esc="relative.cnic"/>
+                                                            </div>
+                                                            <t t-set="a" t-value="a+1"/>
+                                                        </t>
+                                                    </t>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-5"/>
+                                                <div class="col-7">
+                                                    <hr style="line-height:1;"/>
+                                                </div>
+                                            </div>
+                                            <div class="row" style="color:black;">
+                                                <div class="col-5">
+                                                    Mobile:
+                                                </div>
+                                                    <t t-set="a" t-value="0"/>
+                                                    <t t-foreach="o.transferee_partner_id.kin_line_ids" t-as="relative">
+                                                        <t t-if="a&lt;1">
+                                                            <div class="col-7">
+                                                                <span t-esc="relative.mobile"/>
+                                                            </div>
+                                                            <t t-set="a" t-value="a+1"/>
+                                                        </t>
+                                                    </t>
+                                            </div>
+
+                                            <div class="row" style="margin-bottom:10px;">
+                                                <div class="col-5"/>
+                                                <div class="col-7">
+                                                    <hr style="line-height:1;"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                <p align="justify" style="color:black; margin-top:50px;">
+                                    <b>First Party (Seller) do hereby undertake following;</b>
+                                </p>
+                                <ul style="list-style-position: outside;list-style-type: decimal; color:black;">
+                                    <li>
+                                        that from today onward there is no connection or belonging of the said plot/
+                                        membership / house to me and my heirs.
+                                    </li>
+                                    <li>
+                                        that me and my heirs will never claim ownership of the above said plot/
+                                        membership / house in future.
+                                    </li>
+                                    <li>
+                                        that I have never sold / handed over this plot / membership / house to anyone
+                                        before this.
+                                    </li>
+                                    <li>
+                                        that I have never mortgaged the above-mentioned plot / membership / house nor I
+                                        given gift deed to any other person.
+                                    </li>
+                                </ul>
+
+                                <p align="justify" style="color:black; margin-top:20px;">
+                                    <b>Second Party (Buyer) do hereby undertake following;</b>
+                                </p>
+                                <ul style="list-style-position: outside;list-style-type: decimal; color:black;">
+                                    <li>
+                                        that all the credentials and data mentioned above are true to the best of my
+                                        knowledge.
+                                    </li>
+                                    <li>
+                                        that I will abide by all rules and regulations of allotment.
+                                    </li>
+                                    <li>
+                                        that I will abide by all the by laws, terms and conditions as well as rules and
+                                        regulations of New City Phase-II.
+                                    </li>
+                                    <li>
+                                        that I will be bound by all such conditions, obligations and responsibilities as
+                                        printed overleaf in this respect.
+                                    </li>
+                                </ul>
+                                <p style="page-break-before: always"/>
+                                <h4 style="color:black; margin-top:30px;">
+                                    <b>First Party (Seller)</b>
+                                </h4>
+                                <div class="row">
+                                    <div class="col-4" style="text-align:center;color:black;">
+                                        <div class="rectangle"/>
+                                        Signature Impression
+                                    </div>
+                                    <div class="col-4" style="text-align:center;color:black;">
+                                        <div class="rectangle"/>
+                                        Left Thumb Impression
+                                    </div>
+                                    <div class="col-4" style="text-align:center;color:black;">
+                                        <div class="rectangle"/>
+                                        Left Thumb
+                                    </div>
+                                </div>
+
+                                <h4 style="color:black; margin-top:30px;">
+                                    <b>Second Party (Buyer)</b>
+                                </h4>
+                                <div class="row">
+                                    <div class="col-4" style="text-align:center;color:black;">
+                                        <div class="rectangle"/>
+                                        Signature Impression
+                                    </div>
+                                    <div class="col-4" style="text-align:center;color:black;">
+                                        <div class="rectangle"/>
+                                        Left Thumb Impression
+                                    </div>
+                                    <div class="col-4" style="text-align:center;color:black;">
+                                        <div class="rectangle"/>
+                                        Left Thumb
+                                    </div>
+                                </div>
+
+                                <div class="row" style="margin-top:70px;">
+                                    <div class="col-6">
+                                        <h6 style="margin-top:30px;color:#283075;font-family:Octarine Light;font-size:24px;">
+                                            Witness 1
+                                        </h6>
+                                        <div class="row" style="color:black;">
+                                            <div class="col-5">
+                                                Signature/Thumb:
+                                            </div>
+                                        </div>
+                                        <div class="row" style="color:black;">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <t t-set="a" t-value="0"/>
+                                        <t t-foreach="o.transfer_witness_ids" t-as="witness">
+                                            <t t-if="a&lt;1">
+                                                <div class="row" style="color:black;">
+                                                    <div class="col-5">
+                                                        Name:
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <span t-esc="witness.name"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-5"/>
+                                                    <div class="col-7">
+                                                        <hr style="line-height:1;"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row" style="color:black;">
+                                                    <div class="col-5">
+                                                        S/O:
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <span t-esc="witness.father_name"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-5"/>
+                                                    <div class="col-7">
+                                                        <hr style="line-height:1;"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row" style="color:black;">
+                                                    <div class="col-5">
+                                                        CNIC:
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <span t-esc="witness.cnic"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-5"/>
+                                                    <div class="col-7">
+                                                        <hr style="line-height:1;"/>
+                                                    </div>
+                                                </div>
+                                                <t t-set="a" t-value="a+1"/>
+                                            </t>
+
+                                        </t>
+                                    </div>
+                                    <div class="col-6">
+                                        <h6 style="margin-top:30px;color:#283075;font-family:Octarine Light;font-size:24px;">
+                                            Witness 2
+                                        </h6>
+                                        <div class="row" style="color:black;">
+                                            <div class="col-5">
+                                                Signature/Thumb:
+                                            </div>
+                                        </div>
+                                        <div class="row" style="color:black;">
+                                            <div class="col-5"/>
+                                            <div class="col-7">
+                                                <hr style="line-height:1;"/>
+                                            </div>
+                                        </div>
+                                        <t t-set="a" t-value="0"/>
+                                        <t t-foreach="o.transfer_witness_ids" t-as="witness">
+                                            <t t-if="a==1">
+                                                <div class="row" style="color:black;">
+                                                    <div class="col-5">
+                                                        Name:
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <span t-esc="witness.name"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-5"/>
+                                                    <div class="col-7">
+                                                        <hr style="line-height:1;"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row" style="color:black;">
+                                                    <div class="col-5">
+                                                        S/O:
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <span t-esc="witness.father_name"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-5"/>
+                                                    <div class="col-7">
+                                                        <hr style="line-height:1;"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row" style="color:black;">
+                                                    <div class="col-5">
+                                                        CNIC:
+                                                    </div>
+                                                    <div class="col-7">
+                                                        <span t-esc="witness.cnic"/>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-5"/>
+                                                    <div class="col-7">
+                                                        <hr style="line-height:1;"/>
+                                                    </div>
+                                                </div>
+                                                <t t-set="a" t-value="a+1"/>
+                                            </t>
+                                            <t t-set="a" t-value="a+1"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_processing_form" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">300</field>
+        <field name="page_width">240</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+    <report
+            string="Processing Form"
+            id="processing_form_action"
+            model="transfer.application"
+            report_type="qweb-pdf"
+            paperformat="paperformat_processing_form"
+            name="real_estate.processing_form"
+            file="real_estate.processing_form"
+    />
+</odoo>

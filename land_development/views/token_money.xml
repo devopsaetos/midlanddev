@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <!-- Form View Of Token Money -->
+    <record id="land_development.validate_token_form" model="ir.ui.view">
+        <field name="name">validate.token.fee.wizard</field>
+        <field name="model">token.money</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+            <form name="token_money_form" string="Token Fee">
+                <header>
+                    <button name="token_expiry" type="object" string="Expire Token" class="oe_highlight"
+                            groups="real_estate.group_token_expiry"
+                            invisible="validity_expire == True or state == 'adjusted' or state == 'cancel' or state == 'refund' or token_paid == False"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                                class="oe_stat_button"
+                                name="create_member"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Member"
+                                invisible="token_generated != True or is_existing == True or state == 'cancel' or state == 'refund' or validity_expire == True or create_open_file == True">
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="create_file"
+                                type="object" icon="fa-pencil-square-o"
+                                string="File"
+                                invisible="token_generated != True or is_existing != True or state == 'cancel' or state == 'refund' or validity_expire == True or create_open_file == True">
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="create_open_files"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Open File"
+                                invisible="payment_type != 'lump_sum' or create_open_file != True or state != 'adjusted'">
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="propose_plan"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Installment Calculator"
+                                invisible="state == 'refund' or state == 'cancel' or validity_expire == True or payment_type == 'lump_sum'"
+                        >
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="create_token_fees"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Generate Token"
+                                invisible="token_generated == True">
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="create_open_file_invoice"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Create Invoice"
+                                invisible="state == 'adjusted' or payment_type != 'lump_sum' or token_paid != True or create_open_file != True">
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="cancel_token"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Cancel Token"
+                                invisible="validity_expire == False or state == 'adjusted' or state == 'cancel' or state == 'refund' or token_paid == False">
+                        </button>
+                        <button
+                                name="increase_validity" string="Increase Validity"
+                                type="object" class="oe_stat_button" icon="fa-pencil-square-o"
+                                invisible="validity_expire == False or state == 'cancel' or state == 'adjusted' or state == 'refund'">
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="token_refund"
+                                type="object" icon="fa-pencil-square-o"
+                                string="Token Refund"
+                                invisible="validity_expire == False or state == 'cancel' or state == 'adjusted' or state == 'refund' or token_paid == False">
+                        </button>
+                        <button
+                                name="open_invoices"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Invoices :  "
+                                icon="fa-pencil-square-o"
+                                invisible="no_of_invoices == 0">
+
+                            <field name="no_of_invoices" invisible="no_of_invoices == 0"/>
+                        </button>
+                    </div>
+                    <div class="oe_title oe_state_size" invisible="token_generated != True">
+                        <h1>
+                            <field name="serial_number"/>
+                        </h1>
+                    </div>
+                    <group string="Contact Information">
+                        <group>
+                            <!--                            <field name="file_created" invisible="1"/>-->
+                            <field name="validity_expire" invisible="1"/>
+                            <field name="token_generated" invisible="1"/>
+                            <field name="plan_locked" invisible="1"/>
+                            <field name="open_file_amount_received" invisible="1"/>
+                            <field name="is_existing"/>
+                            <field name="change_member"/>
+                            <field name="create_open_file" invisible="token_paid != True"/>
+                            <field name="contact_name" invisible="is_existing == True"
+                                                               required="is_existing != True"
+                                                               readonly="token_generated == True"/>
+                            <field name="name" invisible="1"/>
+                            <field name="partner_id" domain="[('project_type','in',['skyscraper', False])]"
+                                   invisible="is_existing != True"
+                                   required="is_existing == True"
+                                   readonly="token_generated == True"
+                                   options="{'no_create': True, 'no_open': True}"/>
+<!--                            <field name="company_type" string="Member Type"-->
+<!--                                   attrs="{'readonly': ['|',('token_generated', '=', True),('is_existing', '=', True)],'required': [('is_existing', '!=', True)]}"-->
+<!--                            />-->
+
+                            <field name="company_type" string="Member Type"
+                            />
+
+<!--                            <field name="phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'"-->
+<!--                                   attrs="{'readonly': ['|',('token_generated', '=', True),('is_existing', '=', True)], 'invisible': [('company_type','!=','person')], 'required': [('company_type','=','person')]}"/>-->
+                            <field name="phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'"
+                                   invisible="company_type != 'person'"/>
+<!--                            <field name="cp_phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'" string="Phone No"-->
+<!--                                   attrs="{'readonly': ['|',('token_generated', '=', True),('is_existing', '=', True)], 'invisible': [('company_type','=','person')], 'required': [('company_type','!=','person')]}"/>-->
+                            <field name="cp_phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'" string="Phone No"
+                                   invisible="company_type == 'person'"/>
+
+                            <field name="cnic" widget="mask" data-inputmask="'mask': '99999-9999999-9'"
+                                   readonly="token_generated == True"
+                                   invisible="company_type != 'person'"
+                                   required="company_type == 'person'"/>
+                            <field name="email" readonly="token_generated == True"/>
+                            <field name="remarks" readonly="token_generated == True"/>
+                        </group>
+                        <group>
+                            <field name="token_fees" readonly="token_generated == True"/>
+                            <field name="journal_id" required="1" options="{'no_create': True}"
+                                   readonly="token_generated == True"/>
+                            <field name="date" string="Valid Upto"
+                                   readonly="token_generated == True"/>
+                            <field name="token_date" required="1" string="Token Date"
+                                   readonly="token_generated == True"/>
+                            <field name="token_paid" invisible="1"/>
+                            <field name="from_crm" invisible="1"/>
+                            <field name="payment_type" required="1"/>
+                            <field name="payment_date"/>
+                            <field name="ttl_sale_amount" invisible="payment_type == 'installments'" required="payment_type == 'lump_sum'"/>
+                            <field name="balance_amount" readonly="1"/>
+                            <field name="no_of_invoices" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="society_id" string="Project"
+                                   domain="[('project_type','in',['skyscraper', False]),('is_society','=',True)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="token_generated == True"/>
+                            <field name="project_type" invisible="1"/>
+                        </group>
+                        <group string="Bank Details">
+                            <field name="cheque_name" readonly="token_generated == True"/>
+                            <field name="cheque_no" readonly="token_generated == True"/>
+                            <field name="bank_ref" readonly="token_generated == True"/>
+                        </group>
+
+                    </group>
+                    <notebook>
+                        <page string="Unit(s) Reserved">
+                            <field name="token_line_ids"
+                                   readonly="from_crm == True or token_generated == True">
+                                <list editable="bottom">
+                                    <field name="phase_id" string="Building"
+                                           domain="[('project_type','in',['skyscraper', False]),('is_society','=',True)]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="sector_id" string="Floor" domain="[('project_type','in',['skyscraper', False])]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="inventory_id" string="Unit" domain="[('project_type','in',['skyscraper', False])]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="category_id" force_save="1"
+                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           readonly="inventory_id != False"/>
+                                    <field name="unit_category_type_id" force_save="1"
+                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           readonly="inventory_id != False"/>
+                                    <field name="size_id" force_save="1"
+                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           readonly="inventory_id != False"/>
+                                    <field name="unit_class_id" force_save="1"
+                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           readonly="inventory_id != False"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Details"
+                               invisible="company_type != 'aop'">
+                            <field name="cnic_line_ids" readonly="is_existing == True">
+                                <list editable="bottom">
+                                    <field name="member_name" required="1"/>
+                                    <field name="cnic" widget="mask"
+                                           data-inputmask="'mask': '99999-9999999-9'" required="1"/>
+                                    <field name="cnic_expiry_date"/>
+                                    <field name="cnic_front"/>
+                                    <field name="cnic_back"/>
+                                    <field name="phone"/>
+                                    <field name="address"/>
+                                    <field name="name" required="1"/>
+                                    <field name="father_spouse_cnic" widget="mask"
+                                           data-inputmask="'mask': '99999-9999999-9'" required="1"/>
+                                </list>
+                            </field>
+                            <!--                                    </page>-->
+                            <!--                                </notebook>-->
+                            <!--                            </group>-->
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="land_development.validate_token_money_tree" model="ir.ui.view">
+        <field name="name">validate.token.fee.wizard</field>
+        <field name="model">token.money</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="contact_name"/>
+                <field name="partner_id"/>
+                <field name="email"/>
+                <field name="phone_no"/>
+                <field name="token_fees"/>
+                <field name="date" string="Valid Upto"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="land_development.token_action">
+        <field name="name">Token</field>
+        <field name="res_model">token.money</field>
+        <field name="domain">[('project_type','in',['skyscraper', False])]</field>
+        <field name="context">{'default_from_crm':0, 'current_view': 'building', 'default_project_type': 'skyscraper'}</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.validate_token_money_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.validate_token_form')}),
+                ]"
+        />
+    </record>
+
+    <menuitem
+            id="land_development.token_menu"
+            name="Token"
+            action="land_development.token_action"
+            sequence="4"
+            parent="land_development.menu_fms"
+    />
+
+</odoo>

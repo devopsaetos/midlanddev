@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    	<record id="real_estate.members_check_form" model="ir.ui.view">
+            <field name="name">real_estate members_check_form</field>
+            <field name="model">members.check</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field
+                                    widget="mask"
+                                    data-inputmask="'mask': '99999-9999999-9'"
+                                    name='cnic'
+                                />
+                                <field name="member_type"/>
+                            </group>
+                        </group>
+                    </sheet>
+
+                    <footer>
+                        <button string="New" name="new_record" type="object" class="btn-primary"/>
+                		<button string="Detail" name="existing_record" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="real_estate.action_members_check" model="ir.actions.act_window">
+            <field name="name">Members Check</field>
+            <field name="res_model">members.check</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">form</field>
+            <field name="context">
+                {
+                    'current_view': 'realestate'
+                }
+            </field>
+            <field name="view_id" ref="real_estate.members_check_form"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+            id="real_estate.members_check"
+            name="Members Check"
+            action="real_estate.action_members_check"
+            parent="real_estate.menu_fms"
+            sequence="3"
+        />
+
+</odoo>

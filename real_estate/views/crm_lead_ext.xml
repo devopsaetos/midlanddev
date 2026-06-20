@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="crm.crm_lead_view_form" model="ir.ui.view">
+            <field name="name">crm.lead.form</field>
+            <field name="model">crm.lead</field>
+            <field name="arch" type="xml">
+                <form class="o_lead_opportunity_form">
+                    <header>
+                        <field name="token_paid" invisible="1"/>
+                        <button name="action_set_won_rainbowman" string="Mark Won"
+                                type="object" class="oe_highlight"
+                                invisible="not active or probability == 100 or type == 'lead'"/>
+                        <button name="%(crm.crm_lead_lost_action)d" string="Mark Lost"
+                                type="action" class="oe_highlight" context="{'default_lead_id': active_id}"
+                                invisible="type == 'lead' or not active or probability == 100"/>
+                        <button name="%(crm.action_crm_lead2opportunity_partner)d" string="Convert to Opportunity"
+                                type="action" help="Convert to Opportunity"
+                                class="oe_highlight"
+                                invisible="type == 'opportunity' or not active"/>
+                        <button name="toggle_active" string="Restore" type="object"
+                                invisible="probability > 0 or active"/>
+                        <button name="action_set_lost" string="Mark as Lost" type="object"
+                                invisible="type == 'opportunity' or (probability == 0 and not active)"/>
+                        <field name="stage_id" widget="statusbar"
+                               options="{'clickable': '1', 'fold_field': 'fold'}"
+                               domain="['|', ('team_ids', 'in', team_id), ('team_ids', '=', False)]"
+                               invisible="not active or type == 'lead'"/>
+                    </header>
+                    <sheet>
+                        <field name="active" invisible="1"/>
+                        <field name="plan_locked" invisible="1"/>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    class="oe_stat_button"
+                                    name="propose_plan"
+                                    type="object" icon="fa-pencil-square-o"
+                                    string="Installment Calculator">
+                            </button>
+                            <button
+                                    class="oe_stat_button"
+                                    name="token_money"
+                                    type="object" icon="fa-pencil-square-o"
+                                    string="Token"
+                                    invisible="(type == 'lead' or probability != 100)">
+                            </button>
+                            <button name="action_schedule_meeting" type="object"
+                                    class="oe_stat_button" icon="fa-calendar"
+                                    context="{'partner_id': partner_id, 'search_default_opportunity_id': id}"
+                                    invisible="type == 'lead'">
+<!--                                <div class="o_stat_info">-->
+<!--                                    <field name="meeting_count" class="o_stat_value"/>-->
+<!--                                    <span class="o_stat_text" invisible="meeting_count &lt; 2">-->
+<!--                                        Meetings-->
+<!--                                    </span>-->
+<!--                                    <span class="o_stat_text" invisible="meeting_count &gt; 1">-->
+<!--                                        Meeting-->
+<!--                                    </span>-->
+<!--                                </div>-->
+                            </button>
+                        </div>
+                        <widget name="web_ribbon" title="Lost" bg_color="bg-danger"
+                                invisible="(probability &gt; 0 or active == True)"/>
+                        <widget name="web_ribbon" title="Won" invisible="probability &lt; 100"/>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" string="Lead"
+                                   invisible="type == 'opportunity'"/>
+                            <label for="name" class="oe_edit_only" invisible="type == 'lead'"/>
+                            <h1>
+                                <field name="name" readonly="probability == 100"
+                                       placeholder="e.g. Product Pricing"/>
+                            </h1>
+                            <h2 class="o_row row no-gutters d-flex">
+<!--                                <div class="col" invisible="type == 'lead'">-->
+<!--                                    <label for="planned_revenue" class="oe_edit_only"/>-->
+<!--                                    <div class="o_row">-->
+<!--                                        <field name="company_currency" invisible="1"/>-->
+<!--                                        <field name="planned_revenue" class="oe_inline"-->
+<!--                                               readonly="probability == 100" widget='monetary'-->
+<!--                                               options="{'currency_field': 'company_currency'}"/>-->
+<!--                                        <span class="oe_grey p-2">at</span>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+                                <div class="col">
+                                    <span class="oe_edit_only o_pls_probability">
+                                        <label for="probability"/>
+                                        <button class="btn btn-link" name="action_set_automated_probability"
+                                                type="object"
+                                                invisible="is_automated_probability == True">
+                                            <i class="fa fa-gear" role="img" title="Switch to automatic probability"
+                                               aria-label="Switch to automatic probability"></i>
+                                        </button>
+                                        <small class="oe_grey"
+                                               invisible="is_automated_probability == True">
+                                            <field name="automated_probability"/>
+                                        </small>
+                                    </span>
+                                    <div id="probability" class="o_row d-flex">
+                                        <field name="is_automated_probability" invisible="1"/>
+                                        <field name="probability" readonly="probability == 100"
+                                               widget="float" class="oe_inline"/>
+                                        <span class="oe_grey">%%</span>
+                                    </div>
+                                </div>
+                            </h2>
+                        </div>
+                        <br/>
+                        <div>
+                            <label for="is_existing" string="Is Existing?"/>
+                            <field name="is_existing" string="Is Existing?"
+                                   readonly="type == 'opportunity'"/>
+                        </div>
+                        <group string="Contact Information" invisible="is_existing == True">
+                            <group>
+                                <label for="contact_name" string="Potential Customer"/>
+<!--                                <div class="o_row">-->
+<!--                                    <field name="title" placeholder="Title" domain="[]"-->
+<!--                                           required="is_existing != True" readonly="probability == 100"-->
+<!--                                           options='{"no_open": True}'/>-->
+<!--                                    <field name="contact_name" placeholder="Name"-->
+<!--                                           required="is_existing != True" readonly="probability == 100"/>-->
+<!--                                </div>-->
+                                <field name="partner_name"/>
+                                <label for="street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field name="street" placeholder="Street..." class="o_address_street"
+                                           readonly="probability == 100"/>
+                                    <field name="street2" placeholder="Street 2..." class="o_address_street"
+                                           readonly="probability == 100"/>
+                                    <field name="city"
+                                           required="is_existing != True" readonly="probability == 100"
+                                           placeholder="City" class="o_address_city"/>
+                                    <field name="state_id" class="o_address_state" placeholder="State"
+                                           readonly="probability == 100"
+                                           options='{"no_open": True}'/>
+                                    <field name="zip" placeholder="ZIP" class="o_address_zip"
+                                           readonly="probability == 100"/>
+                                    <field name="country_id" placeholder="Country" class="o_address_country"
+                                           readonly="probability == 100"
+                                           options='{"no_open": True, "no_create": True}'/>
+                                </div>
+                                <field name="website" invisible="1" widget="url"
+                                       placeholder="e.g. https://www.odoo.com"/>
+                                <field name="lang_id" invisible="1"/>
+                            </group>
+                            <group class="mt48">
+                                <field name="function" readonly="probability == 100"/>
+<!--                                <field name="mobile" widget="mask" data-inputmask="'mask': '+99-999-9999999'"-->
+<!--                                       placeholder='+92-300-8765432' required="1"-->
+<!--                                       readonly="probability == 100"-->
+<!--                                       />-->
+<!--                                <label for="email_from" class="oe_inline"-->
+<!--                                       readonly="probability == 100"/>-->
+<!--                                <div class="o_row o_row_readonly">-->
+<!--                                    <i class="fa fa-ban" style="color: red;" role="img"-->
+<!--                                       title="This email is blacklisted for mass mailing"-->
+<!--                                       aria-label="Blacklisted"-->
+<!--                                       invisible="(is_blacklisted == False or partner_address_email != False)"-->
+<!--                                       groups="base.group_user"/>-->
+<!--                                    <field name="email_from"-->
+<!--                                           invisible="partner_address_email != False" readonly="probability == 100"-->
+<!--                                           string="Email" widget="email"/>-->
+<!--                                    <i class="fa fa-ban" style="color: red;" role="img"-->
+<!--                                       title="This email is blacklisted for mass mailing"-->
+<!--                                       aria-label="Blacklisted"-->
+<!--                                       invisible="(partner_is_blacklisted == False or partner_address_email == False)"-->
+<!--                                       groups="base.group_user"/>-->
+<!--                                    <field name="partner_address_email"-->
+<!--                                           invisible="partner_address_email == False" readonly="probability == 100"-->
+<!--                                           widget="email" string="Email"/>-->
+<!--                                </div>-->
+                                <field name="referred" readonly="probability == 100"/>
+                            </group>
+                            <group string="Marketing">
+                                <field name="campaign_id" readonly="probability == 100"/>
+                                <field name="medium_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
+                                <field name="source_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
+                            </group>
+                            <group string="Deadline">
+                                <field name="date_deadline" readonly="probability == 100"/>
+                                <field name="priority" widget="priority"
+                                       readonly="probability == 100"/>
+                                <field name="tag_ids" widget="many2many_tags"
+                                       readonly="probability == 100"
+                                       options="{'color_field': 'color', 'no_create_edit': True}"/>
+                            </group>
+                        </group>
+                        <group invisible="is_existing == False and (type == 'opportunity' or type == 'lead')">
+                            <group>
+                                <!-- Preload all the partner's information -->
+                                <field name="partner_id" widget="res_partner_many2one"
+                                       context="{'default_name': contact_name,
+                                        'default_street': street,
+                                        'default_city': city,
+                                        'default_state_id': state_id,
+                                        'default_zip': zip,
+                                        'default_country_id': country_id,
+                                        'default_function': function,
+                                        'default_phone': phone,
+                                        'default_mobile': mobile,
+                                        'default_email': email_from,
+                                        'default_user_id': user_id,
+                                        'default_team_id': team_id,
+                                        'default_website': website,
+                                        'show_vat': True
+                                    }" groups="base.group_no_one"
+                                       required="is_existing == True" readonly="probability == 100"/>
+                                <field name="partner_name" readonly="probability == 100"/>
+                                <label for="street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field name="street" readonly="probability == 100"
+                                           placeholder="Street..." class="o_address_street"/>
+                                    <field name="street2" readonly="probability == 100"
+                                           placeholder="Street 2..." class="o_address_street"/>
+                                    <field name="city"
+                                           required="is_existing == True" readonly="probability == 100"
+                                           placeholder="City" class="o_address_city"/>
+                                    <field name="state_id" readonly="probability == 100"
+                                           class="o_address_state" placeholder="State" options='{"no_open": True}'/>
+                                    <field name="zip" readonly="probability == 100"
+                                           placeholder="ZIP" class="o_address_zip"/>
+                                    <field name="country_id" readonly="probability == 100"
+                                           placeholder="Country" class="o_address_country"
+                                           options='{"no_open": True, "no_create": True}'/>
+                                </div>
+                                <field name="website" invisible="1" widget="url"
+                                       placeholder="e.g. https://www.odoo.com"/>
+                                <field name="lang_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <label for="contact_name" invisible="1"/>
+                                <div class="o_row">
+                                    <field name="contact_name" invisible="1"/>
+<!--                                    <field name="title" invisible="1" placeholder="Title" domain="[]"-->
+<!--                                           options='{"no_open": True}'/>-->
+                                </div>
+                                <field name="is_blacklisted" invisible="1"/>
+                                <field name="email_state" invisible="1"/>
+<!--                                <field name="phone_state" invisible="1"/>-->
+                                <label for="email_from" class="oe_inline"/>
+                                <div class="o_row o_row_readonly">
+                                    <i class="fa fa-ban" style="color: red;" role="img"
+                                       title="This email is blacklisted for mass mailing"
+                                       aria-label="Blacklisted" invisible="is_blacklisted == False"
+                                       groups="base.group_user"/>
+                                    <field name="email_from" widget="email"
+                                           readonly="probability == 100"/>
+                                </div>
+                                <field name="email_cc" invisible="1" groups="base.group_no_one"/>
+                                <field name="function" readonly="probability == 100"/>
+<!--                                <field name="phone" readonly="probability == 100" widget="phone"-->
+<!--                                       options="{'enable_sms': True}"/>-->
+<!--                                <field widget="mask"-->
+<!--                                       name="mobile"-->
+<!--                                       data-inputmask="'mask': '+99-999-9999999'"-->
+<!--                                       placeholder='+92-300-8765432' readonly="probability == 100"-->
+<!--                                       />-->
+                                <field name="referred" readonly="probability == 100"/>
+                            </group>
+                        </group>
+                        <group invisible="is_existing == False">
+                            <group string="Marketing">
+                                <field name="campaign_id" readonly="probability == 100"/>
+                                <field name="medium_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
+                                <field name="source_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
+                            </group>
+                            <group string="Deadline">
+                                <field name="date_deadline" readonly="probability == 100"/>
+                                <field name="priority" widget="priority"
+                                       readonly="probability == 100"/>
+                                <field name="tag_ids" widget="many2many_tags"
+                                       readonly="probability == 100"
+                                       options="{'color_field': 'color', 'no_create_edit': True}"/>
+                            </group>
+                            <group invisible="type == 'lead' and is_existing == True">
+                                <field name="partner_id"
+                                       widget="res_partner_many2one"
+                                       string="Customer"
+                                       invisible="is_existing == True" readonly="probability == 100"
+                                       context="{'res_partner_search_mode': type == 'opportunity' and 'customer' or False,
+                                        'default_name': contact_name or partner_name,
+                                        'default_street': street,
+                                        'default_is_company': type == 'opportunity' and contact_name == False,
+                                        'default_company_name': type == 'opportunity' and partner_name,
+                                        'default_street2': street2,
+                                        'default_city': city,
+                                        'default_title': title,
+                                        'default_state_id': state_id,
+                                        'default_zip': zip,
+                                        'default_country_id': country_id,
+                                        'default_function': function,
+                                        'default_phone': phone,
+                                        'default_mobile': mobile,
+                                        'default_email': email_from,
+                                        'default_user_id': user_id,
+                                        'default_team_id': team_id,
+                                        'default_website': website,
+                                        'show_vat': True,
+                                    }"
+                                />
+                                <field name="is_blacklisted" invisible="1"/>
+                                <field name="partner_is_blacklisted" invisible="1"/>
+                                <field name="email_state" invisible="1"/>
+<!--                                <field name="phone_state" invisible="1"/>-->
+                                <label for="email_from" class="oe_inline"
+                                       invisible="is_existing == True"/>
+                                <div class="o_row o_row_readonly">
+                                    <i class="fa fa-ban" style="color: red;" role="img"
+                                       title="This email is blacklisted for mass mailing"
+                                       aria-label="Blacklisted"
+                                       groups="base.group_user"/>
+                                    <field name="email_from"
+                                           invisible="is_existing == True" readonly="probability == 100"
+                                           string="Email" widget="email"/>
+                                    <i class="fa fa-ban" style="color: red;" role="img"
+                                       title="This email is blacklisted for mass mailing"
+                                       aria-label="Blacklisted"
+                                       groups="base.group_user"/>
+<!--                                    <field name="partner_address_email"-->
+<!--                                           invisible="partner_address_email == False" readonly="probability == 100"-->
+<!--                                           widget="email" string="Email"/>-->
+                                </div>
+<!--                                <field string="Phone"-->
+<!--                                       name="partner_address_phone"-->
+<!--                                       widget="phone" options="{'enable_sms': True}"-->
+<!--                                       invisible="partner_address_phone == False" readonly="probability == 100"/>-->
+<!--                                <field name="phone"-->
+<!--                                       widget="phone" options="{'enable_sms': True}"-->
+<!--                                       invisible="is_existing == True" readonly="probability == 100"/>-->
+                            </group>
+                        </group>
+                        <group>
+                            <group name="user">
+                                <field name="user_id" domain="[('share', '=', False)]"
+                                       readonly="probability == 100"
+                                       context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'sales_team.group_sale_salesman_all_leads'], 'team_id': team_id}"/>
+                                <field name="type" invisible="1"/>
+                                <field name="society_id" string="Project"
+                                       readonly="probability == 100"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="project_type" invisible="1"/>
+                            </group>
+                            <group name="lead_priority" invisible="type == 'opportunity'">
+                                <field name="priority" widget="priority"
+                                       readonly="probability == 100"/>
+                                <field name="tag_ids" widget="many2many_tags"
+                                       readonly="probability == 100"
+                                       options="{'color_field': 'color', 'no_create_edit': True}"/>
+                            </group>
+                        </group>
+                        <group name="plot_details" string="Plot Details"
+                               invisible="(project_type == 'skyscraper' or project_type == False)">
+                            <notebook colspan="4">
+                                <page name="plot_detail" string="Details">
+                                    <field name="crm_lead_line" readonly="probability == 100">
+                                        <list editable="bottom">
+                                            <field name="phase_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                            <field name="sector_id"
+                                                   options="{'no_create': True, 'no_open': True}" force_save="1"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                            <field name="street_id"
+                                                   options="{'no_create': True, 'no_open': True}" force_save="1"/>
+                                            <field name="inventory_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                            <field name="category_id" force_save="1"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                            <field name="unit_category_type_id" force_save="1"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                            <field name="size_id" force_save="1"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                            <field name="unit_class_id" force_save="1"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','housing_society')]"/>
+                                        </list>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </group>
+                        <group name="unit_details" string="Unit Details"
+                               invisible="(project_type == 'housing_society' or project_type == False)">
+                            <notebook colspan="4">
+                                <page name="unit_detail" string="Details">
+                                    <field name="crm_lead_building" readonly="probability == 100">
+                                        <list editable="bottom">
+                                            <field name="phase_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','skyscraper')]"
+                                                   string="Block"/>
+                                            <field name="sector_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   string="Floor"
+                                                   domain="[('project_type','=','skyscraper')]"/>
+                                            <field name="inventory_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','skyscraper')]"/>
+                                            <field name="category_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','skyscraper')]"/>
+                                            <field name="unit_category_type_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','skyscraper')]"/>
+                                            <field name="size_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','skyscraper')]"/>
+                                            <field name="unit_class_id"
+                                                   options="{'no_create': True, 'no_open': True}"
+                                                   domain="[('project_type','=','skyscraper')]"/>
+                                        </list>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </group>
+                        <group>
+                            <group invisible="type == 'lead'">
+<!--                                <field name="lost_reason" invisible="active == True"/>-->
+                                <field name="date_conversion" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Internal Notes">
+                                <field name="description" placeholder="Add a description..."
+                                       readonly="probability == 100"/>
+                            </page>
+                            <page name="other_info" string="Other Info">
+                                <group>
+                                    <group>
+                                        <field name="team_id" widget="selection"
+                                               readonly="probability == 100"
+                                               domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]"/>
+                                        <field name="company_id" readonly="probability == 100"
+                                               groups="base.group_multi_company"/>
+                                    </group>
+                                    <group string="Misc" name="Misc">
+                                        <field name="day_open" readonly="probability == 100"
+                                               groups="base.group_no_one"/>
+                                        <field name="day_close" readonly="probability == 100"
+                                               groups="base.group_no_one"/>
+                                        <field name="type" invisible="1"/>
+                                    </group>
+                                </group>
+                                <group>
+
+                                </group>
+
+                            </page>
+                            <page name="extra" string="Extra Info"
+                                  invisible="type == 'opportunity'">
+                                <group>
+                                    <group string="Email" groups="base.group_no_one">
+                                        <field name="message_bounce" readonly="1"/>
+                                    </group>
+                                    <group string="Tracking" name="categorization">
+                                        <field name="company_id"
+                                               groups="base.group_multi_company"
+                                               options="{'no_create': True}"/>
+                                        <field name="campaign_id" readonly="probability == 100"/>
+                                        <field name="medium_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
+                                        <field name="source_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
+                                        <field name="referred" readonly="probability == 100"/>
+                                    </group>
+                                    <group string="Analysis">
+                                        <field name="date_open"/>
+                                        <field name="date_closed"/>
+                                        <field name="probability"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page name="lead" string="Follow-up" invisible="1">
+                                <group>
+                                    <group class="mt48">
+                                        <label for="contact_name"/>
+                                        <div class="o_row">
+                                            <field name="contact_name"
+                                                   readonly="probability == 100"/>
+<!--                                            <field name="title" placeholder="Title"-->
+<!--                                                   readonly="probability == 100" domain="[]"-->
+<!--                                                   options='{"no_open": True}'/>-->
+                                        </div>
+                                        <field name="function" readonly="probability == 100"/>
+<!--                                        <field name="mobile"-->
+<!--                                               id="mobile"-->
+<!--                                               readonly="probability == 100"-->
+<!--                                               options="{'enable_sms': True}"/>-->
+                                    </group>
+
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!--
+            crm.lead (as Opportunity tree) views
+        -->
+        <record id="crm.crm_case_tree_view_oppor" model="ir.ui.view">
+            <field name="name">crm.lead.tree.opportunity</field>
+            <field name="model">crm.lead</field>
+            <field name="arch" type="xml">
+                <list string="Opportunities" multi_edit="1"  decoration-bf="message_needaction==True" decoration-muted="probability == 100" decoration-danger="activity_date_deadline and (activity_date_deadline &lt; current_date)">
+                    <field name="date_deadline" invisible="1"/>
+                    <field name="create_date" optional="show" string="Date"/>
+                    <field name="name" string="Opportunity"/>
+                    <field name="contact_name" string="Customer" optional="show"/>
+<!--                    <field name="mobile" class="o_force_ltr" optional="show"/>-->
+<!--                    <field name="phone" class="o_force_ltr" optional="hide" invisible="1"/>-->
+                    <field name="city" optional="show"/>
+                    <field name="country_id" optional="show"/>
+                    <field name="user_id" optional="show"/>
+                    <field name="medium_id" invisible="0" string="Source"/>
+                    <field name="campaign_id" invisible="0"/>
+                    <field name="state_id" optional="hide"/>
+                    <field name="activity_date_deadline" optional="show" invisible="1"/>
+                    <field name="activity_summary" optional="show" readonly="1" invisible="1"/>
+                    <field name="source_id" invisible="1"/>
+                    <field name="email_from" optional="hide" invisible="1"/>
+                    <field name="stage_id" required="1" optional="show" invisible="1"/>
+                    <field name="planned_revenue" sum="Expected Revenues" optional="show" invisible="1"/>
+                    <field name="probability" avg="Avg. of Probability" optional="show" invisible="1"/>
+                    <field name="team_id" optional="show" invisible="1"/>
+                    <field name="referred" invisible="1"/>
+                    <field name="message_needaction" invisible="1"/>
+                    <field name="probability" invisible="1"/>
+                    <field name="write_date" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="show" invisible="1" />
+                    <field name="tag_ids" optional="hide" widget="many2many_tags" invisible="1"/>
+                    <field name="priority" optional="hide" invisible="1"/>
+                    <field name="activity_exception_decoration" widget="activity_exception" invisible="1"/>
+                </list>
+            </field>
+        </record>
+</odoo>
+        <!-- ????????????????????????????????????????????? -->

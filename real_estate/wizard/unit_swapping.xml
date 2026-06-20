@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="real_estate.unit_swapping_search_form" model="ir.ui.view">
+        <field name="name">real_estate unit_swapping_search_form</field>
+        <field name="model">unit.swapping</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="applicable_on" required="1"/>
+                            <field name="investment_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <!--                                                                       attrs="{'invisible': [('applicable_on','!=','investment')]}"-->
+
+                            <field name="reservation_type" invisible="0"
+                            />
+                            <!--                                attrs="{'invisible': [('applicable_on','!=','investment')]}"-->
+                            <field name="transaction_type" invisible="0"
+                            />
+                            <field name="select_all" invisible="0"
+                            />
+                            <field name="file_id"
+                                   domain="[('project_type', '=', 'housing_society'),('state','=','available'),('file_status','=','approve')]"
+
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="investor_file_id"
+                                   domain="[('project_type', '=', 'housing_society'),('state','=','open')]"
+
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="inventory_id"
+
+                                   domain="[('project_type', '=', 'housing_society'),('state','=','investor')]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group name="left_panel">
+                        </group>
+
+                        <group class="oe_subtotal_footer oe_right">
+                            <button string="Search" name="search_related_records" type="object" class="btn-primary"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Search" autofocus="autofocus"
+                        >
+                            <!--                             attrs="{'invisible': [('applicable_on','!=','file')]}"-->
+                            <field name="unit_swapping_line">
+                                <list create="false">
+                                    <field name="inventory_id" invisible="1"/>
+                                    <field name="investment_id" invisible="1"/>
+                                    <field name="sector_id"/>
+                                    <field name="street_id"/>
+                                    <field name="category_id" string="Category"/>
+                                    <field name="unit_category_type_id" string="Product"/>
+                                    <field name="size_id" string="Size"/>
+                                    <field name="unit_class_id" string="Type"/>
+                                    <field name="unit_number" string="Plot No."/>
+                                </list>
+
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="transaction_type" required='1'/>
+                                            <field name="appointment_date" required="1"/>
+
+                                        </group>
+                                        <group string="Member Details ">
+                                            <group>
+                                                <field name="membership_id"/>
+                                            </group>
+                                            <group>
+                                                <field name="new_membership_id"
+
+                                                       options="{'no_create': True, 'no_open': True}"/>
+<!--                                                 attrs="{'required': [('transaction_type','=','member_swap')],'invisible': [('transaction_type','!=','member_swap')]}"-->
+                                            </group>
+                                        </group>
+                                        <group string="Property Detail ">
+                                            <group>
+                                                <field name="file_id"/>
+                                                <field name="society_id"/>
+                                                <field name="phase_id"/>
+                                                <field name="sector_id"/>
+                                                <field name="street_id"/>
+                                                <field name="inventory_id" string="Unit"/>
+                                                <field name="unit_number" string="Plot No."/>
+                                            </group>
+                                            <group>
+                                                <field name="tracking_id"/>
+                                                <field name="category_id"/>
+                                                <field name="unit_category_type_id" string="Product"/>
+                                                <field name="size_id"/>
+                                                <field name="unit_class_id" string="Type"/>
+                                            </group>
+                                        </group>
+                                        <group string="New Property Detail ">
+                                            <group>
+                                                <field name="new_inventory_id" string="New Unit"
+                                                       domain="['&amp;',('state','=','avalible_for_sale'),
+                                                                    ('project_type','=','housing_society')]"
+                                                       options="{'no_create': True, 'no_open': True}"/>
+<!--                                                                                                       attrs="{'required': [('transaction_type','=','swap')],'invisible': [('transaction_type','!=','swap')]}"-->
+<!---->
+                                                <field name="new_society_id" string="Society"/>
+                                                <field name="new_phase_id" string="Phase"/>
+                                                <field name="new_sector_id" string="Sector"/>
+                                            </group>
+                                            <group>
+                                                <field name="new_category_id" string="Category"/>
+                                                <field name="new_unit_category_type_id" string="Product"/>
+                                                <field name="new_size_id" string="Size"/>
+                                                <field name="new_unit_class_id" string="Type"/>
+                                                <field name="change_price"/>
+                                                <field name="amount"
+                                                       />
+<!--                                                attrs="{'required': [('change_price','=','yes')],'invisible': [('change_price','!=','yes')]}"-->
+                                                <field name="apply_charges"/>
+                                                <field name="charges_amount"
+                                                      />
+<!--                                                 attrs="{'required': [('apply_charges','=','yes')],'invisible': [('apply_charges','!=','yes')]}"-->
+                                            </group>
+                                        </group>
+                                        <group name="file_details" string="File Details">
+                                            <group>
+                                                <field name="booking_date"/>
+                                                <field name="starting_date"/>
+                                                <field name="payment_states"/>
+                                                <field name="interval_id"/>
+                                            </group>
+                                            <group>
+                                                <field name="net_sale_amount"/>
+                                                <field name="ttl_sale_amount"/>
+                                                <field name="initial_payment"/>
+                                                <field name="plan_description"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                    <footer>
+                                        <button string="Create Request" name="create_request" type="object"
+                                                class="btn-primary" groups="real_estate.group_initiate_transfer_req"/>
+                                        <button string="Discard" class="btn-default" special="cancel"/>
+                                    </footer>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Details" autofocus="True"
+                             >
+<!--                             attrs="{'invisible': [('applicable_on','!=','investment')]}"-->
+                            <field name="unit_swapping_investment_lines">
+                                <list create="false" delete="false" editable="bottom">
+                                    <field name="check"/>
+                                    <field name="transaction_type" invisible="1"/>
+                                    <field name="investment_id" readonly="1"/>
+                                    <field name="investor_file_id" readonly="1"/>
+                                    <field name="sector_id" readonly="1"/>
+                                    <field name="category_id" string="Category" readonly="1"/>
+                                    <field name="unit_category_type_id" string="Product" readonly="1"/>
+                                    <field name="size_id" string="Size" readonly="1"/>
+                                    <field name="unit_class_id" string="Type" readonly="1"/>
+                                    <field name="inventory_id" string="Plot No." readonly="1"
+                                           domain="[('project_type','=','housing_society')]"/>
+                                    <field name="investor_unit_price" readonly="1"/>
+                                    <field name="new_price"/>
+                                    <!--                                         attrs="{'readonly': [('transaction_type','!=','change_amount')],'required': [('transaction_type','=','change_amount')]}"-->
+                                    <field name="unit_number" string="Plot No." readonly="1" invisible="1"/>
+                                    <field name="new_inventory_id" string="New Plot No."
+                                           domain="[('state', '=', 'avalible_for_sale')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                </list>
+                                <!--                                                                                   attrs="{'readonly': [('transaction_type','!=','swap')],'required': [('transaction_type','=','swap')]}"-->
+
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button string="Create Request" name="create_investment_request" type="object"
+                            class="btn-primary" groups="real_estate.group_initiate_transfer_req"/>
+                    <button string="Discard" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.action_unit_swapping_search" model="ir.actions.act_window">
+        <field name="name">Unit Swapping</field>
+        <field name="res_model">unit.swapping</field>
+        <field name="type">ir.actions.act_window</field>
+
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="real_estate.unit_swapping_search_form"/>
+        <field name="context">{'current_view': 'realestate'}</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+            id="real_estate.unit_search"
+            name="Unit Search"
+            groups="real_estate.group_initiate_transfer_req"
+            action="real_estate.action_unit_swapping_search"
+            parent="real_estate.menu_transfer"
+            sequence="1"
+    />
+
+</odoo>

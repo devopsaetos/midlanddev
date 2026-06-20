@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="unit_swapping_request_form" model="ir.ui.view">
+            <field name="name">real_estate unit_swapping_request_form</field>
+            <field name="model">unit.swapping.request</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="true">
+                    <header>
+                        <button name="approve_request"
+                                type="object"
+                                class="oe_highlight"
+                                string="Approve"
+                                groups="real_estate.group_approve_transfer_req"
+                                invisible="state != 'draft'"/>
+                        <button name="request_cancel"
+                                type="object"
+                                class="oe_highlight"
+                                string="Cancel"
+                                groups="real_estate.group_approve_transfer_req"
+                                invisible="state != 'draft'"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_colors='{"draft":"yellow","approve":"green",}'/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_invoice"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Invoice"
+                                    icon="fa-pencil-square-o"
+                                    invisible="invoice_created != True">
+                            </button>
+                            <button
+                                    name="generate_invoice"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Generate Invoice"
+                                    icon="fa-pencil-square-o"
+                                    invisible="(apply_charges == 'no' or invoice_created == True)">
+                            </button>
+                        </div>
+                        <field
+                                name="qr_code"
+                                widget='image'
+                                class="oe_avatar"
+                                style="width:100px; height:100px"
+                        />
+                        <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_1920'}"/>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                                <field name="project_type" invisible="1"/>
+                                <field name="invoice_created" invisible="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="applicable_on" readonly="1"/>
+                            <field name="transaction_type" readonly="1"/>
+                            <field name="appointment_date" required="1" readonly="state != 'draft'"/>
+
+                        </group>
+                        <group string="Member Details " invisible="applicable_on != 'file'">
+                            <group>
+                                <field name="membership_id"/>
+                            </group>
+                            <group>
+                                <field name="new_membership_id" invisible="(transaction_type != 'member_swap' or applicable_on != 'file')"/>
+                            </group>
+                        </group>
+                        <group string="Attachments" invisible="transaction_type != 'open_file'">
+                            <group>
+                                <field name="member_image"
+                                       widget="image"/>
+                                <field name="member_cnic_front"
+                                       widget="image"
+                                />
+                                <field name="member_cnic_back"
+                                       widget="image"
+                                />
+                                <field name="emirates_id_front"
+                                       widget="image"
+                                       force_save="1"
+                                       style="width:80px !important; height: 80px !important;"
+                                />
+                                <field name="emirates_id_back"
+                                       widget="image"
+                                       force_save="1"
+                                       style="width:80px !important; height: 80px !important;"
+                                />
+                            </group>
+                            <group>
+                                <field name="kin_cnic_front"
+                                       widget="image"
+                                />
+                                <field name="kin_cnic_back"
+                                       widget="image"
+                                />
+                                <field name="file_issuance_request"/>
+                                <field name="passport_front"
+                                       widget="image"
+                                       force_save="1"
+                                       style="width:80px !important; height: 80px !important;"/>
+                                <field name="passport_back"
+                                       widget="image"
+                                       force_save="1"
+                                       style="width:80px !important; height: 80px !important;"/>
+                            </group>
+                        </group>
+                        <group string="Property Detail" invisible="applicable_on != 'file'">
+                            <group>
+                                <field name="file_id" readonly="1"/>
+                                <field name="society_id" readonly="state != 'draft'"/>
+                                <field name="phase_id" readonly="state != 'draft'"/>
+                                <field name="sector_id" readonly="state != 'draft'"/>
+                                <field name="street_id" readonly="state != 'draft'"/>
+                                <field name="inventory_id" string="Unit"
+                                       readonly="state != 'draft'"/>
+                                <field name="unit_number" string="Plot No."
+                                       readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="tracking_id" readonly="state != 'draft'"/>
+                                <field name="category_id" readonly="state != 'draft'"/>
+                                <field name="unit_category_type_id" string="Product"
+                                       readonly="state != 'draft'"/>
+                                <field name="size_id" readonly="state != 'draft'"/>
+                                <field name="unit_class_id" string="Type"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group string="New Property Detail " invisible="applicable_on != 'file'">
+                            <group>
+                                <field name="new_inventory_id" string="New Unit"
+                                       domain="[('state','=','avalible_for_sale'),
+                                                ('project_type','=','skyscraper')]"
+                                       required="transaction_type == 'swap'" invisible="transaction_type != 'swap'"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="new_society_id" string="Society"/>
+                                <field name="new_phase_id" string="Phase"/>
+                                <field name="new_sector_id" string="Sector"/>
+                            </group>
+                            <group>
+                                <field name="new_category_id" string="Category"/>
+                                <field name="new_unit_category_type_id" string="Product"/>
+                                <field name="new_size_id" string="Size"/>
+                                <field name="new_unit_class_id" string="Type"/>
+                                <field name="change_price" readonly="state != 'draft'"/>
+                                <field name="amount"
+                                       required="change_price == 'yes'" invisible="change_price != 'yes'"/>
+                                <field name="apply_charges" readonly="state != 'draft'"/>
+                                <field name="charges_amount"
+                                       required="apply_charges == 'yes'" invisible="apply_charges != 'yes'"/>
+                            </group>
+                        </group>
+                        <group name="file_details" string="File Details"
+                               invisible="applicable_on != 'file'">
+                            <group>
+                                <field name="booking_date"/>
+                                <field name="starting_date"/>
+                                <field name="payment_states"/>
+                                <field name="interval_id"/>
+                            </group>
+                            <group>
+                                <field name="net_sale_amount"/>
+                                <field name="ttl_sale_amount"/>
+                                <field name="initial_payment"/>
+                                <field name="plan_description"/>
+                            </group>
+                        </group>
+                        <group string="Customer Detail"
+                               invisible="(applicable_on != 'investment' or transaction_type != 'open_file')">
+                            <group>
+                                <field name="transferee_passport" widget="mask" data-inputmask="'mask': '*', 'repeat': 10, 'greedy' : false"
+                                       readonly="state != 'draft'"/>
+                                 <field widget="mask" data-inputmask="'mask': '999-9999-9999999-9'"
+                                       name="transferee_emirates_id"
+                                       readonly="state != 'draft'"
+                                       force_save="1"
+                                />
+                                <field widget="mask" data-inputmask="'mask': '99999-9999999-9'"
+                                       name="transferee_cnic_number"
+                                       required="transaction_type == 'open_file'" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <button
+                                        name="search_member"
+                                        icon="fa-arrow-right"
+                                        type="object"
+                                        string="Search Member"
+                                        class="btn-link"
+                                        invisible="state != 'draft'"
+                                />
+                            </group>
+                            <group>
+                                <field name="is_transferee_partner" invisible="1"
+                                       readonly="state != 'draft'"/>
+                                <field name="transferee_partner_id"
+                                       invisible="1"
+                                       readonly="is_transferee_partner == True"
+                                       context="{
+                                        'form_view_ref': 'real_estate.view_partner_form',
+                                        'default_is_member' : 1
+                                    }"
+                                />
+                                <field name="transferee_name" string="Name"
+                                       readonly="is_transferee_partner == True"/>
+                                <field name="transferee_company_type" string="Member Type"
+                                       readonly="is_transferee_partner == True"/>
+                                <field name="transferee_mobile"
+                                       placeholder="+92-300-2321443"
+                                       widget="mask" data-inputmask="'mask': '+99-999-9999999'"
+                                       readonly="is_transferee_partner == True"/>
+                                <field name="transferee_secondary_mobile"
+                                       placeholder="+92-300-2321443"
+                                       force_save="1"
+                                       readonly="is_transferee_partner == True"
+                                       string="Secondary Mobile No."
+                                />
+                                <field name="transferee_email"
+                                       readonly="is_transferee_partner == True"/>
+                                <field name="transferee_gender"
+                                       readonly="is_transferee_partner == True"/>
+                            </group>
+                            <group>
+                                <field name="transferee_relation_name" string="Father/Spouse "
+                                       readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                            </group>
+                            <group name='primary_address' string="Primary Address">
+                                <!-- All address fields are Inherited field except city_id -->
+                                <label for="transferee_street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field
+                                            name="transferee_street"
+                                            placeholder="Street..."
+                                            class="o_address_street"
+                                            required='0'
+                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+
+                                    <field
+                                            name="transferee_street2"
+                                            placeholder="Street 2..."
+                                            class="o_address_street"
+                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+
+                                    <field
+                                            name="transferee_city_id"
+                                            placeholder="City"
+                                            class="o_address_city"
+                                            required='0'
+                                            options='{"no_open": True}'
+                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+
+                                    <field
+                                            name="transferee_state_id"
+                                            string="Province"
+                                            class="o_address_state"
+                                            placeholder="State"
+                                            options='{"no_open": True}'
+                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+
+                                    <field
+                                            name="transferee_zip"
+                                            placeholder="ZIP"
+                                            class="o_address_zip"
+                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+
+                                    <field
+                                            name="transferee_country_id"
+                                            placeholder="Country"
+                                            class="o_address_country"
+                                            options='{"no_open": True, "no_create": True}'
+                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                </div>
+                            </group>
+                            <group name='secondary_address' string="Secondary Address">
+                                <label for="corespondence_street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="corespondence_street" placeholder="Street..."
+                                                   class="o_address_street" force_save="1"/>
+                                            <field name="corespondence_street2" placeholder="Street 2..."
+                                                   class="o_address_street" force_save="1"/>
+
+                                            <field name="corespondence_city_id" options='{"no_open": True}'
+                                                   placeholder="City" class="o_address_city" force_save="1"/>
+
+                                            <field name="corespondence_state_id" string="Province"
+                                                   class="o_address_state"
+                                                   placeholder="State" options='{"no_open": True}'
+                                                   force_save="1"
+                                            />
+
+                                            <field name="corespondence_zip" placeholder="ZIP" class="o_address_zip"
+                                                   force_save="1"/>
+                                            <field name="corespondence_country_id" placeholder="Country"
+                                                   class="o_address_country"
+                                                   options='{"no_open": True, "no_create": True}'
+                                                   force_save="1"
+                                            />
+                                        </div>
+                                        <field name="is_same"/>
+                            </group>
+                            <group string="Next Of Kin">
+                                <field name="kin_name"
+                                       force_save="1"
+                                       readonly="0"
+                                />
+                                <field name="kin_mobile"
+                                       force_save="1"
+                                       readonly="0"
+                                       placeholder="+92-300-2321443"
+                                       widget="mask" data-inputmask="'mask': '+99-999-9999999'"
+                                />
+                                <field name="kin_cnic"
+                                       force_save="1"
+                                       readonly="0"
+                                       widget="mask" data-inputmask="'mask': '99999-9999999-9'"
+                                />
+                                <field name="kin_member_relation"
+                                />
+                                <field name="other_relation"
+                                       invisible="kin_member_relation != 'other'" required="kin_member_relation == 'other'"/>
+                            </group>
+                        </group>
+                        <group name="investment_details" string="Investment Details"
+                               invisible="applicable_on != 'investment'">
+                            <group>
+                                <field name="investment_id" readonly="1"/>
+
+                            </group>
+                            <group>
+                                <field name="investor_id" force_save="1" readonly="1"/>
+                            </group>
+                        </group>
+                        <group name="authorised_person" string="Authorised Person"
+                               invisible="(applicable_on != 'investment' or transaction_type != 'authorised_person')">
+                            <group>
+                                <field name="kin_name"
+                                       string="Name"
+                                       readonly="1"
+                                       force_save="1"
+                                />
+                                <field name="kin_mobile"
+                                       readonly="1"
+                                       string="Mobile"
+                                       widget="mask"
+                                       data-inputmask="'mask': '9999-9999999'"
+                                       force_save="1"
+                                />
+                                <field name="kin_cnic"
+                                       string="CNIC"
+                                       readonly="1"
+                                       widget="mask"
+                                       data-inputmask="'mask': '99999-9999999-9'"
+                                       force_save="1"
+                                />
+                            </group>
+                            <group>
+                                <label for="street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field
+                                            name="street"
+                                            readonly="1"
+                                            placeholder="Street..."
+                                            class="o_address_street"/>
+                                    <field
+                                            name="city"
+                                            readonly="1"
+                                            placeholder="City"
+                                            class="o_address_city"
+                                            options='{"no_open": True}'/>
+
+                                    <field
+                                            name="province"
+                                            readonly="1"
+                                            string="Province"
+                                            class="o_address_state"
+                                            placeholder="State"/>
+
+                                    <field
+                                            name="country"
+                                            readonly="1"
+                                            placeholder="Country"
+                                            class="o_address_country"/>
+                                </div>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Details" autofocus="autofocus"
+                                  invisible="(applicable_on != 'investment' or transaction_type == 'authorised_person')">
+                                <field name="unit_swapping_request_lines" readonly="1">
+                                    <list create="false" delete="false">
+                                        <field name="check"/>
+                                        <field name="transaction_type"/>
+                                        <field name="investment_id" readonly="1"/>
+                                        <field name="investor_file_id" readonly="1"/>
+                                        <field name="sector_id" readonly="1"/>
+                                        <field name="category_id" string="Category" readonly="1"/>
+                                        <field name="unit_category_type_id" string="Product" readonly="1"/>
+                                        <field name="size_id" string="Size" readonly="1"/>
+                                        <field name="unit_class_id" string="Type" readonly="1"/>
+                                        <field name="inventory_id" string="Plot No." readonly="1"
+                                               domain="[('project_type','=','housing_society')]"/>
+                                        <field name="investor_unit_price"/>
+                                        <field name="new_price"/>
+                                        <field name="unit_number" string="Plot No." readonly="1" invisible="1"/>
+                                        <field name="new_inventory_id" string="New Plot No."
+                                               domain="[('state', '=', 'avalible_for_sale')]"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="real_estate.unit_swapping_request_tree" model="ir.ui.view">
+            <field name="name">real_estate unit_swapping_request_tree</field>
+            <field name="model">unit.swapping.request</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false">
+                    <field name="name"/>
+                    <field name="membership_id"/>
+                    <field name="applicable_on"/>
+                    <field name="transaction_type"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="appointment_date"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="action_unit_swapping_request" model="ir.actions.act_window">
+            <field name="name">Unit Requests</field>
+            <field name="res_model">unit.swapping.request</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="domain">
+                [
+                ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="view_mode">list,form</field>
+            <!--            <field name="view_id" ref="real_estate.file_search_form"/>-->
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+
+        <menuitem
+                id="unit_requests"
+                name="Unit Requests"
+                groups="real_estate.group_initiate_transfer_req,real_estate.group_approve_transfer_req"
+                action="action_unit_swapping_request"
+                parent="real_estate.menu_transfer"
+                sequence="5"
+        />
+        <!--        File Issuance Request Action & Menu Item-->
+        <record id="action_file_issuance_request" model="ir.actions.act_window">
+            <field name="name">File Issuance Requests</field>
+            <field name="res_model">unit.swapping.request</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="domain">[('transaction_type','=','open_file'),('applicable_on','=','investment')]</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+
+        <menuitem
+                id="file_issuance_request_menu_item"
+                name="File Issuance Requests"
+                groups="real_estate.group_initiate_transfer_req,real_estate.group_approve_transfer_req"
+                action="action_file_issuance_request"
+                parent="real_estate.menu_transfer"
+                sequence="5"
+        />
+        <!--        Record Rule for Multi Company-->
+        <record id="real_estate.unit_swapping_request_rule" model="ir.rule">
+            <field name="name">Unit Swapping Request multi-company</field>
+            <field name="model_id" ref="model_unit_swapping_request"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template -->
+
+        <!-- Dashboard Action -->
+
+            <record id="real_estate.action_followup" model="ir.actions.client">
+                <field name="name">Follow Up</field>
+                <field name="tag">real_estate.followup</field>
+            </record>
+
+        <!-- Sub-Menu Menuitem -->
+
+            <menuitem 
+                id="real_estate.followup_dashboard" 
+                name="Follow Up" 
+                parent="real_estate.menu_root"
+                action="real_estate.action_followup"
+                sequence="2"
+            />
+
+</odoo>

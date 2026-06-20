@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="real_estate.installment_invoice_wizard_form" model="ir.ui.view">
+        <field name="name">real_estate installment_invoice_wizard_form</field>
+        <field name="model">installment.invoice.wizard</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="society_id"
+                                   domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+
+                                   options="{'no_create': True, 'no_open': True}"
+                            />
+                            <!--                                 attrs="{'invisible': [('from_file', '=', True)],'required': [('from_file', '!=', True)]}"-->
+                            <field name="phase_id"
+
+                                   domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                   options="{'no_create': True, 'no_open': True}"
+                            />
+                            <!--                                 attrs="{'invisible': [('from_file', '=', True)],'required': [('from_file', '!=', True)]}"-->
+                            <field name="sector_id"
+
+                                   domain="[
+                                        ('project_type','=','housing_society')
+                                       ]"
+                                   options="{'no_create': True, 'no_open': True}"
+                            />
+                            <!--                                 attrs="{'invisible': [('from_file', '=', True)]}"-->
+                            <field name="file_id"
+                                   readonly="1"
+
+                                   options="{'no_create': True, 'no_open': True}"
+                            />
+                            <!--                                  attrs="{'invisible': [('from_file', '!=', True)]}"-->
+                            <field name="payment_id"
+                                   readonly="1"
+                                   options="{'no_create': True, 'no_open': True}"
+                            />
+                            <!--                                                                       attrs="{'invisible': [('from_payment', '!=', True)]}"-->
+
+                            <field name="from_file" invisible="1"/>
+                            <field name="from_payment" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="till_date"/>
+                        </group>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button string="Generate Invoices" name="generate_installment_invoices" type="object"
+                            class="btn-primary"/>
+                    <button string="Discard" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.action_installment_invoice_wizard" model="ir.actions.act_window">
+        <field name="name">Installment Invoices</field>
+        <field name="res_model">installment.invoice.wizard</field>
+        <field name="type">ir.actions.act_window</field>
+
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="real_estate.installment_invoice_wizard_form"/>
+        <field name="context">{ 'current_view': 'realestate'}</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+            id="real_estate.installment_invoice_wizard"
+            name="Installment Invoices"
+            action="real_estate.action_installment_invoice_wizard"
+            parent="real_estate.invoices"
+            sequence="1"
+    />
+</odoo>

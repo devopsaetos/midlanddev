@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="real_estate.import_data_form" model="ir.ui.view">
+        <field name="name">Import Data</field>
+        <field name="model">import.data</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group string="What do you want to import?">
+                        <field name="x_action" widget="radio"/>
+                    </group>
+                    <group string="Select your file" invisible="x_action == False">
+                        <field name="file" required="True"/>
+                    </group>
+                </group>
+                <footer>
+                    <button
+                        name="import_members"
+                        string="Import Members"
+                        type="object"
+                        default_focus="1"
+                        class="oe_highlight"
+                        invisible="x_action != 'members'"
+                    />
+
+                    <button
+                        name="import_invoices"
+                        string="Import Invoices"
+                        type="object"
+                        default_focus="1"
+                        class="oe_highlight"
+                        invisible="x_action != 'invoices'"
+                    />
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.action_import_data" model="ir.actions.act_window">
+        <field name="name">Import Data</field>
+        <field name="res_model">import.data</field>
+        <field name="type">ir.actions.act_window</field>
+
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="real_estate.import_data_form"/>
+        <field name="context">{ 'current_view': 'realestate' }</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem 
+        id="real_estate.import_data" 
+        name="Import Data" 
+        action="real_estate.action_import_data"
+        parent="real_estate.menu_settings"
+        sequence="2"
+    />
+</odoo>

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.file_refund_form" model="ir.ui.view">
+            <field name="name">real_estate file_refund_form</field>
+            <field name="model">file.refund</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <header>
+
+                        <button
+                                name="request_generate"
+                                type="object"
+                                invisible="state != 'draft'"
+                                string="Approve Request"
+                                class="oe_highlight"
+                        />
+                        <!-- states = 'draft' -->
+                        <field
+                                name="state"
+                                widget="statusbar"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="transaction_type"/>
+                            <field name="deduction_refund" required="1"
+                                   readonly="state == 'refund'"/>
+                            <field name="deduction_type"
+                                   readonly="state == 'refund'"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group string="Membership Detail ">
+                            <group>
+                                <field name="membership_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="member_name"/>
+                            </group>
+                        </group>
+                        <group string="Plot Detail ">
+                            <group>
+                                <field name="sector_id"/>
+                                <field name="category_id"/>
+                                <field name="inventory_id"/>
+                            </group>
+                            <group>
+                                <field name="file_id" readonly="1"/>
+                                <field name="tracking_id"/>
+                                <field name="size_id"/>
+                            </group>
+                        </group>
+
+                        <group name="file_details" string="File Details">
+                            <header invisible="1">
+                                <field name="installment_created" invisible="1"/>
+                                <!-- <button name="create_installment_plan"
+                                        type="object"
+                                        string="Create Installment Plan"
+                                        class="oe_highlight"
+                                        invisible="1"
+                                /> -->
+                            </header>
+                            <group>
+                                <field name="booking_date"/>
+                                <field name="starting_date"/>
+                                <field name="payment_states"/>
+                                <field name="interval_id"/>
+                            </group>
+                            <group>
+                                <field name="net_sale_amount"/>
+                                <field name="ttl_sale_amount"/>
+                                <field name="initial_payment"/>
+                                <field name="plan_description"/>
+                            </group>
+                        </group>
+                        <group name="payment_history" string="Payment History">
+                            <group>
+                                <field name="sale_amount"/>
+                                <field name="factor_amount"/>
+                                <field name="total_installment"/>
+                            </group>
+                            <group>
+                                <field name="discount_type"/>
+                                <field name="discount_amount"/>
+                                <field name="balance_amount"/>
+                            </group>
+                        </group>
+                        <group name="installment_plan" string="Installment Plan">
+                            <form>
+                                <field name="installment_plan_ids">
+                                    <list editable="bottom" decoration-info="invoice_created == True">
+                                        <field name="installment_number" string="Sr. No"/>
+                                        <field name="file_type" invisible="1"/>
+                                        <field name="installment_type" invisible="0"/>
+                                        <field name="property_invoice_type" invisible="1"/>
+                                        <field name="date"/>
+                                        <field name="payment_date" string="Payment date" readonly="1"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="invoice_created" invisible="1"/>
+                                        <field name="invoice"/>
+                                        <field name="invoice_id" invisible="1"/>
+                                        <field name="state" string="Invoice Status" invisible="1"/>
+                                        <field name="amount_paid" sum="Amount Paid" readonly="1"/>
+                                        <field name="residual" sum="Remaining Amount" readonly="1"/>
+                                        <field name="payment_status" string="Status"/>
+
+                                        <field name="new_installment_number" invisible="1"/>
+                                    </list>
+                                </field>
+                            </form>
+                        </group>
+                        <group string="File Payment History" invisible="1">
+                            <field name="file_payment_history_id">
+                                <list
+                                        options="{'no_open': True}"
+                                        create="false" editable="bottom"
+                                        decoration-info="state == 'open'"
+                                        decoration-danger="state == 'paid'"
+                                        decoration-muted="state == 'cancel'"
+                                >
+                                    <field name="date_invoice"/>
+                                    <field name="invoice_id"/>
+                                    <field name="amount_total"/>
+                                    <field name="amount_paid"/>
+                                    <field name="residual"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group name="required_documents" string="Required Documents" invisible="1">
+                            <group invisible="transaction_type != 'transfer'">
+                                <group string="Transferer Detail">
+                                    <field name="traferer_setup_ids" widget="many2many_list">
+                                        <list editable="bottom">
+                                            <field name="name"/>
+                                            <field name="description"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group string="Transferee Detail">
+                                    <field name="traferee_setup_ids">
+                                        <list widget="many2many_list">
+                                            <field name="name"/>
+                                            <field name="description"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="real_estate.file_refund_tree" model="ir.ui.view">
+            <field name="name">real_estate file_refund_tree</field>
+            <field name="model">file.refund</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false">
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="membership_id"/>
+                    <field name="sector_id"/>
+                    <field name="category_id"/>
+                    <field name="file_id"/>
+                    <field name="size_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record
+                model="ir.actions.act_window"
+                id="real_estate.action_file_refund">
+
+            <field name="name">File Refund</field>
+            <field name="res_model">file.refund</field>
+
+            <field name="context">{'current_view': 'realestate'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="real_estate.file_refund"
+                name="File Refund"
+                action="real_estate.action_file_refund"
+                parent="real_estate.menu_transfer"
+                sequence="3"
+        />
+
+</odoo>

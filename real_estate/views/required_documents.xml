@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.setup_form">
+            <field name="name">real_estate setup_form</field>
+            <field name="model">setup</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="transaction_type"/>
+                            </group>
+                            <group>
+                                <field name="setup_for"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Requirements" autofocus="autofocus">
+                                <field name="requirements_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="description"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.setup_tree">
+            <field name="name">real_estate setup_tree</field>
+            <field name="model">setup</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.setup_search">
+            <field name="name">real_estate setup_search</field>
+            <field name="model">setup</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_setup">
+            <field name="name">Required Documents</field>
+            <field name="res_model">setup</field>
+
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+
+        <menuitem 
+            id="real_estate.setup" 
+            name="Required Documents" 
+            parent="real_estate.menu_configuration"
+            action="real_estate.action_setup"
+            sequence='5'
+        />
+
+        <record model="ir.ui.view" id="real_estate.requirements_form">
+            <field name="name">real_estate requirements_form</field>
+            <field name="model">requirements</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="description"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.required_documents_form">
+            <field name="name">real_estate required_documents_form</field>
+            <field name="model">required.documents</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="transfer_req_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="transfer_app_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Requirements" autofocus="autofocus">
+                                <field name="required_documents_line_ids">
+                                    <list editable="bottom">
+                                        <field name="name" readonly="1"/>
+                                        <field name="attachment" widget="binary"/>
+                                        <field name="rule" readonly="1"/>
+                                        <field name="party" readonly="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+</odoo>

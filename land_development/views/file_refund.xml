@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    	<record id="land_development.file_refund_form" model="ir.ui.view">
+            <field name="name">land_development file_refund_form</field>
+            <field name="model">file.refund</field>
+            <field name="arch" type="xml">
+                 <form create="false" edit="false">
+                 	<header>
+
+                        <button
+                            name="request_generate"
+                            type="object"
+                            invisible="state != 'draft'"
+                            string="Approve Request"
+                            class="oe_highlight"
+                        />
+                            <!-- states = 'draft' -->
+                        <field
+                            name="state"
+                            widget="statusbar"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <field name="transaction_type"/>
+                            <field name="deduction_refund"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group string="Membership Detail ">
+                            <group >
+                                <field name="membership_id"/>
+                            </group>
+                            <group>
+                                <field name="member_name"/>
+                            </group>
+                        </group>
+                        <group string="Plot Detail ">
+                            <group >
+                                <field name="sector_id" string="Floors"/>
+                                <field name="category_id" string='Unit Category'/>
+                                <field name="inventory_id" string="Unit No"/>
+                            </group>
+                            <group>
+                                <field name="file_id"/>
+                                <field name="tracking_id"/>
+                                <field name="size_id"/>
+                            </group>
+                        </group>
+
+                        <notebook colspan="4">
+                            <page string="Payment Plan" autofocus="autofocus">
+                                <group>
+                                    <group>
+                                        <field name="plan_description"/>
+                                        <field name="interval_id"/>
+                                        <field name="total_installment"/>
+                                        <field name="starting_date"/>
+                                        <field name="payment_states"/>
+                                    </group>
+                                    <group>
+                                        <field name="sale_amount"/>
+                                        <field name="factor_amount"/>
+                                        <field name="ttl_sale_amount"/>
+                                        <field name="discount_type"/>
+                                        <field name="discount_amount"/>
+                                        <field name="net_sale_amount"/>
+                                        <field name="initial_payment"/>
+                                        <field name="balance_amount"/>
+                                    </group>
+                                </group>
+                                <notebook colspan="4">
+                                    <page string="Installment Plan">
+                                        <field name="installment_plan_ids" readonly="1">
+                                            <list decoration-info="invoice_created == True">
+                                                <field name="date"/>
+                                                <field name="amount"/>
+                                                <field name="invoice_created"/>
+                                                <field name="invoice_id"/>
+                                                <field name="state"/>
+                                            </list>
+                                        </field>
+                                    </page>
+                                    <page string="File Payment History">
+                                        <field name="file_payment_history_id" readonly="1">
+                                            <list
+                                                options="{'no_open': True}"
+                                                create="false"
+                                                decoration-info="state == 'open'"
+                                                decoration-danger="state == 'paid'"
+                                                decoration-muted="state == 'cancel'"
+                                            >
+                                                <field name="date_invoice"/>
+                                                <field name="invoice_id"/>
+                                                <field name="amount_total"/>
+                                                <field name="amount_paid"/>
+                                                <field name="residual"/>
+                                                <field name="state"/>
+                                            </list>
+                                        </field>
+                                    </page>
+                                </notebook>
+                            </page>
+                            <page string="Required Documents">
+                                <group invisible="transaction_type != 'transfer'">
+                                    <group string="Transferer Detail">
+                                        <field name="traferer_setup_ids" widget="many2many_list" >
+                                            <list editable="bottom">
+                                                <field name="name"/>
+                                                <field name="description"/>
+                                            </list>
+                                        </field>
+                                    </group>
+                                    <group string="Transferee Detail">
+                                        <field name="traferee_setup_ids" >
+                                            <list widget="many2many_list">
+                                                <field name="name"/>
+                                                <field name="description"/>
+                                            </list>
+                                        </field>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+<!--                    <div class="oe_chatter">-->
+<!--                        <field name="message_follower_ids" widget="mail_followers"/>-->
+<!--                        <field name="activity_ids" widget="mail_activity"/>-->
+<!--                        <field name="message_ids" widget="mail_thread"/>-->
+<!--                    </div>-->
+                </form>
+            </field>
+        </record>
+
+        <record id="land_development.file_refund_tree" model="ir.ui.view">
+            <field name="name">land_development file_refund_tree</field>
+            <field name="model">file.refund</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false">
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="membership_id"/>
+                    <field name="sector_id" string="Floors"/>
+                    <field name="category_id" string='Unit Category'/>
+                    <field name="file_id"/>
+                    <field name="size_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record
+            model="ir.actions.act_window"
+            id="land_development.action_file_refund">
+
+            <field name="name">File Refund</field>
+            <field name="res_model">file.refund</field>
+
+            <field name="view_mode">list,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.file_refund_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.file_refund_form')}),
+                ]"
+            />
+            <field name="context">{'current_view': 'building'}</field>
+        </record>
+
+        <menuitem
+            id="land_development.file_refund"
+            name="File Refund"
+            action="land_development.action_file_refund"
+            parent="land_development.menu_transfer"
+            sequence="3"
+        />
+
+
+    </data>
+</odoo>

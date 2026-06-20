@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="land_development.price_list_form">
+            <field name="name">land_development price_list_form</field>
+            <field name="model">price.list</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name"/>
+                                <field name="society_id"
+                                       string="Project"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','in',['skyscraper', False])
+                                               ]"
+                                />
+                                <field name="phase_id"
+                                       string="Building"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','in',['skyscraper', False])
+                                               ]"
+                                />
+                            </group>
+                            <group>
+                                <field name="starting_date"/>
+                                <field name="end_date"/>
+                                <field name="price_list_type"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Particular" autofocus="autofocus">
+                                <field name="pricelist_line">
+                                    <list editable="bottom">
+                                        <field name="unit_inventory_id"
+                                               string="Unit"
+                                               groups="real_estate.group_user_base_pricing"
+                                               options="{'no_open': True, 'no_create': True}"
+                                               context="{'tree_view_ref': 'land_development.plot_inventory_tree'}"/>
+                                        <field name="category_id"
+                                               string="Category"
+                                               domain="[('project_type', 'in', ['skyscraper', False])]"
+                                               options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="unit_category_type_id"
+                                               string="Product"
+                                               domain="[('project_type', 'in', ['skyscraper', False])]"
+                                               options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="size_id"
+                                               string="Size"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('project_type', 'in', ['skyscraper', False])]"/>
+                                        <field name="area"
+                                               string="Area"
+                                               force_save="1"
+                                               readonly="unit_inventory_id != False"/>
+                                        <field name="unit_class_id"
+                                               string="Type"
+                                               options="{'no_open': True, 'no_create': True}"
+                                               domain="[('project_type', 'in', ['skyscraper', False])]"/>
+                                        <field name="sector_id"
+                                               string="Floors"
+                                               domain="[('project_type','in',['skyscraper', False])]"
+                                               options="{'no_open': True, 'no_create': True}"
+                                        />
+                                        <field name="starting_date"/>
+                                        <field name="end_date"/>
+                                        <field name="price" string="Price"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+<!--                    <div class="oe_chatter">-->
+<!--                        <field name="message_follower_ids" widget="mail_followers"/>-->
+<!--                        <field name="activity_ids" widget="mail_activity"/>-->
+<!--                        <field name="message_ids" widget="mail_thread"/>-->
+<!--                    </div>-->
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="land_development.price_list_tree">
+            <field name="name">land_development price_list_tree</field>
+            <field name="model">price.list</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="society_id" string="Project"/>
+                    <field name="phase_id" string="Building"/>
+                    <field name="starting_date"/>
+                    <field name="end_date"/>
+                </list>
+            </field>
+        </record>
+
+<!--        <record model="ir.ui.view" id="land_development.price_list_search">-->
+<!--            <field name="name">land_development price_list_search</field>-->
+<!--            <field name="model">price.list</field>-->
+<!--            <field name="priority">2</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <search>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="society_id" string="Project"/>-->
+<!--                    <field name="phase_id" string="Building"/>-->
+<!--                    <field name="starting_date"/>-->
+<!--                    <field name="end_date"/>-->
+<!--                </search>-->
+<!--            </field>-->
+<!--        </record>-->
+
+      	<record model="ir.actions.act_window" id="land_development.action_price_list">
+            <field name="name">Price List</field>
+            <field name="res_model">price.list</field>
+
+            <field name="view_mode">list,form</field>
+<!--            <field name="search_view_id" ref="land_development.price_list_search"/>-->
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.price_list_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.price_list_form')}),
+                ]"
+            />
+            <field name="domain">
+                [
+                    ('project_type','in',['skyscraper', False])
+                ]
+            </field>
+            <field name="context">{'current_view': 'building', 'default_project_type':'skyscraper'}</field>
+        </record>
+
+        <menuitem
+            id="land_development.price_list"
+            name="Price List"
+            parent="land_development.menu_price_plan"
+            action="land_development.action_price_list"
+            sequence='3'
+        />
+
+    </data>
+</odoo>

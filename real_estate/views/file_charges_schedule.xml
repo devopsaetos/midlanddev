@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="real_estate.file_charges_schedule_view_form" model="ir.ui.view">
+        <field name="name">real_estate file_charges_schedule_view_form</field>
+        <field name="priority">1</field>
+        <field name="model">file.charges.schedule</field>
+        <field name="arch" type="xml">
+            <form string="File Charges Schedule">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_type" invisible="1"/>
+                            <field name="name"/>
+                            <field name="applicable_on" required="1"/>
+                            <field name="society_id" required="1"
+                                   options="{'no_create':True, 'no_open':True}"
+                                   domain="[('project_type','=','housing_society'), ('is_society', '=', True)]"/>
+                            <field name="phase_id" required="1"
+                                   options="{'no_create':True, 'no_open':True}"
+                                   domain="[('project_type','=','housing_society'), ('is_society', '!=', True)]"/>
+                        </group>
+                        <group>
+                            <field name="date_from" required="1"/>
+                            <field name="date_to" required="1"/>
+                            <field name="calculation_basis"
+                                   invisible="applicable_on == 'allotment'" required="applicable_on != 'allotment'"/>
+                            <field name="fee_calculation"
+                                   invisible="applicable_on == 'allotment'" required="applicable_on != 'allotment'"/>
+                            <field name="amount"
+                                   invisible="fee_calculation != 'fix'" required="fee_calculation == 'fix'"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4" invisible="applicable_on == 'allotment'">
+                        <page string="Details">
+                            <field name="charges_schedule_line_ids">
+                                <list editable="bottom">
+                                    <field name="area_from" required="1"/>
+                                    <field name="area_to" required="1"/>
+                                    <field name="amount" required="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <notebook colspan="4" invisible="applicable_on != 'allotment'">
+                        <page string="Details">
+                            <group name="required_taxes_group" string="Required Taxes">
+                                <field name="required_taxes_line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="category_id" required="1" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="unit_category_type_ids" widget="many2many_tags" required="1"/>
+                                        <field name="product_id" string="Invoice Product" required="1" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="rate" required="1" string="Rate(%)"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group name="other_charges_group" string="Other Charges">
+                                <field name="other_charges_line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="category_id" required="1" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="unit_category_type_ids" widget="many2many_tags" required="1"/>
+                                        <field name="product_id" string="Invoice Product" required="1" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="amount" required="1"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group name="required_documents_group" string="Required Documents">
+                                <field name="required_documents_line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="category_id" required="1" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="unit_category_type_ids" widget="many2many_tags" required="1"/>
+                                        <field name="name" force_save="1" required="1"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
+                    <notebook colspan="4" invisible="applicable_on != 'allotment'">
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.file_charges_schedule_view_tree" model="ir.ui.view">
+        <field name="name">file_charges_schedule_view_tree</field>
+        <field name="model">file.charges.schedule</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="applicable_on"/>
+                <field name="society_id"/>
+                <field name="phase_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="calculation_basis"/>
+                <field name="fee_calculation"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="real_estate.file_charges_schedule_action" model="ir.actions.act_window">
+        <field name="name">File Charges Schedule</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">file.charges.schedule</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'current_view': 'realestate', 'default_project_type': 'housing_society'}</field>
+        <field name="domain">[('project_type', '=', 'housing_society')]</field>
+    </record>
+
+    <menuitem id="design_and_mapping_menu_item_id" name="Design &amp; Map"
+              web_icon="society_charges,static/description/icon.png"/>
+    <menuitem id="real_estate.file_charges_schedule_menu" name="Charges Schedule"
+              parent="design_and_mapping_menu_item_id" action="real_estate.file_charges_schedule_action" sequence="2"/>
+    <!--               parent="real_estate.menu_price_plan" -->
+</odoo>

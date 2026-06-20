@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <!-- Form View Of legal.dispute -->
+
+    <record id="land_development.legal_dispute_form" model="ir.ui.view">
+        <field name="name">legal.dispute</field>
+        <field name="model">legal.dispute</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+            <form string="Legal Dispute">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="dispute_seq"/>
+                            <field name="project_type" invisible="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="dispute_date"/>
+                            <field name="court"/>
+                            <field name="legal_team"/>
+                        </group>
+                        <group>
+                            <field name="filed_by"/>
+                            <field name="case_type"/>
+                            <field name="society_id" options="{'no_create': True}"
+                                   string="Project"
+                                   domain="[
+                                            ('is_society','=',1),
+                                            ('project_type','in',['skyscraper', False])
+                                           ]"/>
+                            <field name="mark_disputed" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <field name="legal_dispute_line_ids">
+                        <list name="dispute_tree_styles" editable="bottom">
+                            <field name="phase_id" options="{'no_create': True, 'no_open': True}"
+                                   string="Building"
+                                   domain="[
+                                            ('is_society','!=',1),
+                                            ('project_type','in',['skyscraper', False])
+                                           ]"/>
+                            <field name="sector_id" string="Floor" options="{'no_create': True, 'no_open': True}" domain="[('project_type','in',['skyscraper', False])]"/>
+                            <field name="inventory_id" string="Unit" options="{'no_create': True, 'no_open': True}" domain="[('project_type','in',['skyscraper', False])]"/>
+                            <field name="category_id" string="Category" options="{'no_create': True, 'no_open': True}" domain="[('project_type','in',['skyscraper', False])]"/>
+                            <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}" domain="[('project_type','in',['skyscraper', False])]"/>
+                            <field name="size_id" string="Size" options="{'no_create': True, 'no_open': True}" domain="[('project_type','in',['skyscraper', False])]"/>
+                            <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}" domain="[('project_type','in',['skyscraper', False])]"/>
+                            <field name="no_of_units" class="real_estate_dispute_tree_styles"/>
+                        </list>
+                    </field>
+                <notebook>
+                    <page string="History">
+                        <field name="dispute_info_ids">
+                            <list editable="bottom">
+                                <field name="hearing_date"/>
+                                <field name="outcome"/>
+                                <field name="next_date"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="land_development.legal_dispute_tree" model="ir.ui.view">
+        <field name="name">legal.dispute</field>
+        <field name="model">legal.dispute</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="dispute_seq"/>
+                <field name="filed_by"/>
+                <field name="case_type"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="land_development.legal_dispute_action" model="ir.actions.act_window">
+        <field name="name">Legal Dispute</field>
+        <field name="res_model">legal.dispute</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id"/>
+        <field name="domain">
+                [
+                ('project_type','in',['skyscraper', False])
+                ]
+        </field>
+        <field name="context">{'default_project_type':'skyscraper', 'current_view': 'building'}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.legal_dispute_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.legal_dispute_form')}),
+            ]"
+        />
+    </record>
+
+    <menuitem
+            id="land_development.legal_dispute_menu"
+            name="Legal Disputes"
+            action="land_development.legal_dispute_action"
+            parent="land_development.menu_land_records"
+            sequence="5"
+    />
+</odoo>

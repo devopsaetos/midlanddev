@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.discount_policy_form_view">
+            <field name="name">real_estate discount_policy_form_view</field>
+            <field name="model">discount.policy</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button string="Active" name="active" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button string="Draft" name="draft" type="object" class="btn-primary" invisible="state != 'active'"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" default_focus="1" placeholder="Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="date_from" force_save="1"/>
+                                <field name="percentage" force_save="1"/>
+                            </group>
+                            <group>
+                                <field name="date_to"/>
+                                <field name="company_id" force_save="1" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.discount_policy_tree">
+            <field name="name">real_estate discount_policy_tree</field>
+            <field name="model">discount.policy</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.discount_policy_search">
+            <field name="name">real_estate discount_policy_search</field>
+            <field name="model">discount.policy</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_discount_policy">
+            <field name="name">Discount Policy</field>
+            <field name="res_model">discount.policy</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add Policy.
+              </p>
+            </field>
+            <field name="context">{ 'current_view': 'realestate'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.discount_policy"
+            name="Discount Policy"
+            parent="real_estate.menu_inventory"
+            action="real_estate.action_discount_policy"
+            sequence='11'
+        />
+</odoo>

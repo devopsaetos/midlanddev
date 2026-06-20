@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Main Menuitem -->
+    <menuitem 
+        name="Project"
+        id="land_development.menu_root"
+        web_icon="land_development,static/description/icon.png"
+        sequence='2'
+    />
+
+  <!-- Sub-Menu Menuitem -->
+    
+    <menuitem 
+        name="Members"
+        id="land_development.menu_fms"
+        parent="land_development.menu_root"
+        sequence='1'
+    />
+
+    <menuitem
+      name="Portfolio Management"
+      id="land_development.menu_investment_parent"
+      parent="land_development.menu_root"
+      sequence='2'
+    />
+
+    <menuitem 
+        name="Processes" 
+        id="land_development.menu_processes"
+        parent="land_development.menu_root"
+        sequence='6'
+    />
+
+    <menuitem
+      name="Prices &amp; Plans"
+      id="land_development.menu_price_plan"
+      parent="land_development.menu_root"
+      sequence='8'
+    />
+
+    <menuitem
+      name="Inventory"
+      id="land_development.menu_inventory_root"
+      parent="land_development.menu_root"
+      sequence='9'
+    />
+
+    <menuitem
+      name="Records"
+      id="land_development.menu_land_records"
+      parent="land_development.menu_root"
+      sequence='7'
+    />
+
+    <menuitem
+      name="Unit Inventory"
+      id="land_development.menu_unit_inventory"
+      parent="land_development.menu_inventory_root"
+      sequence='1'
+    />
+
+    <menuitem
+      name="Parking Inventory"
+      id="land_development.menu_parking_inventory"
+      parent="land_development.menu_inventory_root"
+      sequence='2'
+    />
+
+    <!--  -->
+    <menuitem 
+        name="Transfer/Cancel/Refund" 
+        id="land_development.menu_transfer"
+        parent="land_development.menu_processes"
+        sequence='1'
+    />
+
+    <menuitem 
+        name="Merger" 
+        id="land_development.menu_merger"
+        parent="land_development.menu_processes"
+        sequence='2'
+    />
+
+    <menuitem
+        name="Invoices"
+        id="land_development.invoices"
+        parent="land_development.menu_processes"
+        sequence='3'
+    />
+
+    <menuitem 
+        name="Reports" 
+        id="land_development.menu_reports"
+        parent="land_development.menu_root"
+        sequence='7'
+    />
+
+    <menuitem 
+        name="Configuration"
+        id="land_development.menu_configuration"
+        parent="land_development.menu_root"
+        sequence='100'
+    />
+
+    <menuitem
+      name="Settings"
+      id="land_development.menu_settings_root"
+      parent="land_development.menu_root"
+      sequence='10'
+      groups='base.group_system'
+    />
+
+    <record id="land_development.action_rsms_config" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+      id="land_development.menu_rsms_config"
+      name="Settings"
+      parent="land_development.menu_settings_root"
+      sequence="1"
+      action="land_development.action_rsms_config"
+    />
+
+    <!--  -->
+    <menuitem 
+        id="land_development.menu_society" 
+        name="Buildings"
+        parent="land_development.menu_configuration" 
+        sequence="1"
+    />
+
+    <menuitem
+        id="land_development.menu_file_merger_form"
+        name="Unit Merger"
+        action="real_estate.action_file_merger_form"
+        parent="land_development.menu_merger"
+        sequence="5"
+    />
+
+    <menuitem
+        id="land_development.transfer_application"
+        name="Transfer Application"
+        action="real_estate.action_transfer_application"
+        parent="land_development.menu_transfer"
+        sequence="3"
+    />
+
+<!--    <menuitem -->
+<!--        id="land_development.followup_dashboard" -->
+<!--        name="Follow Up" -->
+<!--        parent="land_development.menu_root"-->
+<!--        action="real_estate.action_followup"-->
+<!--        sequence="2"-->
+<!--    />-->
+
+    <menuitem 
+        id="land_development.sequence" 
+        name="Sequences" 
+        parent="land_development.menu_settings_root"
+        action="real_estate.action_sequence"
+        sequence='3'
+    />
+
+    <menuitem
+        id="land_development.res_kin"
+        name="Kin"
+        parent="land_development.menu_configuration"
+        action="real_estate.action_res_kin"
+        sequence='8'
+    />
+
+    <menuitem 
+        id="land_development.customized_letter" 
+        name="Letters"
+        parent="land_development.menu_reports"
+        action="real_estate.action_letters"
+        sequence='10'
+    />
+
+    <menuitem 
+        id="land_development.factor" 
+        name="Factor" 
+        parent="land_development.menu_price_plan"
+        action="real_estate.action_factor"
+        sequence='13'
+    />
+
+    <menuitem 
+        id="land_development.setup" 
+        name="Required Documents" 
+        parent="land_development.menu_configuration"
+        action="real_estate.action_setup"
+        sequence='5'
+    />
+
+    <!-- City menu requires base_address_extended module
+    <menuitem
+        id="land_development.res_city"
+        name="City"
+        parent="land_development.menu_society"
+        action="base_address_extended.action_res_city_tree"
+        sequence='12'
+    />
+    -->
+
+    <menuitem
+        id="land_development.menu_inventory"
+        name="Inventory"
+        parent="land_development.menu_configuration"
+        sequence="2"
+      />
+
+    <menuitem
+        id="land_development.source"
+        name="Source"
+        parent="land_development.menu_configuration"
+        action="real_estate.action_source"
+        sequence='4'
+    />
+
+    <menuitem
+        id="land_development.import_data"
+        name="Import Data"
+        action="real_estate.action_import_data"
+        parent="land_development.menu_settings_root"
+        sequence="6"
+    />
+
+</odoo>

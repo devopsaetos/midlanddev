@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.sector_form">
+            <field name="name">real_estate sector_form</field>
+            <field name="model">sector</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="project_type" invisible='1'/>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field 
+                                    name="society_id" 
+                                    options="{'no_create': True, 'no_open': True}"
+                                    domain="[('is_society', '=', True),('project_type', '=', 'housing_society')]"
+                                    />
+                                <field
+                                        name="company_id"
+                                        options="{'no_create': True, 'no_open': True}"
+                                        required="1"
+                                />
+                                <field
+                                    name="branch_id"
+                                    options="{'no_create': True, 'no_open': True}"
+                                    required="1"
+                                />
+                                <field name="total_plots"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field
+                                    name="phase_id"
+                                    options="{'no_create': True, 'no_open': True}"
+                                    domain="[('is_society', '!=', True),('project_type', '=', 'housing_society')]"
+                                />
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="plot_inventory" string="Units" autofocus="autofocus">
+                                <field name="plot_inventory_ids" readonly = '1'>
+                                    <list>
+                                        <field name="serial_number" string="Plot No."/>
+                                        <field name='street_id'/>
+                                        <field name="category_id"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="size_id" string="Size"/>
+                                        <field name="unit_class_id" string="Type"/>
+                                        <field name="standard_area" string="Total Area (sft)"/>
+                                        <!-- <field name="name" invisible="1"/> -->
+                                        <!-- <field name="demarcation_id" invisible="1"/> -->
+                                        <field name="possession_status" string="Status"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="files" string="Files">
+                                <field name="file_ids" readonly = '1'>
+                                    <list>
+                                        <field name="name"/>
+                                        <field name='street_id'/>
+                                        <field name="category_id"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="size_id" string="Size"/>
+                                        <field name="unit_class_id" string="Type"/>
+                                        <!-- <field name="name" invisible="1"/> -->
+                                        <!-- <field name="demarcation_id" invisible="1"/> -->
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.sector_tree">
+            <field name="name">real_estate sector_tree</field>
+            <field name="model">sector</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="phase_id"/>
+                    <field name="total_plots"/>
+                    <field name="society_id"/>
+                    <field name="company_id"/>
+                </list>
+            </field>
+        </record>
+
+<!--        <record model="ir.ui.view" id="real_estate.sector_search">-->
+<!--            <field name="name">real_estate sector_search</field>-->
+<!--            <field name="model">sector</field>-->
+<!--            <field name="priority">1</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <search>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="code"/>-->
+<!--                    <field name="total_plots"/>-->
+<!--                    <field name="society_id"/>-->
+<!--                    <field name="phase_id"/>-->
+<!--                    <field name="company_id"/>-->
+<!--                    <group expand="0" string="Group By">-->
+<!--                        <filter name='group_by_society_id' string="Society" domain="[]" context="{'group_by':'society_id'}"/>-->
+<!--                        <filter name='group_by_phase_id' string="Phase" domain="[]" context="{'group_by':'phase_id'}"/>-->
+<!--                    </group>-->
+<!--                </search>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record model="ir.actions.act_window" id="real_estate.action_sector">
+            <field name="name">Sector</field>
+            <field name="res_model">sector</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add an New Sector.
+              </p><p>
+                The Sector will be created in context with the Phases and Societies.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">
+                {
+                    'search_default_group_by_society_id': 1,
+                    'search_default_group_by_phase_id': 1,
+                    'default_project_type':'housing_society',
+                    'current_view': 'realestate'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.sector"
+            name="Sector"
+            action="real_estate.action_sector"
+            parent="real_estate.menu_society"
+            sequence="4"
+        />
+
+</odoo>

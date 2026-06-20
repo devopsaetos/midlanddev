@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="land_development.installment_invoice_wizard_form" model="ir.ui.view">
+            <field name="name">land_development installment_invoice_wizard_form</field>
+            <field name="model">installment.invoice.wizard</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="society_id"
+                                       string="Project"
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','in',['skyscraper', False])
+                                               ]"
+                                       invisible="from_file == True" required="from_file != True"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="phase_id"
+                                       string="Building"
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','in',['skyscraper', False])
+                                               ]"
+                                       invisible="from_file == True" required="from_file != True"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="sector_id"
+                                       string="Floor"
+                                       domain="[
+                                        ('project_type','in',['skyscraper', False])
+                                       ]"
+                                       invisible="from_file == True"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="file_id"
+                                       readonly="1"
+                                       invisible="from_file != True"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="from_file" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="till_date"/>
+                            </group>
+                        </group>
+                    </sheet>
+
+                    <footer>
+                        <button string="Generate Invoices" name="generate_installment_invoices" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="land_development.action_installment_invoice_wizard" model="ir.actions.act_window">
+            <field name="name">Installment Invoices</field>
+            <field name="res_model">installment.invoice.wizard</field>
+            <field name="type">ir.actions.act_window</field>
+
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="land_development.installment_invoice_wizard_form"/>
+            <field name="context">{ 'current_view': 'building'}</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+            id="land_development.installment_invoice_wizard"
+            name="Installment Invoices"
+            action="land_development.action_installment_invoice_wizard"
+            parent="land_development.invoices"
+            sequence="1"
+        />
+    </data>
+</odoo>

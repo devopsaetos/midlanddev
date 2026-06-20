@@ -1,0 +1,441 @@
+<odoo>
+        <template id="greeting_letter">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <!--                     <t t-call="real_estate.internal_layout1"/> -->
+                    <t t-if="o.company_id.name == 'New City Paradise'">
+                        <div class="container">
+                            <style>p { font-family: "Times New Roman", Times, serif; font-size: 16px; color: black; } li
+                                {
+                                font-family: "Times New Roman", Times, serif; font-size: 16px; color: black; } table,
+                                th, td
+                                { border: 1px solid black; color: black; font-family: "Times New Roman", Times, serif;
+                                font-size: 16px; }
+                            </style>
+                            <div class="row" style="margin-left:50px;margin-right:50px;">
+                                <div class="col-6">
+                                    <t t-if="o.booking_date">
+                                        <p style="text-align:right;">
+                                            <span>Dated:</span>
+                                            <span t-esc="o.booking_date"
+                                                  t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                            <!--                                                  t-options='{"format": "MM/dd/yyyy"}'/>-->
+                                        </p>
+                                    </t>
+                                </div>
+                                <div class="col-6">
+                                    <p style="text-align:left;">
+                                        Tracking ID:
+                                        <span t-esc="o.tracking_id"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <!--                            <div class="row" style="margin-top:20px;margin-left:50px;">-->
+                            <!--                                <div class="col-xs-4 col-xs-offset-8">-->
+                            <!--                                    <p>-->
+                            <!--                                        Tracking ID:-->
+                            <!--                                        <span style="" t-esc="o.tracking_id"/>-->
+                            <!--                                    </p>-->
+                            <!--                                </div>-->
+                            <!--                            </div>-->
+                            <!--                            <t t-if="o.booking_date">-->
+                            <!--                                <div class="row" style="margin-top:20px;margin-left:50px;">-->
+                            <!--                                    <div class="col-xs-5">-->
+                            <!--                                        <p>-->
+                            <!--                                            <span>Dated:</span>-->
+                            <!--                                            <span style="" t-esc="o.booking_date"-->
+                            <!--                                                  t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>-->
+                            <!--                                            &lt;!&ndash;                                                  t-options='{"format": "MM/dd/yyyy"}'/>&ndash;&gt;-->
+                            <!--                                        </p>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                            </t>-->
+                            <div class="row" style="margin-top:20px; margin-left:50px;margin-right:50px;">
+                                <div class="col-xs-5">
+                                    <p>
+                                        <span t-esc="o.membership_id.name"/>
+                                        <br/>
+                                        S/o,D/o,W/o
+                                        <span t-esc="o.membership_id.relation_name"/>
+                                        <br/>
+                                        <span t-esc="o.membership_id.street"/>
+                                        <br/>
+                                        <span t-esc="o.membership_id.street2"/>
+                                        <br/>
+                                        <span t-esc="o.membership_id.city_id.name"/>
+                                        <br/>
+                                        <span>Pakistan</span>
+                                    </p>
+                                </div>
+                                <div class="col-xs-4 col-xs-offset-5">
+                                    <p style="text-decoration: underline; font-size: 20px;text-align:center;">
+                                        <strong>Greetings
+                                            Letter:
+                                        </strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="margin-left:50px;margin-right:50px;">
+                                <p>
+                                    <strong>
+                                        Dear Mr./Ms.
+                                        <span t-esc="o.membership_id.name"/>
+                                    </strong>
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;margin-right:50px;">
+                                <p align="justify">I would like to welcome you as a member of this exclusive community.
+                                    “New
+                                    City Paradise” is a premium housing project located right in the heart of
+                                    Capital
+                                    City Islamabad.
+                                </p>
+                                <p align="justify">The project land is strategically located at the intersection of
+                                    three
+                                    main Motarways Hazara Motarway, Peshawar and CPEC Route.
+                                </p>
+                                <p align="justify">We are confident that New City Paradise will emerge as one of the
+                                    icons
+                                    of modern living in Pakistan. We also hope that you will continue to invest with us
+                                    in
+                                    our future extension projects.
+                                </p>
+                                <p align="justify">
+                                    Your Member Ship Number is
+                                    <strong>
+                                        <span t-esc="o.membership_id.ref"/>
+                                    </strong>
+                                    and File Number is
+                                    <strong>
+                                        <span t-esc="o.name"/>
+                                    </strong>
+                                    . Please use
+                                    these as reference in your future payments. Below is the detail of the plot file
+                                    That
+                                    you have booked in New City Paradise.
+                                    <br/>
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;margin-right:50px;">
+                                <table class="table table-condensed" style="width:100%">
+                                    <thead>
+                                        <tr style="text-align:center;">
+                                            <th>Type</th>
+
+                                            <t t-if="o.size_id">
+                                                <th>Plot Size</th>
+                                            </t>
+
+                                            <th>Total Price Rs.</th>
+                                            <t t-if="o.installment_plan_ids">
+                                                <th>Down Payment
+                                                    <br/>
+                                                    10%
+                                                </th>
+                                            </t>
+                                            <th>Confirmation
+                                                <br/>
+                                                10%
+                                            </th>
+
+                                            <t t-if="o.total_installment">
+                                                <th>Number of Installments</th>
+                                            </t>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="text-align:center;">
+                                            <td>
+                                                <span t-esc="o.category_id.name"/>
+                                            </td>
+                                            <t t-if="o.size_id">
+                                                <td>
+                                                    <span t-esc="o.size_id.name"/>
+                                                </td>
+                                            </t>
+                                            <td>
+                                                <!--                                                <span t-esc="o.net_sale_amount"/>-->
+                                                <span t-esc="o.ttl_sale_amount"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <!--                                            <td>-->
+                                            <!--                                                <t t-set="downpayment"-->
+                                            <!--                                                   t-value="request.env['file.payment'].search([('file_payment_plan_id', '=', o.id), ('product_id.default_code', '=', 'DOWN PAYMENT')]).total"/>-->
+                                            <!--                                                <span t-esc="downpayment"/>-->
+                                            <!--                                            </td>-->
+                                            <t t-if="o.installment_plan_ids">
+                                                <td>
+                                                    <!--                                                <span t-esc="o.predefine_plan_id.predefine_plan_line_ids[0].value"/>-->
+                                                    <span t-esc="o.installment_plan_ids[0].amount"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                            </t>
+                                            <t t-if="o.plan_type == 'predefine'">
+                                                <td>
+                                                    <!--                                                    <span t-esc="o.installment_plan_ids.predefine_plan_line_ids[0].value"/>-->
+                                                    <span t-esc="o.installment_plan_ids.sorted(key=lambda r: r.date, reverse=True)[0].amount"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                            </t>
+                                            <t t-else="">
+                                                <td>
+                                                    <td>
+                                                        <!--                                                        <span t-esc="o.predefine_plan_id.predefine_plan_line_ids[0].value"/>-->
+                                                        <span t-esc="o.installment_plan_ids.sorted(key=lambda r: r.date, reverse=True)[0].amount"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </td>
+                                            </t>
+
+                                            <t t-if="o.total_installment">
+                                                <td>
+                                                    <span t-esc="o.total_installment"/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <br/>
+                                <p>
+                                    <span>Your installment for the month of&amp;nbsp;</span>
+                                    <strong>
+                                        <span t-esc="o.starting_date"
+                                              t-options='{"widget": "date","format": "MMM-yyyy"}'/>
+                                    </strong>
+                                    will be payable effective from&amp;nbsp;
+                                    <strong>
+                                        <span t-esc="o.installment_plan_ids.sorted(key=lambda r: r.installment_number, reverse=True)[0].date"
+                                              t-options='{"widget": "date","format": "dd MMM yyyy"}'
+                                        />
+                                    </strong>
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;margin-right:50px;">
+                                <p align="justify">
+                                    <strong>It is reminded that your monthly installment must be paid 5th of every month
+                                        to
+                                        avoid late payment charges.
+                                    </strong>
+                                </p>
+                                <p align="justify">Your cooperation in this regard is highly appreciated. Please feel
+                                    free
+                                    to contact us for any query.
+                                </p>
+                                <p align="justify">Yours truly,</p>
+                            </div>
+                            <div style="margin-left:50px;margin-right:50px; margin-top:100px;">
+                                <p align="justify">
+                                    Ghulam Mujataba
+                                    <br/>
+                                    GM – Estate office
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;margin-right:50px;">
+                                <p align="justify">
+                                    <br/>
+                                    <strong>P.S. Only Plot files with up to date installments will be eligible for
+                                        balloting.
+                                    </strong>
+                                </p>
+                            </div>
+                            <br/>
+                        </div>
+                    </t>
+
+                    <t t-if="o.company_id.name == 'New City Housing Project'">
+                        <div class="container">
+                            <style>
+                                p {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+                                li {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+                                table, th, td {
+                                border: 1px solid black;
+                                color: black;
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                }
+                            </style>
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-xs-4 col-xs-offset-8">
+                                    <p>
+                                        Tracking ID:
+                                        <span style="text-decoration: underline;" t-esc="o.tracking_id"/>
+                                    </p>
+                                </div>
+                            </div>
+                            <t t-if="o.booking_date">
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-xs-5">
+                                        <p>
+                                            <span style="text-decoration: underline;" t-esc="o.booking_date"
+                                                  t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                            <!--                                                  t-options='{"format": "MM/dd/yyyy"}'/>-->
+                                        </p>
+                                    </div>
+                                </div>
+                            </t>
+                            <div class="row" style="margin-top:20px; margin-left:20px;">
+                                <div class="col-xs-5">
+                                    <p>
+                                        <span style="text-decoration: underline;" t-esc="o.membership_id.name"/>
+                                        <br/>
+                                        S/o,D/o,W/o
+                                        <span style="text-decoration: underline;"
+                                              t-esc="o.membership_id.relation_name"/>
+                                        <br/>
+                                        <span style="text-decoration: underline;" t-esc="o.membership_id.street"/>
+                                        <br/>
+                                        <span style="text-decoration: underline;"
+                                              t-esc="o.membership_id.street2"/>
+                                        <br/>
+                                        <span style="text-decoration: underline;"
+                                              t-esc="o.membership_id.city_id.name"/>
+                                        <br/>
+                                    </p>
+                                </div>
+                                <div class="col-xs-4 col-xs-offset-5">
+                                    <p style="text-decoration: underline; font-size: 20px;">
+                                        Greetings:
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="margin-left:50px;">
+                                <p>
+                                    <strong>
+                                        Dear Mr./Ms.
+                                        <span style="text-decoration: underline;" t-esc="o.membership_id.name"/>
+                                    </strong>
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;">
+                                <p align="justify">
+                                    I would like to welcome you as a member of this exclusive community. “<t
+                                        t-esc="res_company.name"/>” is a premium housing project located right in the
+                                    heart
+                                    of<t t-esc="res_company.name"/>.
+                                </p>
+                                <p align="justify">
+                                    The project land is strategically located at the intersection of three main
+                                    structure roads namely
+                                    <strong>Coastal Highway (300 ft. wide), Sarawan Avenue and Buleda
+                                        Avenue.
+                                    </strong>
+                                </p>
+                                <p align="justify">
+                                    Gwadar Central is located <strong>1 km from Jinnah Avenue</strong> which is the
+                                    main commercial hub
+                                    of Gwadar. It is located <strong>1.5 km</strong> from the <strong>Industrial Zone,
+                                    3.5km
+                                </strong> from <strong>Zero Point,</strong> and
+                                    <strong>4.5 km</strong>
+                                    from
+                                    <strong>Gwadar International Airport.</strong>
+                                </p>
+                                <p align="justify">
+                                    We are confident that Gwadar Central will emerge as one of the icons of modern
+                                    living in Gwadar. We also hope that you will continue to invest with us in our
+                                    future extension projects.
+                                </p>
+                                <p align="justify">
+                                    Below is the detail of the installments of the <strong>plot file.</strong>  You have
+                                    booked in Gwadar Central:
+                                    <br/>
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;">
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>Plot Size</th>
+                                            <th>Type</th>
+                                            <th>Total Price Rs.</th>
+                                            <th>Down Payment 20%</th>
+                                            <th>Monthly Installments (30 Months)</th>
+                                            <th>At Ballot 20%</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <span t-esc="o.size_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="o.category_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="o.net_sale_amount"/>
+                                            </td>
+                                            <td>
+                                                <t t-set="downpayment"
+                                                   t-value="request.env['file.payment'].search([('file_payment_plan_id', '=', o.id), ('product_id.default_code', '=', 'DOWN PAYMENT')]).total"/>
+                                                <span t-esc="downpayment"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="o.installment_plan_ids">
+                                                    <span t-esc="o.installment_plan_ids[0].amount"/>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <span t-esc="o.balloting_amount"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <br/>
+                                <p>
+                                    Our instalment for the month of <strong>Mar 2019</strong> will be payable effective
+                                    from
+                                    <strong>1st Mar 2019.</strong>
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;">
+                                <p align="justify">
+                                    <strong>
+                                        It is reminded that your monthly installment must be paid 5th of every month to
+                                        avoid late payment charges.
+                                    </strong>
+                                </p>
+                                <p align="justify">
+                                    Your cooperation in this regard is highly appreciated. Please feel free to contact
+                                    us for any query.
+                                </p>
+                                <p align="justify">
+                                    Yours truly,
+                                </p>
+                            </div>
+                            <div style="margin-left:50px; margin-top:100px;">
+                                <p align="justify">Abdul Saboor Shaikh
+                                    <br/>
+                                    Chief Executive
+                                </p>
+                            </div>
+                            <div style="margin-left:50px;">
+                                <p align="justify">
+                                    <strong>
+                                        P.S. Only Plot files with up to date installments will be eligible for
+                                        balloting.
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <report string="Greeting Letter"
+                id="greeting_letter_action"
+                model="file"
+                report_type="qweb-pdf"
+                name="real_estate.greeting_letter"
+                file="real_estate.greeting_letter"/>
+    
+</odoo>

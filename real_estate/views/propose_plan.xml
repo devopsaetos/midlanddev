@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.propose_plan_form" model="ir.ui.view">
+            <field name="name">real_estate propose_plan_form</field>
+            <field name="model">propose.plan</field>
+            <field name="arch" type="xml">
+                <form name="propose_plan_form">
+                    <header>
+                        <button name="lock" type="object" string="Lock" class="oe_highlight" invisible="state not in 'draft'"/>
+                        <button name="approve" type="object" string="Approve" class="oe_highlight" invisible="state not in 'lock'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="booking_date" readonly="state != 'draft'"/>
+                                <field name="plan_type" required="create_manually != True" readonly="state != 'draft'" invisible="create_manually == True"/>
+                                <field name="include_installment" invisible="1"/>
+                                <field name="predefine_plan_id" invisible="(plan_type != 'predefine' or plan_type == False)" readonly="state != 'draft'" required="plan_type == 'predefine'"/>
+                                <field name="plan_description" readonly="state != 'draft'"/>
+                                <field name="interval_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft'" invisible="create_manually == True"
+                                />
+                                <field name="starting_date"
+                                       readonly="state != 'draft'"
+                                />
+                                <field name="total_installment"
+                                       readonly="state != 'draft'" invisible="create_manually == True"
+                                />
+                                <field name="balloon_payment_interval" force_save="1" string="Balloon Interval" invisible="1"/>
+                                <field name="balloon_payment_frequency" force_save="1" string="Frequency" invisible="1"/>
+                                <field name="crm_id" string="CRM Ref"/>
+                                <field name="create_manually" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="price_list_id" force_save="1" readonly="1"/>
+                                <field name="add_custom_value" readonly="state != 'draft'"/>
+<!--                                <field name="custom_sale_amount" invisible="add_custom_value != True"/>-->
+                                <field name="amount" string="Total Amount" readonly="state != 'draft'" required="(add_custom_value == True or add_custom_value != True)"/>
+                                <field name="discount_type" readonly="state != 'draft'"/>
+                                <field name="discount_amount" readonly="state != 'draft'"/>
+                                <field name="initial_payment" readonly="state != 'draft'" invisible="create_manually == True"/>
+                                <field name="final_payment" readonly="state != 'draft'" invisible="create_manually == True"/>
+                                <field name="balloon_payment" force_save="1" invisible="1"/>
+                                <field name="balance_amount" readonly="state != 'draft'"/>
+                                <label for="factor_id" string="Preference"/>
+                                    <div class="o_row">
+                                        <field name="factor_id" readonly="state != 'draft'" widget="many2many_tags" placeholder="Preference" domain="[]" options='{"no_open": True}'/>
+                                        <field name="include_in_plan" readonly="state != 'draft'" placeholder="Include in Installment?"/>
+                                    </div>
+                                <field name="factor_amount" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Installment Plan" invisible="create_manually == True" autofocus="autofocus">
+                                <field name="installment_created" invisible='1'/>
+                                <button
+                                        name="propose_installment_plan"
+                                        type="object"
+                                        string="Create Installment Plan"
+                                        class="oe_highlight"
+                                        invisible="(installment_created == True or state != 'draft')"
+                                        />
+                                <button
+                                        name="reset_propose_installment_plan"
+                                        type="object"
+                                        string="Reset Installment Plan"
+                                        class="oe_highlight"
+                                        invisible="(installment_created != True or state != 'draft')"
+                                        />
+                                <field name="propose_installment_plan_ids">
+                                    <list>
+                                        <field name="installment_number" string="Sr. No"/>
+                                        <field name="installment_type"/>
+                                        <field name="date"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="new_installment_number"  invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Manual Installment Plan" invisible="create_manually == False">
+                                <field name="manual_installment_plan_ids" readonly="state != 'draft'">
+                                    <list editable="bottom">
+                                        <field name="line_calculated" invisible="1"/>
+                                        <field name="installment_number" string="Sr. No" force_save="1"/>
+<!--                                        <field name="installment_type"/>-->
+                                        <field name="product_id"/>
+                                        <field name="date"/>
+                                        <field name="percentage" sum="Total"/>
+                                        <field name="amount_manual" sum="Total"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+</odoo>

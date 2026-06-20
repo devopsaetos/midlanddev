@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  		<record model="ir.ui.view" id="real_estate.res_authority_form">
+            <field name="name">real_estate res_authority_form</field>
+            <field name="model">res.authority</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+    	            <sheet>
+    	            	<group>
+    		              	<group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
+                            <group>
+    		                	<field name="location_id" domain="[('project_type', '=', 'housing_society')]"/>
+                            </group>
+    		            </group>
+    	            </sheet>
+        	        <chatter/>
+                </form>
+    	    </field>
+    	</record>
+
+    	<record model="ir.ui.view" id="real_estate.res_authority_tree">
+            <field name="name">real_estate res_authority_tree</field>
+            <field name="model">res.authority</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                	<field name="name"/>
+    		        <field name="code"/>
+    		        <field name="location_id"/>
+    	        </list>
+    	    </field>
+    	</record>
+
+    	<record model="ir.ui.view" id="real_estate.res_authority_search">
+            <field name="name">real_estate res_authority_search</field>
+            <field name="model">res.authority</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                	<field name="name"/>
+                    <field name="code"/>
+                    <field name="location_id"/>
+    	        </search>
+    	    </field>
+    	</record>
+
+      	<record model="ir.actions.act_window" id="real_estate.action_res_authority">
+            <field name="name">Authority</field>
+            <field name="res_model">res.authority</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add an Authority.
+              </p><p>
+                The main Authority in which your real estate project comes in.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">{'current_view': 'realestate', 'default_project_type':'housing_society'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem 
+            id="real_estate.res_authority" 
+            name="Authority" 
+            parent="real_estate.menu_society"
+            action="real_estate.action_res_authority"
+            sequence='11'
+        />
+        
+</odoo>

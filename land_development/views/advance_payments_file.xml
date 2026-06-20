@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="land_development.advance_popup" model="ir.ui.view">
+            <field name="name">land_development advance_popup</field>
+            <field name="model">advance.popup</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form string="Create Payment">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="membership_id"/>
+                                <field name="file_id" domain="[('project_type', 'in', ['skyscraper', False])]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="name"/>
+                                <field name="number_of_invoices_covered"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                                <field name="amount"/>
+                                <field name="journal_id"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Create Payment" name="create_payment" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="land_development.action_advance_popup">
+            <field name="name">Create Payment</field>
+            <field name="res_model">advance.popup</field>
+
+            <field name="view_mode">form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="target">new</field>
+            <field name="context">{'current_view': 'building'}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.advance_popup')}),
+                ]"
+            />
+        </record>
+
+<!--        <menuitem-->
+<!--            id="land_development.advance_payments_file"-->
+<!--            name="Advance Payments"-->
+<!--            action="land_development.action_advance_popup"-->
+<!--            parent="land_development.invoices"-->
+<!--            sequence="2"-->
+<!--        />-->
+    </data>
+</odoo>

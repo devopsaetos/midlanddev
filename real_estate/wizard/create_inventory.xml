@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.inventory_creation_tree_view" model="ir.ui.view">
+            <field name="name">real_estate_inventory_creation_tree_view</field>
+            <field name="model">create.inventory</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list name='create_inventory_tree' string="Create Inventory">
+                    <field name="name"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id"/>
+                    <field name="status"/>
+                    <field name="total_inventory" invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="real_estate.inventory_creation_form_view" model="ir.ui.view">
+            <field name="name">real_estate_inventory_creation_form_view</field>
+            <field name="model">create.inventory</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form name="create_inventory" string="Create Inventory" create="true" edit="true">
+                    <header>
+                        <button string="Submit For Approval" name="submit_bulk_inventory"
+                                groups="real_estate.create_inventory_users" type="object" class="btn-primary"
+                                invisible="status != 'draft'"
+                        />
+                        <button string="Approve" name="create_bulk_inventory"
+                                groups="real_estate.approve_inventory_users" type="object" class="btn-primary"
+                                invisible="status != 'submitted'"
+                        />
+                        <button string="Reset to Draft" name="reset_to_draft"
+                                groups="real_estate.approve_inventory_users" type="object"
+                                invisible="status != 'approved'"
+                        />
+                        <field name="status" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="society_id"
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="sector_id"
+                                       domain="[
+                                        ('project_type','=','housing_society')
+                                       ]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                            </group>
+                            <group>
+                                <field name="phase_id"
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                            </group>
+                        </group>
+                        <group>
+                            <button string="Select All" name="select_all_inventory_lines"
+                                    groups="real_estate.approve_inventory_users" type="object" class="btn-primary"
+                                    invisible="status != 'submitted'"
+                            />
+                        </group>
+                        <notebook>
+                            <page string="Create Inventory">
+                                <field name="inventory_line" force-save="1">
+                                    <list editable="bottom">
+                                        <field name="is_select"
+                                        />
+                                        <!--                                         attrs="{'column_invisible':[('parent.status','!=','submitted')]}"-->
+                                        <field name="street_id" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="nop"/>
+                                        <field name="category_id" domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_category_type_id" string="Product"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="size_id" domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_class_id" string="Type"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!--                    <div class="oe_chatter">-->
+                    <!--                        <field name="message_follower_ids" widget="mail_followers"/>-->
+                    <!--                        <field name="activity_ids" widget="mail_activity"/>-->
+                    <!--                        <field name="message_ids" widget="mail_thread"/>-->
+                    <!--                    </div>-->
+                </form>
+            </field>
+        </record>
+
+        <record id="real_estate.action_inventory_creation" model="ir.actions.act_window">
+            <field name="name">Create Inventory</field>
+            <field name="res_model">create.inventory</field>
+            <field name="view_mode">list,form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="target">current</field>
+            <field name="domain">[('status','=','draft'),('project_type','=','housing_society')]</field>
+            <field name="context">{'current_view': 'realestate', 'default_project_type': 'housing_society'}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('real_estate.inventory_creation_tree_view')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('real_estate.inventory_creation_form_view')}),
+                ]"
+            />
+        </record>
+
+        <record id="real_estate.action_inventory_approve" model="ir.actions.act_window">
+            <field name="name">Approve Inventory</field>
+            <field name="res_model">create.inventory</field>
+            <field name="view_mode">list,form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="target">current</field>
+            <field name="domain">[('status','in',('submitted','approved')),('project_type','=','housing_society')]</field>
+            <field name="context">{'current_view': 'realestate', 'default_project_type': 'housing_society'}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('real_estate.inventory_creation_tree_view')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('real_estate.inventory_creation_form_view')}),
+                ]"
+            />
+        </record>
+
+        <menuitem
+                id="real_estate.inventory_creation"
+                name="Create Inventory"
+                action="real_estate.action_inventory_creation"
+                parent="real_estate.menu_inventory_root"
+                sequence="1"
+        />
+
+        <menuitem
+                id="real_estate.inventory_approval"
+                name="Approve Inventory"
+                action="real_estate.action_inventory_approve"
+                parent="real_estate.menu_inventory_root"
+                sequence="2"
+        />
+
+</odoo>

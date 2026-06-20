@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.society_form">
+            <field name="name">real_estate society_form</field>
+            <field name="model">society</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="project_type" invisible='0'/>
+                        <field name="is_society" invisible='0'/>
+                        <field
+                            name="image"
+                            widget="image"
+                            class="oe_avatar"
+                            invisible="is_society != True"
+                        />
+
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" default_focus="1" placeholder="Name"/>
+                            </h1>
+                            <div>
+                                <field name="company_id" placeholder="Company" invisible="is_society != True"/>
+                            </div>
+                            <div>
+<!--                                <field name="branch_id" placeholder="Branch" invisible="is_society != True"/>-->
+                            </div>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="code"/>
+                                <field
+                                    name="society_id"
+                                    invisible="is_society == True" required="is_society != True"
+                                    options="{'no_create': True, 'no_open': True}"
+                                    domain="[('is_society', '=', True),('project_type', '=', 'housing_society')]"
+                                />
+                                <field name="location_id" options="{'no_create': True, 'no_open': True}" domain="[('project_type','=','housing_society')]"/>
+                                <field name="city_id" required="is_society == True"/>
+                            </group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="pricing_policy"/>
+                                <field name="authority_id"
+                                       required="is_society == True"/>
+                            </group>
+                        </group>
+
+                        <notebook colspan="4">
+                            <page string="Phases" autofocus="autofocus" name="phase"
+                                invisible="is_society != True">
+                                <field name="phase_line" readonly='1'>
+                                    <list>
+                                        <field name="name" string="Name"/>
+                                        <field name="location_id"/>
+                                        <field name="partner_id"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <page string="Sector" invisible="is_society == True"  name="sector">
+                                <field name="sector_line" readonly='1'/>
+                            </page>
+
+                            <page string="Land Owners" invisible="is_society != True">
+                                <field name="land_owner_ids">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="phone"/>
+                                        <field name="email"/>
+                                    </list>
+                                </field>
+                            </page>
+
+<!--                            <page string="Project Owners" invisible="is_society != True">-->
+<!--                                <field name="project_owner_ids">-->
+<!--                                    <list>-->
+<!--                                        <field name="name"/>-->
+<!--                                        <field name="phone"/>-->
+<!--                                        <field name="email"/>-->
+<!--                                    </list>-->
+<!--                                </field>-->
+<!--                            </page>-->
+
+                            <page string="Contact Info">
+                                <group>
+                                    <group name='primary_address' string="Head Address">
+                                        <label for="head_street_1" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="head_street_1" placeholder="Street..." class="o_address_street"/>
+                                            <field name="head_street_2" placeholder="Street 2..." class="o_address_street"/>
+
+                                            <field name="head_city_id" placeholder="City" class="o_address_city" options='{"no_open": True}' />
+
+                                            <field name="head_state_id" string="Province" class="o_address_state"
+                                                placeholder="State" options='{"no_open": True}'
+                                               context="{'country_id': head_country_id, 'zip': head_zip}"
+                                            />
+
+                                            <field name="head_zip" placeholder="ZIP" class="o_address_zip"/>
+                                            <field name="head_country_id" placeholder="Country" class="o_address_country"
+                                                options='{"no_open": True, "no_create": True}'
+                                            />
+                                        </div>
+                                        <field name="head_email" string="Email"/>
+                                        <field name="head_phone" string="Phone"/>
+                                    </group>
+                                    <group name='primary_address' string="Site Address">
+                                        <label for="site_street_1" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="site_street_1" placeholder="Street..." class="o_address_street"/>
+                                            <field name="site_street_2" placeholder="Street 2..." class="o_address_street"/>
+
+                                            <field name="site_city_id" placeholder="City" class="o_address_city" options='{"no_open": True}' />
+
+                                            <field name="site_state_id" string="Province" class="o_address_state"
+                                                placeholder="State" options='{"no_open": True}'
+                                               context="{'country_id': site_country_id, 'zip': site_zip}"
+                                            />
+
+                                            <field name="site_zip" placeholder="ZIP" class="o_address_zip"/>
+                                            <field name="site_country_id" placeholder="Country" class="o_address_country"
+                                                options='{"no_open": True, "no_create": True}'
+                                            />
+                                        </div>
+                                        <field name="site_email" string="Email"/>
+                                        <field name="site_phone" string="Phone"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.phase_tree">
+            <field name="name">real_estate phase_tree</field>
+            <field name="model">society</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name" string="Name"/>
+                    <field name="code"/>
+                    <field name="location_id" invisible="1"/>
+                    <field name="city_id"/>
+                    <field name="authority_id"/>
+                    <field name="society_id"/>
+                    <field name="partner_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_phase">
+            <field name="name">Phase</field>
+            <field name="res_model">society</field>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add an New Phase.
+                </p><p>
+                The phases will be created in context with the parent Society.
+            </p>
+            </field>
+            <field name="domain">
+                [
+                ('is_society','!=',1),
+                ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">
+                {
+                'default_is_society':0,
+                'default_project_type':'housing_society',
+                'search_default_society':1,
+                'current_view': 'realestate'
+                }</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('real_estate.phase_tree')}),
+            ]"
+            />
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.society_tree">
+            <field name="name">real_estate society_tree</field>
+            <field name="model">society</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name" string="Name"/>
+                    <field name="code"/>
+                    <field name="city_id"/>
+                    <field name="location_id" invisible="1"/>
+                    <field name="authority_id"/>
+                    <field name="partner_id"/>
+                </list>
+            </field>
+        </record>
+
+<!--        <record model="ir.ui.view" id="real_estate.society_search">-->
+<!--            <field name="name">real_estate society_search</field>-->
+<!--            <field name="model">society</field>-->
+<!--            <field name="priority">1</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <search>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="code"/>-->
+<!--                    <field name="city_id"/>-->
+<!--                    <field name="location_id"/>-->
+<!--                    <field name="authority_id"/>-->
+<!--                    <field name="phase_line"/>-->
+<!--                    <field name="society_id"/>-->
+<!--                    <field name="land_owner_ids"/>-->
+<!--&lt;!&ndash;                    <field name="project_owner_ids"/>&ndash;&gt;-->
+<!--                    <field name="partner_id"/>-->
+<!--                    <group expand="0" string="Group By">-->
+<!--                        <filter name='society' string="Society" domain="[]" context="{'group_by':'society_id'}"/>-->
+<!--                    </group>-->
+<!--                </search>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record model="ir.actions.act_window" id="real_estate.action_society">
+            <field name="name">Societies</field>
+            <field name="res_model">society</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add an New Society.
+              </p><p>
+                The main system you want to implement for Real Estate Management System.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('is_society','=',1),
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">
+                {
+                    'default_is_society':1,
+                    'default_project_type':'housing_society',
+                    'current_view': 'realestate'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.society"
+            name="Societies"
+            parent="real_estate.menu_society"
+            action="real_estate.action_society"
+            sequence='1'
+        />
+
+        <menuitem
+            id="real_estate.society_phase"
+            name="Phase"
+            parent="real_estate.menu_society"
+            action="real_estate.action_phase"
+            sequence='2'
+        />
+
+</odoo>

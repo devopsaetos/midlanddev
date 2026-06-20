@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.invoice_popup" model="ir.ui.view">
+            <field name="name">real_estate invoice_popup</field>
+            <field name="model">invoice.popup</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form string="Create Invoice">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="file_id" domain="[('project_type', '=', 'housing_society')]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="date"/>
+                                <field name="journal_id" required="0" options="{'no_create': True}"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="payment_type" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="membership_id"/>
+                                <field name="from_installment_number" invisible="from_file_transfer == True"/>
+                                <field name="transfer_application_id" invisible="from_file_transfer == False"/>
+                                <field name="from_file_transfer" invisible="1"/>
+                                <field name="cheque_name"/>
+                                <field name="cheque_no"/>
+                                <field name="bank_ref"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Invoice Line">
+                                <field name="invoice_line">
+                                    <list editable="bottom">
+                                        <field name="from_file_transfer" invisible="True"/>
+                                        <field name="is_fully_paid" invisible='True'/>
+                                        <field name="product_id" force_save="1" readonly="1"/>
+                                        <field name="value" readonly="1" force_save="1" invisible="from_file_transfer == True"/>
+                                        <field name="total" sum='total' force_save="1" readonly="1"/>
+                                        <field name="initial_payment" sum='total' force_save="1" readonly="1"/>
+                                        <field name="remaining_payment" sum='total' invisible="from_file_transfer == True"/>
+                                        <field name="no_of_installment" readonly="1" invisible="from_file_transfer == True"/>
+                                        <field name="per_installment" invisible="from_file_transfer == True"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button string="Create Invoice" name="create_invoice" type="object" invisible="payment_type == 'osp'" class="btn-primary"/>
+                        <button string="Receive Payment" name="create_invoice" type="object" invisible="payment_type == 'tsp'" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                        <field name="payment_type" invisible="1"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_invoice_popup">
+            <field name="name">Create Invoice</field>
+            <field name="res_model">invoice.popup</field>
+
+            <field name="view_mode">form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="target">new</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+
+<!--        <menuitem-->
+<!--            id="real_estate.create_invoice_file"-->
+<!--            name="Create Invoice"-->
+<!--            action="real_estate.action_invoice_popup"-->
+<!--            parent="real_estate.invoices"-->
+<!--            sequence="1"-->
+<!--        />-->
+</odoo>

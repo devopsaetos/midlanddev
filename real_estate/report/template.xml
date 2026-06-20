@@ -1,0 +1,64 @@
+<odoo>
+        <template id="external_layout_background_ext" inherit_id="web.external_layout_background">
+            <xpath expr="//div[hasclass('o_background_header')]" position="replace">
+                <div class="header o_background_header">
+                    <div class="pull-right" style="font-size:18px;">
+                        <h3 class="mt0 text-right" t-field="company.report_header"/>
+                    </div>
+                    <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)" width="150"
+                         height="50" class="pull-left"/>
+                    <!--            <div class="pull-right company_address">-->
+                    <!--                <div>-->
+                    <!--                    <strong t-field="company.partner_id.name" style="font-size:18px;"/>-->
+                    <!--                </div>-->
+                    <!--                <span t-field="company.partner_id"-->
+                    <!--                    t-field-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>-->
+                    <!--            </div>-->
+                    <div class="clearfix mb8"/>
+                </div>
+            </xpath>
+        </template>
+
+        <record id="paperformat_letter_report2" model="report.paperformat">
+            <field name="name">Cash flow report paperformat</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">8</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">7</field>
+            <field name="margin_right">7</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">8</field>
+            <field name="dpi">70</field>
+        </record>
+        <template id="internal_layout1">
+            <!-- Multicompany -->
+            <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"/>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+            <div class="header">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <span>
+                            <img t-attf-src="data:image/*;base64,{{o.society_id.image}}"
+                                 style="max-height:50px; max-width:150px;"/>
+                        </span>
+                    </div>
+                    <div class="col-xs-2 col-xs-offset-2 text-center">
+                    </div>
+                    <div class="col-xs-2 col-xs-offset-3 text-right" style="font-size:10px">
+                    </div>
+                </div>
+            </div>
+            <div class="article">
+                <t t-raw="0"/>
+            </div>
+        </template>
+    
+</odoo>

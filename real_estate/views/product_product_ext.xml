@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.product_template_only_form_view">
+            <field name="name">real_estate product_template_only_form_view</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='options']" position="inside">
+                    <div>
+                        <field name="is_include_net_amount"/>
+                        <label for="is_include_net_amount"/>
+                    </div>
+                    <div>
+                        <field name="is_include_property_system"/>
+                        <label for="is_include_property_system"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.product_product_form">
+            <field name="name">real_estate product_product_form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='options']" position="inside">
+                    <div>
+                        <field name="is_include_net_amount"/>
+                        <label for="is_include_net_amount"/>
+                    </div>
+                    <div>
+                        <field name="is_include_property_system"/>
+                        <label for="is_include_property_system"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+        
+</odoo>

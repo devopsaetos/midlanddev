@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.confirmation" model="ir.ui.view">
+            <field name="name">real_estate confirmation</field>
+            <field name="model">confirmation</field>
+            <field name="arch" type="xml">
+                <form string="Create Payment" class="o_info_popup">
+                    <sheet>
+                        Your
+                        <field name="name"/>
+                        created successfully.
+                    </sheet>
+                    <footer>
+                        <button string="Ok" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="real_estate.file_form" model="ir.ui.view">
+            <field name="name">real_estate file_form</field>
+            <field name="model">file</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form name="file_management" string="File Management" create="false" edit="true">
+                    <header>
+                        <button name="lock" type="object" string="Lock" class="oe_highlight"
+                                invisible="file_status not in 'draft'"
+                                groups="real_estate.group_file_process"/>
+                        <button name="generate_invoice" type="object"
+                                string="Generate Invoice"
+                                class="oe_highlight"
+                                invisible="file_status != 'lock' or no_of_invoices > 0 or invoice_payment_type == 'osp' or type == 'investor'"/>
+                        <button name="generate_invoice" type="object"
+                                string="Generate Payment"
+                                class="oe_highlight"
+                                invisible="file_status != 'lock' or no_of_invoices > 0 or invoice_payment_type == 'tsp' or type == 'investor'"/>
+                        <button name="approve" type="object" string="Approve"
+                                confirm="You will not be able to edit fields. Are you sure to want to approve the file?"
+                                class="oe_highlight" groups="real_estate.group_file_approve"
+                                invisible="file_status not in 'lock' or no_of_invoices &lt; 1"/>
+                        <button name="create_installment_plan"
+                                type="object"
+                                string="Create Installment Plan"
+                                class="oe_highlight"
+                                groups="real_estate.group_rsms_manager"
+                                invisible="payment_type == 'lump_sum' or create_manually == True or file_status in ('lock', 'approve', 'dispute')"/>
+                        <field name="installment_created" invisible="1"/>
+                        <field name="no_of_invoices" invisible="1"/>
+                        <field name="invoice_payment_type" invisible="1"/>
+                        <field name="type" invisible="1"/>
+                        <field name="file_status" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_installment_wizard"
+                                    type="object"
+                                    string="Installment Invoices"
+                                    icon="fa-pencil-square-o"
+                                    invisible="file_status != 'approve' or overall_status == 'close'"
+                                    class="oe_stat_button"/>
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    string="Invoices :  "
+                                    icon="fa-list"
+                                    class="oe_stat_button">
+                                <field name="no_of_invoices"/>
+                            </button>
+                            <button
+                                    name="open_other_invoices"
+                                    type="object"
+                                    string="Other Invoices"
+                                    icon="fa-list"
+                                    class="oe_stat_button"/>
+                            <button
+                                    name="generate_invoice"
+                                    type="object"
+                                    string="Generate Invoice"
+                                    icon="fa-list"
+                                    class="oe_stat_button"
+                                    invisible="file_status != 'lock' or no_of_invoices > 0 or invoice_payment_type == 'osp' or type == 'investor'"/>
+                            <button
+                                    name="generate_invoice"
+                                    type="object"
+                                    icon="fa-list"
+                                    class="oe_stat_button"
+                                    string="Generate Payment"
+                                    invisible="file_status != 'lock' or no_of_invoices > 0 or invoice_payment_type == 'tsp' or type == 'investor'"/>
+                        </div>
+                        <widget name="web_ribbon"
+                                title="Disputed File"
+                                bg_color="bg-danger" invisible="file_status != 'dispute'"/>
+                        <group>
+                            <group>
+                                <div class="oe_title oe_state_size">
+                                    <field name="project_type" invisible="1"/>
+                                    <h1>
+                                        <field name="name"/>
+                                    </h1>
+                                    <field name="state" readonly='0'/>
+                                    <field name="from_open_file" invisible='1'/>
+                                    <field name="invoice_payment_type" invisible='1'/>
+                                    <field name="allow_bank_finance" invisible='1'/>
+                                    <field name="member_company_type" invisible='1'/>
+                                </div>
+                            </group>
+                            <group>
+                                <div>
+                                    <field name="qr_code" widget='image' class="oe_avatar" nolable="1"
+                                           style="margin-right:38px;"/>
+                                </div>
+                            </group>
+                        </group>
+                        <group name="file_detail" string="File Detail">
+                            <group>
+                                <field name="membership_id" readonly="0"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="tracking_id" string="Tracking ID" readonly="0" required='1'/>
+                                <field name="file_type" invisible="1"/>
+                                <field name="token_id" string="Token Ref"/>
+                                <field name="type" invisible="1"/>
+                                <field name="crm_id" string="CRM Ref" readonly="0"/>
+                                <field name="file_ownership_type" string="Ownership Type" required="1"/>
+                            </group>
+                            <group>
+                                <field name="membership_name" invisible="1"/>
+                                <field name="booking_date" required='1'/>
+                                <field name="user_id" string="Sales Person"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <!--                                <field name="token_id" string="Token Ref" readonly="1"/>-->
+                                <field name="qr_code" widget='image' class="oe_avatar" invisible="1"/>
+                            </group>
+                        </group>
+                        <group name="correspondence_details" string="Corresponding Details">
+                            <field name="correspondence_address" invisible="1"/>
+                        </group>
+                        <group string="Property Information">
+                            <group>
+                                <field name="property_info_criteria" invisible="1"/>
+                                <field name="society_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       required='1'
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','in',[project_type, False])
+                                               ]"
+                                />
+                                <field name="phase_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       required='1'
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','in',[project_type, False])
+                                               ]"
+                                />
+                                <field name="sector_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',[project_type, False])]"
+                                />
+                                <field name="street_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="inventory_id" string="Unit No."
+                                       domain="[('project_type','in',[project_type, False])]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="unit_number" string="Plot No." readonly="0"
+                                       invisible="property_info_criteria != True"/>
+                                <field name="covered_area" readonly="0"
+                                       invisible="property_info_criteria != True"/>
+                                <field name="notes" invisible="1"/>
+                                <field name="predefined_remark_id" options="{'no_create': True, 'no_open': True}"  string="External Notes"/>
+                                <field name="internal_notes" invisible="0"/>
+
+                            </group>
+                            <group>
+                                <field name="category_id" options="{'no_create': True}" required='1'
+                                       domain="[('project_type','in',[project_type, False])]"
+                                />
+                                <field name="unit_category_type_id" string="Product" required="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',[project_type, False])]"
+                                />
+                                <field name="size_id"
+                                       domain="[('project_type','in',[project_type, False])]"
+                                       invisible="property_info_criteria != True" readonly="0"/>
+                                <field name="standard_area"
+                               
+                                       invisible="property_info_criteria != True" readonly="0"/>
+                                <field name="unit_class_id" string="Type"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',[project_type, False])]"
+                                       invisible="property_info_criteria != True"
+                                       readonly="0"/>
+                                <field name="add_custom_value"
+                                       invisible="payment_states != 'draft'"/>
+                                <field name="price_list_id"
+                                       domain="[('project_type','in',[project_type, False])]"
+                                       readonly="0"/>
+                                <field name="finance_by"
+                                       invisible="allow_bank_finance != True"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group name="plot_preference" string="Plot Preference" class="col-5">
+                                <field name="preference_ids" nolabel="1">
+                                    <list editable="bottom" class="custom_column">
+                                        <field name="factor_id" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="basis"/>
+                                        <field name="file_value_type"/>
+                                        <field name="value"/>
+                                        <field name="discount"/>
+                                        <field name="total"/>
+                                        <field name="approved" class="oe_text_alignment"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Next Of Kin" class="pull-right">
+                                <field name="kin_name" readonly="0"/>
+                                <field name="kin_mobile" readonly="0" widget="mask"
+                                       data-inputmask="'mask': '+99-999-9999999'"
+                                       placeholder="+92-300-2132132"/>
+                                <field name="kin_cnic" readonly="0"/>
+                                <field name="kin_member_relation" readonly="0"/>
+                                <field name="other_relation" readonly="0"
+                                       invisible="kin_member_relation != 'other'" required="kin_member_relation == 'other'"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="file" string="File" autofocus="autofocus">
+                                <form>
+                                    <header>
+                                        <field name="installment_created" invisible='1'/>
+<!--                                        <button-->
+<!--                                                 name="reset_installment_plan" -->
+<!--                                                groups="real_estate.group_rsms_manager"-->
+<!--                                                type="object"-->
+<!--                                                string="Reset Installment Plan"-->
+<!--                                                class="oe_highlight"-->
+<!--                                                invisible="installment_created != True or file_status in ('lock','approve','dispute')"-->
+<!--                                        />-->
+                                    </header>
+                                    <sheet>
+                                        <group>
+                                            <group name="installment_plan" string="Installment Plan">
+                                                <field name="token_generated" invisible="1"/>
+                                                <field name="create_manually" widget="boolean_toggle"
+                                                       readonly="token_generated == True or token_id != False"/>
+                                                <field name="plan_type"
+                                                       readonly="payment_type == 'lump_sum'"/>
+                                                <field name="include_installment" invisible="1"/>
+                                                <field name="predefine_plan_id" string="Plan Name"
+                                                       invisible="plan_type != 'predefine' or plan_type == False"/>
+                                                <field name="plan_description" invisible="1"/>
+                                                <field name="payment_type"
+                                                       invisible="create_manually == True"/>
+                                                <label for="grace_period"/>
+                                                <div class="o_row">
+                                                    <field name="grace_period"/>
+                                                    <span>Days</span>
+                                                </div>
+                                                <field name="interval_id"
+                                                       invisible="create_manually == True" readonly="payment_type == 'lump_sum'"
+                                                       options="{'no_create': True}"/>
+                                                <field name="starting_date" string="Start Date"
+                                                       force_save="1"
+                                                       readonly="payment_type == 'lump_sum'"/>
+                                                <field name="total_installment"
+                                                       invisible="create_manually == True" readonly="payment_type == 'lump_sum'"/>
+                                                <field name="overall_status" readonly="0" string="Payment Status"
+                                                       invisible="1"/>
+                                                <field name="payment_states" readonly="0" string="Installment Status"
+                                                       invisible="1"/>
+                                                <field name="balloon_payment_interval" force_save="1"
+                                                       string="Balloon Interval" invisible="1"/>
+                                                <field name="balloon_payment_frequency" force_save="1"
+                                                       string="Frequency" invisible="1"/>
+                                                <field name="possession_amount_interval" force_save="1"
+                                                       string="Possession Interval" invisible="1"/>
+                                                <field name="possession_amount_frequency" force_save="1"
+                                                       string="Possession Frequency" invisible="1"/>
+                                                <field name="confirmation_amount_interval" force_save="1"
+                                                       string="Confirmation Interval" invisible="1"/>
+                                                <field name="confirmation_amount_frequency" force_save="1"
+                                                       string="Confirmation Frequency" invisible="1"/>
+                                                <field name="primary_amount_interval" force_save="1"
+                                                       string="Primary Amount Interval" invisible="1"/>
+                                                <field name="primary_amount_frequency" force_save="1"
+                                                       string="Primary Amount Frequency" invisible="1"/>
+                                                <label for="initial_calculation_basis"
+                                                       invisible="payment_type == 'lump_sum' or plan_type == 'predefine' or create_manually != False"/>
+                                                <div class="d-flex"
+                                                     invisible="payment_type == 'lump_sum' or plan_type == 'predefine' or create_manually != False">
+                                                    <field name="initial_calculation_basis"/>
+                                                    <span class="o_form_label mx-3 oe_edit_only"
+                                                          invisible="initial_calculation_basis == 'fix'">
+                                                        -
+                                                    </span>
+                                                    <field name="initial_payment_percentage"
+                                                           required="payment_type == 'installments'" invisible="initial_calculation_basis == 'fix' or create_manually == True or (payment_type == 'lump_sum' and type != 'investor')"/>
+                                                </div>
+                                                <label for="balloting_calculation_basis"
+                                                       invisible="payment_type == 'lump_sum' or plan_type == 'predefine' or create_manually != False"/>
+                                                <div class="d-flex"
+                                                     invisible="payment_type == 'lump_sum' or plan_type == 'predefine' or create_manually != False">
+                                                    <field name="balloting_calculation_basis"/>
+                                                    <span class="o_form_label mx-3 oe_edit_only"
+                                                          invisible="balloting_calculation_basis == 'fix'">
+                                                        -
+                                                    </span>
+                                                    <field name="balloting_amount_percentage"
+                                                           string="Final Payment Percentage"
+                                                           invisible="payment_type == 'lump_sum' or create_manually == True or balloting_calculation_basis == 'fix'"/>
+                                                </div>
+                                            </group>
+                                            <group string="Payment Details">
+                                                <field name="custom_sale_amount"
+                                                       invisible="add_custom_value != True"/>
+                                                <field name="sale_amount" force_save="1"
+                                                       invisible="add_custom_value == True"/>
+                                                <field name="factor_amount" force_save="1"/>
+                                                <field name="initial_payment" force_save="1"/>
+                                                <field name="ttl_sale_amount" force_save="1"/>
+                                                <field name="discount_type"/>
+                                                <field name="discount_amount"/>
+                                                <field name="net_sale_amount" force_save="1"/>
+                                                <field name="balloting_amount" string="Final Payment" force_save="1"
+                                                       readonly="balloting_calculation_basis == 'percentage'" invisible="payment_type == 'lump_sum' or create_manually == True"/>
+                                                <field name="confirmation_amount"
+                                                       force_save="1"
+                                                       invisible="1"
+                                                />
+                                                <field name="installment_tax_ids" string="Invoice Tax"
+                                                       widget="many2many_tags"
+                                                       domain="[('type_tax_use','=','sale')]"
+                                                       options="{'no_create': True}"
+                                                />
+                                                <field name="balloon_payment"
+                                                       force_save="1"
+                                                       invisible="1"
+                                                />
+                                                <field name="balloon_payment_start"
+                                                       force_save="1"
+                                                       invisible="1"
+                                                       readonly="0"
+                                                />
+                                                <field name="possession_amount" force_save="1" invisible="1"/>
+                                                <field name="primary_amount" force_save="1" invisible="1"/>
+                                                <field name="balance_amount" force_save="1"/>
+                                            </group>
+                                        </group>
+                                        <notebook colspan="4">
+                                            <page name="installment_plan" string="Installment Plan"
+                                                  invisible="create_manually == True">
+                                                <field name="installment_plan_ids">
+                                                    <list editable="bottom" decoration-info="invoice_created == True">
+                                                        <field name="installment_number" string="Sr. No"/>
+                                                        <field name="file_type" invisible="1"/>
+                                                        <field name="double_check_paid_amount" invisible="1"/>
+                                                        <field name="installment_type" invisible="1"/>
+                                                        <field name="installment_name" invisible="0"/>
+                                                        <field name="property_invoice_type" invisible="1"/>
+                                                        <field name="date"/>
+                                                        <field name="payment_date" string="Payment date" readonly="0"/>
+                                                        <field name="amount" sum="Total"/>
+                                                        <field name="invoice_created" invisible="1"/>
+                                                        <field name="invoice"/>
+                                                        <field name="invoice_id" invisible="1"/>
+                                                        <field name="tax_amount"/>
+                                                        <field name="state" string="Invoice Status" invisible="1"/>
+                                                        <field name="amount_paid" sum="Amount Paid" readonly="0"/>
+                                                        <field name="residual" sum="Remaining Amount" readonly="0"/>
+                                                        <field name="payment_status" string="Status"/>
+                                                        <field name="new_installment_number" invisible="1"/>
+                                                    </list>
+                                                    <form>
+                                                        <sheet>
+                                                            <group>
+                                                                <group>
+                                                                    <field name="installment_number" string="Sr. No"/>
+                                                                    <field name="file_type" invisible="1"/>
+                                                                    <field name="double_check_paid_amount"
+                                                                           invisible="0"/>
+                                                                    <field name="installment_type" invisible="1"/>
+                                                                    <field name="installment_name" invisible="0"/>
+                                                                    <field name="property_invoice_type" invisible="1"/>
+                                                                    <field name="date"/>
+                                                                    <field name="payment_date" string="Payment date"
+                                                                           readonly="1"/>
+                                                                    <field name="amount" sum="Total"/>
+                                                                    <field name="invoice_created" invisible="0"/>
+                                                                    <field name="invoice"/>
+                                                                    <field name="file_id"/>
+                                                                </group>
+                                                                <group>
+                                                                    <field name="invoice_id" string="Invoice Ref #"
+                                                                           invisible="0"/>
+                                                                    <field name="state" string="Invoice Status"
+                                                                           invisible="1"/>
+                                                                    <field name="amount_paid" sum="Amount Paid"
+                                                                           readonly="1"/>
+                                                                    <field name="residual" sum="Remaining Amount"
+                                                                           readonly="1"/>
+                                                                    <field name="payment_status" string="Status"/>
+                                                                    <field name="new_installment_number" invisible="1"/>
+                                                                </group>
+                                                            </group>
+                                                        </sheet>
+                                                    </form>
+                                                </field>
+                                            </page>
+                                            <page string="Manual Installment Plan"
+                                                  invisible="create_manually == False">
+                                                <button
+                                                        name="create_invoice"
+                                                        type="object"
+                                                        string="Create Invoice"
+                                                        class="oe_highlight"
+                                                        invisible="payment_states != 'draft' or file_status != 'lock'"
+                                                />
+                                                <field name="manual_installment_plan_ids">
+                                                    <list editable="bottom" decoration-info="invoice_created == True">
+                                                        <field name="line_calculated" invisible="1"/>
+                                                        <field name="installment_number" string="Sr. No"
+                                                               force_save="1"/>
+                                                        <field name="product_id"/>
+                                                        <field name="date"/>
+                                                        <field name="percentage" sum="Total"/>
+                                                        <field name="amount" invisible="1"/>
+                                                        <field name="amount_manual" sum="Amount"/>
+                                                        <field name="invoice_created" invisible="1"/>
+                                                        <field name="invoice"/>
+                                                        <field name="invoice_id" invisible="1"/>
+                                                        <field name="state" string="Invoice Status" invisible="1"/>
+                                                        <field name="tax_amount" readonly="1" force_save="1"/>
+                                                        <field name="amount_paid" sum="Amount Paid" readonly="1"/>
+                                                        <field name="residual" sum="Remaining Amount" readonly="1"
+                                                               force_save="1"/>
+                                                        <field name="payment_status" string="Status" readonly="1"/>
+                                                    </list>
+                                                </field>
+                                            </page>
+                                            <page string="New Product Line" name='new_product_line' invisible='1'>
+                                                <field name="new_product_ids">
+                                                    <list>
+                                                        <field name="is_fully_paid" invisible='True'/>
+                                                        <field name="product_id"/>
+                                                        <field name="payment_type"/>
+                                                        <field name="value"/>
+                                                        <field name="total" sum='total'/>
+                                                        <field name="initial_payment" sum='total'/>
+                                                        <field name="remaining_payment" sum='total'/>
+                                                        <field name="no_of_installment"/>
+                                                        <field name="per_installment"/>
+                                                    </list>
+                                                </field>
+                                            </page>
+                                        </notebook>
+                                    </sheet>
+                                </form>
+                            </page>
+                            <page string="Payments">
+                                <group string="Installment Payments" name="installment_payments">
+                                    <field name="file_payment_view_ids" readonly="0" nolabel="1">
+                                        <list string="Installment Payments">
+                                            <field name="move_id"/>
+                                            <field name="invoice_date"/>
+                                            <field name="invoice_amount"/>
+                                            <field name="payment_date"/>
+                                            <field name="payment_id"/>
+                                            <field name="payment_amount" sum="Amount"/>
+                                            <field name="property_invoice_type"/>
+                                            <field name="payment_amount_residual" string="Available Amount"
+                                                   invisible="1"/>
+                                            <field name="invoice_residual" string="Balance"
+                                                   sum="Balance"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </page>
+                            <page string="File History">
+                                <form>
+                                    <group string="File Info">
+                                        <group>
+                                            <field name="plot_state"/>
+                                            <field name="construction_strat_date"/>
+                                            <field name="allotment_no"/>
+                                            <field name="letter_date"/>
+                                            <field name="investment_id" readonly="0"/>
+                                            <field name="investor_file" readonly="0"/>
+                                            <field name="overall_status" readonly="0" string="Payment Status"/>
+                                            <field name="overall_status" readonly="0" string="Payment Status"/>
+                                            <field name="merger_ref" readonly="0" string="Merger Reference"/>
+                                        </group>
+                                        <group>
+                                            <field name="completion_date"/>
+                                            <field name="completion_year"/>
+                                            <field name="last_payment_date"/>
+                                            <field name="remaining_payment" string="File Remaining Payment" readonly="0"
+                                                   force_save="1" invisible="0"/>
+                                            <field name="investor_id" readonly="0"/>
+                                            <field name="payment_states" readonly="0" string="Installment Status"/>
+
+                                            <field name="installment_due_count"/>
+                                        </group>
+                                    </group>
+                                </form>
+                                <group string="File History">
+                                    <field name="history_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="ref_number"/>
+                                            <field name="name"/>
+                                            <field name="transaction_date"/>
+                                            <field name="new_member_id"/>
+                                            <field name="ex_member_id"/>
+                                            <field name="merged_amount"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group string="Request History">
+                                    <field name="file_request_history_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="transaction_date"/>
+                                            <field name="transaction_type"/>
+                                            <field name="ref_number"/>
+                                            <field name="old_inventory_id"/>
+                                            <field name="new_inventory_id"/>
+                                            <field name="old_membership_id"/>
+                                            <field name="new_membership_id"/>
+                                            <field name="old_amount"/>
+                                            <field name="new_amount"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </page>
+                            <page name='next_of_kin'
+                                  string="Ownership"
+                                  autofocus="autofocus">
+                                <group string="Next of Kin">
+                                    <field name="kin_line_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="name"
+                                                   required="parent.member_company_type != 'company'"
+                                            />
+                                            <field name="mobile_code" invisible="1"/>
+                                            <field name="mobile" widget="mask"
+                                                   data-inputmask="'mask': '+99-999-9999999'"
+                                                   placeholder="+92-300-2132132"
+                                            />
+                                            <field name="cnic" widget="mask"
+                                                   data-inputmask="'mask': '99999-9999999-9'"/>
+                                            <field name="member_name" invisible="1"/>
+                                            <field name="relation_with_member"
+                                                   required="parent.member_company_type != 'company'"
+                                            />
+                                            <field name="relation_name"/>
+                                            <field name="start_date" invisible="0"/>
+                                            <field name="end_date" invisible="0"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group string="Joint Owner">
+                                    <field name="joint_owner_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="name"/>
+                                            <field name="relation_id"/>
+                                            <field name="relation_name"/>
+                                            <field name="percentage"/>
+                                            <field name="cnic"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group string="Power Of Attorney">
+                                    <field name="poa_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="name"/>
+                                            <field name="relation_id"/>
+                                            <field name="relation_name"/>
+                                            <field name="date"/>
+                                            <field name="cnic"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </page>
+                            <page string="New Products" invisible="1">
+                                <field name="new_product_ids">
+                                    <list editable="bottom">
+                                        <field name="is_fully_paid" invisible='True'/>
+                                        <field name="product_id"/>
+                                        <field name="payment_type"/>
+                                        <field name="value"/>
+                                        <field name="total" sum='total'/>
+                                        <field name="initial_payment" sum='total'/>
+                                        <field name="remaining_payment" sum='total'/>
+                                        <field name="no_of_installment"/>
+                                        <field name="per_installment"/>
+                                        <field name="installment_start_number"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <record id="real_estate.file_tree" model="ir.ui.view">
+            <field name="name">real_estate file_tree</field>
+            <field name="model">file</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list name='file_management' string="File Management" create="false">
+                    <field name="name"/>
+                    <field name="tracking_id"/>
+                    <field name="membership_name"/>
+                    <field name="booking_date"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id"/>
+                    <field name="street_id"/>
+                    <field name="inventory_id" invisible="1"/>
+                    <field name="unit_number" string="Plot No."/>
+                    <field name="starting_date" invisible="1"/>
+                    <field name="payment_type"/>
+                    <field name="category_id"/>
+                    <field name="unit_category_type_id" string="Product"/>
+                    <field name="size_id"/>
+                    <field name="standard_area"/>
+                    <field name="unit_class_id"/>
+                    <field name="sale_amount"/>
+                    <field name="initial_payment"/>
+                    <field name="society_id" invisible="1"/>
+                    <field name="state" invisible="1"/>
+                    <field name="overall_status" string="Payment Status" invisible="1"/>
+                    <field name="from_member" invisible='1'/>
+                </list>
+            </field>
+        </record>
+        <record id="real_estate.file_search" model="ir.ui.view">
+            <field name="name">real_estate file_search</field>
+            <field name="model">file</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="tracking_id" string="Contract ID"/>
+                    <field name="membership_id" string="Member"/>
+                    <field name="state"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="booking_date"/>
+                    <field name="payment_type"/>
+                    <field name="category_id"/>
+                    <field name="completion_year"/>
+                    <field name="sector_id"/>
+                    <field name="size_id"/>
+                    <field name="inventory_id"/>
+                    <field name="covered_area"/>
+                    <field name="construction_strat_date"/>
+                    <field name="completion_date"/>
+                </search>
+            </field>
+        </record>
+        <record
+                model="ir.actions.act_window"
+                id="real_estate.action_file">
+            <field name="name">File Management</field>
+            <field name="res_model">file</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('project_type', 'in', ['housing_society', False])]</field>
+            <field name="context">{'default_from_member': 'False', 'current_view': 'realestate', 'default_project_type': 'housing_society'}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('real_estate.file_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('real_estate.file_form')}),
+            ]"/>
+        </record>
+        <menuitem
+                id="real_estate.file"
+                name="File"
+                parent="real_estate.menu_fms"
+                action="real_estate.action_file"
+                sequence='2'
+        />
+</odoo>

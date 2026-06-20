@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <template id="transfer_letter">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="container">
+                            <style>
+                                p {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+                                li {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+
+                            </style>
+                            <div class="row" style="text-align:center;">
+                                <div class="col-12">
+                                    <h4 style="color:#283075; font-family:Octarine; font-style: oblique;">
+                                        <b>TRANSFER APPLICATION</b>
+                                    </h4>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-xs-5">
+                                    <p>
+                                        To,
+                                    </p>
+                                </div>
+                                <div class="col-5 col-offset-2">
+                                    <p>
+                                        Ref:<t t-esc="res_company.name"/>/
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top:20px; margin-left:20px;">
+                                <div class="col-5">
+                                    <p>
+                                        <span style="text-decoration: underline;" t-field="o.membership_id"/>
+                                        <br/>
+                                        S/o,D/o,W/o
+                                        <span style="text-decoration: underline;"
+                                              t-field="o.membership_id.relation_name"/>
+                                        <br/>
+                                        <span style="text-decoration: underline;" t-field="o.membership_id.street"/>
+                                        <br/>
+                                        <t t-if="o.membership_id.street2">
+                                            <span style="text-decoration: underline;"
+                                                  t-field="o.membership_id.street2"/>
+                                            <br/>
+                                        </t>
+                                        <t t-if="o.membership_id.city_id">
+                                            <span style="text-decoration: underline;"
+                                                  t-field="o.membership_id.city_id"/>
+                                            <br/>
+                                        </t>
+                                    </p>
+
+                                </div>
+                                <div class="col-5 col-offset-2">
+                                    <p>
+                                        Dated:
+                                        <span style="text-decoration: underline;" t-field="o.file_id.booking_date"/>
+                                    </p>
+
+                                </div>
+                            </div>
+
+                            <div style="margin-top:50px;">
+                                <p>
+                                    <strong>
+                                        SUBJECT: - TRANSFER OF TRACKING ID NO. 5214
+                                    </strong>
+                                </p>
+                            </div>
+
+<!--                            <div class="row" style="margin-top:20px; margin-left:50px;">-->
+<!--                                <div class="col-5">-->
+<!--                                    <p>-->
+<!--                                        <strong>-->
+<!--                                            PLOT NO:-->
+<!--                                            <span style="text-decoration: underline;" t-field="o.inventory_id"/>-->
+<!--                                            <br/>-->
+<!--                                            BLOCK NO:-->
+<!--                                            <span style="text-decoration: underline;" t-field="o.sector_id"/>-->
+<!--                                            <br/>-->
+<!--                                            TYPE:-->
+<!--                                            <span style="text-decoration: underline;" t-field="o.category_id"/>-->
+<!--                                            <br/>-->
+<!--                                            PREFERENCE: N/A-->
+<!--                                            <br/>-->
+<!--                                            sector:-->
+<!--                                            <span style="text-decoration: underline;" t-field="o.sector_id"/>-->
+<!--                                            <br/>-->
+<!--                                            CATEGORY:-->
+<!--                                            <span style="text-decoration: underline;" t-field="o.size_id"/>-->
+<!--                                            <br/>-->
+<!--                                            TRACKING ID NO:-->
+<!--                                            <span style="text-decoration: underline;" t-field="o.tracking_id"/>-->
+<!--                                            <br/>-->
+<!--                                        </strong>-->
+<!--                                    </p>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                            <div class="col-12">
+                                <p>
+                                    <ol type="1">
+                                        <li>
+                                            The Management of
+                                            <t t-esc="res_company.name"/>
+                                            is pleased to certify that a Plot
+                                            No.___,
+                                            Block-___, sector-N/A, Approximately Measuring 4–Marla Folio/Tracking ID No.
+                                            5214
+                                            has been
+                                            transferred in your name. Necessary amendments in our record have been
+                                            accordingly.
+                                        </li>
+                                        <li>
+                                            Liability for the payment of any dues regarding Cost of land and development
+                                            payable by
+                                            the transferee.
+                                        </li>
+                                        <li>
+                                            You shall forthwith be governed by the provisions of the Rules and
+                                            Regulations
+                                            framed by
+                                            the management of <t t-esc="res_company.name"/>.
+                                        </li>
+                                        <li>
+                                            Please always refer to your Tracking ID No.
+                                            <t t-esc="o.tracking_id"/>
+                                            in your future
+                                            correspondence
+                                            with
+                                            <t t-esc="res_company.name"/>.
+                                        </li>
+                                    </ol>
+                                </p>
+                            </div>
+
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-4 col-offset-8">
+                                    <p>
+                                        <strong>
+                                            CHIEF EXECUTIVE OFFICER
+                                            <br/>
+                                            <t t-esc="res_company.name"/>
+                                        </strong>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-5">
+                                    <p>
+                                        <strong>
+                                            Copy to Seller:
+                                        </strong>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-5">
+                                    <p>
+                                        <strong>
+                                            <t t-esc="o.transferee_name"/>
+                                        </strong>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-12">
+                                    <p>
+                                        In view of this change of ownership/transfer of Tracking ID No.
+                                        <t t-esc="o.tracking_id"/>
+                                        , your file
+                                        with
+                                        <t t-esc="res_company.name"/>
+                                        stands cancelled.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <report
+                string="Transfer Letter"
+                id="transfer_letter_action"
+                model="transfer.application"
+                report_type="qweb-pdf"
+                name="real_estate.transfer_letter"
+                file="real_estate.transfer_letter"
+        />
+
+    
+</odoo>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.amount_knockoff_form" model="ir.ui.view">
+            <field name="name">real_estate amount_knockoff_form</field>
+            <field name="model">amount.knockoff</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <h1>Do you want to Proceed ?</h1>
+                        <group>
+                            <group>
+                                <field name="application_id"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="File Detail" autofocus="autofocus">
+                                <field name="invoice_ids" readonly="1" context="{'tree_view_ref': 'account.view_invoice_tree'}"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <footer>
+                        <button string="Confirm" name="knockoff" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+</odoo>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.res_cnic_form">
+            <field name="name">real_estate res_cnic_form</field>
+            <field name="model">res.cnic</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="member_name"/>
+                                <field name="cnic" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                <field name="cnic_front"/>
+                            </group>
+                            <group>
+                                <field name="cnic_expiry_date"/>
+                                <field name="cnic_back"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.res_cnic_tree">
+            <field name="name">real_estate res_cnic_tree</field>
+            <field name="model">res.cnic</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="member_name"/>
+                    <field name="cnic"/>
+                    <field name="cnic_expiry_date"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_res_cnic">
+            <field name="name">CNIC</field>
+            <field name="res_model">res.cnic</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add an New CNIC Info.
+              </p>
+            </field>
+        </record>
+
+        <menuitem
+            id="real_estate.res_cnic"
+            name="CNIC"
+            parent="real_estate.menu_society"
+            action="real_estate.action_res_cnic"
+            sequence='9'
+        />
+
+</odoo>

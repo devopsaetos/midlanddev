@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="land_development.plot_inventory_form">
+            <field name="name">land_development plot_inventory_form</field>
+            <field name="model">plot.inventory</field>
+            <field name="arch" type="xml">
+                <form string="Unit Inventory" create="false">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="project_type" invisible="1"/>
+                                <field name="serial_number" default_focus="1" placeholder="Name" string="Unit number"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="society_id" options="{'no_create': True, 'no_open': True}" readonly='1'
+                                       string="Project"/>
+                                <field name="phase_id" options="{'no_create': True, 'no_open': True}" readonly='1'
+                                       string="Building"/>
+                                <field name="sector_id" options="{'no_create': True, 'no_open': True}" readonly='1'
+                                       string="Floor"/>
+                                <field name="category_id" string="Category"
+                                       options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                <field name="unit_category_type_id" string="Product"
+                                       options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                <field name="size_id" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}"
+                                       readonly='1'/>
+                                <field name="location_id" invisible="1" options="{'no_create': True, 'no_open': True}"
+                                       readonly='1'/>
+                            </group>
+                            <group>
+                                <field name="name" string="Unit Number"/>
+                                <field name="state" readonly='0'/>
+                                <field name="demarcation_id" context="{'default_plot_inventory': id}"/>
+                                <field name="net_area"/>
+                                <field name="balcony_area"/>
+                                <field name="standard_area" string="Total Area (sft)"/>
+                                <field name="actual_area"/>
+                                <field name="possession_status"/>
+                                <field name="investment_id" string="Investment No." invisible="1"/>
+                                <field name="partner_id" string="Investor" invisible="1"/>
+                                <field name="deal_price" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="plot_preference" string="Unit Preference" autofocus="autofocus">
+                                <field name="preference_factor_ids">
+                                    <list>
+                                        <field name="name"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="price_list" string="Price List">
+                                <field name="price_list" readonly="1">
+                                    <list editable="bottom">
+                                        <field name="starting_date"/>
+                                        <field name="end_date"/>
+                                        <field name="price"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="land_development.plot_inventory_tree">
+            <field name="name">land_development plot_inventory_tree</field>
+            <field name="model">plot.inventory</field>
+            <field name="arch" type="xml">
+                <list string="Unit Inventory" create="false" edit="false">
+                    <field name="serial_number"/>
+                    <field name="name" string="Unit Number"/>
+                    <field name="society_id" string="Project"/>
+                    <field name="phase_id" string="Building"/>
+                    <field name="sector_id" string="Floor"/>
+                    <field name="location_id" invisible="1"/>
+                    <field name="category_id" string="Category"/>
+                    <field name="unit_category_type_id" string="Product"/>
+                    <field name="size_id"/>
+                    <field name="unit_class_id" string="Type"/>
+                    <field name="demarcation_id" invisible="1"/>
+                    <field name="net_area"/>
+                    <field name="balcony_area"/>
+                    <field name="standard_area" string="Total Area (sft)"/>
+                    <field name="actual_area"/>
+                    <field name="street" invisible="1"/>
+                    <field name="state"/>
+                    <field name="possession_status"/>
+                </list>
+            </field>
+        </record>
+
+        <!--        <record model="ir.ui.view" id="land_development.plot_inventory_search">-->
+        <!--            <field name="name">land_development plot_inventory_search</field>-->
+        <!--            <field name="model">plot.inventory</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <search>-->
+        <!--                    <field name="serial_number"/>-->
+        <!--                    <field name="society_id" string="Project"/>-->
+        <!--                    <field name="phase_id" string="Building"/>-->
+        <!--                    <field name="sector_id" string="Floor"/>-->
+        <!--                    <field name="location_id"/>-->
+        <!--                    <field name="size_id"/>-->
+        <!--                    <field name="name" string="Unit Number"/>-->
+        <!--                    <field name="demarcation_id"/>-->
+        <!--                    <field name="standard_area" string="Total Area (sft)"/>-->
+        <!--                    <field name="actual_area"/>-->
+        <!--                    <field name="street"/>-->
+        <!--                    <field name="category_id" string="Unit Category" />-->
+        <!--                    <field name="possession_status"/>-->
+        <!--                </search>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <record model="ir.actions.act_window" id="land_development.action_plot_inventory">
+            <field name="name">Unit</field>
+            <field name="res_model">plot.inventory</field>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Here Unit Inventory will show, Which you will create from Inventory Creation wizard.
+                </p>
+            </field>
+            <field name="domain">
+                [
+                ('project_type','in',['skyscraper', False])
+                ]
+            </field>
+            <field name="view_mode">list,form</field>
+            <!--            <field name="search_view_id" ref="land_development.plot_inventory_search"/>-->
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.plot_inventory_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.plot_inventory_form')}),
+            ]"
+            />
+            <field name="context">{'current_view': 'building', 'default_project_type':'skyscraper'}</field>
+        </record>
+
+        <menuitem
+                id="land_development.plot_inventory"
+                name="Unit"
+                parent="land_development.menu_unit_inventory"
+                action="land_development.action_plot_inventory"
+                sequence='2'
+        />
+
+    </data>
+</odoo>

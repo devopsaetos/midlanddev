@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menuitem -->
+    <menuitem
+            name="Real Estate"
+            id="real_estate.menu_root"
+            web_icon="real_estate,static/description/icon.png"
+            sequence='2'
+    />
+
+    <!-- Sub-Menu Menuitem -->
+
+    <menuitem
+            name="Members"
+            id="real_estate.menu_fms"
+            parent="real_estate.menu_root"
+            sequence='1'
+    />
+
+    <menuitem
+            name="Portfolio Management"
+            id="real_estate.menu_investment_parent"
+            parent="real_estate.menu_root"
+            sequence='2'
+    />
+
+    <menuitem
+            name="Processes"
+            id="real_estate.menu_processes"
+            parent="real_estate.menu_root"
+            sequence='6'
+    />
+
+    <menuitem
+            name="Legal Dispute"
+            id="real_estate.menu_land_records"
+            parent="real_estate.menu_processes"
+            sequence='6'
+    />
+
+    <menuitem
+            name="Prices &amp; Plans"
+            id="real_estate.menu_price_plan"
+            parent="real_estate.menu_root"
+            sequence='8'
+    />
+
+    <menuitem
+            name="Inventory"
+            id="real_estate.menu_inventory_root"
+            parent="real_estate.menu_root"
+            sequence='9'
+    />
+
+    <menuitem
+            name="Settings"
+            id="real_estate.menu_settings"
+            parent="real_estate.menu_root"
+            sequence='10'
+            groups='base.group_system'
+    />
+
+    <!--  -->
+    <menuitem
+            name="Transfer/Cancel/Refund"
+            id="real_estate.menu_transfer"
+            parent="real_estate.menu_processes"
+            sequence='1'
+    />
+
+    <menuitem
+            name="Merger"
+            id="real_estate.menu_merger"
+            parent="real_estate.menu_processes"
+            sequence='2'
+    />
+
+    <menuitem
+            name="Invoices"
+            id="real_estate.invoices"
+            parent="real_estate.menu_processes"
+            sequence='3'
+    />
+
+    <menuitem
+            name="Bulk Files Cancellation"
+            id="real_estate.bulk_file_cancellation_parent"
+            parent="real_estate.menu_processes"
+            sequence='4'
+    />
+
+    <menuitem
+            name="Registry"
+            id="real_estate.menu_registry"
+            parent="real_estate.menu_processes"
+            sequence='5'
+    />
+
+    <menuitem
+            name="Reports"
+            id="real_estate.menu_reports"
+            parent="real_estate.menu_root"
+            sequence='7'
+    />
+
+    <!--    <menuitem -->
+    <!--      name="Follow Up" -->
+    <!--      id="real_estate.followup_root"-->
+    <!--      parent="real_estate.menu_root"-->
+    <!--      groups='real_estate.group_plot_sale_manager'-->
+    <!--      sequence='4'-->
+    <!--    />-->
+
+    <menuitem
+            name="Configuration"
+            id="real_estate.menu_configuration"
+            parent="real_estate.menu_root"
+            sequence='100'
+    />
+
+    <!--  -->
+    <menuitem
+            id="real_estate.menu_society"
+            name="Society"
+            parent="real_estate.menu_configuration"
+            sequence="1"
+    />
+    <menuitem
+            id="real_estate.menu_inventory"
+            name="Inventory"
+            parent="real_estate.menu_configuration"
+            sequence="2"
+    />
+
+</odoo>

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="land_development.investor_file_form" model="ir.ui.view">
+            <field name="name">land_development investor_file_form</field>
+            <field name="model">investor.file</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form name="file_management" string="File Management" create="false">
+                    <header>
+                        <button class='btn btn-primary' name="create_file" type="object" string="Create File"
+                            invisible="file_created == True or state == 'issued'"
+                            style="margin-left:10px"/>
+                        <field name="state" widget="statusbar"  readonly="1"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <field name="project_type" invisible="1"/>
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                            <field name="file_created" invisible="1" />
+                        </div>
+                        <group name="file_detail" string="File Detail">
+                            <group>
+                                <field name="investment_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="investor_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="user_id" string="Sales Person"
+                                       options="{'no_create': True, 'no_open': True}"
+                                        readonly="1" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="investor_name"  readonly="1"/>
+                                <field name="booking_date" required='1'
+                                        readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Property Information">
+                            <group>
+                                <field name="society_id"
+                                       string="Project"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       required='1'
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','in',['skyscraper', False])
+                                               ]"
+                                        readonly="1"
+                                />
+                                <field name="phase_id"
+                                       string="Building"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       required='1'
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','in',['skyscraper', False])
+                                               ]"
+                                        readonly="1"
+                                />
+                                <field name="sector_id"
+                                       string="Floor"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',['skyscraper', False])]"
+                                        readonly="1"
+                                />
+                                <field name="inventory_id" string="Unit"
+                                       domain="[('project_type','in',['skyscraper', False])]"
+                                        readonly="1"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="unit_number" string="Unit No."
+                                        readonly="1"/>
+                                <field name="coverd_area" invisible="1"
+                                        readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="category_id" options="{'no_create': True}" required='1'
+                                       domain="[('project_type','in',['skyscraper', False])]"
+                                        readonly="1"/>
+                                <field name="unit_category_type_id" string="Product"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',['skyscraper', False])]"
+                                        readonly="1"/>
+                                <field name="size_id" options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',['skyscraper', False])]"
+                                        readonly="1"/>
+                                <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','in',['skyscraper', False])]"
+                                        readonly="1"/>
+
+                            </group>
+                        </group>
+                        <group string="Customer Detail">
+                            <group>
+                                <field name="is_transferee_partner"
+                                       readonly="state == 'issued'"
+                                />
+                                <field name="transferee_partner_id"
+                                       invisible="is_transferee_partner == False"
+                                       required="is_transferee_partner == True"
+                                       readonly="state == 'issued'"
+                                       context="{
+                                        'form_view_ref': 'real_estate.view_partner_form',
+                                        'default_is_member' : 1
+                                    }"
+                                />
+                                <label for="transferee_name" string="Name"
+                                       invisible="is_transferee_partner == True"
+                                       required="is_transferee_partner == False"
+                                       readonly="state == 'issued'"
+                                />
+                                <div class="o_address_format">
+                                    <field
+                                            name="transferee_name"
+                                            invisible="is_transferee_partner == True"
+                                            required="is_transferee_partner == False"
+                                    />
+
+
+                                    <button
+                                            name="create_partner"
+                                            icon="fa-arrow-right"
+                                            type="object"
+                                            string="Create Member"
+                                            class="btn-link"
+                                            invisible="is_transferee_partner == True"
+                                    />
+                                </div>
+                                <field widget="mask" data-inputmask="'mask': '99999-9999999-9'" required="1"
+                                       name="transferee_cnic_number" readonly="state == 'issued'"/>
+                            </group>
+                            <group>
+                                <field name="reset_installment_plan"
+                                       string="Reset Installment Plan"
+                                       readonly="state == 'issued'"
+                                       required="1"
+                                />
+                                <field name="transferee_relation_name"
+                                       string="Father/Spouse "
+                                       readonly="state == 'issued'"
+                                />
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="file" string="File" autofocus="autofocus">
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group name="installment_plan" string="Installment Plan">
+                                                <field name="token_generated" invisible="1"/>
+                                                <field name="plan_description" invisible="1"/>
+                                                <field name="payment_type"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="interval_id"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                       options="{'no_create': True}"
+                                                />
+                                                <field name="starting_date"
+                                                       string="Start Date"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="total_installment"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="payment_states" readonly="1" string="Payment Status"/>
+                                            </group>
+                                            <group string="Payment Details">
+                                                <field name="sale_amount"
+                                                       force_save="1"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="ttl_sale_amount"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="net_sale_amount"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="initial_payment"
+                                                       readonly="1"
+                                                />
+                                                <field name="balloting_amount"
+                                                       string="Final Payment"
+                                                       readonly="reset_installment_plan == 'no'"
+                                                />
+                                                <field name="balance_amount"  readonly="1"/>
+                                            </group>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+
+<!--                    <div class="oe_chatter">-->
+<!--                        <field name="message_follower_ids" widget="mail_followers"/>-->
+<!--                        <field name="activity_ids" widget="mail_activity"/>-->
+<!--                        <field name="message_ids" widget="mail_thread"/>-->
+<!--                    </div>-->
+                </form>
+            </field>
+        </record>
+
+        <record id="land_development.investor_file_tree" model="ir.ui.view">
+            <field name="name">land_development investor_file_tree</field>
+            <field name="model">investor.file</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <list name='file_management' string="File Management" create="false">
+                    <field name="name"/>
+                    <field name="investor_name"/>
+                    <field name="investment_id" string="Investment No."/>
+                    <field name="booking_date"/>
+                    <field name="inventory_id" string="Unit"/>
+                    <field name="sector_id" string="Floor"/>
+                    <field name="phase_id" string="Building"/>
+                    <field name="society_id" string="Project"/>
+                    <field name="payment_type"/>
+                    <field name="reset_installment_plan"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+<!--        <record id="land_development.investor_file_search" model="ir.ui.view">-->
+<!--            <field name="name">land_development investor_file_search</field>-->
+<!--            <field name="model">investor.file</field>-->
+<!--            <field name="priority">2</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <search>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="state"/>-->
+<!--                    <field name="society_id" string="Project"/>-->
+<!--                    <field name="phase_id" string="Building"/>-->
+<!--                    <field name="sector_id" string="Floor"/>-->
+<!--                    <field name="booking_date"/>-->
+<!--                    <field name="payment_type"/>-->
+<!--                    <field name="category_id"/>-->
+<!--                    <field name="size_id"/>-->
+<!--                    <field name="inventory_id"/>-->
+<!--                    <group expand="0" string="Group By">-->
+<!--                        <filter name='group_by_investor_id' string="Investor" domain="[]" context="{'group_by':'investor_id'}"/>-->
+<!--                    </group>-->
+<!--                </search>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record model="ir.actions.act_window" id="land_development.action_investor_file">
+
+            <field name="name">Investor's File Management</field>
+            <field name="res_model">investor.file</field>
+
+            <field name="view_mode">list,form</field>
+            <field name="domain">
+                [
+                ('project_type','in',['skyscraper', False])
+                ]
+            </field>
+            <field name="context">{'current_view': 'building', 'default_project_type': 'skyscraper', 'search_default_group_by_investor_id': 1}</field>
+<!--            <field name="search_view_id" ref="land_development.investor_file_search"/>-->
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.investor_file_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.investor_file_form')}),
+                ]"
+            />
+        </record>
+
+        <menuitem
+                id="land_development.investor_file"
+                name="Open Files"
+                parent="land_development.menu_investment_parent"
+                action="land_development.action_investor_file"
+                sequence='4'
+        />
+
+    </data>
+</odoo>

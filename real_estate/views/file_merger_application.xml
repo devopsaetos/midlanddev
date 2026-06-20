@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+        <record id="real_estate.file_merger_application_form" model="ir.ui.view">
+            <field name="name">real_estate file_merger_application_form</field>
+            <field name="model">plot.merger.application</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="membership_id" context="{ 'form_view_ref': 'real_estate.view_partner_form', 'default_is_member' : 1 }"/>
+                                <field name="knockoff" invisible="1"/>
+                                <field name="adjust" invisible="1"/>
+                                <field name="company_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="total_receive_amount"/>
+                                <field name="net_adjusted" force_save="1" readonly="1"/>
+                                <field name="amount_adjust_done" invisible="1"/>
+                                <field name="credit_note_created" invisible="1"/>
+                                <field name="amount_deduction" invisible="1"/>
+                            </group>
+                        </group>
+                        <group string="Source Detail "></group>
+                        <notebook colspan="4">
+                            <page string="Source Detail">
+                                <button name="create_credit_note" type="object" string="Source Adjustment" class="oe_highlight"
+                                        invisible="credit_note_created != False"/>
+                                <field name="source_merger_id" readonly="knockoff == True">
+                                    <list editable="bottom">
+                                        <field name="file_id" options="{'no_create': True}"/>
+                                        <field name="tracking_id"/>
+                                        <field name="category_id"/>
+                                        <field name="size_id"/>
+                                        <field name="inventory_id"/>
+                                        <field name="ttl_invoiced_amount" sum="Total"/>
+                                        <field name="amount_received" sum="Total"/>
+                                        <field name="amount_remaining" sum="Total"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                        <group string="Target Detail "></group>
+                        <notebook colspan="4">
+                            <page string="Target Detail">
+                                <button name="amount_adjust" type="object" string="Adjust Target" class="oe_highlight"
+                                        invisible="amount_adjust_done != False"/>
+                                <field name="target_merger_id" readonly="adjust == True">
+                                    <list editable="bottom">
+                                        <field name="file_id" options="{'no_create': True}"/>
+                                        <field name="tracking_id"/>
+                                        <field name="category_id"/>
+                                        <field name="size_id"/>
+                                        <field name="inventory_id"/>
+                                        <field name="ajustment_priority" invisible="1" required="0"/>
+                                        <field name="ttl_invoiced_amount" sum="Total"/>
+                                        <field name="amount_received" sum="Total"/>
+                                        <field name="amount_remaining" sum="Total"/>
+                                        <!--                                         <field name="amount_remaining"/> -->
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <record id="real_estate.file_merger_application_tree" model="ir.ui.view">
+            <field name="name">real_estate file_merger_application_tree</field>
+            <field name="model">plot.merger.application</field>
+            <field name="arch" type="xml">
+                <list create="false">
+                    <field name="name" force_save="1"/>
+                    <field name="membership_id" force_save="1"/>
+                    <field name="merger_date" force_save="1"/>
+                    <field name="merger_fee" force_save="1"/>
+                    <field name="net_adjusted" force_save="1"/>
+                </list>
+            </field>
+        </record>
+        <record id="real_estate.file_merger_application_search" model="ir.ui.view">
+            <field name="name">real_estate file_merger_application_search</field>
+            <field name="model">plot.merger.application</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name" force_save="1"/>
+                    <field name="membership_id"/>
+                </search>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="real_estate.action_file_merger_application_forms">
+            <field name="name">Plot Merger Application</field>
+            <field name="res_model">plot.merger.application</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="real_estate.file_merger_application_search"/>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+        <menuitem id="real_estate.menu_file_merger_application_form" name="Plot Merger Application" action="real_estate.action_file_merger_application_forms"
+                  parent="real_estate.menu_merger" sequence="6" groups="real_estate.group_approve_merger_req"/>
+
+        <record id="real_estate.file_merger_requests_form" model="ir.ui.view">
+            <field name="name">real_estate file_merger_requests_form</field>
+            <field name="model">file.merger.request</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <header>
+                        <field name="state" widget="statusbar" readonly="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="merger_type"/>
+                            </group>
+                            <group>
+                                <field name="visibility_check" invisible="1"/>
+                            </group>
+                        </group>
+                        <group name="group_top" string="Client Details">
+                            <group>
+                                <field name="membership_source_id"/>
+                                <field name="membership_target_id"
+                                       invisible="merger_type != 'member_to_member'"
+                                />
+                            </group>
+                            <group>
+
+                                <field name="cnic"
+                                       string="CNIC"
+                                       widget="mask"
+                                       data-inputmask="'mask': '99999-9999999-9'"
+                                />
+                                <field name="tar_member_cnic"
+                                       string="CNIC"
+                                       widget="mask"
+                                       data-inputmask="'mask': '99999-9999999-9'"
+                                       invisible="merger_type != 'member_to_member'"
+                                />
+                            </group>
+                        </group>
+                        <group name="group_bottom" string="Merger Details">
+                            <group name="group_left">
+                                <field name="waive_merger_application"/>
+                                <field name="appointment_date"/>
+                                <field name="notes"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page autofocus="autofocus">
+                                <field name="file_merger_request_line" options="{'no_quick_create': True, 'no_open': True}" readonly="1">
+                                    <list>
+                                        <field name="source"/>
+                                        <field name="target"/>
+                                        <field name="file_id" options="{'no_open': True}"/>
+                                        <field name="membership_id" options="{'no_open': True}"/>
+                                        <field name="total_sale_amount"/>
+                                        <field name="ttl_invoiced_amount"/>
+                                        <field name="amount_received"/>
+                                        <field name="amount_remaining"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                        <notebook colspan="4" invisible="visibility_check == False">
+                            <page string="Payment Plan">
+
+                                <group>
+                                    <group>
+                                        <field name="visibility_check" invisible='1'/>
+                                        <field name="plan_description"/>
+                                        <field name="interval_id"/>
+                                        <field name="total_installment"/>
+                                        <field name="starting_date"/>
+                                        <field name="payment_states"/>
+                                    </group>
+                                    <group>
+                                        <field name="sale_amount"/>
+                                        <field name="factor_amount"/>
+                                        <field name="ttl_sale_amount"/>
+                                        <field name="discount_type"/>
+                                        <field name="discount_amount"/>
+                                        <field name="net_sale_amount"/>
+                                        <field name="initial_payment"/>
+                                        <field name="balance_amount"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <record id="real_estate.file_merger_requests_tree" model="ir.ui.view">
+            <field name="name">real_estate file_merger_requests_tree</field>
+            <field name="model">file.merger.request</field>
+            <field name="arch" type="xml">
+                <list create="false">
+                    <field name="name" force_save="1"/>
+                    <field name="merger_type"/>
+                    <field name="appointment_date"/>
+                    <field name="membership_id" force_save="1"/>
+                    <field name="membership_source_id"/>
+                    <field name="membership_target_id"/>
+                </list>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="real_estate.action_file_merger_requests_forms">
+            <field name="name">File Merger Requests</field>
+            <field name="res_model">file.merger.request</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+        <menuitem id="real_estate.menu_file_merger_requests_form" name="File Merger Requests" action="real_estate.action_file_merger_requests_forms"
+                  parent="real_estate.menu_merger" sequence="7"/>
+</odoo>

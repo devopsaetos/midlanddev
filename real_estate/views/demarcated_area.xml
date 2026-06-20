@@ -1,0 +1,110 @@
+<odoo>
+        <record model="ir.ui.view" id="real_estate.demarcated_area_form">
+            <field name="name">real_estate demarcated_area_form</field>
+            <field name="model">demarcated.area</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title">
+                            <field name="project_type" invisible='1'/>
+                            <h1>
+                                <field name="inventory_id" default_focus="1" placeholder="Name" options="{'no_create': True, 'no_open': True}"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string = "Survey Detail">
+                                <field name="checker_id" options="{'no_create': True}"/>
+                                <field name="surveyor_id" options="{'no_create': True}"/>
+                                <field name="user_id" options="{'no_create': True}"/>
+                            </group>
+                            <group string = "Area Detail">
+                                <field name="total_area"/>
+                                <field name="actual_area"/>
+                                <field name="access_short"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Dimensions" autofocus="autofocus">
+                                <field name="dimension_line">
+                                    <list editable="bottom">
+                                        <field name="dimension"/>
+                                        <field name="name"/>
+                                        <field name="value"/>
+                                        <field name="bounded_by"/>
+                                        <field name="cardinal"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="plot_map" string="Plot Map" autofocus="autofocus">
+                                <field name="plot_image" widget='image'/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.demarcated_area_tree">
+            <field name="name">real_estate demarcated_area_tree</field>
+            <field name="model">demarcated.area</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="inventory_id"/>
+                    <field name="checker_id"/>
+                    <field name="surveyor_id"/>
+                    <field name="user_id"/>
+                    <field name="total_area"/>
+                    <field name="actual_area"/>
+                    <field name="access_short"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.demarcated_area_search">
+            <field name="name">real_estate demarcated_area_search</field>
+            <field name="model">demarcated.area</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="inventory_id"/>
+                    <field name="checker_id"/>
+                    <field name="surveyor_id"/>
+                    <field name="user_id"/>
+                    <field name="total_area"/>
+                    <field name="actual_area"/>
+                    <field name="access_short"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_demarcated_area">
+            <field name="name">Demarcated Area</field>
+            <field name="res_model">demarcated.area</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add Demarcation of plots.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">{'current_view': 'realestate', 'default_project_type':'housing_society'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.demarcated_area"
+            name="Demarcated Area"
+            parent="real_estate.menu_inventory"
+            action="real_estate.action_demarcated_area"
+            sequence='7'
+        />
+        
+</odoo>

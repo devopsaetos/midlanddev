@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.actions.act_window" id="land_development.action_factor">
+            <field name="name">Factor</field>
+            <field name="res_model">factor</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add Preference factor for Units.
+              </p><p>
+                You can add Preference factor E.g Parking Face on this form.
+              </p>
+            </field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view': 'building'}</field>
+        </record>
+
+        <!-- <record 
+            model="ir.actions.act_window" 
+            id="land_development.action_file_merger_application_forms">
+            <field name="name">Unit Merger Application</field>
+        </record> -->
+    </data>
+</odoo>

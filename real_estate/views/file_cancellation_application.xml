@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.file_cancellation_application_form" model="ir.ui.view">
+            <field name="name">real_estate file_cancellation_application_form</field>
+            <field name="model">file.cancel.application</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button
+                                name="request_generate"
+                                type="object"
+                                string="Approve Request"
+                                invisible="state != 'draft'"
+                                class="oe_highlight"
+                        />
+                        <field
+                                name="state"
+                                widget="statusbar"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name" readonly="state != 'draft'"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="transaction_type" force-save="1" readonly="state != 'draft'"/>
+                            <field name="request_by" force-save="1" readonly="state != 'draft'"/>
+                            <field name="cancel_type" force-save="1" readonly="state != 'draft'"/>
+                            <field name="treat_booking_as" force-save="1" readonly="state != 'draft'"/>
+<!--                            <field name="reason" readonly="state != 'draft'"/>-->
+                            <field name="reason" readonly="state != 'draft'" required="transaction_type == 'cancelation'"/>
+                            <field name="appointment_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Membership Detail ">
+                            <group>
+                                <field name="membership_id" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="member_name" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group string="Plot Detail ">
+                            <group>
+                                <field name="sector_id" readonly="state != 'draft'"/>
+                                <field name="category_id" readonly="state != 'draft'"/>
+                                <field name="inventory_id" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="file_id" readonly="state != 'draft'"/>
+                                <field name="tracking_id" readonly="state != 'draft'"/>
+                                <field name="size_id" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group name="payment_plan" string="Payment Detail">
+                            <header invisible="1">
+                                <field name="installment_created" invisible='1'/>
+                                <!-- <button
+                                        name="create_installment_plan"
+                                        type="object"
+                                        string="Create Installment Plan"
+                                        class="oe_highlight"
+                                        invisible="(installment_created == True or payment_states != 'open')"
+                                /> -->
+                            </header>
+                            <group>
+                                <field name="starting_date" readonly="state != 'draft'"/>
+                                <field name="payment_states" readonly="state != 'draft'"/>
+                                <field name="interval_id" readonly="state != 'draft'"/>
+                                <field name="plan_description" readonly="state != 'draft'"/>
+                                <field name="net_sale_amount" readonly="state != 'draft'"/>
+                                <field name="ttl_sale_amount" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="discount_type" readonly="state != 'draft'"/>
+                                <field name="discount_amount" readonly="state != 'draft'"/>
+                                <field name="sale_amount" readonly="state != 'draft'"/>
+                                <field name="factor_amount" readonly="state != 'draft'"/>
+                                <field name="initial_payment" readonly="state != 'draft'"/>
+                                <field name="balance_amount" readonly="state != 'draft'"/>
+                                <field name="total_installment" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group name="installment_plan" string="Installment Plan">
+                            <form>
+                                <field name="installment_plan_ids" readonly="state != 'draft'">
+                                    <list editable="bottom" decoration-info="invoice_created == True">
+                                        <field name="date"/>
+                                        <field name="amount"/>
+                                        <field name="invoice_created"/>
+                                        <field name="invoice_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </form>
+                        </group>
+                        <group name="file_payment_history" string="File Payment History" invisible="1">
+                            <form>
+                                <field name="file_payment_history_id" readonly="state != 'draft'">
+                                    <list
+                                            options="{'no_open': True}"
+                                            create="false" editable="bottom"
+                                            decoration-info="state == 'open'"
+                                            decoration-danger="state == 'paid'"
+                                            decoration-muted="state == 'cancel'"
+                                    >
+                                        <field name="date_invoice"/>
+                                        <field name="invoice_id"/>
+                                        <field name="amount_total"/>
+                                        <field name="amount_paid"/>
+                                        <field name="residual"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </form>
+                        </group>
+                        <group string="Required Documents" invisible="1">
+                            <group invisible="transaction_type != 'transfer'">
+                                <group string="Transferer Detail">
+                                    <field name="traferer_setup_ids" widget="many2many_list">
+                                        <list editable="bottom">
+                                            <field name="name"/>
+                                            <field name="description"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group string="Transferee Detail">
+                                    <field name="traferee_setup_ids">
+                                        <list widget="many2many_list">
+                                            <field name="name"/>
+                                            <field name="description"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <record id="real_estate.file_cancellation_application_tree" model="ir.ui.view">
+            <field name="name">real_estate file_cancellation_application_tree</field>
+            <field name="model">file.cancel.application</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false">
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="membership_id"/>
+                    <field name="sector_id"/>
+                    <field name="category_id"/>
+                    <field name="file_id"/>
+                    <field name="size_id"/>
+                </list>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="real_estate.action_file_cancellation_application">
+            <field name="name">File Cancellation Application</field>
+            <field name="res_model">file.cancel.application</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+        <menuitem id="real_estate.file_cancellation_application"
+                  name="File Cancellation Application"
+                  action="real_estate.action_file_cancellation_application"
+                  parent="real_estate.menu_transfer"
+                  sequence="3"
+        />
+
+</odoo>

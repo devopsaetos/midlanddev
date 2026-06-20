@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<odoo>
+
+        <record id="view_account_invoice_advance_payment_form" model="ir.ui.view">
+            <field name="name">view.account.move.advance.payment.form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <button name="action_register_payment" id="account_invoice_payment_btn" position="after">
+                    <field name="adv_should_visible" invisible="1"/>
+                    <button name="%(default_payment.action_account_advance_payment_invoice)d"
+                            type="action" class="oe_highlight"
+                            invisible="not adv_should_visible"
+                            string="Apply Advance Payment"
+                            groups="account.group_account_invoice"
+                    />
+                </button>
+                <button name="button_draft" position="attributes">
+                    <attribute name="invisible">restrict_mode_hash_table or state != 'posted'</attribute>
+                </button>
+                <xpath expr="/form/sheet/div[@name='button_box']" position="after">
+                    <widget name="web_ribbon" bg_color="bg-danger" title="Cancelled"
+                            invisible="payment_state != 'cancel' or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')"/>
+                </xpath>
+                <notebook position="inside">
+                    <page name="advance_payment" string="Advance Payments">
+                        <field name="advance_payment_ids"/>
+                        <field name="has_advance_payment" invisible="1"/>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+        <menuitem name="Accounting"
+            id="account.menu_finance"
+            groups="account.group_account_user,account.group_account_manager,account.group_account_invoice"
+            web_icon="default_payment,static/description/icon.png"
+            sequence="40"/>
+
+</odoo>

@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="token_money_refund" model="ir.ui.view">
+        <field name="name">token.money.refund.wizard</field>
+        <field name="model">token.refund</field>
+        <field name="arch" type="xml">
+            <form string="Token Refund">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="society_id" readonly="1"/>
+                            <field name="contact_name" readonly="1"/>
+                            <field name="cnic" readonly="1"/>
+                            <field name="phone_no" readonly="1"/>
+                            <field name="email" readonly="1"/>
+                            <field name="crm_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="1"/>
+                            <field name="journal_id" readonly="1"/>
+                            <field name="cheque_name" readonly="1"/>
+                            <field name="cheque_no" readonly="1"/>
+                            <field name="bank_ref" readonly="1"/>
+                        </group>
+                    </group>
+                    <group name="token_refund" string="Token Refund Product">
+                        <form>
+                            <field name="token_refund_line_ids" readonly="1" options="{'no_create': True}">
+                                <list create="false" editable="bottom">
+                                    <field name="category_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="token_refund_id" invisible="1"/>
+                                    <field name="unit_category_type_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="token_fees" options="{'no_create':True, 'no_open':True}"/>
+                                </list>
+                            </field>
+                        </form>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="token_refund_req" string="Submit" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.validity_increase_wizard" model="ir.actions.act_window">
+        <field name="name">Increase Validity</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">validity.increase</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

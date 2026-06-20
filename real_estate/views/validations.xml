@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="res_country_state_form_inherit" model="ir.ui.view">
+            <field name="name">Validation res_country_state_form</field>
+            <field name="model">res.country.state</field>
+            <field name="inherit_id" ref="base.view_country_state_form"/>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='country_id']" position="attributes">
+                    <attribute name="placeholder">Dropdown</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_country_state_search_form_inherit" model="ir.ui.view">
+            <field name="name">Validation res_country_state_form</field>
+            <field name="model">res.country.state</field>
+            <field name="inherit_id" ref="base.view_country_state_search"/>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='country_id']" position="before">
+                    <field name="code"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="validation_view_partner_ext_form" model="ir.ui.view" >
+            <field name="name">validation base_partner_ext_form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='mobile']" position="attributes">
+                    <attribute name="widget">mask</attribute>
+                    <attribute name="data-inputmask">'mask':'+99-999-9999999'</attribute>
+                    <attribute name="placeholder">+92-300-8765432</attribute>
+                    <attribute name="class">o_phone_number</attribute>
+                </xpath>
+                <xpath expr="//field[@name='phone']" position="attributes">
+                    <attribute name="widget">mask</attribute>
+                    <attribute name="data-inputmask">'mask': '+99-9999999'</attribute>
+                    <attribute name="placeholder">+42-2429871</attribute>
+                    <attribute name="class">o_phone_number</attribute>
+                </xpath>
+                <xpath expr="//field[@name='email']" position="attributes">
+                    <attribute name="placeholder">e.g.email_123@gmail.com</attribute>
+                </xpath>
+            </field>
+        </record>
+</odoo>

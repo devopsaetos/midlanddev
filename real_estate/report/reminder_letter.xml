@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <template id="reminder_letter">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="real_estate.internal_layout1">
+                        <div class="container">
+                            <style>
+                                p {
+                                font-family: "arial";
+                                font-size: 16px;
+                                color: black;
+                                }
+                                .member {
+                                font-size: 16px !important;
+                                }
+                            </style>
+                            <t t-set="current_date"
+                               t-value="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
+                            <t t-set="installment_check"
+                               t-value="request.env['installment.plan'].search_count([('file_id', '=', o.id),('state', '=', 'open'),('date', '&lt;', current_date)])"/>
+                            <t t-set="balloting_amount_of_file"
+                               t-value="o.sale_amount * (request.env['res.company']._company_default_get().balloting_percentage / 100)"/>
+                            <t>
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <div style="text-align:right">
+                                            <h4 style="text-align:right">
+                                                <b>
+                                                    Date:
+                                                    <u>
+                                                        <span t-esc="current_date"/>
+                                                    </u>
+                                                </b>
+                                            </h4>
+                                        </div>
+                                        <div class="member">
+                                            <strong>
+                                                <div t-field="o.membership_id.name"/>
+                                                <t t-if="o.membership_id.street">
+                                                    <div t-field="o.membership_id.street"/>
+                                                </t>
+                                                <t t-if="o.membership_id.street2">
+                                                    <div t-field="o.membership_id.street2"/>
+                                                </t>
+                                                <t t-if="o.membership_id.city_id.name">
+                                                    <div t-field="o.membership_id.city_id.name"/>
+                                                </t>
+                                                <t t-if="o.membership_id.country_id.name">
+                                                    <div t-field="o.membership_id.country_id.name"/>
+                                                </t>
+                                                <div t-field="o.membership_id" t-options='{
+                "widget": "contact",
+                "fields": ["phone", "mobile", "email"]}'/>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-5 col-xs-offset-2">
+                                        <p>
+                                        </p>
+                                    </div>
+                                </div>
+                                <p style="font-size:20px;">
+                                    <b>Subject:Payment Reminder</b>
+                                </p>
+                                <br/>
+                                <p align="justify">Dear Mr./Miss
+                                    <b>
+                                        <u>
+                                            <span style="font-size:16px;" t-field="o.membership_name"/>
+                                        </u>
+                                    </b>
+                                </p>
+                                <p style="text-align: justify; text-justify: inter-word; font-size:16px;">We take this
+                                    opportunity to express our
+                                    gratitude for your long-term business
+                                    relationship with
+                                    <t t-esc="res_company.name"/>
+                                    and assure you of our endeavors to provide you
+                                    with the highest standards of service and commitment.
+                                </p>
+                                <p align="justify">As per the payment plan (annexure to the agreement of Sale) this is
+                                    to remind you
+                                    that your installment amount is overdue since
+                                    <b>
+                                        <u>
+                                            <t t-set='title'
+                                               t-value="request.env['account.move'].search([('partner_id', '=', o.membership_id.partner_id.id) , ('name', '=' , o.name), ('state', '!=' , 'paid')] ,limit=1)"/>
+                                        </u>
+                                    </b>
+                                </p>
+                                <p align="justify">You are requested
+                                    to please make payments amounting to PKR
+                                    <b>
+                                        <u>
+                                            <span t-esc="o._compute_residual_amount(o.membership_id.partner_id.id, o.name)"/>
+                                        </u>
+                                    </b>
+                                    without further delay to keep
+                                    your payments at par with the payment schedule.
+                                </p>
+                                <p align="justify">The options for various modes of payment are given below:</p>
+
+                                <ul>
+                                    <li>
+                                        <p>Cross Cheque/Demand Draft/Pay order drawn in favor of
+                                            <b>
+                                                <u>
+                                                    <span t-esc="res_company.name"/>
+                                                </u>
+                                            </b>
+                                        </p>
+
+                                    </li>
+                                    <li>
+                                        <p align="justify">In case of Direct Bank Transfer / Direct Deposit, please do
+                                            not forget to mention the Customer Name, Property Unit Number and
+                                            Installment
+                                            No. in the bank remittal advice and email the scanned copy to
+                                            <t t-esc="res_company.email"/>
+                                        </p>
+                                    </li>
+                                </ul>
+                                <table style="font-size:14px;">
+                                    <tr>
+                                        <th style="background:white;">Account Title:</th>
+                                        <td style="background:white;">
+                                            <t t-esc="res_company.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="background:white;">Account No:</th>
+                                        <td style="background:white;">
+                                            <t t-set='account'
+                                               t-value="request.env['account.journal'].search([],limit=1)"/>
+                                            <t t-esc="account.bank_acc_number"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="background:white;">Bank:</th>
+                                        <td style="background:white;">
+                                            <t t-set='bank'
+                                               t-value="request.env['account.journal'].search([],limit=1)"/>
+                                            <t t-esc="bank.bank_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="background:white;">Branch:</th>
+                                        <td style="background:white;">
+                                            <t t-set='address'
+                                               t-value="request.env['account.journal'].search([],limit=1)"/>
+                                            <t t-esc="address.branch_id.name"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p align="justify">Please note that you have only paid PKR
+                                    <b>
+                                        <u>
+                                            <span t-esc="o._compute_paid_amount(o.membership_id.partner_id.id, o.name) - (o._compute_residual_amount(o.membership_id.partner_id.id, o.name))"/>
+                                        </u>
+                                    </b>
+                                    against the unit and
+                                    further you defaulted in the rest of the payments as per the payment schedule to
+                                    date. Therefore, we would appreciate your immediate payment in order to avoid any
+                                    liquidating damages which will incur as per the rate mentioned in the contract for
+                                    any outstanding amount from the due dates.
+                                </p>
+                                <p align="justify">Please feel free to contact us for any further queries.</p>
+                                <p align="justify">Yours Sincerely,</p>
+                                <br/>
+                                <br/>
+                                <div class="col-xs-4">
+                                    <p align="justify">For and on the behalf of
+                                        <t t-esc="res_company.name"/>
+                                        Property Management
+                                        Department
+                                    </p>
+                                </div>
+                            </t>
+                        </div>
+
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <report
+                string="Reminder Letter"
+                id="reminder_letter_action"
+                model="file"
+                report_type="qweb-pdf"
+                name="real_estate.reminder_letter"
+                file="real_estate.reminder_letter"
+        />
+
+    
+</odoo>

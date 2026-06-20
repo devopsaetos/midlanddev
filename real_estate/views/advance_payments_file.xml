@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.advance_popup" model="ir.ui.view">
+            <field name="name">real_estate advance_popup</field>
+            <field name="model">advance.popup</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form string="Create Payment">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="membership_id"/>
+                                <field name="file_id" domain="[('project_type', '=', 'housing_society')]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="name"/>
+                                <field name="number_of_invoices_covered"/>
+                            </group>
+                            <group>
+                                <field name="date"/>
+                                <field name="amount"/>
+                                <field name="journal_id"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Create Payment" name="create_payment" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_advance_popup">
+            <field name="name">Create Payment</field>
+            <field name="res_model">advance.popup</field>
+
+            <field name="view_mode">form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="target">new</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+
+<!--        <menuitem-->
+<!--            id="real_estate.advance_payments_file"-->
+<!--            name="Advance Payments"-->
+<!--            action="real_estate.action_advance_popup"-->
+<!--            parent="real_estate.invoices"-->
+<!--            sequence="2"-->
+<!--        />-->
+</odoo>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="land_development.view_investor_form">
+            <field name="name">res.member.form</field>
+            <field name="model">res.member</field>
+            <field name="priority" eval="11"/>
+            <field name="arch" type="xml">
+                <form string="Partners">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Invoices :  "
+                                    icon="fa-pencil-square-o"
+                            >
+                                <field name="no_of_invoices"/>
+
+                            </button>
+                            <!--                            <button-->
+                            <!--                                    name="open_file"-->
+                            <!--                                    type="object"-->
+                            <!--                                    class="oe_stat_button"-->
+                            <!--                                    string="Files :  "-->
+                            <!--                                    icon="fa-folder-open-o"-->
+                            <!--                            >-->
+
+                            <!--                                <field name="no_of_files"/>-->
+
+                            <!--                            </button>-->
+                            <button
+                                    name="toggle_active"
+                                    type="object"
+                                    class="oe_stat_button" icon="fa-archive">
+
+                                <field
+                                        name="active"
+                                        widget="boolean_button"
+                                        options='{"terminology": "archive"}'
+                                />
+                            </button>
+                        </div>
+
+                        <!-- image is Inherited field -->
+                        <field
+                                name="image_1920"
+                                widget='image'
+                                class="oe_avatar"
+                                style="width:100px; height:100px"
+                        />
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" required="1" default_focus="1" placeholder="Name"/>
+                            </h1>
+                            <field name="project_type" invisible="1"/>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="is_investor" invisible='1'/>
+                                <field name="ref" string="Investor Number" readonly="1"/>
+                                <field name="company_type" string="Investor Type"/>
+                                <field name="assigned_user_ids" string="Assigned Users"/>
+                                <field name="user_id" string="Prop. Manage. Executive"/>
+                                <field name="tracking_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name='source_ids' options='{"no_open": True, "no_create": True}'/>
+                                <field name='cnic' string="CNIC" invisible="company_type != 'person'"/>
+                            </group>
+                        </group>
+
+                        <notebook colspan="4">
+                            <page
+                                    string="Company Information"
+                                    invisible="company_type != 'company'"
+                                    autofocus="autofocus">
+                                <group>
+                                    <group name='primary_address' string="Registered Address">
+                                        <!-- All address fields are Inherited field except city_id -->
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="street" placeholder="Street..." class="o_address_street"
+                                                   required='1'/>
+                                            <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+
+                                            <field name="city" placeholder="City" class="o_address_city"
+                                                   required='1' options='{"no_open": True}'/>
+
+                                            <field name="state_id" string="Province" class="o_address_state"
+                                                   placeholder="State" options='{"no_open": True}'
+                                                   context="{'country_id': country_id, 'zip': zip}"
+                                            />
+
+                                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                            <field name="country_id" placeholder="Country" class="o_address_country"
+                                                   options='{"no_open": True, "no_create": True}'
+                                                   required='1'
+                                            />
+                                        </div>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Personal Information"
+                                  invisible="company_type != 'person'" autofocus="autofocus">
+                                <group>
+                                    <group name='contact_info' string="Contact Info">
+                                        <field name="email"/>
+                                        <field name="mobile"
+                                               required="company_type == 'person'"
+                                               placeholder='3008765432'/>
+                                        <field name="phone"
+                                               placeholder='42987654'/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group name='primary_address' string="Primary Address">
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field
+                                                    name="street"
+                                                    placeholder="Street..."
+                                                    class="o_address_street"
+                                                    required='1'/>
+
+                                            <field
+                                                    name="street2"
+                                                    placeholder="Street 2..."
+                                                    class="o_address_street"/>
+
+                                            <field
+                                                    name="city"
+                                                    placeholder="City"
+                                                    class="o_address_city"
+                                                    required='1'
+                                                    options='{"no_open": True}'/>
+
+                                            <field
+                                                    name="state_id"
+                                                    string="Province"
+                                                    class="o_address_state"
+                                                    placeholder="State"
+                                                    options='{"no_open": True}'
+                                                    context="{'country_id': country_id, 'zip': zip}"/>
+
+                                            <field
+                                                    name="zip"
+                                                    placeholder="ZIP"
+                                                    class="o_address_zip"/>
+
+                                            <field
+                                                    name="country_id"
+                                                    placeholder="Country"
+                                                    class="o_address_country"
+                                                    options='{"no_open": True, "no_create": True}'
+                                                    required='1'/>
+                                        </div>
+                                    </group>
+                                </group>
+                                <group name="id_info">
+                                    <group string="Authorised Person">
+                                        <field name="kin_name" string="Name" required="is_investor == True"/>
+                                        <field name="kin_mobile" string="Mobile" widget="mask"
+                                               data-inputmask="'mask': '9999-9999999'"/>
+                                        <field name="kin_cnic" string="CNIC" widget="mask"
+                                               data-inputmask="'mask': '99999-9999999-9'"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="land_development.view_investor_tree">
+            <field name="name">res.member.tree</field>
+            <field name="model">res.member</field>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="ref"/>
+                    <field name="cnic"/>
+                    <field name="mobile"/>
+                    <field name="email"/>
+                </list>
+            </field>
+        </record>
+
+        <!--        <record model="ir.ui.view" id="land_development.view_investor_search">-->
+        <!--            <field name="name">res.member.search</field>-->
+        <!--            <field name="model">res.member</field>-->
+        <!--            <field name="priority" eval="10"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <search>-->
+        <!--                    <field name="name"/>-->
+        <!--                    <field name="ref"/>-->
+        <!--                    <field name="cnic"/>-->
+        <!--                    <field name="mobile"/>-->
+        <!--                    <field name="tracking_id"/>-->
+        <!--                    <field name="email"/>-->
+        <!--                </search>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <!--        <record model="ir.ui.view" id="land_development.view_investor_followup_form">-->
+        <!--            <field name="name">land_development view_member_followup_form</field>-->
+        <!--            <field name="model">res.member</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <form>-->
+        <!--                    <sheet>-->
+        <!--                        <div class="oe_chatter">-->
+        <!--                            <field name="message_follower_ids" widget="mail_followers"/>-->
+        <!--                            <field name="activity_ids" widget="mail_activity"/>-->
+        <!--                            <field name="message_ids" widget="mail_thread"/>-->
+        <!--                        </div>-->
+        <!--                    </sheet>-->
+        <!--                </form>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <record model="ir.actions.act_window" id="land_development.action_investors">
+            <field name="name">Investors</field>
+            <field name="res_model">res.member</field>
+            <field name="domain">[('is_investor','=',1),('project_type','in',['skyscraper', False])]</field>
+            <field name="context">
+                {
+                'default_is_investor':1,
+                'default_project_type':'skyscraper',
+                'current_view': 'building'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Member.
+                </p>
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.view_investor_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.view_investor_form')})]"
+            />
+        </record>
+
+        <menuitem
+                id="land_development.investors"
+                name="Investor"
+                parent="land_development.menu_investment_parent"
+                action="land_development.action_investors"
+                sequence='1'
+        />
+
+    </data>
+</odoo>

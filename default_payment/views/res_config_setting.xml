@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_config_settings_advance_payment_form" model="ir.ui.view">
+        <field name="name">view.account.config.settings.advance.payment.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="50"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div data-key="account" position="inside">
+                <h2>Advance Payments</h2>
+                <div class="row mt16 o_settings_container">
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Default Account</span>
+                            <div class="text-muted">
+                                Default account to be used for Advance Payments of your company
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="advance_payment_account_id" string="Incoming Account" class="col-lg-3 o_light_label"/>
+                                    <field name="advance_payment_account_id" options="{'no_create_edit': True, 'no_open': True}"
+                                           domain="[('company_id', '=', company_id), ('internal_type', '=', 'other'), ('reconcile', '=', True)]"/>
+                                </div>
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="advance_payment_outgoing_account_id" string="Outgoing Account" class="col-lg-3 o_light_label"/>
+                                    <field name="advance_payment_outgoing_account_id" options="{'no_create_edit': True, 'no_open': True}"
+                                           domain="[('company_id', '=', company_id), ('internal_type', '=', 'other'), ('reconcile', '=', True)]"/>
+                                </div>
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="clearing_account_id" string="Clearing Account" class="col-lg-3 o_light_label"/>
+                                    <field name="clearing_account_id" options="{'no_create_edit': True, 'no_open': True}"
+                                           domain="[('deprecated', '=', False), ('company_id', '=', company_id), ('internal_type', '=', 'other'), ('reconcile', '=', True)]"/>
+                                </div>
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="discount_allowed_account_id" string="Discount Allowed Account" class="col-lg-3 o_light_label"/>
+                                    <field name="discount_allowed_account_id" options="{'no_create_edit': True, 'no_open': True}"
+                                           domain="[('deprecated', '=', False), ('company_id', '=', company_id), ('internal_type', '=', 'other')]"/>
+                                </div>
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="discount_earned_account_id" string="Discount Earned Account" class="col-lg-3 o_light_label"/>
+                                    <field name="discount_earned_account_id" options="{'no_create_edit': True, 'no_open': True}"
+                                           domain="[('deprecated', '=', False), ('company_id', '=', company_id), ('internal_type', '=', 'other')]"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Default Journal</span>
+                            <div class="text-muted">
+                                Default journal to be used for Advance Payments of your company
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="advance_payment_journal_id" string="Journal" class="col-lg-3 o_light_label"/>
+                                    <field name="advance_payment_journal_id" options="{'no_create_edit': True, 'no_open': True}"
+                                           domain="[('company_id', '=', company_id)]"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Payments SMS Settings</span>
+                            <div class="text-muted">
+                                Send SMS for Payments of this company ?
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+<!--                                    <label for="send_payment_sms" string="Journal" class="col-lg-3 o_light_label"/>-->
+                                    <field name="send_payment_sms" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="land_development.predefine_plan_form" model="ir.ui.view">
+            <field name="name">land_development predefine_plan_form</field>
+            <field name="model">predefine.plan</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="interval_id"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="applicable"/>
+                                <field name="unit_category_type_id" invisible="applicable == 'project' or applicable == False"/>
+                                <label for="confirmation_amount_period" string="Confirmation Period"/>
+                                <div class="o_row" required="1">
+                                    <field name="confirmation_amount_period"
+                                           widget="regex_mask" data-inputmask-regex="^\d+$"
+                                           required="1"/>
+                                    <span>Months</span>
+                                </div>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field name="total_installment"/>
+                                <field name="include_in_plan"/>
+                                <field name="treat_balloon_as"/>
+                            </group>
+                        </group>
+                        <group string="Installment">
+                            <notebook colspan="4">
+                            <page string="Details" autofocus="autofocus">
+                                <field name="predefine_plan_line_ids">
+                                    <list editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="basis"/>
+                                        <field name="value" sum="Total"/>
+                                        <field name="start_from"/>
+                                        <field name="interval"/>
+                                        <field name="frequency"/>
+                                        <field name="include_installment"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                        </group>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="land_development.predefine_plan_tree" model="ir.ui.view">
+            <field name="name">land_development predefine_plan_tree</field>
+            <field name="model">predefine.plan</field>
+            <field name="arch" type="xml">
+                <list name='predefine_plan' string="Predefine Plan">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="interval_id"/>
+                    <field name="total_installment"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="land_development.action_predefine_plan">
+            <field name="name">Predefine Plan</field>
+            <field name="res_model">predefine.plan</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="land_development.predefine_plan"
+            name="Predefine Plan"
+            parent="land_development.menu_price_plan"
+            action="land_development.action_predefine_plan"
+            sequence='10'
+        />
+
+    </data>
+</odoo>

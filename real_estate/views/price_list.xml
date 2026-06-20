@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.price_list_form">
+            <field name="name">real_estate price_list_form</field>
+            <field name="model">price.list</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name"/>
+                                <field name="society_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                />
+                                <field name="phase_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                />
+                            </group>
+                            <group>
+                                <field name="starting_date"/>
+                                <field name="end_date"/>
+                                <field name="price_list_type"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Particular" autofocus="autofocus" invisible="price_list_type != 'unit'">
+                                <field name="pricelist_line" >
+                                    <list editable="bottom">
+                                        <field name="unit_inventory_id" string="Unit"
+                                               groups="real_estate.group_user_base_pricing"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="category_id" string="Category"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_category_type_id" string="Product"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="size_id" string="Size"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('project_type', '=', 'housing_society')]"/>
+                                        <field name="unit_class_id" string="Type"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="sector_id"
+                                               domain="[('project_type','=','housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"
+                                        />
+                                        <field name="starting_date"/>
+                                        <field name="end_date"/>
+                                        <field name="price"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Particulars" autofocus="autofocus" invisible="price_list_type == 'unit'">
+                                <field name="price_list_line_generic">
+                                    <list editable="bottom">
+                                        <field name="category_id" string="Category"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_category_type_id" string="Product"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="sector_id"
+                                               domain="[('project_type','=','housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="price"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.price_list_tree">
+            <field name="name">real_estate price_list_tree</field>
+            <field name="model">price.list</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="starting_date"/>
+                    <field name="end_date"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.price_list_search">
+            <field name="name">real_estate price_list_search</field>
+            <field name="model">price.list</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="starting_date"/>
+                    <field name="end_date"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_price_list">
+            <field name="name">Price List</field>
+            <field name="res_model">price.list</field>
+
+            <field name="view_mode">list,form</field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">{'current_view': 'realestate', 'default_project_type':'housing_society'}</field>
+        </record>
+
+        <menuitem
+                id="real_estate.price_list"
+                name="Price List"
+                parent="real_estate.menu_price_plan"
+                action="real_estate.action_price_list"
+                sequence='3'
+        />
+
+</odoo>

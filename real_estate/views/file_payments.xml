@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.file_payments_form">
+            <field name="name">real_estate.file_payments_form</field>
+            <field name="model">file</field>
+            <field name="inherit_id" ref="real_estate.file_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='file_payment_view_ids']" position="replace">
+                    <field name="installment_payments" readonly="1" nolabel="1">
+                        <list string="Installment Payments">
+                            <field name="multi_invoice_line_id" invisible="1"/>
+                            <field name="name"/>
+                            <field name="property_invoice_type"/>
+                            <field name="invoice_id"/>
+                            <field name="invoice_date"/>
+                            <field name="invoice_amount"/>
+                            <field name="payment_date"/>
+                            <field name="payment_id"/>
+                            <field name="payment_amount" sum="Amount"/>
+                            <field name="invoice_residual" string="Balance"/>
+                            <field name="invoice_payment_state" invisible="1"/>
+                        </list>
+                    </field>
+                </xpath>
+                <xpath expr="//group[@name='installment_payments']" position="after">
+                    <group name="additional_payments" string="Additional Payments">
+                        <field name="additional_payments" readonly="1" nolabel="1">
+                            <list string="Additional Payments">
+                                <field name="multi_invoice_line_id" invisible="1"/>
+                                <field name="name"/>
+                                <field name="property_invoice_type"/>
+                                <field name="invoice_id"/>
+                                <field name="invoice_date"/>
+                                <field name="invoice_amount"/>
+                                <field name="payment_date"/>
+                                <field name="payment_id"/>
+                                <field name="payment_amount" sum="Amount"/>
+                                <field name="invoice_residual" string="Balance"/>
+                                <field name="invoice_payment_state" invisible="1"/>
+                            </list>
+                        </field>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+</odoo>

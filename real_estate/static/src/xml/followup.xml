@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+    <t t-name="FollowUpDashboardMain"><div></div></t>
+
+    <t t-name="FollowUpTable">
+		<t t-foreach="item" t-as="i">
+		    <tr class="o_details">
+		    	<td></td>
+		    	<th scope="row"><t t-esc="i.name"/></th>
+
+		    	<td>
+		    		<t t-if="i.zero_to_thirty_amount != 0.00">
+		    			<a href="#">
+		    				<span t-att-data-user-id="i.id" t-att-data-ageing-id="'zero_to_thirty'">
+				    			<t t-esc="i.zero_to_thirty_amount"/>
+				    			-
+				    			(<t t-esc="i.zero_to_thirty"/>)
+				    		</span>
+				    	</a>
+		    		</t>
+		    		<t t-else="">-</t>
+		    	</td>
+
+		    	<td>
+		    		<t t-if="i.thirty_to_ninty_amount != 0.00">
+		    			<a href="#">
+		    				<span t-att-data-user-id="i.id" t-att-data-ageing-id="'thirty_to_ninty'">
+				    			<t t-esc="i.thirty_to_ninty_amount"/>
+				    			-
+				    			(<t t-esc="i.thirty_to_ninty"/>)
+				    		</span>
+				    	</a>
+		    		</t>
+		    		<t t-else="">-</t>
+		    	</td>
+
+		    	<td>
+		    		<t t-if="i.ninty_to_above_amount != 0.00">
+		    			<a href="#">
+		    				<span t-att-data-user-id="i.id" t-att-data-ageing-id="'ninty_to_above'">
+				    			<t t-esc="i.ninty_to_above_amount"/>
+				    			-
+				    			(<t t-esc="i.ninty_to_above"/>)
+				    		</span>
+				    	</a>
+		    		</t>
+		    		<t t-else="">-</t>
+		    	</td>
+
+		    	<td>
+		    		<a class="btn o_chatter_btn glyphicon glyphicon-send" t-att-data-partner-id="i.id" role="button"></a>
+		    	</td>
+		    </tr>
+		</t>
+    </t>
+
+    <t t-name="FollowUpSummery">
+    	<table class="table table-followup">
+			 <thead class="thead-dark">
+			    <tr>
+			      <th scope="col">#</th>
+			      <th scope="col">Customers</th>
+			      <th scope="col">0-30</th>
+			      <th scope="col">30-90</th>
+			      <th scope="col">90-Above</th>
+			      <th scope="col"></th>
+			    </tr>
+			 </thead>
+		  	<tbody class='o_top_tbody'>
+		  		<t t-foreach="item" t-as="i">
+				    <tr class="o_top_tr" t-att-data-sp-id="i.id">
+						<th scope="row">
+							<a href="#" t-att-data-customer-id="i.id">
+								<i 
+									class="fa fa-expand"
+									style="padding-right: 26px;padding-left: 2px;">
+								</i>
+							</a>
+							<t t-esc="i.saleperson"/>
+						</th>
+						<td></td>
+						<td>
+				    		<t t-if="i.zero_to_thirty_amount != 0.00">
+			    				<span>
+					    			<t t-esc="i.zero_to_thirty_amount"/>
+					    			-
+					    			(<t t-esc="i.zero_to_thirty"/>)
+					    		</span>
+				    		</t>
+				    		<t t-else="">-</t>
+				    	</td>
+
+				    	<td>
+				    		<t t-if="i.thirty_to_ninty_amount != 0.00">
+
+			    				<span>
+					    			<t t-esc="i.thirty_to_ninty_amount"/>
+					    			-
+					    			(<t t-esc="i.thirty_to_ninty"/>)
+					    		</span>
+				    		</t>
+				    		<t t-else="">-</t>
+				    	</td>
+
+				    	<td>
+				    		<t t-if="i.ninty_to_above_amount != 0.00">
+
+			    				<span>
+					    			<t t-esc="i.ninty_to_above_amount"/>
+					    			-
+					    			(<t t-esc="i.ninty_to_above"/>)
+					    		</span>
+				    		</t>
+				    		<t t-else="">-</t>
+				    	</td>
+						<td></td>
+				    </tr>
+				</t>
+		  	</tbody>
+		</table>
+    </t>
+</templates>

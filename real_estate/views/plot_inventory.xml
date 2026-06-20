@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.plot_inventory_form">
+            <field name="name">real_estate plot_inventory_form</field>
+            <field name="model">plot.inventory</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form string="Plot Inventory" create="True" name="plot_inventory">
+                    <header>
+
+                        <button 
+                            name="action_sold" 
+                            type="object" 
+                            invisible="1"
+                            string="Sold" 
+                            class="oe_highlight"
+                        />
+
+                        <button 
+                            name="action_reserved" 
+                            type="object" 
+                            string="Reserved" 
+                            class="oe_highlight"
+                            invisible="1"
+                        />
+                        
+                        <button 
+                            name="action_mortgage" 
+                            type="object" 
+                            string="Mortgage" 
+                            class="oe_highlight"
+                            invisible="1"
+                        />
+
+                        <button 
+                            name="action_cancel" 
+                            type="object" 
+                            string="Cancel"
+                            class="oe_highlight"
+                            invisible="1"
+                        />
+
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="project_type" invisible="1"/>
+                                <field name="serial_number" default_focus="1" placeholder="Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="society_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                                <field name="phase_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                                <field name="sector_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                                <field name="street_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+<!--                                <field name="location_id" options="{'no_create': True, 'no_open': True}" readonly='1'/>-->
+                                <field name="category_id" string="Category" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                                <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                                <field name="size_id" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                            </group>
+                            <group>
+                                <field name="name"/>
+<!--                                <field name="state" readonly='1'/>-->
+                                <field name="state"/>
+                                <field name="demarcation_id" context="{'default_plot_inventory': id}"/>
+                                <field name="net_area"/>
+                                <field name="balcony_area"/>
+                                <field name="standard_area" string="Total Area (sft)"/>
+                                <field name="actual_area"/>
+<!--                                <field name="street"/>-->
+                                <field name="possession_status"/>
+                                <field name="investment_id" string="Investment No." invisible="0"/>
+                                <field name="partner_id" string="Investor" invisible="0"/>
+                                <field name="deal_price" invisible="0"/>
+                                <field name="investor_unit_price" invisible="0"/>
+                                <field name="list_price" force_save="1" invisible="0"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="plot_preference" string="Plot Preference" autofocus="autofocus">
+                                <field name="preference_factor_ids">
+                                    <list>
+                                        <field name="name"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="price_list" string="Price List">
+                                <field name="price_list">
+                                    <list editable="bottom">
+                                        <field name="starting_date"/>
+                                        <field name="end_date"/>
+                                        <field name="write_uid"/>
+                                        <field name="price"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="land_details" string="Land Details">
+                                <group>
+                                    <group>
+                                        <field name="khasra" />
+                                        <field name="old_khasra" />
+                                        <field name="khatuni" />
+                                        <field name="area_purchase" />
+                                        <field name="cost" />
+                                        <field name="registery_no" />
+                                    </group>
+                                    <group>
+                                        <field name="registery_type" />
+                                        <field name="city_id" />
+                                        <field name="mauza" />
+                                    </group>
+                                    <group string="Ex Owner Details">
+                                        <field name="ex_owner" />
+                                        <field name="cnic" />
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.plot_inventory_tree">
+            <field name="name">real_estate plot_inventory_tree</field>
+            <field name="model">plot.inventory</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list string="Plot Inventory" create="false" edit="false" name="plot_inventory" delete="false">
+                    <field name="serial_number"/>
+                    <field name="name"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id"/>
+                    <field name="street_id"/>
+                    <field name="location_id" invisible="1"/>
+                    <field name="category_id"/>
+                    <field name="unit_category_type_id" string="Product"/>
+                    <field name="size_id"/>
+                    <field name="unit_class_id" string="Type"/>
+                    <field name="demarcation_id" invisible="1"/>
+                    <field name="net_area"/>
+                    <field name="balcony_area"/>
+                    <field name="standard_area" string="Total Area (sft)"/>
+                    <field name="actual_area"/>
+                    <field name="state"/>
+                    <field name="possession_status"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.plot_inventory_search">
+            <field name="name">real_estate plot_inventory_search</field>
+            <field name="model">plot.inventory</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="serial_number"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id"/>
+                    <field name="location_id"/>
+                    <field name="size_id"/>
+                    <field name="name"/>
+                    <field name="demarcation_id"/>
+                    <field name="standard_area" string="Total Area (sft)"/>
+                    <field name="actual_area"/>
+                    <field name="street"/>
+                    <field name="category_id"/>
+                    <field name="possession_status"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_plot_inventory">
+            <field name="name">Unit Inventory</field>
+            <field name="res_model">plot.inventory</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Here Plot Inventory will show, Which you will create from Create Inventory Menu.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="view_mode">list,form</field>
+            <field name="context">
+                {
+                    'current_view': 'realestate',
+                    'default_project_type':'housing_society'
+                }
+            </field>
+        </record>
+
+        <menuitem 
+            id="real_estate.plot_inventory" 
+            name="Unit"
+            parent="real_estate.menu_inventory_root"
+            action="real_estate.action_plot_inventory"
+            sequence='3'
+        />
+        
+</odoo>

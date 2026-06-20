@@ -1,0 +1,98 @@
+.o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value="draft"]
+     {
+
+        background: #ead431;
+
+    }
+
+    .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value="draft"]::after
+     {
+
+        border-left-color: #ead431;
+
+    }
+
+    .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value = "lock"]
+    {
+
+        background: #32CD32;
+
+    }
+
+    .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value = "lock"]::after
+     {
+
+    border-left-color: #32CD32;
+
+    }
+    .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value = "approve"]
+    {
+
+        background: #90EE90;
+
+     }
+
+    .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value = "approve"]::after
+    {
+
+        border-left-color: #90EE90;
+
+    }
+
+//      .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value = "close"]
+//     {
+//
+//         background: red;
+//
+//      }
+//
+//     .o_form_view .o_form_statusbar > .o_statusbar_status > .o_arrow_button.btn-primary.disabled[data-value = "close"]::after
+//     {
+//
+//         border-left-color: red;
+//
+//     }
+
+th[data-name="installment_number"] {width: 50px!important;}
+th[data-name="invoice"] {width: 100px!important;}
+
+th[data-name="factor_id"] {width: 60px!important;}
+th[data-name="basis"] {width: 60px!important;}
+th[data-name="value"] {width: 80px!important;}
+th[data-name="total"] {width: 60px!important;}
+th[data-name="approved"] {width: 100px!important;}
+
+
+th[data-name="payment_date"] {width: 110px!important;}
+th[data-name="installment_name"] {width: 120px!important;}
+th[data-name="amount_paid"] {width: 100px!important;}
+th[data-name="amount_paid"] {width: 100px!important;}
+th[data-name="residual"] {width: 100px!important;}
+// th[data-name="invoice"] {width: 70px!important;}
+th[data-name="payment_status"] {width: 60px!important;}
+
+
+th[data-name="payment_id"] {width: 120px!important;}
+th[data-name="move_id"] {width: 120px!important;}
+th[data-name="payment_amount_residual"] {width: 120px!important;}
+
+// file_tree_view
+
+// th[data-name="name"] {width: 80px!important;}
+// th[data-name="membership_name"] {width: 50px!important;}
+// th[data-name="tracking_id"] {width: 70px!important;}
+// th[data-name="tracking_id"] {width: 60px!important;}
+// th[data-name="phase_id"] {width: 60px!important;}
+// th[data-name="sector_id"] {width: 50px!important;}
+// th[data-name="street_id"] {width: 50px!important;}
+// th[data-name="unit_number"] {width: 60px!important;}
+// th[data-name="category_id"] {width: 70px!important;}
+// th[data-name="unit_category_type_id"] {width: 60px!important;}
+// th[data-name="size_id"] {width: 50px!important;}
+// th[data-name="unit_class_id"] {width: 60px!important;}
+
+
+
+// .custom_group [data-id="kin_name"] {
+//    margin-right:10px!important;
+// }

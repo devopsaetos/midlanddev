@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.unit_category_type_form">
+            <field name="name">real_estate unit_category_type_form</field>
+            <field name="model">unit.category.type</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name"/>
+                                <field name="area_marla"/>
+                                <field name="plot_category_id" string="Category" invisible="1" domain="[('project_type', '=', 'housing_society')]"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field name="area_sq_feet"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.unit_category_type_tree">
+            <field name="name">real_estate unit_category_type_tree</field>
+            <field name="model">unit.category.type</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="code"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.unit_category_type_search">
+            <field name="name">real_estate unit_category_type_search</field>
+            <field name="model">unit.category.type</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="code"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_unit_category_type">
+            <field name="name">Product</field>
+            <field name="res_model">unit.category.type</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add Product.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">{ 'current_view': 'realestate', 'default_project_type':'housing_society'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.unit_category_type"
+            name="Product"
+            parent="real_estate.menu_inventory"
+            action="real_estate.action_unit_category_type"
+            sequence='2'
+        />
+</odoo>

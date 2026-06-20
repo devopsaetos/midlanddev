@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.account_invoice_ext_form">
+            <field name="name">real_estate account_invoice_ext_form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <field name='ref' position="after">
+                    <field name="property_invoice_type"/>
+                </field>
+                <field name="partner_id" position="after">
+                    <field name="invoice_way_type"/>
+                    <field name="invoice_way_value"/>
+                    <field name="not_sync"/>
+                    <field name="file_ids" force_save="1"/>
+                    <field name="crm_id"/>
+                    <field name="token_partner"/>
+                </field>
+            </field>
+        </record>
+        
+</odoo>

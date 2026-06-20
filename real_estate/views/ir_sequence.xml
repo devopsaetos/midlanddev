@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.actions.act_window" id="real_estate.action_sequence">
+            <field name="name">Sequences</field>
+            <field name="res_model">ir.sequence</field>
+
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view' : 'realestate'}</field>
+        </record>
+
+        <menuitem 
+            id="real_estate.sequence" 
+            name="Sequences" 
+            parent="real_estate.menu_settings"
+            action="real_estate.action_sequence"
+            sequence='1'
+        />
+        
+</odoo>

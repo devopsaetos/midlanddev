@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+<!--        <record id="view_account_payment_tree_inherit" model="ir.ui.view">-->
+<!--                <field name="name">account.payment.tree.inherit</field>-->
+<!--                <field name="model">account.payment</field>-->
+<!--                <field name="inherit_id" ref="account.view_account_payment_tree"/>-->
+<!--                <field name="arch" type="xml">-->
+<!--                    <tree decoration-info="state == 'draft'" decoration-muted="state in ['reconciled', 'cancelled']" edit="false">-->
+<!--&lt;!&ndash;                        <field name="actual_amount" sum="Amount"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        todo&ndash;&gt;-->
+<!--                        <field name="has_invoices"/>-->
+<!--                    </tree>-->
+<!--                </field>-->
+<!--            </record>-->
+
+<!--        <record id="account.view_account_supplier_payment_tree" model="ir.ui.view">-->
+<!--            <field name="name">account.supplier.payment.tree</field>-->
+<!--            <field name="model">account.payment</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <tree decoration-info="state == 'draft'" decoration-muted="state in ['reconciled', 'cancelled']" edit="false">-->
+<!--                    <field name="payment_date"/>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="journal_id"/>-->
+<!--&lt;!&ndash;                    <field name="branch_id" groups="base_branch_company.group_multi_branch"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                    todo&ndash;&gt;-->
+<!--                    <field name="payment_method_id"/>-->
+<!--                    <field name="partner_id" string="Vendor"/>-->
+<!--                    &lt;!&ndash; <field name="amount" sum="Amount"/> &ndash;&gt;-->
+<!--&lt;!&ndash;                    <field name="actual_amount"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                    todo&ndash;&gt;-->
+<!--                    <field name="company_id" groups="base.group_multi_company"/>-->
+<!--                    <field name="state"/>-->
+<!--                    <field name="currency_id" invisible="1"/>-->
+<!--                    <field name="partner_type" invisible="1"/>-->
+<!--                </tree>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <record id="action_account_payments_inherit" model="ir.actions.act_window">-->
+<!--            <field name="name">Payments</field>-->
+<!--            <field name="res_model">account.payment</field>-->
+<!--            <field name="view_mode">tree,kanban,form,graph</field>-->
+<!--            <field name="context">{'default_payment_type': 'inbound', 'default_partner_type': 'customer'}</field>-->
+<!--            <field name="domain">[('has_invoices', '=', False),('partner_type', '=', 'customer')]</field>-->
+<!--            <field name="view_id" ref="account.view_account_payment_tree"/>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">-->
+<!--                  Click to register a payment-->
+<!--                </p><p>-->
+<!--                  Payments are used to register liquidity movements (send, collect or transfer money).-->
+<!--                  You can then process those payments by your own means or by using installed facilities.-->
+<!--                </p>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record id="view_account_advance_payment_invoice_form" model="ir.ui.view">
+            <field name="name">view.apply.advance.payment.form</field>
+            <field name="model">apply.advance.payment</field>
+            <field name="arch" type="xml">
+                <form string="Apply Advance Payments">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="partner_id" class="oe_edit_only"/>
+                            <h1><field name="partner_id" readonly="1"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="journal_id" domain="[('company_id', '=', company_id)]"/>
+                                <field name="date" />
+                                <field name="invoice_residual"/>
+                                <field name="advance_payment_total"/>
+                                <field name="adjust_amount_total"/>
+                            </group>
+                            <group>
+                                <field name="company_id" readonly="1"/>
+                                <field name="currency_id"/>
+                                <field name="partner_type" readonly="1"/>
+                            </group>
+                        </group>
+                        <separator />
+                        <notebook>
+                            <page string="Advance payments to apply">
+                                <field name="advance_payment_ids"
+                                       domain="[('company_id', '=', company_id), ('is_advance_payment', '=', True),
+                                                ('partner_id', '=', partner_id), ('partner_type', '=', partner_type),
+                                                ('amount_residual', '!=', 0.0), ('state', '=', 'posted'),
+                                                ('reconciled_invoice_ids', '=', False)]">
+                                    <list string="Advance Payments" editable="bottom">
+                                        <field name="date" invisible="1"/>
+                                        <field name="name"/>
+                                        <field name="journal_id"/>
+                                        <field name="payment_method_line_id" invisible="1"/>
+                                        <field name="company_id" invisible="1"/>
+                                        <field name="amount_to_adjust" sum="Amount"/>
+                                        <field name="amount_residual" sum="Balance"/>
+                                        <field name="amount" sum="Amount"/>
+                                        <field name="reconciled_invoices_count" invisible="1"/>
+                                        <field name="state" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+
+                        <footer>
+                            <button string='Apply' name="apply_advance_payment" type="object" class="btn-primary"/>
+                            <button string="Cancel" class="btn-default" special="cancel"/>
+                        </footer>
+                    </sheet>
+               </form>
+            </field>
+        </record>
+
+        <record id="default_payment.action_account_advance_payment_invoice" model="ir.actions.act_window">
+            <field name="name">Apply Advance Payments</field>
+            <field name="res_model">apply.advance.payment</field>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+</odoo>

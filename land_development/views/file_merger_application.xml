@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    	<record id="land_development.file_merger_application_form" model="ir.ui.view">
+            <field name="name">land_development file_merger_application_form</field>
+            <field name="model">plot.merger.application</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box"/>
+                        <div class="oe_title oe_state_size">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <group>
+
+                                <field name="membership_id"
+                                    context="{
+                                        'form_view_ref': 'real_estate.view_partner_form',
+                                        'default_is_member' : 1
+                                    }"/>
+                                <field name="knockoff" invisible="1"/>
+                                <field name="adjust" invisible="1"/>
+                                <field name="company_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="total_receive_amount"/>
+                                <field name="amount_deduction"/>
+                                <field name="net_adjusted" force_save="1" readonly="1"/>
+                                <field name="amount_adjust_done" invisible="1"/>
+                                <field name="credit_note_created" invisible="1"/>
+                            </group>
+                        </group>
+                        <group string="Source Detail ">
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Source Detail" autofocus="autofocus">
+                                <button
+                                    name="create_credit_note"
+                                    type="object"
+                                    string="Create Credit Note"
+                                    class="oe_highlight"
+                                    invisible="credit_note_created != False"
+                                />
+                                <field name="source_merger_id" readonly="knockoff == True">
+                                    <list editable="bottom">
+                                        <field name="file_id"  options="{'no_create': True}"/>
+                                        <field name="tracking_id"/>
+                                        <field name="category_id" string='Unit Category'/>
+                                        <field name="size_id"/>
+                                        <field name="inventory_id" string='Unit No.'/>
+                                        <field name="ttl_invoiced_amount" sum="Total"/>
+                                        <field name="amount_received" sum="Total"/>
+                                        <field name="amount_remaining" sum="Total"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                         <group string="Target Detail ">
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Target Detail" autofocus="autofocus">
+                                <button
+                                    name="amount_adjust"
+                                    type="object"
+                                    string="Adjust Target"
+                                    class="oe_highlight"
+                                    invisible="amount_adjust_done != False"
+                                />
+                                <field name="target_merger_id" readonly="adjust == True">
+                                    <list editable="bottom">
+                                        <field name="file_id"  options="{'no_create': True}"/>
+                                        <field name="tracking_id"/>
+                                        <field name="category_id" string='Unit Category'/>
+                                        <field name="size_id"/>
+                                        <field name="inventory_id" string='Unit No.'/>
+                                        <field name="ajustment_priority" invisible="1" required="0"/>
+                                        <field name="ttl_invoiced_amount" sum="Total"/>
+                                        <field name="amount_received" sum="Total"/>
+                                        <field name="amount_remaining" sum="Total"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="land_development.action_file_merger_application_forms">
+            <field name="name">Plot Merger Application</field>
+            <field name="res_model">plot.merger.application</field>
+
+            <field name="view_mode">list,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.file_merger_application_form')}),
+                ]"
+            />
+            <field name="context">{'current_view': 'building'}</field>
+        </record>
+
+
+        <menuitem
+            id="land_development.menu_file_merger_application_form"
+            name="Unit Merger Application"
+            action="land_development.action_file_merger_application_forms"
+            parent="land_development.menu_merger"
+            sequence="6"
+        />
+
+    </data>
+</odoo>

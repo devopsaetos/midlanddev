@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Layer 1 – Menu: hide Users menu item for non-group members.
+    -->
+    <record id="base.menu_action_res_users" model="ir.ui.menu">
+        <field name="groups_id" eval="[(6, 0, [ref('real_estate.group_view_users')])]"/>
+    </record>
+
+    <!--
+        Layer 2 – Action: restrict the Users window action.
+        Blocks standard navigation to Settings > Users.
+    -->
+    <record id="base.action_res_users" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(6, 0, [ref('real_estate.group_view_users')])]"/>
+    </record>
+
+    <!--
+        Layer 3 – Views: restrict the base Users form and simple-form views.
+        NOTE: Odoo can auto-generate fallback views, so this layer alone is
+        not sufficient — see the Python override in models/res_users.py.
+    -->
+    <record id="base.view_users_form" model="ir.ui.view">
+        <field name="groups_id" eval="[(6, 0, [ref('real_estate.group_view_users')])]"/>
+    </record>
+
+    <record id="base.view_users_simple_form" model="ir.ui.view">
+        <field name="groups_id" eval="[(6, 0, [ref('real_estate.group_view_users')])]"/>
+    </record>
+
+    <!--
+        Layer 4 – Preferences exception:
+        Add 'my_profile' context to the "My Profile / Preferences" action so
+        the Python override (fields_view_get) skips the group check for it.
+        This lets every user open their own profile without needing group_view_users.
+    -->
+    <record id="base.action_res_users_my" model="ir.actions.act_window">
+        <field name="context">{'my_profile': True}</field>
+    </record>
+
+    <!--
+        Layer 5 – ir.rule: allow group_view_users to read ALL user records.
+        (Commented-out rules below would also restrict ORM-level reads for
+        non-group users — enable only if you accept that user-selection
+        dropdowns will stop showing other users for non-group members.)
+    -->
+    <record id="rule_res_users_view_group_read" model="ir.rule">
+        <field name="name">Users: View Users group can read all</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('real_estate.group_view_users'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+
+</odoo>

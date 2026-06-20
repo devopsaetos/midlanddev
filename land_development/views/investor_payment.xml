@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="land_development.investor_payment_form" model="ir.ui.view">
+            <field name="name">land_development investor_payment</field>
+            <field name="model">investment.payment</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form string="Create Payment">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="investment_id" domain="[('state', '=', 'payment'),('project_type','in',['skyscraper', False])]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="partner_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="date"/>
+                            </group>
+                            <group>
+                                <field name="total_amount"/>
+                                <field name="payment_amount"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Create Payment" name="create_payment" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="land_development.action_investor_payment">
+            <field name="name">Investor Payment</field>
+            <field name="res_model">investment.payment</field>
+            <field name="view_mode">form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="land_development.investor_payment_form"/>
+            <field name="context">{'current_view': 'building'}</field>
+        </record>
+<!--        <menuitem-->
+<!--            id="land_development.investor_payment"-->
+<!--            name="Investor Payment"-->
+<!--            action="land_development.action_investor_payment"-->
+<!--            parent="land_development.menu_investment_parent"-->
+<!--            sequence="3"-->
+<!--        />-->
+    </data>
+</odoo>

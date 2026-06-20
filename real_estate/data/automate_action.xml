@@ -1,0 +1,88 @@
+<odoo>
+        <record forcecreate="True" id="ir_cron_check_challenge" model="ir.cron">
+            <field name="name">Installment Invoice</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="state">code</field>
+            <field name="code">model.installment_invoices()</field>
+            <field name="interval_number">1</field>
+            <field name="priority">0</field>
+            <field name="interval_type">days</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+
+        <!--        Cron Job For Manual Installment Invoice -->
+        <record forcecreate="True" id="ir_cron_manual_installment" model="ir.cron">
+            <field name="name">Manual Installment Invoice</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="state">code</field>
+            <field name="code">model.manual_installment_invoices()</field>
+            <field name="priority">0</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+
+        <!--        Cron Job For Manual Installment Invoice -->
+        <record forcecreate="True" id="ir_cron_investor_invoices" model="ir.cron">
+            <field name="name">Investor's Installment Invoice</field>
+            <field name="model_id" ref="model_investment"/>
+            <field name="state">code</field>
+            <field name="code">model.investor_installment_invoices()</field>
+            <field name="priority">0</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+
+        <!-- cron job for validating token date  -->
+        <record id="ir_cron_token_validity" model="ir.cron">
+            <field name="name">Token Money Date Validity</field>
+            <field name="model_id" ref="model_token_money"/>
+            <field name="state">code</field>
+            <field name="code">model.validate_token_date()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+
+        <record forcecreate="True" id="ir_cron_advance_adjustment" model="ir.cron">
+            <field name="name">Advance Adjustment</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="state">code</field>
+            <field name="code">model.advance_amount_adjustment()</field>
+            <field name="interval_number">1</field>
+            <field name="priority">5</field>
+            <field name="interval_type">months</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+
+        <record forcecreate="True" id="ir_cron_update_file_payment_status" model="ir.cron">
+            <field name="name">Update Payment Status File</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="state">code</field>
+            <field name="code">model.compute_overall_status_all_files()</field>
+            <field name="interval_number">1</field>
+            <field name="priority">5</field>
+            <field name="interval_type">months</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+
+        <record forcecreate="True" id="ir_cron_update_file_qr_code" model="ir.cron">
+            <field name="name">Update QR Code for Files</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="state">code</field>
+            <field name="code">model.generate_qr_code_for_all()</field>
+            <field name="interval_number">1</field>
+            <field name="priority">5</field>
+            <field name="interval_type">months</field>
+<!--            <field name="numbercall">-1</field>-->
+<!--            <field eval="True" name="doall" />-->
+        </record>
+    
+</odoo>

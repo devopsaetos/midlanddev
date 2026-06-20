@@ -1,0 +1,102 @@
+<odoo>
+    <!-- Tree view of the Land Register model   -->
+    <record model="ir.ui.view" id="real_estate.tree_bulk_file_cancellation">
+        <field name="name">bulk.file.cancellation.tree</field>
+        <field name="model">bulk.file.cancellation</field>
+        <field name="arch" type="xml">
+            <list string="Bulk File Cancellation">
+                <field name="name"/>
+                <field name="society_id"/>
+                <field name="phase_id"/>
+                <field name="sector_id"/>
+                <field name="over_due_installments"/>
+                <field name="date"/>
+            </list>
+        </field>
+    </record>
+    <!--form view of the Town Plan model-->
+    <record model="ir.ui.view" id="real_estate.form_bulk_file_cancellation">
+        <field name="name">bulk.file.cancellation.form</field>
+        <field name="model">bulk.file.cancellation</field>
+        <field name="arch" type="xml">
+            <form string="Town Plan">
+                <header>
+                    <button name="lock" type="object" string="Lock" class="oe_highlight"
+                            invisible="state not in 'draft'"/>
+                    <button name="approve" type="object" string="Approve" class="oe_highlight"
+                            invisible="state not in 'lock'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="search_file_records"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Over Due Records"
+                                icon="fa-search"
+                                invisible="state != 'draft'">
+                        </button>
+                    </div>
+                    <div class="oe_title oe_state_size">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="society_id" options="{'no_create': True, 'no_open': True}"
+                                   domain="[
+                                            ('is_society','=',1),
+                                            ('project_type','=','housing_society')
+                                           ]"/>
+                            <field name="sector_id"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="phase_id" options="{'no_create': True, 'no_open': True}"
+                                   domain="[
+                                            ('is_society','!=',1),
+                                            ('project_type','=','housing_society')
+                                           ]"/>
+                            <field name="over_due_installments"/>
+                            <field name="date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Detail">
+                            <field name="bulk_file_cancellation_line_ids">
+                                <list editable="bottom">
+                                    <field name="member_id"/>
+                                    <field name="membership_name"/>
+                                    <field name="file_id"/>
+                                    <field name="category_id"/>
+                                    <field name="size_id"/>
+                                    <field name="inventory_id"/>
+                                    <field name="file_state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="real_estate.action_bulk_file_cancellation" model="ir.actions.act_window">
+        <field name="name">Bulk File Cancellation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">bulk.file.cancellation</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create New Record
+            </p>
+        </field>
+    </record>
+
+   <menuitem id="real_estate.bulk_file_cancellation"
+          name="Bulk File Cancellation"
+          parent="real_estate.bulk_file_cancellation_parent"
+          action="real_estate.action_bulk_file_cancellation"
+   />
+
+</odoo>

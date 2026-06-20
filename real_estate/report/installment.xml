@@ -1,0 +1,288 @@
+<odoo>
+    <template id="ip_customized_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row">
+                    <div class="col-8">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo"
+                             class="center"/>
+                    </div>
+<!--                    <div class="col-4" style="text-align:right; font-size:10px;">-->
+<!--                        <h7 style="color:black;font-family:Octarine;">-->
+<!--                            <t t-if="res_company.street">-->
+<!--                                <t t-esc="res_company.street"/>,-->
+<!--                                <br/>-->
+<!--                                <t t-esc="res_company.street2"/>,-->
+<!--                                <br/>-->
+<!--                                <t t-esc="res_company.city"/>-->
+<!--                            </t>-->
+<!--                        </h7>-->
+<!--                        <br/>-->
+<!--                        <h7 style="color:black;font-family:Octarine;">-->
+<!--                            <t t-if="res_company.phone">-->
+<!--                                <t t-esc="res_company.phone"/>-->
+<!--                            </t>-->
+<!--                        </h7>-->
+<!--                    </div>-->
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="installment_plan_report">
+        <t t-call="real_estate.ip_customized_header"/>
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .header {
+                            display : none !important;
+                            }
+                        </style>
+                        <span/>
+                        <h4 style="color:#283075; font-family:Octarine;margin-top:40px; text-align:center;">
+                            <b>INSTALLMENT PLAN
+                            </b>
+                        </h4>
+                        <div class="row" style="margin-top:30px; color:black;">
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-5">
+                                        Name:
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-esc="o.membership_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"/>
+                                    <div class="col-7">
+                                        <hr style="line-height:1;"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5">
+                                        Unit No:
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-esc="o.inventory_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"/>
+                                    <div class="col-7">
+                                        <hr style="line-height:1;"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5">
+                                        Category:
+                                    </div>
+                                    <div class="col-7">
+
+                                        <span t-esc="o.category_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"/>
+                                    <div class="col-7">
+                                        <hr style="line-height:1;"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-5">
+                                        Number:
+                                    </div>
+                                    <div class="col-7">
+                                        <t t-esc="o.membership_id.ref"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"/>
+                                    <div class="col-7">
+                                        <hr style="line-height:1;"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5">
+                                        Size:
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-esc="o.size_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"/>
+                                    <div class="col-7">
+                                        <hr style="black;line-height:1;"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5">
+                                        Product:
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-esc="o.unit_category_type_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"/>
+                                    <div class="col-7">
+                                        <hr style="line-height:1;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr style="background-color:#283075;"/>
+                        <table class="table table-bordered" style="margin-top:40px;">
+                            <tr>
+                                <th scope="col" class="text-center"
+                                    style="color:#283075; font-size:80%; padding:0px; margin:0px;">Sr#
+                                </th>
+                                <th scope="col" class="text-center"
+                                    style="color:#283075; font-size:80%; padding:0px; margin:0px;">
+                                    Installment Type
+                                </th>
+                                <th scope="col" class="text-center"
+                                    style="color:#283075; font-size:80%; padding:0px; margin:0px;">Date
+                                </th>
+                                <th scope="col" class="text-center"
+                                    style="color:#283075; font-size:80%; padding:0px; margin:0px;">Amount
+                                </th>
+                            </tr>
+                            <t t-if="o.create_manually">
+                                <t t-set="total" t-value="0"/>
+                                <tr t-foreach="o.manual_installment_plan_ids" t-as="plan" style="color:black;">
+                                    <th scope="row" class="text-center" style="font-size:80%; padding:0px; margin:0px;">
+                                        <t t-esc="plan.installment_number"/>
+                                    </th>
+                                    <t t-if="plan.installment_type=='down'">
+                                        <th style="font-size:80%;padding:0px; margin:0px;">Initial Payment</th>
+                                    </t>
+                                    <t t-elif="plan.installment_type=='installment'">
+                                        <th style="font-size:80%; padding:0px; margin:0px;">Installment</th>
+                                    </t>
+                                    <t t-elif="plan.installment_type=='final'">
+                                        <th style="font-size:80%; padding:0px; margin:0px;">Final Payment</th>
+                                    </t>
+                                    <t t-else="">
+                                        <th style="font-size:80%; padding:0px; margin:0px;">
+                                            <t t-esc="plan.installment_type"/>
+                                        </th>
+                                    </t>
+                                    <th class="text-center" style="font-size:80%; padding:0px; margin:0px;">
+                                        <t t-esc="plan.date"/>
+                                    </th>
+                                    <t t-set="total" t-value="total+plan.amount_manual"/>
+                                    <th class="text-right" style="font-size:80%; padding:0px; margin:0px;">
+
+                                        <t t-esc="'{0:,.2f}'.format(plan.amount_manual)"/>
+                                    </th>
+                                </tr>
+                                <tr style="color:black;">
+                                    <th/>
+                                    <th colspan="2" style="font-size:80%; padding:5px; margin:5px; text-align:center;">
+                                        <b>Total</b>
+                                    </th>
+                                    <th style="font-size:80%; padding:5px; margin:5px; text-align:center;">
+                                        <b>
+                                            <t t-esc="total"
+                                               t-options='{"widget": "monetary", "display_currency": res_company.currency_id}'/>
+                                        </b>
+                                    </th>
+                                </tr>
+                            </t>
+                            <t t-else="">
+                                <t t-set="total" t-value="0"/>
+                                <tr t-foreach="o.installment_plan_ids" t-as="plan" style="color:black;">
+                                    <th scope="row" class="text-center" style="font-size:80%; padding:0px; margin:0px;">
+                                        <t t-esc="plan.installment_number"/>
+                                    </th>
+                                    <t t-if="plan.installment_type=='down'">
+                                        <th style="font-size:80%;padding:0px; margin:0px;">Initial Payment</th>
+                                    </t>
+                                    <t t-elif="plan.installment_type=='installment'">
+                                        <th style="font-size:80%; padding:0px; margin:0px;">Installment</th>
+                                    </t>
+                                    <t t-elif="plan.installment_type=='final'">
+                                        <th style="font-size:80%; padding:0px; margin:0px;">Final Payment</th>
+                                    </t>
+                                    <t t-else="">
+                                        <th style="font-size:80%; padding:0px; margin:0px;">
+                                            <t t-esc="plan.installment_type"/>
+                                        </th>
+                                    </t>
+                                    <th class="text-center" style="font-size:80%; padding:0px; margin:0px;">
+                                        <t t-esc="plan.date"/>
+                                    </th>
+                                    <t t-set="total" t-value="total+plan.amount"/>
+                                    <th class="text-right" style="font-size:80%; padding:0px; margin:0px;">
+
+                                        <t t-esc="'{0:,.2f}'.format(plan.amount)"/>
+                                    </th>
+                                </tr>
+                                <tr style="color:black;">
+                                    <th/>
+                                    <th colspan="2" style="font-size:80%; padding:5px; margin:5px; text-align:center;">
+                                        <b>Total</b>
+                                    </th>
+                                    <th style="font-size:80%; padding:5px; margin:5px; text-align:center;">
+                                        <b>
+                                            <t t-esc="total"
+                                               t-options='{"widget": "monetary", "display_currency": res_company.currency_id}'/>
+                                        </b>
+                                    </th>
+                                </tr>
+                            </t>
+                        </table>
+                        <div class="row" style="margin-top:30px;">
+                            <div class="col-4" style="margin-top:20px; text-align:center;">
+                                <span style="text-decoration: overline; text-decoration-color:black; font-family:Octarine Light;font-size:14px; color:#283075;">
+                                    Booking Officer
+                                </span>
+                            </div>
+                            <div class="col-4" style="margin-top:20px;text-align:center;">
+                                <span style="text-decoration: overline; text-decoration-color:black; font-family:Octarine Light;font-size:14px; color:#283075;">
+                                    Manager
+                                </span>
+                            </div>
+                            <div class="col-4" style="margin-top:20px;text-align:center;">
+                                <span style="text-decoration: overline; text-decoration-color:black; font-family:Octarine Light;font-size:14px; color:#283075;">
+                                    Signature of Applicant
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="page-break-before: always"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_installment_plan_report" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">300</field>
+        <field name="page_width">240</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="True"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+    <report
+            string="Installment Plan"
+            id="action_installment_plan_report"
+            model="file"
+            report_type="qweb-html"
+            paperformat="paperformat_installment_plan_report"
+            name="real_estate.installment_plan_report"
+            file="real_estate.installment_plan_report"
+    />
+</odoo>

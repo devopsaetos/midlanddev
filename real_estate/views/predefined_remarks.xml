@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.predefine_remarks_tree" model="ir.ui.view">
+            <field name="name">real_estate predefine_remarks_tree</field>
+            <field name="model">predefine.remarks</field>
+            <field name="arch" type="xml">
+                <list name='predefine_remarks' string="Predefine Remarks"  editable="top">
+                    <field name="external_notes" required="True"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_predefine_remarks">
+            <field name="name">Predefine Remarks</field>
+            <field name="res_model">predefine.remarks</field>
+            <field name="view_mode">list</field>
+        </record>
+
+        <menuitem
+                id="real_estate.predefine_remarks"
+                name="Predefine Remarks"
+                parent="real_estate.menu_inventory"
+                action="real_estate.action_predefine_remarks"
+                sequence='10'
+        />
+
+</odoo>

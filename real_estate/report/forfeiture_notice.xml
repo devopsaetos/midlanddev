@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <template id="forfeiture_notice">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+<!--                     <t t-call="real_estate.internal_layout1"/>-->
+                        <div class="container">
+                            <style>
+                                p {
+                                font-family: "arial";
+                                font-size: 16px;
+                                color: black;
+                                }
+                                li {
+                                font-family: "arial";
+                                font-size: 16px;
+                                color: black;
+                                }
+                                .member {
+                                font-size: 16px !important;
+                                }
+                            </style>
+                            <t t-set="current_date"
+                               t-value="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
+                            <t t-set="installment_check"
+                               t-value="request.env['installment.plan'].search_count([('file_id', '=', o.id),('state', '=', 'open'),('date', '&lt;', current_date)])"/>
+                            <t t-set="balloting_amount_of_file"
+                               t-value="o.sale_amount * (request.env['res.company']._company_default_get().balloting_percentage / 100)"/>
+                            <t>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-xs-12">
+                                        <div style="text-align:right">
+                                            <h4 style="text-align:right">
+                                                <b>
+                                                    Date:
+                                                    <u>
+                                                        <span t-esc="current_date"/>
+                                                    </u>
+                                                </b>
+                                            </h4>
+                                        </div>
+                                        <div class="member">
+                                            <strong>
+                                                <div t-field="o.membership_id.name"/>
+                                                <t t-if="o.membership_id.street">
+                                                    <div t-field="o.membership_id.street"/>
+                                                </t>
+                                                <t t-if="o.membership_id.street2">
+                                                    <div t-field="o.membership_id.street2"/>
+                                                </t>
+                                                <t t-if="o.membership_id.city_id.name">
+                                                    <div t-field="o.membership_id.city_id.name"/>
+                                                </t>
+                                                <t t-if="o.membership_id.country_id.name">
+                                                    <div t-field="o.membership_id.country_id.name"/>
+                                                </t>
+                                                <div t-field="o.membership_id" t-options='{
+                "widget": "contact",
+                "fields": ["phone", "mobile", "email"]}'/>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-5 col-xs-offset-2">
+                                        <p>
+                                        </p>
+                                    </div>
+                                </div>
+                                <br/>
+                                <p style="font-size:20px;">
+                                    <b>Subject:<span style="text-align: center;">                   Forfeiture Notice</span></b>
+                                </p>
+                                <br/>
+                                <style>
+                                    table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    }
+
+                                    td, th , tr{
+                                    border: 1px solid #dddddd;
+                                    text-align: left;
+                                    }
+                                </style>
+<!--                                <table>-->
+<!--                                    <tr>-->
+<!--                                        <th>Unit No.</th>-->
+<!--                                        <td>-->
+<!--                                            <span t-field="o.inventory_id"/>-->
+<!--                                        </td>-->
+<!--                                        <th>Project</th>-->
+<!--                                        <td>-->
+<!--                                            <span t-field="o.phase_id"/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                    <tr>-->
+<!--                                        <th>Unit Size</th>-->
+<!--                                        <td>-->
+<!--                                            <span t-field="o.size_id"/>-->
+<!--                                        </td>-->
+<!--                                        <th>Net Sale Amount</th>-->
+<!--                                        <td>-->
+<!--                                            <span t-field="o.net_sale_amount"/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                    <tr>-->
+<!--                                        <th>Unit Category</th>-->
+<!--                                        <td>-->
+<!--                                            <span t-field="o.unit_category_type_id"/>-->
+<!--                                        </td>-->
+<!--                                        <th>Total Amount Paid</th>-->
+<!--                                        <td>-->
+<!--                                            <span t-esc="o._compute_paid_amount(o.membership_id.id, o.name)"/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </table>-->
+                                <br/>
+                                <p>Dear Mr./Mrs./Ms.
+                                    <b>
+                                        <u>
+                                            <span t-field="o.membership_name"/>
+                                        </u>
+                                    </b>
+                                </p>
+                                <p align="justify">This is with reference to the Agreement of Sale No.
+                                    <t></t>
+                                </p>
+                                <p align="justify">(Agreement) entered into by you with <t t-esc="res_company.name"/>
+                                    whereby you
+                                    irrevocably agreed and undertook to purchase captioned property (Property) on the terms and conditions of the Agreement and also
+                                    refer to our final notice dated
+                                    <b>
+                                        <u>
+                                            <span t-esc="current_date"/>
+                                        </u>
+                                    </b>.
+                                </p>
+                                <p align="justify">As you are aware, after making the payment of Rs.
+                                    <b>
+                                        <u>
+                                            <span t-esc="o._compute_paid_amount(o.membership_id.partner_id.id, o.name) - (o._compute_residual_amount(o.membership_id.partner_id.id, o.name))"/>
+                                        </u>
+                                    </b>
+                                    , you did not make payment of any further installments in respect of the Property
+                                    despite you being obliged to do so in terms of the Agreement and despite repeated
+                                    reminders by us vide our letters and phone calls.
+                                </p>
+                                <p align="justify">As you are also aware, in terms of the Agreement in the event that
+                                    there is any
+                                    failure to pay any Installment Payment or other amount due to the Company under or
+                                    pursuant to the Agreement we have been specifically authorized, in the event that
+                                    the default remains uncured for 30 days or more at any time thereafter upon written
+                                    notice of at least 14 days, terminate the Agreement (and any rights you may have
+                                    pursuant thereto to the Property) and recover liquidated damages equivalent to 30%
+                                    of the Purchase Price (as defined in the Agreement). A final notice was sent to you
+                                    on (Date), (whereby you were given 14 days to settle your outstanding
+                                    account). However, despite the lapse of more than 14 days, your account is still
+                                    outstanding. Therefore, we are constrained to inform you that the Agreement has been
+                                    terminated by the Company with immediate effect and the amount deposited by you has
+                                    been forfeited in accordance with Clause ____ of Terms and Conditions of the
+                                    Agreement.
+                                </p>
+                                <p align="justify">This is without prejudice to our right to claim the balance of the
+                                    liquidated damages due to us under and pursuant to the Agreement.
+                                </p>
+                                <br/>
+                                <br/>
+                                <div class="col-xs-4">
+                                    <p align="justify">For and on the behalf of
+                                    </p>
+                                    <p align="justify">
+                                        <b>
+                                            <t t-esc="res_company.name"/>
+                                        </b>
+                                    </p>
+                                </div>
+                            </t>
+                        </div>
+
+                </t>
+            </t>
+        </template>
+
+        <report
+                string="Forfeiture Notice"
+                id="forfeiture_notice_action"
+                model="file"
+                report_type="qweb-pdf"
+                name="real_estate.forfeiture_notice"
+                file="real_estate.forfeiture_notice"
+        />
+
+    
+</odoo>

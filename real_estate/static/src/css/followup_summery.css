@@ -1,0 +1,16 @@
+.table-followup {
+    font-size: 15px;
+    background: white;
+}
+
+.thead-dark {
+    background-color: #212629;
+    color: white;
+}
+
+.o_top_tr {
+    background-color: aliceblue;
+    border-bottom: 2px solid #9da6ae;
+}
+/*.o_top_tbody > tr {
+}*/

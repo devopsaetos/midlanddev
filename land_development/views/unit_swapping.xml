@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="land_development.unit_swapping_search_form" model="ir.ui.view">
+            <field name="name">land_development unit_swapping_search_form</field>
+            <field name="model">unit.swapping</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="applicable_on" required="1"/>
+                                <field name="investment_id"
+                                       domain="[('project_type', 'in', ['skyscraper', False])]"
+                                       invisible="applicable_on != 'investment'"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="reservation_type" invisible="1"/>
+                                <field name="transaction_type"
+                                       invisible="applicable_on != 'investment'"/>
+                                <field name="select_all"
+                                       invisible="applicable_on != 'investment'"/>
+                                <field name="file_id" domain="[('project_type', 'in', ['skyscraper', False]),('state','=','available'),('file_status','=','approve')]"
+                                       invisible="applicable_on != 'file'"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="investor_file_id"
+                                       domain="[('project_type', 'in', ['skyscraper', False]),('state','=','open')]"
+                                       invisible="applicable_on != 'investment'"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="inventory_id"
+                                       invisible="applicable_on != 'investment'"
+                                       domain="[('project_type', 'in', ['skyscraper', False]),('state','=','investor')]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group name="left_panel">
+                            </group>
+
+                            <group class="oe_subtotal_footer oe_right">
+                                <button string="Search" name="search_related_records" type="object" class="btn-primary"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Search" autofocus="autofocus" invisible="applicable_on != 'file'">
+                                <field name="unit_swapping_line">
+                                    <list create="false">
+                                        <field name="inventory_id" invisible="1"/>
+                                        <field name="investment_id" invisible="1"/>
+                                        <field name="sector_id" string="Floor"/>
+                                        <field name="category_id" string="Category"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="size_id" string="Size"/>
+                                        <field name="unit_class_id" string="Type"/>
+                                        <field name="unit_number" string="Unit No."/>
+                                    </list>
+
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="transaction_type" required='1'/>
+                                                <field name="appointment_date" required="1"/>
+
+                                            </group>
+                                            <group string="Member Details ">
+                                                <group>
+                                                    <field name="membership_id"/>
+                                                </group>
+                                            </group>
+                                            <group string="Property Detail ">
+                                                <group>
+                                                    <field name="file_id"/>
+                                                    <field name="society_id" string="Project"/>
+                                                    <field name="phase_id" string="Building"/>
+                                                    <field name="sector_id" string="Floor"/>
+                                                    <field name="inventory_id" string="Unit"/>
+                                                    <field name="unit_number" string="Unit No."/>
+                                                </group>
+                                                <group>
+                                                    <field name="tracking_id"/>
+                                                    <field name="category_id" string="Category"/>
+                                                    <field name="unit_category_type_id" string="Product"/>
+                                                    <field name="size_id"/>
+                                                    <field name="unit_class_id" string="Type"/>
+                                                </group>
+                                            </group>
+                                            <group string="New Property Detail ">
+                                                <group>
+                                                    <field name="new_inventory_id" string="New Unit"
+                                                           domain="['&amp;',('state','=','avalible_for_sale'),
+                                                                    ('project_type','in',['skyscraper', False])]"
+                                                           required="transaction_type == 'swap'"
+                                                           invisible="transaction_type != 'swap'"
+                                                           options="{'no_create': True, 'no_open': True}"/>
+                                                    <field name="new_society_id" string="Project"/>
+                                                    <field name="new_phase_id" string="Building"/>
+                                                    <field name="new_sector_id" string="Floor"/>
+                                                </group>
+                                                <group>
+                                                    <field name="new_category_id" string="Category"/>
+                                                    <field name="new_unit_category_type_id" string="Product"/>
+                                                    <field name="new_size_id"/>
+                                                    <field name="new_unit_class_id" string="Type"/>
+                                                    <field name="change_price"/>
+                                                    <field name="amount" required="change_price == 'yes'" invisible="change_price != 'yes'"/>
+                                                    <field name="apply_charges"/>
+                                                    <field name="charges_amount" required="apply_charges == 'yes'" invisible="apply_charges != 'yes'"/>
+                                                </group>
+                                            </group>
+                                            <group name="unit_details" string="Unit Details">
+                                                <group>
+                                                    <field name="booking_date"/>
+                                                    <field name="starting_date"/>
+                                                    <field name="payment_states"/>
+                                                    <field name="interval_id"/>
+                                                </group>
+                                                <group>
+                                                    <field name="net_sale_amount"/>
+                                                    <field name="ttl_sale_amount"/>
+                                                    <field name="initial_payment"/>
+                                                    <field name="plan_description"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                        <footer>
+                                            <button string="Create Request" name="create_request" type="object"
+                                                    class="btn-primary" groups="real_estate.group_initiate_transfer_req"/>
+                                            <button string="Discard" class="btn-default" special="cancel"/>
+                                        </footer>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Details" autofocus="True" invisible="applicable_on != 'investment'">
+                                <field name="unit_swapping_investment_lines">
+                                    <list create="false" delete="false" editable="bottom">
+                                        <field name="check"/>
+                                        <field name="transaction_type" invisible="1"/>
+                                        <field name="investment_id" readonly="1"/>
+                                        <field name="investor_file_id" readonly="1"/>
+                                        <field name="sector_id" readonly="1" string="Floor"/>
+                                        <field name="category_id" string="Category" readonly="1"/>
+                                        <field name="unit_category_type_id" string="Product" readonly="1"/>
+                                        <field name="size_id" string="Size" readonly="1"/>
+                                        <field name="unit_class_id" string="Type" readonly="1"/>
+                                        <field name="inventory_id" string="Unit" readonly="1" domain="[('project_type','in',['skyscraper', False])]"/>
+                                        <field name="investor_unit_price" readonly="1"/>
+                                        <field name="new_price" readonly="transaction_type != 'change_amount'" required="transaction_type == 'change_amount'"/>
+                                        <field name="unit_number" string="Unit No." readonly="1" invisible="1"/>
+                                        <field name="new_inventory_id" string="New Unit No."
+                                               domain="[('project_type','in',['skyscraper', False]),('state', '=', 'avalible_for_sale')]"
+                                               readonly="transaction_type != 'swap'"
+                                               required="transaction_type == 'swap'"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button string="Create Request" name="create_investment_request" type="object"
+                                invisible="applicable_on != 'investment'"
+                                class="btn-primary" groups="real_estate.group_initiate_transfer_req"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="land_development.action_unit_swapping_search" model="ir.actions.act_window">
+            <field name="name">Unit Swapping</field>
+            <field name="res_model">unit.swapping</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="land_development.unit_swapping_search_form"/>
+            <field name="context">{'current_view': 'buildings'}</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+                id="land_development.unit_search"
+                name="Unit Search"
+                groups="real_estate.group_initiate_transfer_req"
+                action="land_development.action_unit_swapping_search"
+                parent="land_development.menu_transfer"
+                sequence="1"
+        />
+
+    </data>
+</odoo>

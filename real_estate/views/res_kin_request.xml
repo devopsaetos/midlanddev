@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.file_kin_request_form" model="ir.ui.view">
+            <field name="name">real_estate file_kin_request_form</field>
+            <field name="model">res.kin.request</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button
+                                name="request_approve"
+                                type="object"
+                                string="Approve Request"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"
+                                groups="real_estate.group_approve_transfer_req"
+                        />
+                        <button
+                                name="request_cancel"
+                                type="object"
+                                string="Cancel"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"
+                                groups="real_estate.group_approve_transfer_req"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="transaction_type" readonly="1"/>
+                            <field name="appointment_date" readonly="1"/>
+                        </group>
+                        <group string="Member Details ">
+                            <group>
+                                <field name="membership_id"
+                                       readonly="1"
+                                       context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
+                            </group>
+                            <group>
+                                <field name="member_name"/>
+<!--                                <field name="relation_name" string="Father/Spouse" invisible="company_type not in 'person'"/>-->
+                            </group>
+                        </group>
+                        <group string="Property Details ">
+                            <group>
+                                <field name="file_id" readonly="1"/>
+                                <field name="society_id"/>
+                                <field name="phase_id"/>
+                                <field name="sector_id"/>
+                                <field name="street_id"/>
+                                <field name="inventory_id" string="Unit"/>
+                                <field name="unit_number" string="Plot No."/>
+                            </group>
+                            <group>
+                                <field name="tracking_id"/>
+                                <field name="category_id"/>
+                                <field name="unit_category_type_id" string="Product"/>
+                                <field name="size_id"/>
+                                <field name="unit_class_id" string="Type"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name='next_of_kin' string="Next of Kin" autofocus="autofocus">
+                                <field name="kin_request_line_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="mobile" widget="mask" data-inputmask="'mask': '+99-999-9999999'"/>
+                                        <field name="cnic" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                        <field name="member_name" invisible="1"/>
+                                        <field name="relation_with_member"/>
+                                        <field name="relation_name" readonly="relation_with_member != 'other'"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="real_estate.file_kin_request_tree" model="ir.ui.view">
+            <field name="name">real_estate file_kin_request_tree</field>
+            <field name="model">res.kin.request</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false">
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="membership_id"/>
+                    <field name="sector_id"/>
+                    <field name="category_id"/>
+                    <field name="file_id"/>
+                    <field name="size_id"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_res_kin_request">
+            <field name="name">File Kin Request</field>
+            <field name="res_model">res.kin.request</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="real_estate.res_kin_request"
+                name="File Kin Request"
+                action="real_estate.action_res_kin_request"
+                parent="real_estate.menu_transfer"
+                sequence="2"
+        />
+
+</odoo>

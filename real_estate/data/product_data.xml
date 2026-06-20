@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.installment_product" model="product.product">
+            <field name="name">INSTALLMENTS</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Installment of the plot</field>
+        </record>
+
+        <record id="real_estate.rebate_product" model="product.product">
+            <field name="name">REBATE</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Rebate</field>
+        </record>
+
+        <record id="real_estate.refund_product" model="product.product">
+            <field name="name">REFUND</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Refund of the plot</field>
+        </record>
+
+        <record id="real_estate.preferences_product" model="product.product">
+            <field name="name">PREFERENCE</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Preference of the file</field>
+        </record>
+
+        <record id="real_estate.possession_amount_product" model="product.product">
+            <field name="name">Possession Amount</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Installment Possession Amount of the file</field>
+        </record>
+
+        <record id="real_estate.confirmation_amount_product" model="product.product">
+            <field name="name">Confirmation Amount</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Installment Confirmation Amount of the file</field>
+        </record>
+
+        <record id="real_estate.downpayment_product" model="product.product">
+            <field name="name">DOWN PAYMENT</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Down Payment of the file</field>
+        </record>
+
+        <record id="real_estate.balloting_product" model="product.product">
+            <field name="name">BALLOTING</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Balloting of the file</field>
+        </record>
+
+        <record id="real_estate.final_product" model="product.product">
+            <field name="name">FINAL PAYMENT</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Final payment of the file</field>
+        </record>
+
+        <record id="real_estate.additional_balloon" model="product.product">
+            <field name="name">Additional Balloon</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Additional Balloon</field>
+        </record>
+
+        <record id="real_estate.lump_sum_product" model="product.product">
+            <field name="name">Lump Sum</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Lump Sum payment of the file</field>
+        </record>
+
+        <!--        Token Money Product which will be used on CRM leads-->
+        <record id="real_estate.token_money" model="product.product">
+            <field name="name">Token Money</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Token money of the file</field>
+        </record>
+
+        <record id="real_estate.token_refund" model="product.product">
+            <field name="name">Token Refund</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Token money refund of file</field>
+        </record>
+
+        <record id="real_estate.token_adjustment" model="product.product">
+            <field name="name">Token Adjustment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Token money adjustment of file</field>
+        </record>
+
+        <record id="real_estate.token_cancel" model="product.product">
+            <field name="name">Token Cancel</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Token Cancel</field>
+        </record>
+
+        <record id="real_estate.balloon_payment" model="product.product">
+            <field name="name">Balloon Payment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Balloon payment of file</field>
+        </record>
+
+        <record id="real_estate.investment" model="product.product">
+            <field name="name">Investment Payment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Investment payment of files</field>
+        </record>
+
+        <record id="real_estate.investment_installment" model="product.product">
+            <field name="name">Investment Installment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Investment installment of files</field>
+        </record>
+
+        <record id="real_estate.investment_adjustment" model="product.product">
+            <field name="name">Investment Adjustment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Investment Adjustments</field>
+        </record>
+
+        <record id="real_estate.file_transfer" model="product.product">
+            <field name="name">Processing Fee</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Processing Fee</field>
+        </record>
+
+        <record id="real_estate.deductions" model="product.product">
+            <field name="name">Deduction</field>
+            <field name="is_include_net_amount">0</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">File transfer amount</field>
+        </record>
+
+        <record id="real_estate.unit_swapping_charges" model="product.product">
+            <field name="name">Unit Swapping Charges</field>
+            <field name="is_include_net_amount">0</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Unit swapping charges</field>
+        </record>
+    
+</odoo>

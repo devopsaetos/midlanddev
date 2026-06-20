@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    	<record id="real_estate.file_registry_form" model="ir.ui.view">
+            <field name="name">real_estate file_registry_request_form</field>
+            <field name="model">file.registry.request</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                 <form create="false" edit="false">
+                 	<header>
+                        <field name="state" widget="statusbar"/>
+                        <button 
+                            name="request_generate" 
+                            type="object" 
+                            string="Approve Request" 
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                        />
+                        <button 
+                            name="request_cancel" 
+                            type="object" 
+                            string="Cancel" 
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <field name="transaction_type"/>
+                        </group>
+                        <group string="Member Details ">
+                            <group >
+                                <field name="membership_id" context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
+                                <field name="cnic"/>
+                            </group>
+                            <group>
+                                <field name="member_name"/>
+                                <field name="relation_name" string="Father/Spouse"/>
+                            </group>
+                        </group>
+                        <group string="Property Details ">
+                            <group >
+                                <field name="file_id"/>
+                                <field name="society_id"/>
+                                <field name="phase_id"/>
+                                <field name="sector_id"/>
+                                <field name="street_id"/>
+                                <field name="inventory_id" string="Unit"/>
+                                <field name="unit_number" string="Plot No."/>
+                            </group>
+                            <group>
+                                <field name="tracking_id"/>
+                                <field name="category_id"/>
+                                <field name="unit_category_type_id" string="Product"/>
+                                <field name="size_id"/>
+                                <field name="unit_class_id" string="Type"/>
+                            </group>
+                        </group>
+                        <group string="Transferee Detail" invisible="transaction_type != 'transfer'">
+                            <group>
+                                <field name="is_transferee_partner"/>
+                                <field name="transferee_partner_id" 
+                                    invisible="is_transferee_partner == False" required="is_transferee_partner == True" 
+                                    context="{
+                                        'form_view_ref': 'real_estate.view_partner_form',
+                                        'default_is_member' : 1
+                                    }"
+                                />
+                                <field 
+                                    name="transferee_name" 
+                                    invisible="is_transferee_partner == True" required="is_transferee_partner == False"/>
+                                <field widget="mask" data-inputmask="'mask': '99999-9999999-9'" required="1" name="transferee_cnic_number"/>
+                            </group>
+                            <group>
+                                <field name="transferee_relation_name" string="Father/Spouse"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Payment Plan" autofocus="autofocus">
+                                <form>
+                                    <header>
+
+                                        <field name="installment_created" invisible='1'/>
+                                            <!-- <button 
+                                                name="create_installment_plan" 
+                                                type="object"
+                                                string="Create Installment Plan" 
+                                                class="oe_highlight"
+                                                invisible="(installment_created == True or payment_states != 'open')"
+                                            /> -->
+                                    </header>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="booking_date"/>
+                                                <field name="plan_description"/>
+                                                <field name="interval_id"/>
+                                                <field name="total_installment"/>
+                                                <field name="starting_date"/>
+                                                <field name="payment_states"/>
+                                            </group>
+                                            <group>
+                                                <field name="sale_amount"/>
+                                                <field name="factor_amount"/>
+                                                <field name="ttl_sale_amount"/>
+                                                <field name="discount_type"/>                                                
+                                                <field name="discount_amount"/>
+                                                <field name="net_sale_amount"/>
+                                                <field name="initial_payment"/>
+                                                <field name="balance_amount"/>
+                                                <field name="installments_paid" readonly="1"/>
+                                                <field name="total_installments_paid" readonly="1"/>
+                                                <field name="installments_due" readonly="1"/>
+                                                <field name="total_installments_due" readonly="1"/>
+                                            </group>
+                                        </group>
+                                        <notebook colspan="4">
+
+                                            <page string="Installment Plan and History" >
+                                                <field name="installment_plan_ids">
+                                                    <list editable="bottom" decoration-info="invoice_created == True">
+                                                        <field name="installment_number"
+                                                               string="Sr. No"/>
+                                                        <field name="installment_type"
+                                                               invisible="0"/>
+                                                        <field name="property_invoice_type"
+                                                               invisible="1"/>
+                                                        <field name="date"/>
+                                                        <field name="payment_date"
+                                                               string="Payment date"/>
+                                                        <field name="amount" sum="Total"/>
+                                                        <field name="invoice_created"/>
+                                                        <field name="invoice"/>
+                                                        <field name="invoice_id" invisible="1"/>
+                                                        <field name="state" string="Invoice Status"
+                                                               invisible="1"/>
+                                                        <field name="amount_paid"
+                                                               sum="Amount Paid"/>
+                                                        <field name="residual"
+                                                               sum="Remaining Amount"/>
+                                                        <field name="payment_status"
+                                                               string="Status"/>
+                                                    </list>
+                                                </field>
+                                            </page>
+
+                                            <page string="File Payment History" invisible="1">
+                                                <field name="file_payment_history_id" >
+                                                    <list 
+                                                        options="{'no_open': True}"
+                                                        create="false" editable="bottom"
+                                                        decoration-info="state == 'open'" 
+                                                        decoration-danger="state == 'paid'"
+                                                        decoration-muted="state == 'cancel'"
+                                                        >
+                                                        <field name="date_invoice"/>
+                                                        <field name="invoice_id"/>
+                                                        <field name="amount_total"/>
+                                                        <field name="amount_paid"/>
+                                                        <field name="residual"/>
+                                                        <field name="state"/>
+                                                    </list>
+                                                </field>
+                                            </page>
+                                        </notebook>
+                                    </sheet>
+                                
+                                </form>
+                            </page>
+                            <page string="Required Documents">
+<!--                                <group invisible="transaction_type != 'transfer'">-->
+<!--                                    <group string="Transferer Detail">-->
+<!--                                        <field name="traferer_setup_ids" widget="many2many_list" >-->
+<!--                                            <list editable="bottom">-->
+<!--                                                <field name="name"/>-->
+<!--                                                <field name="description"/>-->
+<!--                                            </list>-->
+<!--                                        </field>-->
+<!--                                    </group>-->
+<!--                                    <group string="Transferee Detail">-->
+<!--                                        <field name="traferee_setup_ids" >-->
+<!--                                            <list widget="many2many_list">-->
+<!--                                                <field name="name"/>-->
+<!--                                                <field name="description"/>-->
+<!--                                            </list>-->
+<!--                                        </field>-->
+<!--                                    </group>-->
+<!--                                </group>-->
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+         <record id="real_estate.file_registry_request_tree" model="ir.ui.view">
+            <field name="name">real_estate file_registry_request_tree</field>
+            <field name="model">file.registry.request</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false">
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="membership_id"/>
+                    <field name="sector_id"/>
+                    <field name="category_id"/>
+                    <field name="file_id"/>
+                    <field name="size_id"/>
+                    <field name="transferee_partner_id" string="Tranferee Name"/>
+                </list>
+            </field>
+        </record>
+
+        <record
+            model="ir.actions.act_window"
+            id="real_estate.action_file_registry_request">
+
+            <field name="name">File Registry Request</field>
+            <field name="res_model">file.registry.request</field>
+
+            <field name="context">{'current_view': 'realestate'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.file_registry_request"
+            name="File Registry Request"
+            action="real_estate.action_file_registry_request"
+            parent="real_estate.menu_registry"
+            sequence="2"
+        />
+        
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="token_money_validity_increase" model="ir.ui.view">
+        <field name="name">token.money.validity.increase.wizard</field>
+        <field name="model">validity.increase</field>
+        <field name="arch" type="xml">
+            <form string="Increase Date">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="current_date"/>
+                        </group>
+                        <group>
+                            <field name="valid_up_to_date"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="increase_validity_date" string="Submit" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.validity_increase_wizard" model="ir.actions.act_window">
+        <field name="name">Increase Validity</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">validity.increase</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

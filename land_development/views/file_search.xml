@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    	<record id="land_development.file_search_form" model="ir.ui.view">
+            <field name="name">land_development file_search_form</field>
+            <field name="model">file.search</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="file_id" domain="[('project_type', 'in', ['skyscraper', False]),('state','=','available'),('file_status','=','approve')]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="membership_id" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="tracking_id"/>
+                                <field name="cnic"/>
+                                <field name="unit_number" string="Unit No."/>
+                                <field name="member_id" invisible="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group name="left_panel">
+                            </group>
+
+                            <group class="oe_subtotal_footer oe_right">
+                                <button string="Search" name="search_related_file" type="object" class="btn-primary"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Search" autofocus="autofocus">
+                                <field name="return_line">
+                                    <list create="false">
+                                        <field name="file_id"/>
+                                        <field name="tracking_id"/>
+                                        <field name="membership_id"/>
+                                        <field name="sector_id"/>
+                                        <field name="street_id"/>
+                                        <field name="category_id" string="Category"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="size_id" string="Size"/>
+                                        <field name="unit_class_id" string="Type"/>
+                                        <field name="unit_number" string="Unit No."/>
+                                    </list>
+
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="transaction_type" required='1'/>
+                                                <field name="transfer_type"
+                                                       invisible="transaction_type != 'transfer'"/>
+                                                <field name="deduction_refund"
+                                                       invisible="transaction_type != 'refund'"/>
+                                                <field name="allow_request"
+                                                       invisible="transaction_type != 'transfer'"/>
+                                                <field name="reason" placeholder="Please give the reason to by pass due invoices for this transfer."
+                                                       invisible="allow_request != True" required="allow_request == True"/>
+                                                <field name="appointment_date" required="1"/>
+
+                                            </group>
+                                            <group string="Member Details ">
+                                                <group>
+                                                    <field name="membership_id"/>
+                                                    <field name="company_type" string="Member Type"/>
+                                                </group>
+                                                <group>
+                                                    <field name="member_name" invisible="company_type != 'person'"/>
+                                                </group>
+                                                <group string="Details" colspan="4" invisible="company_type != 'aop'">
+                                                    <form>
+                                                        <field name="cnic_line_ids">
+                                                            <list editable="bottom">
+                                                                <field name="member_name"/>
+                                                                <field name="cnic" widget="mask"
+                                                                       data-inputmask="'mask': '99999-9999999-9'"/>
+                                                                <field name="cnic_expiry_date"/>
+                                                                <field name="cnic_front"/>
+                                                                <field name="cnic_back"/>
+                                                                <field name="phone"/>
+                                                                <field name="tax_status"/>
+                                                                <field name="address"/>
+                                                                <field name="name"/>
+                                                                <field name="father_spouse_cnic"/>
+                                                            </list>
+                                                        </field>
+                                                    </form>
+                                                </group>
+                                            </group>
+                                            <group string="Property Detail ">
+                                                <group>
+                                                    <field name="file_id"/>
+                                                    <field name="society_id" string="Project"/>
+                                                    <field name="phase_id" string="Building"/>
+                                                    <field name="sector_id" string="Floor"/>
+                                                    <field name="inventory_id" string="Unit"/>
+                                                    <field name="unit_number" string="Unit No."/>
+                                                </group>
+                                                <group>
+                                                    <field name="tracking_id"/>
+                                                    <field name="category_id"/>
+                                                    <field name="unit_category_type_id" string="Product"/>
+                                                    <field name="size_id"/>
+                                                    <field name="unit_class_id" string="Type"/>
+                                                </group>
+                                            </group>
+                                            <group string="Transferee Detail"
+                                                   invisible="transaction_type != 'transfer'">
+                                                <group>
+                                                    <field name="transferee_existing_partner"/>
+                                                    <field name="transferee_partner_id"
+                                                           invisible="transferee_existing_partner == 'no'"
+                                                           required="transferee_existing_partner == 'yes' and transaction_type == 'transfer'"
+                                                           context="{'form_view_ref': 'real_estate.view_partner_form'}"
+                                                    />
+                                                    <field name="transferee_company_type" string="Transferee Type" required="transferee_existing_partner == 'no' and transaction_type == 'transfer'" readonly="transferee_existing_partner == 'yes'"/>
+                                                    <field
+                                                            name="transferee_name"
+                                                            invisible="transferee_existing_partner == 'yes'"
+                                                            required="transferee_existing_partner == 'no' and transaction_type == 'transfer'"
+                                                    />
+                                                    <field widget="mask" data-inputmask="'mask': '99999-9999999-9'"
+                                                           name="transferee_cnic_number" invisible="company_type != 'person'" required="company_type == 'person' and transaction_type == 'transfer'"/>
+                                                </group>
+                                                <group>
+                                                    <field name="transferee_relation_name" string="Father/Spouse" invisible="company_type != 'person'" required="company_type == 'person' and transaction_type == 'transfer'"/>
+                                                </group>
+                                                <group string="Details" colspan="4" invisible="transferee_company_type != 'aop'">
+                                                    <form>
+                                                        <field name="transferee_cnic_line_ids">
+                                                            <list editable="bottom">
+                                                                <field name="member_name"/>
+                                                                <field name="cnic" widget="mask"
+                                                                       data-inputmask="'mask': '99999-9999999-9'"/>
+                                                                <field name="cnic_expiry_date"/>
+                                                                <field name="cnic_front"/>
+                                                                <field name="cnic_back"/>
+                                                                <field name="phone"/>
+                                                                <field name="tax_status"/>
+                                                                <field name="address"/>
+                                                                <field name="name"/>
+                                                                <field name="father_spouse_cnic"/>
+                                                            </list>
+                                                        </field>
+                                                    </form>
+                                                </group>
+                                            </group>
+                                            <group name="file_details" string="File Details">
+                                                <group>
+                                                    <field name="booking_date"/>
+                                                    <field name="starting_date"/>
+                                                    <field name="payment_states"/>
+                                                    <field name="interval_id"/>
+                                                </group>
+                                                <group>
+                                                    <field name="net_sale_amount"/>
+                                                    <field name="ttl_sale_amount"/>
+                                                    <field name="initial_payment"/>
+                                                    <field name="plan_description"/>
+                                                </group>
+                                            </group>
+                                            <group name="payment_history" string="Payment History">
+                                                <group>
+                                                    <field name="sale_amount"/>
+                                                    <field name="factor_amount"/>
+                                                    <field name="discount_type"/>
+                                                    <field name="discount_amount"/>
+                                                    <field name="balance_amount"/>
+                                                    <field name="balloting_amount"/>
+                                                </group>
+                                                <group>
+                                                    <field name="total_installment"/>
+                                                    <field name="installments_paid" readonly="1"/>
+                                                    <field name="total_installments_paid" readonly="1"/>
+                                                    <field name="total_installments_due" readonly="1"/>
+                                                    <field name="installments_due" readonly="1"/>
+                                                </group>
+                                            </group>
+                                            <group name="installment_plan_and_history"
+                                                   string="Installment Plan And History">
+                                                <form>
+                                                    <field name="installment_plan_ids">
+                                                        <list editable="bottom"
+                                                              decoration-info="invoice_created == True">
+                                                            <field name="installment_number"
+                                                                   string="Sr. No"/>
+                                                            <field name="installment_type"
+                                                                   invisible="0"/>
+                                                            <field name="property_invoice_type"
+                                                                   invisible="1"/>
+                                                            <field name="date"/>
+                                                            <field name="payment_date"
+                                                                   string="Payment date"/>
+                                                            <field name="amount" sum="Total"/>
+                                                            <field name="invoice_created"/>
+                                                            <field name="invoice"/>
+                                                            <field name="invoice_id" invisible="1"/>
+                                                            <field name="state" string="Invoice Status"
+                                                                   invisible="1"/>
+                                                            <field name="amount_paid"
+                                                                   sum="Amount Paid"/>
+                                                            <field name="residual"
+                                                                   sum="Remaining Amount"/>
+                                                            <field name="payment_status"
+                                                                   string="Status"/>
+                                                        </list>
+                                                    </field>
+                                                </form>
+                                            </group>
+                                            <notebook colspan="4">
+                                                <page string="File Payment History" invisible="1">
+                                                    <field name="file_payment_history_id">
+                                                        <list
+                                                                options="{'no_open': True}"
+                                                                create="false" editable="bottom"
+                                                                decoration-info="state == 'open'"
+                                                                decoration-danger="state == 'paid'"
+                                                                decoration-muted="state == 'cancel'"
+                                                        >
+                                                            <field name="date_invoice"/>
+                                                            <field name="invoice_id"/>
+                                                            <field name="amount_total"/>
+                                                            <field name="amount_paid"/>
+                                                            <field name="residual"/>
+                                                            <field name="state"/>
+                                                        </list>
+                                                    </field>
+                                                </page>
+                                                <page string="Required Documents" invisible="0">
+                                                    <group invisible="transaction_type != 'transfer'">
+                                                        <group string="Transferer Detail">
+                                                            <field name="traferer_setup_ids" readonly="1" widget="many2many_list">
+                                                                <list editable="bottom">
+                                                                    <field name="name"/>
+                                                                    <field name="description"/>
+                                                                </list>
+                                                            </field>
+                                                        </group>
+                                                        <group string="Transferee Detail">
+                                                            <field name="traferee_setup_ids" readonly="1">
+                                                                <list widget="many2many_list">
+                                                                    <field name="name"/>
+                                                                    <field name="description"/>
+                                                                </list>
+                                                            </field>
+                                                        </group>
+                                                    </group>
+                                                </page>
+                                                <page string="Required Taxes" invisible="0">
+                                                    <group invisible="transaction_type != 'transfer'">
+                                                        <group string="Transferer Detail">
+                                                            <field name="traferer_tax_setup_ids" readonly="1" widget="many2many_list">
+                                                                <list editable="bottom">
+                                                                    <field name="name"/>
+                                                                    <field name="description"/>
+                                                                    <field name="rate"/>
+                                                                </list>
+                                                            </field>
+                                                        </group>
+                                                        <group string="Transferee Detail">
+                                                            <field name="traferee_tax_setup_ids" readonly="1">
+                                                                <list widget="many2many_list">
+                                                                    <field name="name"/>
+                                                                    <field name="description"/>
+                                                                    <field name="rate"/>
+                                                                </list>
+                                                            </field>
+                                                        </group>
+                                                    </group>
+                                                </page>
+                                            </notebook>
+                                        </sheet>
+                                        <footer>
+                                            <button string="Create Request" name="add_intention" type="object"
+                                                    class="btn-primary" groups="real_estate.group_initiate_transfer_req"/>
+                                            <button string="Discard" class="btn-default" special="cancel"/>
+                                        </footer>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="land_development.action_file_searchs" model="ir.actions.act_window">
+            <field name="name">Search</field>
+            <field name="res_model">file.search</field>
+            <field name="type">ir.actions.act_window</field>
+
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="land_development.file_search_form"/>
+            <field name="target">new</field>
+            <field name="context">{'current_view': 'building'}</field>
+        </record>
+
+        <menuitem
+            id="land_development.file_searchs"
+            name="Search"
+            action="land_development.action_file_searchs"
+            parent="land_development.menu_transfer"
+            sequence="1"
+        />
+
+    </data>
+</odoo>

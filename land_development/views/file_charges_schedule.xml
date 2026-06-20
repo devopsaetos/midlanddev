@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="land_development.file_charges_schedule_view_form" model="ir.ui.view">
+        <field name="name">land_development file_charges_schedule_view_form</field>
+        <field name="priority">2</field>
+        <field name="model">file.charges.schedule</field>
+        <field name="arch" type="xml">
+            <form string="File Charges Schedule">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_type" invisible="1"/>
+                            <field name="name"/>
+                            <field name="applicable_on" required="1"/>
+                            <field name="society_id" required="1"
+                                   string="Project"
+                                   options="{'no_create':True, 'no_open':True}"
+                                   domain="[('project_type','in',['skyscraper', False]), ('is_society', '=', True)]"/>
+                            <field name="phase_id" required="1"
+                                   string="Building"
+                                   options="{'no_create':True, 'no_open':True}"
+                                   domain="[('project_type','in',['skyscraper', False]), ('is_society', '!=', True)]"/>
+                        </group>
+                        <group>
+                            <field name="date_from" required="1"/>
+                            <field name="date_to" required="1"/>
+                            <field name="calculation_basis" required="1"/>
+                            <field name="fee_calculation" required="1"/>
+                            <field name="amount"
+                                   invisible="fee_calculation != 'fix'" required="fee_calculation == 'fix'"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4" invisible="fee_calculation == 'fix'">
+                        <page string="Details">
+                            <field name="charges_schedule_line_ids">
+                                <list editable="bottom">
+                                    <field name="area_from" required="1"/>
+                                    <field name="area_to" required="1"/>
+                                    <field name="amount" required="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="land_development.file_charges_schedule_view_tree" model="ir.ui.view">
+        <field name="name">file_charges_schedule_view_tree</field>
+        <field name="model">file.charges.schedule</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="applicable_on"/>
+                <field name="society_id" string="Project"/>
+                <field name="phase_id" string="Building"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="calculation_basis"/>
+                <field name="fee_calculation"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="land_development.file_charges_schedule_action" model="ir.actions.act_window">
+        <field name="name">File Charges Schedule</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">file.charges.schedule</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'current_view': 'buildings', 'default_project_type': 'skyscraper'}</field>
+        <field name="domain">[('project_type', 'in', ['skyscraper', False])]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.file_charges_schedule_view_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.file_charges_schedule_view_form')}),
+                ]"
+            />
+    </record>
+
+    <menuitem id="land_development.file_charges_schedule_menu"
+              name="Charges Schedule"
+              parent="land_development.menu_price_plan"
+              action="land_development.file_charges_schedule_action"
+              sequence="10"/>
+</odoo>

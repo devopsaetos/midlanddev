@@ -1,0 +1,129 @@
+<odoo>
+        <!--THis is greeting Letter for Leparis-->
+        <template id="letter_greeting">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                                p {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+                                li {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+                                table, th, td {
+                                border: 1px solid black;
+                                color: black;
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                }
+                            </style>
+                            <div class="row"
+                                 style="margin-top:30px; color:black; font-size:15px;">
+                                <div class="col-7">
+                                    <div class="row" style="">
+                                        <div class="col-3">
+                                            Name:
+                                        </div>
+                                        <div class="col-9">
+                                                <span t-esc="o.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            Address:
+                                        </div>
+                                        <div class="col-9">
+                                            <t t-esc="o.street"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-5">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            Member Number:
+                                        </div>
+                                        <div class="col-7">
+                                            <span t-esc="o.ref"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-5">
+                                            Mobile:
+                                        </div>
+                                        <t t-if="o.company_type == 'person'">
+                                            <div class="col-7">
+                                                <t t-esc="o.mobile"/>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="o.cp_mobile"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top:40px;">
+                                <strong>
+                                    Dear Mr./Ms.
+                                    <span style="text-decoration: underline;" t-esc="o.name"/>
+                                </strong>
+                            </div>
+
+                            <div style="text-align:center;margin-top:20px;">
+                                <p align="justify">
+                                    Congratulations on joining the exclusive club of those who are now eligible to buy
+                                    an asset, residential or commercial, in Le Paris, the one and only living community
+                                    of its kind.
+                                </p>
+                                <p align="justify">
+                                    With the purchase of Le Paris Registration Certificate, alongside this precious
+                                    eligibility, you also get a chance to become CrorePati overnight through our lucky
+                                    draw with millions in cash prizes.
+                                </p>
+                                <p align="justify">
+                                    And once you decide to buy an asset in Le Paris, be it for your own residence or
+                                    business or as an investment for returns, it is bound to be another life changing
+                                    moment. Le Paris is bringing a paradigm shift in the living and lifestyles as well
+                                    as in the way real estate business is currently being conducted.
+                                </p>
+                                <p align="justify">
+                                    Le Paris team welcomes you to a never ending trail of pleasant experiences and a
+                                    journey you will rejoice every single moment. We will keep you updated on various
+                                    developments, opportunities, events and activities.
+                                </p>
+                            </div>
+                            <div class="row" style="margin-top:30px;">
+                                <div class="col-12">
+                                    <p>
+                                        Happy living!
+                                        <br/>
+                                        <br/>
+                                        Team Le Paris
+                                        <br/>
+                                        0300 0000000
+                                        <br/>
+                                        0301 0000000
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <report
+                string="Greeting Letter"
+                id="action_letter_greeting"
+                model="res.partner"
+                report_type="qweb-pdf"
+                name="real_estate.letter_greeting"
+                file="real_estate.letter_greeting"
+        />
+    
+</odoo>

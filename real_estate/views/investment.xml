@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="real_estate.investment_view_form" model="ir.ui.view">
+        <field name="name">real_estate investment_view_form</field>
+        <field name="model">investment</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,closed,cancel"/>
+                    <button class='btn btn-primary' name="receive_payment" type="object" string="Receive Payment"
+                            invisible="state != 'reserved'"/>
+                    <button class='btn btn-primary' name="reserve_inventory" type="object" string="Reserve"
+                            style="margin-left:10px" invisible="state != 'draft'"/>
+<!--                     invisible="(state != 'draft' or reservation_type == 'bulk')"-->
+                    <button class='btn btn-primary' name="create_open_file" type="object" string="Create Open File"
+                            invisible="(files_created == True or state != 'payment')"
+                            style="margin-left:10px"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                                class="oe_stat_button"
+                                name="issued_files"
+                                widget="statinfo"
+                                type="object" icon="fa-file-text-o"
+                                string="Issued Files : "
+                                invisible="files_created != True">
+                            <field name="no_of_issued_files"/>
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="investor_inventory"
+                                widget="statinfo"
+                                type="object" icon="fa-list-ul"
+                                string="Inventory : "
+                                invisible="(amount_received != True or reservation_type == 'bulk')">
+                            <field name="no_of_units"/>
+                        </button>
+                        <button
+                                class="oe_stat_button"
+                                name="investor_files"
+                                widget="statinfo"
+                                type="object" icon="fa-file-text-o"
+                                string="Files : "
+                                invisible="files_created != True">
+                            <field name="no_of_files"/>
+                        </button>
+                        <button
+                                name="open_invoices"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Invoices :  "
+                                icon="fa-pencil-square-o"
+                                invisible="no_of_invoices == 0">
+                            <field name="no_of_invoices" invisible="no_of_invoices == 0"/>
+                        </button>
+                    </div>
+                    <div class="oe_title" readonly="1">
+                        <h1>
+                            <field name="project_type" invisible="1"/>
+                            <field name="files_created" invisible="1"/>
+                            <field name="name" invisible="1"/>
+                            <field name="sequence_no"/>
+                        </h1>
+                    </div>
+                    <group name="investment_details" string="Investment Details">
+                        <group>
+                            <field name="partner_id" string="Investor Name"
+                                   domain="[('is_investor', '=', True),('project_type', '=', 'housing_society')]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in 'payment'"/>
+                            <field name="options" string="Investment Option" required="1"
+                                   readonly="state in 'payment'"/>
+                            <field name="reservation_type" required="1"
+                                   readonly="state in 'payment'"/>
+                        </group>
+                        <group>
+                            <field name="booking_date" readonly="state in 'payment'"/>
+                            <field name="start_date" readonly="state in 'payment'"/>
+                            <label for="grace_period"/>
+                            <div class="o_row">
+                                <field name="grace_period" readonly="state in 'payment'"/>
+                                <field name="grace_period_type" readonly="state in 'payment'"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group name="installment_details" string="Installment Details">
+                        <group>
+                            <field name="plan_type" readonly="state != 'draft'" required="1"/>
+                            <field name="predefine_plan_id" string="Plan Name"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   invisible="(plan_type != 'predefine' or plan_type == False)" required="plan_type == 'predefine'" readonly="state != 'draft'"/>
+                            <field name="interval_id" options="{'no_create': True, 'no_open': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="total_installment" required="1"
+                                   readonly="state != 'draft'"/>
+                            <field name="remaining_installments" invisible="1"/>
+                            <field name="installment_starting_date" required="1" force_save="1"
+                                   readonly="state != 'draft'"/>
+                            <field name="mode_of_payments" string="Mode of Payment"
+                                   readonly="state in 'payment'"/>
+                            <field name="payment_states" readonly="1"/>
+
+                            <field name="add_balloon_amount" invisible="1"/>
+                            <field name="add_balloon_interval" invisible="1"/>
+                            <field name="add_balloon_frequency" invisible="1"/>
+
+                        </group>
+                        <group>
+                            <field name="allowed_credit" widget="boolean_toggle"
+                                   readonly="state != 'draft'"/>
+                            <field name="total_amount" string="Total Deal Amount"
+                                   readonly="state in 'payment'"/>
+                            <field name="down_payment" readonly="state in 'payment'"/>
+                            <field name="balance_amount" readonly="state in 'payment'"/>
+                            <field name="investor_unit_price" required="1"
+                                   readonly="state in 'payment'"/>
+                            <field name="no_of_units"/>
+                            <field name="amount_paid" invisible="1"/>
+                            <field name="amount_received" invisible="1"/>
+                            <label for="payment_term_id" invisible="allowed_credit == False"/>
+                            <div class="d-flex" invisible="allowed_credit == False">
+                                <field name="payment_term_id"
+                                       placeholder="Terms"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="payment_date != False" readonly="state != 'draft'"
+                                />
+                                <span class="o_form_label mx-3 oe_edit_only" invisible="(payment_term_id != False or payment_date != False)" readonly="state != 'draft'">or
+                                </span>
+                                <field name="payment_date" force_save="1"
+                                       placeholder="Date"
+                                       invisible="payment_term_id != False" readonly="state != 'draft'"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group name="property_info" string="Property Info">
+                        <group>
+                            <field name="company_id" force_save="1" readonly="1"/>
+                            <field name="society_id"
+                                   domain="[('project_type','=','housing_society'),('is_society','=',True)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                            <field name="phase_id"
+                                   domain="[('project_type','=','housing_society'),('is_society','!=',True)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                        </group>
+                        <group>
+                            <field name="sector_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                            <field name="category_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Inventory" invisible="reservation_type == 'unit'">
+                            <field name="investment_line_ids"
+                                   context="{'default_reservation_type': reservation_type, 'default_investor_price': investor_unit_price}"
+                                   readonly="state in ('reserved', 'payment')">
+                                <list editable="bottom" class="tree_styles">
+                                    <field name="sector_id" required="1"
+                                           domain="[('project_type','=','housing_society')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="street_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="category_id" domain="[('project_type','=','housing_society')]"
+                                           readonly="inventory_id != False" required="1"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="unit_category_type_id" string="Product"
+                                           readonly="inventory_id != False" required="inventory_id == False"
+                                           domain="[('project_type','=','housing_society')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="size_id" readonly="inventory_id != False"
+                                           domain="[('project_type','=','housing_society')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="inventory_id" string="Plot No."
+                                           options="{'no_create': True, 'no_open': True}"
+                                           readonly="(reservation_type == 'bulk' or no_of_units &gt; 1)"/>
+                                    <field name="no_of_units" readonly="inventory_id != False"/>
+                                    <field name="list_price" readonly="0" invisible="1"/>
+                                    <field name="price_list_id" force_save="1" invisible="1"/>
+                                    <field name="investor_price" force_save="1"/>
+                                    <field name="deal_price"/>
+                                    <field name="reservation_type" force_save="1" invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Inventory" invisible="reservation_type != 'unit'">
+                            <field name="inventory_ids" readonly="state in ('reserved', 'payment')">
+                                <list editable="bottom">
+                                    <field name="sector_id" readonly="1"
+                                           domain="[('project_type','=','housing_society')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="street_id" readonly="1"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="category_id" readonly="1"
+                                           domain="[('project_type','=','housing_society')]"
+                                           required="1"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="unit_category_type_id" readonly="1" string="Product"
+                                           domain="[('project_type','=','housing_society')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="size_id" readonly="1" domain="[('project_type','=','housing_society')]"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="id" string="Inventory" invisible="1"/>
+                                    <field name="name" string="Plot No." readonly="1"/>
+                                    <field name="list_price"/>
+                                    <field name="investor_unit_price" force_save="1"/>
+                                    <field name="deal_price" readonly="0"/>
+                                    <field name="state" string="File Status" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Installment Plan">
+                            <field name="generate_invoices_for_installment" invisible="1"/>
+                            <field name="installment_created" invisible="1"/>
+                            <field name="balloting_amount" invisible="1" force_save="1"/>
+                            <field name="balloon_payment" invisible="1" force_save="1"/>
+                            <field name="balloon_payment_interval" invisible="1" force_save="1"/>
+                            <field name="balloon_payment_frequency" invisible="1" force_save="1"/>
+                            <field name="balloon_payment_start" invisible="1" force_save="1"/>
+                            <field name="primary_amount" invisible="1" force_save="1"/>
+                            <field name="primary_amount_interval" invisible="1" force_save="1"/>
+                            <field name="primary_amount_frequency" invisible="1" force_save="1"/>
+                            <field name="possession_amount" invisible="1" force_save="1"/>
+                            <field name="possession_amount_interval" invisible="1" force_save="1"/>
+                            <field name="possession_amount_frequency" invisible="1" force_save="1"/>
+                            <field name="confirmation_amount" invisible="1" force_save="1"/>
+                            <field name="confirmation_amount_interval" invisible="1" force_save="1"/>
+                            <field name="confirmation_amount_frequency" invisible="1" force_save="1"/>
+                            <button name="create_installment_plan" type="object" string="Create Installment Plan"
+                                    class="oe_highlight"
+                                    invisible="(installment_created == True or state not in ['draft', 'reserved'])"/>
+                            <button
+                                    name="reset_installment_plan"
+                                    type="object"
+                                    string="Reset Installment Plan"
+                                    class="oe_highlight"
+                                    invisible="(installment_created != True or state not in ['draft', 'reserved'])"
+                            />
+                            <button name="generate_invoice_for_plan" type="object" string="Generate Invoices"
+                                    class="oe_highlight"
+                                    invisible="(installment_created == False or generate_invoices_for_installment != False)"/>
+                            <field name="investment_plan_ids" readonly="1">
+                                <list editable="bottom" decoration-info="invoice_created == True"
+                                      default_order="installment_number asc">
+                                    <field name="installment_number" string="Sr. No"/>
+                                    <field name="installment_type" invisible="1"/>
+                                    <field name="installment_name" invisible="0"/>
+                                    <field name="property_invoice_type" invisible="1"/>
+                                    <field name="date"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="file_adjusted_amount" string="File Adjusted" sum="Total"/>
+                                    <field name="adjustment_amount" string="Adjustment" sum="Total"/>
+                                    <field name="balance_amount" sum="Total"/>
+                                    <field name="invoice_id" invisible="1"/>
+                                    <field name="amount_paid" sum="Amount Paid" readonly="0"/>
+                                    <field name="payment_date" string="Payment date" readonly="0"/>
+                                    <field name="residual" sum="Remaining Amount" readonly="0"/>
+                                    <field name="invoice"/>
+                                    <field name="payment_status" string="Status"/>
+                                    <field name="state" string="Invoice Status" invisible="1"/>
+                                    <field name="invoice_created" invisible="1"/>
+
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Investment History">
+                            <field name="investment_history_ids" readonly="1">
+                                <list editable="bottom">
+                                    <field name="installment_number" string="Sr. No"/>
+                                    <field name="date" string="Change Date"/>
+                                    <field name="transaction_type"/>
+                                    <field name="file_id"/>
+                                    <field name="old_balance"/>
+                                    <field name="new_balance"/>
+                                    <field name="amount"/>
+                                    <field name="new_amount"/>
+                                    <field name="payment_received"/>
+                                    <field name="payment_date"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Payments">
+                            <field name="investment_payment_view_ids" readonly="1">
+                                <list string="Payments">
+                                    <field name="payment_date"/>
+                                    <field name="payment_id"/>
+                                    <field name="move_id" string="Invoice"/>
+                                    <field name="payment_amount" string="Amount" sum="Amount"/>
+                                    <field name="payment_amount_residual" string="Available Amount" sum="Balance"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Internal Notes">
+                            <form>
+                                <group>
+                                    <field name="notes"/>
+                                </group>
+                            </form>
+                        </page>
+                        <page name="mode_of_payments" string="Payment Term"
+                              invisible="allowed_credit != True">
+                            <field name="mode_of_payment" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="type"/>
+                                    <field name="check_date"/>
+                                    <field name="calculation_done" invisible="1"/>
+                                    <field name="amount" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Unit Swap/Cancel">
+                            <field name="unit_cancel_swap_ids" readonly="1">
+                                <list create="false" delete="false" readonly="1">
+                                    <field name="date"/>
+                                    <field name="transaction_type"/>
+                                    <field name="investment_id" readonly="1"/>
+                                    <field name="sector_id" readonly="1"/>
+                                    <field name="category_id" string="Category" readonly="1"/>
+                                    <field name="unit_category_type_id" string="Product" readonly="1"/>
+                                    <field name="size_id" string="Size" readonly="1"/>
+                                    <field name="unit_class_id" string="Type" readonly="1"/>
+                                    <field name="inventory_id" string="Plot No." readonly="1"/>
+                                    <field name="investor_unit_price" readonly="1"/>
+                                    <field name="unit_number" string="Plot No." readonly="1" invisible="1"/>
+                                    <field name="new_inventory_id" string="New Plot No."
+                                           domain="[('state', '=', 'avalible_for_sale')]"
+                                           readonly="transaction_type == 'cancel'" required="transaction_type == 'swap'"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="real_estate.investment_view_tree" model="ir.ui.view">
+        <field name="name">real_estate investment_view_tree</field>
+        <field name="model">investment</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence_no"/>
+                <field name="partner_id"/>
+                <field name="society_id"/>
+                <field name="phase_id"/>
+                <field name="booking_date" string="Booking date"/>
+                <field name="total_amount" sum="Total"/>
+                <field name="down_payment" sum="Total"/>
+                <field name="balance_amount" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+<!--    <record id="real_estate.investment_view_search" model="ir.ui.view">-->
+<!--        <field name="name">real_estate investment_view_search</field>-->
+<!--        <field name="model">investment</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <search>-->
+<!--                <field name="sequence_no" string="Investment"/>-->
+<!--                <field name="partner_id"/>-->
+<!--            </search>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <record model="ir.actions.act_window" id="real_estate.action_investment">
+        <field name="name">Investment</field>
+        <field name="res_model">investment</field>
+
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click create to add Investment data.
+            </p>
+        </field>
+        <field name="domain">
+            [
+            ('project_type', '=', 'housing_society')
+            ]
+        </field>
+        <field name="context">{'current_view': 'realestate', 'default_project_type': 'housing_society'}</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+            id="real_estate.investment_menu"
+            name="Investment"
+            action="real_estate.action_investment"
+            sequence="2"
+            parent="real_estate.menu_investment_parent"
+    />
+
+</odoo>

@@ -1,0 +1,65 @@
+.o_form_view.o_form_editable .o_address_format .o_country_code {
+	width: 20%;
+}
+
+.o_form_view.o_form_editable .o_address_format .o_phone_number {
+	margin-left: 10px;
+	width: 50%;
+}
+
+.oe_custom_chart_sizing{
+	width: 50%!important;
+}
+
+.oe_custom_preferences {
+	margin-right: 41px;
+}
+
+.oe_custom_preferences > div.nav-tabs {
+    border-style: inset;
+}
+
+.oe_custom_preferences > ul.nav-tabs > li {
+    border-style: inset;
+}
+
+.oe_text_alignment{
+    text-align: center;
+}
+
+.o_form_view .o_group.o_inner_group > tbody > tr > td.o_td_label {
+    width: 1%!important;
+    padding: 0 15px 0 0;
+    min-width: 150px;
+}
+.oe_state_size{
+    width: 120px;
+}
+
+.oe_relation_matrix {
+    border-width: thin!important;
+    width: 151px!important;
+    border-right-style: inset!important;
+}
+
+.o_remove_margin{
+    margin-top: -20px;
+}
+
+.oe_damage_control {
+    margin-top: -97px!important;
+    height: 70px!important;
+}
+
+.oe_damage_control_1 {
+    padding-top: 0px!important;
+    width:73%;
+}
+
+.oe_transferee_relation {
+    padding-top: 42px!important;
+}
+
+.o_info_popup .o_form_sheet_bg > .o_form_sheet {
+    min-height: unset!important;
+}

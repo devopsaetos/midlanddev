@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <template id="transfer_application_letter">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="container">
+                            <style>
+                                p {
+                                font-family: "Times New Roman", Times, serif;
+                                font-size: 16px;
+                                color: black;
+                                }
+                            </style>
+                            <p class="text-right">
+                                Date:
+                                <span style="text-decoration: underline;" t-field="o.file_id.booking_date"/>
+                            </p>
+                            <br/>
+                            <p>
+                                To: The Chief Executive
+                                <t t-esc="res_company.name"/>
+                            </p>
+                            <br/>
+
+                            <p>
+                                Subject:
+                            </p>
+                            <br/>
+                            <strong>
+                                <p style="margin-left:75px;">
+                                    Transfer of Plot/House/Shop #
+                                    <span style="text-decoration: underline;" t-field="o.inventory_id"/>
+                                    Block #
+                                    <span style="text-decoration: underline;" t-field="o.sector_id"/>
+                                </p>
+                            </strong>
+                            <br/>
+
+                            <p>
+                                Sir,
+                            </p>
+                            <br/>
+
+                            <p style="margin-left: 20px;">
+                                I / We are the owner of Plot No.
+                                <span style="text-decoration: underline;"
+                                      t-field="o.unit_number"/>
+                                Block No.
+                                <span style="text-decoration: underline;" t-field="o.phase_id"/>
+                                Sector
+                                <span style="text-decoration: underline;" t-field="o.sector_id"/>
+                                Category
+                                <span style="text-decoration: underline;" t-field="o.category_id"/>
+
+                                Tracking ID No.
+                                <span style="text-decoration: underline;" t-field="o.tracking_id"/>
+                                have sold it to Mr./Mrs./Mst.
+                                <span style="text-decoration: underline;" t-field="o.membership_id.name"/>
+                                S/o,D/o,W/o
+                                <span style="text-decoration: underline;" t-field="o.membership_id.relation_name"/>
+                                CNIC No.
+                                <span style="text-decoration: underline;" t-field="o.membership_id.cnic"/>
+                                <br/>
+                            </p>
+                            <p style="margin-left: 20px;">
+                                Please issue transfer set and process it for transfer as requested
+                            </p>
+
+                            <div class="row">
+                                <div class="col-xs-5 col-xs-offset-7">
+                                    <p style="margin-top: 100px;">
+                                        Thanking You
+                                    </p>
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="row">
+                                <div class="col-xs-5 col-xs-offset-7">
+                                    <p>
+                                        Mr./Mrs./Mst.
+                                        <span style="text-decoration: underline;" t-field="o.membership_id.name"/>
+                                        <br/>
+                                        CNIC No.
+                                        <span style="text-decoration: underline;" t-field="o.membership_id.cnic"/>
+                                        <br/>
+                                        Contact No.
+                                        <span style="text-decoration: underline;" t-field="o.membership_id.mobile"/>
+                                        <br/>
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <report
+                string="Transfer Application"
+                id="transfer_application_letter_action"
+                model="file.transfer.request"
+                report_type="qweb-pdf"
+                name="real_estate.transfer_application_letter"
+                file="real_estate.report_transfer_application_letter"
+        />
+
+    
+</odoo>

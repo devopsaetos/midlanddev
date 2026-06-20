@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="res.groups" id="group_multi_invoices">
+        <field name="name">Multi Invoices</field>
+    </record>
+</odoo>

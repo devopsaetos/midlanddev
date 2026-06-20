@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="land_development.crm_lead_ext_form">
+            <field name="name">land_development crm_lead_ext_form</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='team_id']" position="after">
+                    <field name="society_id" invisible="1"/>
+                    <field name="project_type" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//group[@name='unit_details']" position="after">
+<!--                    <page string="Plot Details">-->
+<!--                        <form>-->
+<!--                            <sheet>-->
+                                <group string="Unit Details"
+                                       invisible="project_type == 'housing_society' or project_type == False">
+                                    <notebook colspan="4">
+                                        <page name="unit_detail" string="Details">
+                                            <field name="crm_lead_building">
+                                                <list editable="bottom">
+<!--                                                    <field name="society_id"-->
+<!--                                                           options="{'no_create': True, 'no_open': True}"/>-->
+                                                    <field name="phase_id"
+                                                           options="{'no_create': True, 'no_open': True}"
+                                                           string="Block"/>
+                                                    <field name="sector_id"
+                                                           options="{'no_create': True, 'no_open': True}"
+                                                           string="Floor"/>
+                                                    <field name="category_id"
+                                                           options="{'no_create': True, 'no_open': True}"
+                                                           string="Unit Category"/>
+                                                    <field name="size_id"
+                                                           options="{'no_create': True, 'no_open': True}"/>
+                                                </list>
+                                            </field>
+                                        </page>
+                                    </notebook>
+                                </group>
+<!--                            </sheet>-->
+<!--                        </form>-->
+<!--                    </page>-->
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+<!-- ????????????????????????????????????????????? -->

@@ -1,0 +1,320 @@
+<?xml version="1.0"?>
+<odoo>
+
+        <record model="ir.ui.view" id="account.view_account_payment_form">
+            <field name="name">default_payment view_account_payment_form</field>
+            <field name="model">account.payment</field>
+            <field name="priority" eval="16"/>
+            <field name="arch" type="xml">
+                <form string="Register Payment">
+                    <header>
+                        <button name="action_post" class="oe_highlight" invisible="state != 'draft'" string="Confirm" type="object"/>
+                        <button name="action_draft" class="btn btn-secondary" string="Reset To Draft" type="object"/>
+                        <button name="action_cancel" invisible="state != 'draft'" string="Cancel" type="object"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,in_process,paid"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" name="button_open_journal_entry" string="Journal Entry"
+                                    type="object" groups="account.group_account_user,account.group_account_readonly"
+                                    invisible="not move_id" icon="fa-bars"/>
+                            <button class="oe_stat_button" name="button_open_invoices" type="object" icon="fa-bars"
+                                    invisible="reconciled_invoices_count == 0">
+                                <field name="reconciled_invoices_count"/>
+                                <span invisible="reconciled_invoices_count > 1">Invoice</span>
+                                <span invisible="reconciled_invoices_count &lt;= 1">Invoices</span>
+                            </button>
+                            <field name="is_reconciled" invisible="1"/>
+                        </div>
+                        <field name="id" invisible="1"/>
+                        <field name="inv_line_add" invisible="1"/>
+                        <field name="qr_code" widget='image' class="oe_avatar" nolabel="1" style="margin-right:38px;"/>
+                        <div class="oe_title" invisible="state == 'draft'">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <field name="payment_category"
+                               invisible="1"
+                               widget="radio"
+                               options="{'horizontal': true}"
+                               readonly="context.get('default_payment_category') == 'inv_payment'"
+                        />
+                        <group>
+                            <group name="partner_group">
+                                <field
+                                        name="partner_id"
+                                        string="Vendor"
+                                        readonly="context.get('active_model') == 'account.move'"
+                                        force_save="1"
+                                        required="state == 'draft' and payment_type == 'outbound'"
+                                        invisible="payment_type not in ('inbound', 'outbound') or partner_type != 'supplier'"
+                                        context="{'default_is_company': True}"
+                                        options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,}"
+                                />
+                                <field
+                                        name="partner_id"
+                                        string="Customer"
+                                        readonly="context.get('active_model') == 'account.move'"
+                                        force_save="1"
+                                        required="state == 'draft' and payment_type == 'inbound'"
+                                        invisible="payment_type not in ('inbound', 'outbound') or partner_type != 'customer'"
+                                        context="{'default_is_company': True}"
+                                        options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,}"/>
+                                <field name="journal_id"
+                                       invisible="amount == 0 and state != 'draft'" required="1"
+                                       options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,'no_create': True,}"/>
+                                <field name="mode_of_payments" required="1"
+                                       readonly="state != 'draft'"/>
+                                <label for="amount"/>
+                                <div name="amount_div" class="o_row">
+                                    <field name="amount"/>
+                                    <field name="currency_id" options="{'no_create': True, 'no_open': True}"
+                                           groups="base.group_multi_currency"/>
+                                </div>
+                                <field name="discount_amount"
+                                       invisible="not is_advance_payment" readonly="state != 'draft'"/>
+                                <field name="is_advance_payment" invisible="1"/>
+                                <field name="company_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="date" string="Payment Date"/>
+                                <field name="advance_payment_account_id"
+                                       string="Account"
+                                       domain="[('company_ids', 'in', [company_id]), ('account_type', '=', 'asset_current'), ('reconcile', '=', True)]"
+                                       invisible="not is_advance_payment or payment_type == 'transfer'"
+                                       required="is_advance_payment == True" readonly="state != 'draft'"/>
+                                <field name="memo" string="Remarks"/>
+                                <field name="internal_notes" string="Internal Notes"/>
+                            </group>
+                        </group>
+                        <group string="Cheque Details" name="cheque_details"
+                                invisible="mode_of_payments not in ('cheque','payorder')">
+                            <group>
+                                <field name="cheque_name"
+                                       invisible="mode_of_payments not in ('cheque','payorder')"
+                                       readonly="state != 'draft'"/>
+                                <field name="cheque_no"
+                                       invisible="mode_of_payments not in ('cheque','payorder')"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="cheque_status"
+                                       invisible="mode_of_payments not in ('cheque','payorder')"
+                                       readonly="state != 'draft'"/>
+                                <field name="bank_ref"
+                                       invisible="mode_of_payments not in ('cheque','payorder')"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page id="invoice_tab" default_focus="1" string="Invoices"
+                                  invisible="payment_category == 'advance_payment'">
+                                <field name="invoice_ids"
+                                       invisible="payment_category != 'inv_payment'">
+                                    <list create="false" delete="false" decoration-info="state == 'draft'"
+                                          string="Invoice" decoration-muted="state == 'cancel'" editable="bottom">
+                                        <field name="state" invisible="1"/>
+                                        <field name="name"/>
+                                        <field name="invoice_date"/>
+                                        <field name="invoice_date_due"/>
+                                        <field name="ref" optional="hide"/>
+                                        <field name="amount_tax_signed" string="Tax" sum="Total" optional="hide"/>
+                                        <field name="amount_total_signed" string="Total" sum="Total" optional="show"/>
+                                        <field name="amount_residual_signed" string="Amount Due" sum="Amount Due"
+                                               optional="show"/>
+                                    </list>
+                                </field>
+                                <field
+                                        name="multi_invoice_ids"
+                                        domain="[('payment_id', '=', False)]"
+                                        force_save="1"
+                                        readonly="state != 'draft' or inv_line_add == True"
+                                        invisible="payment_category != 'multi_inv_payment'"
+                                        context="{'default_partner_id': partner_id}">
+                                    <list decoration-info="state == 'draft'" string="Invoices"
+                                          decoration-muted="state == 'cancel'" editable="bottom">
+                                        <field name="state" invisible="1" force_save="1"/>
+                                        <field name="active" invisible="1" force_save="1"/>
+                                        <field name="invoice_id" force_save="1"/>
+                                        <field name="invoice_date" force_save="1"/>
+                                        <field name="invoice_date_due" force_save="1"/>
+                                        <field name="amount_total_signed" string="Total" sum="Total" optional="show" force_save="1"/>
+                                        <field name="payment_due" invisible="0" readonly="1" string="Amount Due" sum="Amount Due" optional="show" force_save="1"/>
+                                        <field name="discount_amount" readonly="0" force_save="1"/>
+                                        <field name="payment_amount" sum="Payment Amount" readonly="0" force_save="1"/>
+                                        <field name="payment_difference" optional="show" string="Difference"
+                                               sum="Payment Difference" force_save="1"/>
+                                        <field name="payment_difference_handling" optional="show"
+                                               string="Action" readonly="payment_difference == 0.0" force_save="1"/>
+<!--                                        <field name="writeoff_account_id" optional="show" string="Account" force_save="1"-->
+<!--                                               readonly="payment_difference_handling in ('open', False, 'advance_payment')"/>-->
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Other Info">
+                                <group>
+                                    <group>
+                                        <field name="base_payment_id" readonly="1"/>
+                                        <field name="payment_type" widget="radio"/>
+                                        <field name="legacy_ref"/>
+                                    </group>
+                                    <group>
+                                        <field name="partner_type" widget="selection"
+                                               required="state == 'draft' and payment_type in ('inbound', 'outbound')"
+                                               invisible="payment_type not in ('inbound', 'outbound')"/>
+                                        <field name="company_id" groups="base.group_multi_company" required="1"/>
+                                    </group>
+                                </group>
+                                <field name="payment_method_line_id" widget="radio"
+                                       invisible="not available_payment_method_line_ids"/>
+                                <field name="partner_bank_id"
+                                       invisible="not show_partner_bank_account"
+                                       required="require_partner_bank_account == True"
+                                       context="{'default_partner_id': partner_id}"/>
+                                <field name="available_payment_method_line_ids" invisible="1"/>
+                                <field name="amount" invisible="1"/>
+                                <field name="show_partner_bank_account" invisible="1"/>
+                                <field name="require_partner_bank_account" invisible="1"/>
+                                <field name="payment_method_code" invisible="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="o_attachment_preview"/>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        <record id="account.action_account_payments" model="ir.actions.act_window">
+            <field name="context">{
+                'default_payment_category': 'multi_inv_payment',
+                'default_payment_type': 'inbound',
+                'default_partner_type': 'customer',
+                'search_default_inbound_filter': 0,
+                'res_partner_search_mode': 'customer',
+                }
+            </field>
+            <field name="domain">
+                [('payment_type','=','inbound'),('partner_type','=','customer'),('is_advance_payment','!=',True)]
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('account.view_account_payment_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('account.view_account_payment_kanban')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('account.view_account_payment_form')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('account.view_account_payment_graph')})]"/>
+        </record>
+        <record id="account.action_account_payments_payable" model="ir.actions.act_window">
+            <field name="context">{
+                'default_payment_category': 'multi_inv_payment',
+                'default_payment_type': 'outbound',
+                'default_partner_type': 'supplier',
+                'search_default_outbound_filter': 0,
+                'res_partner_search_mode': 'supplier',
+                }
+            </field>
+            <field name="domain">
+                [('payment_type','=','outbound'),('partner_type','=','supplier'),('is_advance_payment','!=',True)]
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('account.view_account_payment_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('account.view_account_payment_kanban')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('account.view_account_payment_form')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('account.view_account_payment_graph')})]"/>
+        </record>
+        <!-- Advance menus actions and views below start-->
+        <record id="view_account_payment_advance_search" model="ir.ui.view">
+            <field name="name">view.account.payment.advance.search</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_search"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <filter string="Advance Payments" name="advance_payments"
+                            domain="[('is_advance_payment', '=', True)]"/>
+                    <separator/>
+                </field>
+            </field>
+        </record>
+        <record id="default_payment.action_account_adv_payments" model="ir.actions.act_window">
+            <field name="name">Advance Payments</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_mode">list,kanban,form,graph</field>
+            <field name="domain">[('is_advance_payment', '=', True),('partner_type','=','customer')]</field>
+            <field name="context">{
+                'default_payment_category': 'advance_payment',
+                'default_payment_type': 'inbound',
+                'default_partner_type': 'customer',
+                'search_default_inbound_filter': 0,
+                'res_partner_search_mode': 'customer',
+                }
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('account.view_account_payment_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('account.view_account_payment_kanban')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('account.view_account_payment_form')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('account.view_account_payment_graph')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Register an Advance Payment
+                </p>
+                <p>
+                    Payments are used to register liquidity movements. You can process those payments by your own means
+                    or by using installed facilities.
+                </p>
+            </field>
+        </record>
+        <record id="default_payment.action_account_adv_payments_payable" model="ir.actions.act_window">
+            <field name="name">Advance Payments</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_mode">list,kanban,form,graph</field>
+            <field name="domain">[('is_advance_payment', '=', True),('partner_type','=','supplier')]</field>
+            <field name="context">{
+                'default_payment_category': 'advance_payment',
+                'default_payment_type': 'outbound',
+                'default_partner_type': 'supplier',
+                'search_default_outbound_filter': 0,
+                'res_partner_search_mode': 'supplier',
+                }
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('account.view_account_payment_tree')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('account.view_account_payment_kanban')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('account.view_account_payment_form')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('account.view_account_payment_graph')})]"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Register an Advance Payment
+                </p>
+                <p>
+                    Payments are used to register liquidity movements. You can process those payments by your own means
+                    or by using installed facilities.
+                </p>
+            </field>
+        </record>
+        <!-- Customers and Vendors menu -->
+        <record id="account.res_partner_action_customer" model="ir.actions.act_window">
+            <field name="domain">[('customer_rank','>',0)]</field>
+        </record>
+        <record id="account.res_partner_action_supplier" model="ir.actions.act_window">
+            <field name="domain">[('supplier_rank','>',0)]</field>
+        </record>
+        <menuitem id="default_payment.advance_payment"
+                  name="Advance Receipts"
+                  parent="account.menu_finance_receivables"
+                  sequence="16"
+                  action="default_payment.action_account_adv_payments"
+        />
+        <menuitem id="default_payment.advance_payment_payable"
+                  name="Advance Payments"
+                  parent="account.menu_finance_payables"
+                  sequence="21"
+                  action="default_payment.action_account_adv_payments_payable"
+        />
+        <menuitem action="account.action_account_payments" name="Receipts" id="account.menu_action_account_payments_receivable"
+                  parent="account.menu_finance_receivables" sequence="15"/>
+        <!-- Advance menus actions and views above end-->
+
+</odoo>

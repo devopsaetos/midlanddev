@@ -1,0 +1,144 @@
+<odoo>
+        <record id="real_estate.member_rule" model="ir.rule">
+            <field name="name">Member multi-company</field>
+            <field name="model_id" ref="real_estate.model_res_member"/>
+            <field name="domain_force">['|',('member_company_id','in',company_ids),('member_company_id','=',False)]
+            </field>
+        </record>
+
+        <record id="real_estate.file_rule" model="ir.rule">
+            <field name="name">File multi-company</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.society_rule" model="ir.rule">
+            <field name="name">Society multi-company</field>
+            <field name="model_id" ref="model_society"/>
+            <field name="domain_force">
+                [
+                ('is_society','=',1),
+                ('company_id','in',company_ids)
+                ]
+
+            </field>
+            <field name="groups"
+                   eval="[(4, ref('real_estate.group_rsms_user')), (4, ref('real_estate.group_rsms_manager'))]"/>
+        </record>
+
+        <record id="real_estate.phase_rule" model="ir.rule">
+            <field name="name">Phase multi-company</field>
+            <field name="model_id" ref="model_society"/>
+            <field name="domain_force">
+                [
+                ('project_type','in',['skyscraper', 'housing_society']),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+            <field name="groups"
+                   eval="[(4, ref('real_estate.group_rsms_user')), (4, ref('real_estate.group_rsms_manager'))]"/>
+        </record>
+
+        <record id="real_estate.sector_rule" model="ir.rule">
+            <field name="name">Sector multi-company</field>
+            <field name="model_id" ref="model_sector"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.inventory_rule" model="ir.rule">
+            <field name="name">Inventory multi-company</field>
+            <field name="model_id" ref="model_plot_inventory"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.price_list_rule" model="ir.rule">
+            <field name="name">Price List multi-company</field>
+            <field name="model_id" ref="model_price_list"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.investment_rule" model="ir.rule">
+            <field name="name">Investment multi-company</field>
+            <field name="model_id" ref="model_investment"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.investor_file_rule" model="ir.rule">
+            <field name="name">Investor File multi-company</field>
+            <field name="model_id" ref="model_investor_file"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.plot_merger_application_rule" model="ir.rule">
+            <field name="name">Plot Merger Application multi-company</field>
+            <field name="model_id" ref="model_plot_merger_application"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('membership_id.company_id','=',False),
+                ('membership_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.bulk_file_cancellation_rule" model="ir.rule">
+            <field name="name">Bulk File Cancellation multi-company</field>
+            <field name="model_id" ref="model_bulk_file_cancellation"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.legal_dispute_rule" model="ir.rule">
+            <field name="name">Legal Disputes multi-company</field>
+            <field name="model_id" ref="model_legal_dispute"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+</odoo>

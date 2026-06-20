@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.file_merger_form" model="ir.ui.view">
+            <field name="name">real_estate file_merger_form</field>
+            <field name="model">plot.merger</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="membership_id"/>
+                            </group>
+                            <group class="oe_subtotal_footer oe_right">
+                                <button string="Search" name="search_related_file" type="object"
+                                        class="btn-primary"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Search" autofocus="autofocus">
+                                <field name="file_merger_line" options="{'no_quick_create': True, 'no_open': True}">
+                                    <list create="false" editable="bottom">
+                                        <field name="file_id" options="{'no_open': True}"/>
+                                        <field name="membership_id" options="{'no_open': True}"/>
+                                        <field name="state" invisible="1"/>
+                                        <button name="open_payment_plan" string="Open" type="object" icon="fa-paper-plane text-success" invisible="state != 'open'"/>
+                                        <button name="close_payment_plan" string="Cancel" type="object" icon="fa-times-circle text-danger" invisible="state != 'close'"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                        <notebook colspan="4" invisible="not visibility_check">
+                             <page string="Payment Plan">
+                                 <form>
+                                     <header>
+ 
+                                         <field name="installment_created" invisible='1'/>
+                                         <!-- <button
+                                                 name="create_installment_plan"
+                                                 type="object"
+                                                 string="Create Installment Plan"
+                                                 class="oe_highlight"
+                                                 invisible="installment_created or payment_states != 'open'"
+                                         /> -->
+                                     </header>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="visibility_check" invisible='1'/>
+                                                <field name="plan_description"/>
+                                                <field name="interval_id"/>
+                                                <field name="total_installment"/>
+                                                <field name="starting_date"/>
+                                                <field name="payment_states"/>
+                                            </group>
+                                            <group>
+                                                <field name="sale_amount"/>
+                                                <field name="factor_amount"/>
+                                                <field name="ttl_sale_amount"/>
+                                                <field name="discount_type"/>
+                                                <field name="discount_amount"/>
+                                                <field name="net_sale_amount"/>
+                                                <field name="initial_payment"/>
+                                                <field name="balance_amount"/>
+                                            </group>
+                                        </group>
+                                        <notebook colspan="4">
+
+                                            <page string="Installment Plan">
+                                                 <field name="installment_plan_ids">
+                                                     <list editable="bottom" decoration-info="invoice_created == True">
+                                                         <field name="date"/>
+                                                         <field name="amount"/>
+                                                         <field name="invoice_created"/>
+                                                         <field name="invoice_id"/>
+                                                         <field name="state"/>
+                                                     </list>
+                                                 </field>
+                                             </page>
+ 
+                                             <page string="File Payment History">
+                                                 <field name="file_payment_history_id">
+                                                     <list
+                                                             options="{'no_open': True}"
+                                                             create="false" editable="bottom"
+                                                             decoration-info="state == 'open'"
+                                                             decoration-danger="state == 'paid'"
+                                                             decoration-muted="state == 'cancel'"
+                                                     >
+                                                         <field name="date_invoice"/>
+                                                         <field name="invoice_id"/>
+                                                         <field name="amount_total"/>
+                                                         <field name="amount_paid"/>
+                                                         <field name="residual"/>
+                                                         <field name="state"/>
+                                                     </list>
+                                                 </field>
+                                             </page>
+                                        </notebook>
+                                    </sheet>
+
+                                </form>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <footer>
+                        <button string="Initiate Merger" name="initiate_merjer" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="real_estate.action_file_merger_form" model="ir.actions.act_window">
+            <field name="name">Search</field>
+            <field name="res_model">plot.merger</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="real_estate.file_merger_form"/>
+            <field name="target">new</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+        <menuitem
+                id="real_estate.menu_file_merger_form"
+                name="Plot Merger"
+                action="real_estate.action_file_merger_form"
+                parent="real_estate.menu_merger"
+                sequence="5"
+        />
+</odoo>

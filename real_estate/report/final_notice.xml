@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <template id="final_notice">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="real_estate.internal_layout1">
+                        <div class="container">
+                            <style>
+                                p {
+                                font-family: "arial";
+                                font-size: 16px;
+                                color: black;
+                                }
+                                li {
+                                font-family: "arial";
+                                font-size: 16px;
+                                color: black;
+                                }
+                                .member {
+                                font-size: 16px !important;
+                                }
+                            </style>
+                            <t t-set="current_date"
+                               t-value="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
+                            <t t-set="installment_check"
+                               t-value="request.env['installment.plan'].search_count([('file_id', '=', o.id),('state', '=', 'open'),('date', '&lt;', current_date)])"/>
+                            <t t-set="balloting_amount_of_file"
+                               t-value="o.sale_amount * (request.env['res.company']._company_default_get().balloting_percentage / 100)"/>
+                            <t>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-xs-12">
+                                        <div style="text-align:center">
+                                            <h2>Notice Of Cancellation Of Property</h2>
+                                            <br/>
+                                            <br/>
+                                            <h4 style="text-align:right">
+                                                <b>
+                                                    Date:
+                                                    <u>
+                                                        <span t-esc="current_date"/>
+                                                    </u>
+                                                </b>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <style>
+                                    table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    }
+
+                                    td, th , tr{
+                                    border: 1px solid #dddddd;
+                                    text-align: left;
+                                    }
+                                </style>
+                                <br/>
+                                <br/>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th>Unit No.</th>
+                                        <td>
+                                            <span t-field="o.inventory_id"/>
+                                        </td>
+                                        <th>Phase</th>
+                                        <td>
+                                            <span t-field="o.phase_id"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Unit Size</th>
+                                        <td>
+                                            <span t-field="o.size_id"/>
+                                        </td>
+                                        <th>Net Sale Amount</th>
+                                        <td>
+                                            <span t-field="o.net_sale_amount"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Unit Category</th>
+                                        <td>
+                                            <span t-field="o.unit_category_type_id"/>
+                                        </td>
+                                        <th>Total Amount Paid</th>
+                                        <td>
+                                            <span t-esc="o._compute_paid_amount(o.membership_id.partner_id.id, o.name)"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <br/>
+                                <br/>
+                                <p align="justify">Dear Mr./Miss
+                                    <b>
+                                        <u>
+                                            <span t-field="o.membership_name"/>
+                                        </u>
+                                    </b>
+                                </p>
+                                <p align="justify">
+                                    This is to inform you that the above-mentioned property in our respective Project
+                                    will be cancelled. In this regard, a number of Reminder letters/emails regarding
+                                    non-payment were sent to you however no response was received from you.
+                                </p>
+                                <p align="justify">
+                                    Reasons for cancellation are follows:
+                                </p>
+                                <li style="text-indent: 50px; list-style-type: none;">1. Nonpayment of dues</li>
+                                <li style="text-indent: 50px; list-style-type: none;">2. Nonpayment of consecutive
+                                    installments
+                                </li>
+                                <li style="text-indent: 50px; list-style-type: none;">3. Dishonor of cheque</li>
+                                <li style="text-indent: 50px; list-style-type: none;">4. Discrepancy found in agreed
+                                    terms and conditions
+                                </li>
+                                <li style="text-indent: 50px; list-style-type: none;">5. Other reasons</li>
+
+                                <p align="justify">Kindly contact our Property Management
+                                    team on
+                                    <t t-esc="res_company.email"/> within
+                                    14 days from the date of this letter for clearance of all outstanding dues as per
+                                    the terms set out in the Agreement to Sell.
+                                </p>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <p align="justify">Director Property Management
+                                </p>
+                                <p align="justify">
+                                    <b>
+                                        <t t-esc="res_company.name"/>
+                                    </b>
+                                </p>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <report
+                string="Final Notice"
+                id="final_notice_action"
+                model="file"
+                report_type="qweb-pdf"
+                name="real_estate.final_notice"
+                file="real_estate.final_notice"
+        />
+
+    
+</odoo>

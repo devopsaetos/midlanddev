@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+        <record id="action_server_compute_installment_due" model="ir.actions.server">
+            <field name="name">Installment Due Count</field>
+            <field name="type">ir.actions.server</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="binding_model_id" ref="model_file"/>
+            <field name="state">code</field>
+            <field name="code">
+                records.count_due_installments()
+            </field>
+        </record>
+
+        <record id="action_bulk_file_approve" model="ir.actions.server">
+            <field name="name">Bulk File Approve</field>
+            <field name="model_id" ref="model_file"/>
+            <field name="binding_model_id" ref="model_file"/>
+            <field name="binding_view_types">list</field>
+<!--            <field name="groups_id" eval="[(6, 0, [ref('real_estate.group_file_approve')])]"/>-->
+            <field name="state">code</field>
+            <field name="code">
+                records.bulk_file_approve()
+            </field>
+        </record>
+</odoo>

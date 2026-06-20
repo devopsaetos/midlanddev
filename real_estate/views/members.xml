@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.view_partner_form">
+            <field name="name">res.member.form</field>
+            <field name="model">res.member</field>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <form name="real_estate_member" string="Partners">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-pencil-square-o">
+                                <field name="no_of_invoices" string="Invoices" widget="statinfo"/>
+                            </button>
+                            <button
+                                    name="open_file"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-folder-open-o"
+                            >
+
+                                <field name="no_of_files" string="Files" widget="statinfo"/>
+
+                            </button>
+                            <button
+                                    name="toggle_active"
+                                    type="object"
+                                    class="oe_stat_button" icon="fa-archive">
+
+                                <field
+                                        name="active"
+                                        widget="boolean_button"
+                                        options='{"terminology": "archive"}'
+                                />
+                            </button>
+                        </div>
+
+                        <!-- image is Inherited field -->
+                        <field
+                                name="image_1920"
+                                widget='image'
+                                class="oe_avatar"
+                                style="width:100px; height:100px"
+                        />
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" required="1" default_focus="1" placeholder="Name"/>
+                            </h1>
+                            <field name="project_type" invisible="1"/>
+                            <field name="member_company_id" invisible="1"/>
+                            <field name="ownership_percentage" invisible="1"/>
+                        </div>
+
+                        <group>
+                            <group>
+                                <!--                                <field name="customer" invisible='1'/> &lt;!&ndash; customer is Inherited field &ndash;&gt;-->
+
+                                <field name='create_date' invisible='1'/> <!-- create_date is Inherited field -->
+                                <field name="ref"/>
+                                <field name="company_type" string="Member Type"
+                                       readonly="token_generated == True"/>
+                                <field name='cnic' string="CNIC"
+                                       invisible="company_type != 'person'"/>
+                                <field name="tracking_id" invisible="1"/>
+                                <field name="token_generated" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name='relation_name' string="Father/Spouse"
+                                       invisible="company_type != 'person'" required="company_type == 'person'"/>
+                                <field name='source_ids' options='{"no_open": True, "no_create": True}'/>
+
+                            </group>
+                        </group>
+
+                        <notebook colspan="4">
+                            <page
+                                    string="Company Information"
+                                    invisible="company_type not in 'company'"
+                                    autofocus="autofocus">
+                                <group>
+                                    <group name='primary_address' string="Registered Address">
+                                        <!-- All address fields are Inherited field except city_id -->
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="street" placeholder="Street..." class="o_address_street"
+                                                   required='1'/>
+                                            <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+
+                                            <field name="city_id" placeholder="City" class="o_address_city"
+                                                   options='{"no_open": True}'/>
+
+                                            <field name="state_id" string="Province" class="o_address_state"
+                                                   placeholder="State" options='{"no_open": True}'
+                                                   context="{'country_id': country_id, 'zip': zip}"
+                                            />
+
+                                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                            <field name="country_id" placeholder="Country" class="o_address_country"
+                                                   options='{"no_open": True, "no_create": True}'
+                                                   required='1'
+                                            />
+                                        </div>
+                                    </group>
+                                    <group name='corespondence_address' string="Correspondence Details">
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="corespondence_street" placeholder="Street..."
+                                                   class="o_address_street" force_save="1"/>
+                                            <field name="corespondence_street2" placeholder="Street 2..."
+                                                   class="o_address_street" force_save="1"/>
+
+                                            <field name="corespondence_city_id" options='{"no_open": True}'
+                                                   placeholder="City" class="o_address_city" force_save="1"/>
+
+                                            <field name="corespondence_state_id" string="Province"
+                                                   class="o_address_state"
+                                                   placeholder="State" options='{"no_open": True}'
+                                                   context="{'country_id': country_id, 'zip': zip}"
+                                                   force_save="1"
+                                            />
+
+                                            <field name="corespondence_zip" placeholder="ZIP" class="o_address_zip"
+                                                   force_save="1"/>
+                                            <field name="corespondence_country_id" placeholder="Country"
+                                                   class="o_address_country"
+                                                   options='{"no_open": True, "no_create": True}'
+                                                   force_save="1"
+                                            />
+                                        </div>
+                                        <field name="is_same"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group name='contact_info' string="Contact Person">
+
+                                        <field name="cp_name"/>
+                                        <field name="cp_code_mobile_id"
+                                               placeholder="0092"
+                                               invisible="1"
+                                               class="o_country_code" options='{"no_open": True}'/>
+                                        <field widget="mask"
+                                               name="cp_mobile"
+                                               required="company_type == 'company'"
+                                               placeholder='+923007654321'
+                                               class="o_phone_number"/>
+                                        <field name="cp_code_landline_id"
+                                               placeholder="0092"
+                                               invisible="1"
+                                               class="o_country_code"
+                                               options='{"no_open": True}'/>
+                                        <field widget="mask"
+                                               data-inputmask="'mask': '+42-9999999'"
+                                               name="cp_landline"
+                                               required="company_type == 'company'"
+                                               placeholder='+42-1987654'
+                                               class="o_phone_number"/>
+                                        <!--                                        </div>-->
+                                        <field name="cp_desigination"/>
+                                        <label for="email" string="Email"/>
+                                        <div>
+                                            <field name="email" widget="email" context="{'gravatar_image': True}"/>
+                                        </div>
+                                    </group>
+                                    <group name='Company_info' string="Company Information">
+
+                                        <field name="tax_status"/>
+                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0"/>
+                                        <field name="nature_of_business"/>
+                                        <field name="cp_code_landline_id" placeholder="0092"
+                                               invisible="1"
+                                               class="o_country_code" options='{"no_open": True}'/>
+                                        <field name="cp_landline"
+                                               widget="mask"
+                                               data-inputmask="'mask': '+42-9999999'"
+                                               required="company_type == 'company'"
+                                               placeholder='+42-1987654'
+                                               class="o_phone_number"/>
+                                        <field name="company_email"/>
+                                        <field name="fax"/>
+                                        <field name="uan"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Joint Owners"
+                                  invisible="company_type not in 'aop'"
+                                  autofocus="autofocus">
+                                <group>
+                                    <group name='primary_address' string="Registered Address">
+                                        <!-- All address fields are Inherited field except city_id -->
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="street" placeholder="Street..." class="o_address_street"
+                                                   required='1'/>
+                                            <field name="street2" placeholder="Street 2..." class="o_address_street"
+                                                   required='0'/>
+
+                                            <field name="city_id" placeholder="City" class="o_address_city"
+                                                   required='1' options='{"no_open": True}' string="City "/>
+
+                                            <field name="state_id" string="Province" class="o_address_state"
+                                                   placeholder="State" options='{"no_open": True}'
+                                                   context="{'country_id': country_id, 'zip': zip}"
+                                            />
+
+                                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                            <field name="country_id" placeholder="Country" class="o_address_country"
+                                                   options='{"no_open": True, "no_create": True}'
+                                                   required='1'
+                                            />
+                                        </div>
+                                    </group>
+                                    <group name='corespondence_address' string="Correspondence Details">
+                                        <field name="is_same"/>
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field name="corespondence_street" placeholder="Street..."
+                                                   class="o_address_street"/>
+                                            <field name="corespondence_street2" placeholder="Street 2..."
+                                                   class="o_address_street"/>
+
+                                            <field name="corespondence_city_id" options='{"no_open": True}'
+                                                   placeholder="City" class="o_address_city"/>
+
+                                            <field name="corespondence_state_id" string="Province"
+                                                   class="o_address_state"
+                                                   placeholder="State" options='{"no_open": True}'
+                                                   context="{'country_id': country_id, 'zip': zip}"
+                                            />
+
+                                            <field name="corespondence_zip" placeholder="ZIP" class="o_address_zip"/>
+                                            <field name="corespondence_country_id" placeholder="Country"
+                                                   class="o_address_country"
+                                                   options='{"no_open": True, "no_create": True}'
+                                            />
+                                        </div>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group name='contact_info' string="Contact Person">
+
+                                        <field name="cp_name"/>
+                                        <field name="cp_code_mobile_id"
+                                               placeholder="0092"
+                                               invisible="1"
+                                               class="o_country_code" options='{"no_open": True}'/>
+                                        <field widget="mask"
+                                               name="cp_mobile"
+                                               required="company_type == 'aop'"
+                                               placeholder='+923007654321'
+                                               class="o_phone_number"/>
+                                        <field name="cp_code_landline_id"
+                                               placeholder="0092"
+                                               invisible="1"
+                                               class="o_country_code"
+                                               options='{"no_open": True}'/>
+                                        <field widget="mask"
+                                               data-inputmask="'mask': '+42-9999999'"
+                                               name="cp_landline"
+                                               string="Secondary Phone"
+                                               placeholder='+42-0987654'
+                                               class="o_phone_number"/>
+                                        <field name="cp_desigination"/>
+                                        <label for="email" string="Email"/>
+                                        <div>
+                                            <field name="email" widget="email" context="{'gravatar_image': True}"/>
+                                        </div>
+                                    </group>
+                                    <group name='aop_info' string="AOP Information">
+                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0"/>
+                                        <field name="nature_of_business"/>
+                                        <field name="cp_code_landline_id" placeholder="0092" invisible="1"
+                                               class="o_country_code" options='{"no_open": True}'/>
+                                        <field name="cp_landline" widget="mask"
+                                               data-inputmask="'mask': '+42-9999999'"
+                                               string="Secondary Phone"
+                                               placeholder='+42-1987654'
+                                               class="o_phone_number"/>
+                                        <field name="fax"/>
+                                        <field name="uan"/>
+                                    </group>
+                                    <group string="Details" colspan="4"
+                                           invisible="company_type not in 'aop'">
+                                        <form>
+                                            <field name="cnic_line_ids">
+                                                <list editable="bottom">
+                                                    <field name="member_name" required="1"/>
+                                                    <field name="cnic" widget="mask"
+                                                           data-inputmask="'mask': '99999-9999999-9'" required="1"/>
+                                                    <field name="cnic_expiry_date"/>
+                                                    <field name="cnic_front"/>
+                                                    <field name="cnic_back"/>
+                                                    <field name="phone" widget="mask" placeholder="+92-300-2132132"/>
+                                                    <field name="tax_status"/>
+                                                    <field name="address"/>
+                                                    <field name="name" required="1"/>
+                                                    <field name="father_spouse_cnic" widget="mask"
+                                                           data-inputmask="'mask': '99999-9999999-9'" required="0"/>
+                                                    <field name="ownership" string="Owner Percentage"
+                                                           column_invisible="parent.ownership_percentage != True"
+                                                           required="parent.ownership_percentage == True"/>
+                                                </list>
+                                            </field>
+                                        </form>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Personal Information"
+                                  invisible="company_type not in 'person'" autofocus="autofocus">
+                                <group>
+
+                                    <group name='general_info' string="General Info">
+                                        <field name="gender" invisible="1"/>
+                                        <field name='dob'/>
+                                        <field name="tax_status"
+                                               invisible="company_type == 'aop'" required="company_type not in 'aop'"/>
+                                    </group>
+                                    <group name='contact_info' string="Contact Info">
+                                        <label
+                                                for="email"
+                                                string="Email"
+                                                class="oe_damage_control_1"
+                                        />
+
+                                        <div>
+                                            <field
+                                                    class="oe_damage_control_1"
+                                                    name="email"
+                                                    widget="email"
+                                                    context="{'gravatar_image': True}"
+                                            />
+                                        </div>
+                                        <field invisible="1"
+                                               name="country_code_mobile_id"
+                                               placeholder="0092"
+                                               class="o_country_code"
+                                               options='{"no_open": True}'/>
+
+                                        <field widget="mask"
+                                               name="mobile"
+                                               required="company_type == 'person'"
+                                               placeholder='+92-300-8765432'
+                                               class="o_phone_number"/>
+                                        <field invisible="1"
+                                               name="country_code_mobile2_id"
+                                               placeholder="0092"
+                                               class="o_country_code"
+                                               options='{"no_open": True}'/>
+
+                                        <field widget="mask"
+                                               name="secondary_phone"
+                                               placeholder='+92-300-8765432'
+                                               class="o_phone_number"/>
+                                        <field invisible="1"
+                                               name="country_code_phone_id"
+                                               placeholder="0092"
+                                               class="o_country_code"
+                                               options='{"no_open": True}'/>
+
+                                        <field widget="mask"
+                                               data-inputmask="'mask': '+99-9999999'"
+                                               name="phone"
+                                               placeholder='+42-2429871'
+                                               class="o_phone_number"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group name='primary_address' string="Primary Address">
+                                        <!-- All address fields are Inherited field except city_id -->
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field
+                                                    name="street"
+                                                    placeholder="Street..."
+                                                    class="o_address_street"
+                                                    required='1'/>
+
+                                            <field
+                                                    name="street2"
+                                                    placeholder="Street 2..."
+                                                    class="o_address_street"/>
+
+                                            <field
+                                                    name="city_id"
+                                                    placeholder="City"
+                                                    class="o_address_city"
+                                                    required='1'
+                                                    options='{"no_open": True}'/>
+
+                                            <field
+                                                    name="state_id"
+                                                    string="Province"
+                                                    class="o_address_state"
+                                                    placeholder="State"
+                                                    options='{"no_open": True}'
+                                                    context="{'country_id': country_id, 'zip': zip}"/>
+
+                                            <field
+                                                    name="zip"
+                                                    placeholder="ZIP"
+                                                    class="o_address_zip"/>
+
+                                            <field
+                                                    name="country_id"
+                                                    placeholder="Country"
+                                                    class="o_address_country"
+                                                    options='{"no_open": True, "no_create": True}'
+                                                    required='1'/>
+                                        </div>
+                                    </group>
+                                    <group name='corespondence_details' string="Correspondence Details">
+                                        <label for="street" string="Address"/>
+                                        <div class="o_address_format">
+                                            <field
+                                                    name="corespondence_street"
+                                                    placeholder="Street..."
+                                                    class="o_address_street"
+                                                    readonly="is_same == True"
+                                                    force_save="1"/>
+
+                                            <field
+                                                    name="corespondence_street2"
+                                                    placeholder="Street 2..."
+                                                    class="o_address_street"
+                                                    readonly="is_same == True"
+                                                    force_save="1"/>
+
+                                            <field
+                                                    name="corespondence_city_id"
+                                                    options='{"no_open": True}'
+                                                    placeholder="City"
+                                                    class="o_address_city"
+                                                    readonly="is_same == True"
+                                                    force_save="1"/>
+
+                                            <field
+                                                    name="corespondence_state_id"
+                                                    string="Province"
+                                                    class="o_address_state"
+                                                    placeholder="State"
+                                                    options='{"no_open": True}'
+                                                    context="{'country_id': country_id, 'zip': zip}"
+                                                    readonly="is_same == True"
+                                                    force_save="1"
+                                            />
+
+                                            <field
+                                                    name="corespondence_zip"
+                                                    placeholder="ZIP"
+                                                    class="o_address_zip"
+                                                    readonly="is_same == True"
+                                                    force_save="1"/>
+
+                                            <field
+                                                    name="corespondence_country_id"
+                                                    placeholder="Country"
+                                                    class="o_address_country"
+                                                    options='{"no_open": True, "no_create": True}'
+                                                    readonly="is_same == True"
+                                                    force_save="1"
+                                            />
+                                        </div>
+                                        <field name="is_same"/>
+                                    </group>
+                                </group>
+                                <group name="id_info">
+                                    <group string="Identification Info">
+                                        <field name='identification_type'/>
+                                        <field name='relation_name' string="Mother/Father"
+                                               invisible="identification_type != 'parent_cnic'"
+                                               required="identification_type == 'parent_cnic'"/>
+                                        <field
+                                                widget="mask"
+                                                data-inputmask="'mask': '99999-9999999-9'"
+                                                name='cnic'
+                                                required="identification_type in ('cnic', 'parent_cnic') and company_type == 'person'"
+                                                invisible="identification_type != 'cnic'"/>
+                                        <field name='cnic_expiry_date'
+                                               invisible="identification_type not in ('cnic', 'parent_cnic')"/>
+                                        <field name='passport'
+                                               invisible="identification_type != 'passport'"/>
+                                        <field name='passport_expiry_date'
+                                               invisible="identification_type != 'passport'"/>
+                                        <field name='passport_front'
+                                               required="identification_type == 'passport'"
+                                               invisible="identification_type != 'passport'"
+                                               widget='image'
+                                               style="width:100px; height:100px"
+                                        />
+                                        <field name='form_b'
+                                               invisible="identification_type != 'form_b'"
+                                        />
+                                        <field name='form_b_front'
+                                               required="identification_type == 'form_b'"
+                                               invisible="identification_type != 'form_b'"
+                                               widget='image'
+                                               style="width:100px; height:100px"
+                                        />
+                                    </group>
+                                    <group string="Next Of Kin">
+                                        <field name="kin_name" required="company_type == 'person'"/>
+                                        <field name="kin_mobile" widget="mask"
+                                               data-inputmask="'mask': '+99-999-9999999'"
+                                               placeholder="+92-300-2132132"/>
+                                        <field name="kin_cnic"/>
+                                        <field name="kin_member_relation"
+                                               required="company_type == 'person'"/>
+                                        <field name="other_relation"
+                                               invisible="kin_member_relation != 'other'"
+                                               required="kin_member_relation == 'other'"/>
+                                    </group>
+
+                                    <group invisible="identification_type not in ('cnic', 'parent_cnic')">
+
+                                        <field name='cnic_front'
+                                               widget='image'
+                                               style="width:100px; height:100"
+                                        />
+                                        <button name="scan_image" context="{'target_field': 'cnic_front'}" type="object"
+                                                string="Scan CNIC Front"/>
+                                        <field name='cnic_back'
+                                               widget='image'
+                                               style="width:100px; height:100"
+                                        />
+                                        <button name="scan_image" context="{'target_field': 'cnic_back'}" type="object"
+                                                string="Scan CNIC Back"/>
+                                    </group>
+
+                                </group>
+
+                            </page>
+
+                            <page string="Biometric"
+                                  invisible="company_type not in ('aop', 'person')"
+                                  autofocus="autofocus">
+                                <group name="biometric" string="Biometric">
+                                    <group>
+                                        <field name='biometric'/>
+                                    </group>
+                                    <group>
+                                        <field name="biometric_image" widget='image'/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page name='internal_notes' string="Internal Notes">
+                                <group name='professional_info' string="Professional Info"
+                                       autofocus="autofocus">
+                                    <group>
+                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0"/>
+
+                                        <field name="function" string='Profession' placeholder="e.g. Businessman"/>
+
+                                        <field name="category_id" widget="many2many_tags"
+                                               options="{'color_field': 'color', 'no_create_edit': True}"
+                                               placeholder="Tags..."/>
+                                    </group>
+                                    <group>
+                                        <field name="assigned_user_ids" string="Assigned Users"/>
+                                        <field name="user_id" string="Prop. Manage. Executive"/>
+                                        <field name="crm_id" string="CRM Ref" readonly="1"/>
+                                        <field name="token_id" string="Token" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page name='next_of_kin' invisible="company_type == 'company'"
+                                  string="Next of Kin">
+                                <field name="kin_line_ids">
+                                    <list editable="bottom">
+                                        <field name="name"/>
+                                        <field name="mobile" widget="mask" data-inputmask="'mask': '+99-999-9999999'"
+                                               placeholder="+92-300-2132132"/>
+                                        <field name="mobile_code" invisible="1"/>
+                                        <field name="cnic" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                        <field name="cnic_front" widget="image" style="width:50px; height:50px"/>
+                                        <field name="cnic_back" widget="image" style="width:50px; height:50px"/>
+                                        <field name="member_name"/>
+                                        <field name="relation_with_member"/>
+                                        <field name="relation_name"
+                                               required="relation_with_member == 'other'"
+                                               readonly="relation_with_member != 'other'"/>
+                                        <field name="start_date" invisible="0"/>
+                                        <field name="end_date" invisible="0"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <page name='file_line_ids' string="Files">
+                                <field name='file_line_ids' context="{'default_membership_id': id, 'default_project_type': 'housing_society', 'current_view': 'realestate', 'form_view_ref': 'real_estate.file_form'}">
+                                    <list delete="false">
+                                        <field name='tracking_id'/>
+                                        <field name='unit_number'/>
+                                        <field name="society_id"/>
+                                        <field name="phase_id"/>
+                                        <field name='sector_id'/>
+                                        <field name='street_id'/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.view_partner_tree">
+            <field name="name">res.member.tree</field>
+            <field name="model">res.member</field>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <list name="real_estate_member" decoration-info="biometric == True">
+                    <field name="name"/>
+                    <field name="ref"/>
+                    <field name="cnic"/>
+                    <field name="mobile"/>
+                    <field name="email"/>
+                    <field name="biometric" invisible='1'/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.view_partner_search">
+            <field name="name">res.member.search</field>
+            <field name="model">res.member</field>
+            <field name="priority" eval="10"/>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="ref"/>
+                    <field name="cnic"/>
+                    <field name="mobile"/>
+                    <field name="tracking_id"/>
+                    <field name="email"/>
+                    <field name="biometric"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.view_partner_followup_form">
+            <field name="name">real_estate view_member_followup_form</field>
+            <field name="model">res.member</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <chatter/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_members">
+            <field name="name">Members</field>
+            <field name="res_model">res.member</field>
+            <field name="domain">[]</field>
+            <field name="context">
+                {
+                'default_project_type':'housing_society',
+                'current_view': 'realestate'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Member.
+                </p>
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('real_estate.view_partner_tree')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('real_estate.view_partner_form')})]"
+            />
+        </record>
+
+        <!--        inherit base partner form for multi companies-->
+
+<!--        <record model="ir.ui.view" id="real_estate.view_partner_ext_form">-->
+<!--            <field name="name">real_estate base_partner_ext_form</field>-->
+<!--            <field name="model">res.partner</field>-->
+<!--            <field name="inherit_id" ref="base.view_partner_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='property_account_receivable_id']" position="attributes">-->
+<!--                    <attribute name="domain">[('company_ids', 'parent_of', [allowed_company_ids[0]]), ('account_type',-->
+<!--                        '=',-->
+<!--                        'asset_receivable'), ('active', 'in', [True, False])]-->
+<!--                    </attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='property_account_payable_id']" position="attributes">-->
+<!--                    <attribute name="domain">[('company_ids', 'parent_of', [allowed_company_ids[0]]), ('account_type',-->
+<!--                        '=',-->
+<!--                        'liability_payable'), ('active', 'in', [True, False])]-->
+<!--                    </attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='company_id']" position="after">-->
+<!--                    <field name="company_ids" widget="many2many_tags"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <menuitem
+                id="real_estate.members"
+                name="Members"
+                parent="real_estate.menu_fms"
+                action="real_estate.action_members"
+                sequence='1'
+        />
+</odoo>

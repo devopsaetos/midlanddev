@@ -1,0 +1,170 @@
+<odoo>
+    <template id="pf_request_transfer_customized_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row">
+                    <div class="col-12">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo" style="display: block; margin-left: auto;
+                         margin-right:auto; max-width: 250px; max-height: 180px;"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="transfer_request">
+        <t t-call="web.html_container">
+            <t t-call="real_estate.pf_request_transfer_customized_header"/>
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-12">
+                                <h4 style="background-color:#00aaff; color:#ffffff; font-family:Sans-serif; text-align:center; font-style:
+                                 normal; font-size:25px height:30%;width:100%;font-weight: 700; padding:15px;">
+                                    <b>Transfer Request</b>
+                                </h4>
+                                <b style="font-family:Sans-serif; font-style:normal; font-size:21px; margin-top:3%">
+                                    GM Sales,
+                                    <br/>
+                                    <span t-field="o.society_id"/>
+                                </b>
+                            </div>
+
+                        </div>
+                        <div class="row lh-lg" style="color:black;font-family:Sans-serif;font-size:15px;margin-top:3%">
+                            <div class="col-6">
+                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">Member Name:
+                                    <span t-esc="o.membership_id.name"/>
+                                </div>
+                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">Plot Size:
+                                    <span t-field="o.size_id.name"/>
+                                </div>
+                                <!--                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">Allocation:  <span t-field="o.member_name"/></div>-->
+                            </div>
+                            <div class="col-6">
+
+                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">File Number:
+                                    <span t-esc="o.file_id.tracking_id"/>
+                                </div>
+                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">Property
+                                    Type:
+                                    <span t-esc="o.unit_class_id.name"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="color:black;font-family:Sans-serif;font-size:20px;margin-top:2%;padding:7px;">
+                            <p>I would you like to sell plot to the person as mentioned below. You are requested to
+                                please transfer my plot at your earliest.
+                            </p>
+                        </div>
+                        <div class="row"
+                             style="color:black;font-family:Sans-serif;font-size:20px;margin-top:2%; padding:20px; border: 1px solid black">
+                            <!--                           seller content-->
+                            <div class="col-6 lh-lg">
+                                <div style="padding-left:5px">
+                                    <i class="fa fa-square" style="font-size:24px;color:#00aaff;"></i>
+                                    <span class="h4"
+                                          style="font-family:Sans-serif; font-style: normal; padding-top:20px; padding-bottom:20px;">
+                                        Seller Details
+                                    </span>
+                                </div>
+                                <div style="font-family:Sans-serif;font-size:20px;padding:7px;">Name:
+                                    <span t-esc="o.member_name"/>
+                                </div>
+                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">S/o:
+                                    <span t-esc="o.relation_name"/>
+                                </div>
+                                <div style="color:black;font-family:Sans-serif;font-size:20px;padding:7px;">CNIC No:
+                                    <span t-esc="o.cnic"/>
+                                </div>
+                                <div style="font-family:Sans-serif;font-size:20px;padding:7px;">Phone No:
+                                    <span t-esc="o.membership_id.mobile"/>
+                                </div>
+                            </div>
+                            <!--                            purchaser  content div-->
+                            <div class="col-6 lh-lg">
+                                <div style="padding-left:5px">
+                                    <i class="fa fa-square" style="font-size:24px;color:#00aaff;"></i>
+                                    <span class="h4"
+                                          style="font-family:Sans-serif; font-style: normal; padding-top:20px; padding-bottom:20px;">
+                                        Purchaser Details
+                                    </span>
+                                </div>
+                                <div style="font-family:Sans-serif;font-size:20px;padding:7px;">Name:
+                                    <span t-esc="o.transferee_name"/>
+                                </div>
+                                <div style="font-family:Sans-serif;font-size:20px;padding:7px;">S/o:
+                                    <span t-esc="o.transferee_relation_name"/>
+                                </div>
+                                <div style="font-family:Sans-serif;font-size:20px;padding:7px;">CNIC No:
+                                    <span t-esc="o.transferee_cnic_number"/>
+                                </div>
+                                <div style="font-family:Sans-serif;font-size:20px;padding:7px;">Phone No:
+                                    <span t-esc="o.transferee_partner_id.mobile"/>
+                                </div>
+                            </div>
+                        </div>
+                        <!--                         end -->
+                        <div class="lh-lg" style="font-family:Sans-serif;font-size:20px;padding:7px; margin-top:2%">
+                            <i class="fa fa-square" style="font-size:24px;color:#00aaff"></i>
+                            <span style="font-family:Sans-serif;font-size:20px;padding:7px;">We have read and understood
+                                all the Terms '&amp;' Condition of
+                                <span t-field="o.society_id"/>
+                                and will abide by these
+                            </span>
+                        </div>
+                        <div class="row" style="font-family:Sans-serif;font-size:15px;margin-top:10%">
+                            <div class="col-6 lh-lg" style="font-family:Sans-serif;font-size:20px;">
+                                Signature: ____________________   <!-- thes deshed line not a extra data or bug these are use to display horizantal line on UI for singature and
+                                                                 thumb impresion area shown on the UI   so kindly don't remove these line from the script-->
+                            </div>
+                            <div class="col-6 lh-lg" style="font-family:Sans-serif;font-size:20px;">
+                                Signature: ____________________
+                            </div>
+                        </div>
+                        <div class="row" style="font-family:Sans-serif;font-size:15px;margin-top:10%">
+                            <div class="col-6 lh-lg" style="font-family:Sans-serif;font-size:20px;">
+                                Thumb Impression: _____________
+                            </div>
+                            <div class="col-6 lh-lg" style="font-family:Sans-serif;font-size:20px;">
+                                Thumb Impression: ____________
+                            </div>
+                        </div>
+                        <div class="col-12" style="margin-top:10%">
+                            <h5>
+                                <b style="color:red">Note:</b>
+                                <span t-field="o.society_id"/>
+                                file will be open for 3 months only.
+                            </h5>
+                        </div>
+                    </div>
+                    <!--                    page div end-->
+                </t>
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_transfer_request" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">300</field>
+        <field name="page_width">200</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">37</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">39</field>
+        <field name="dpi">90</field>
+    </record>
+    <report
+            string="Transfer Request"
+            id="transfer_request_action"
+            model="file.transfer.request"
+            report_type="qweb-pdf"
+            paperformat="paperformat_transfer_request"
+            name="real_estate.transfer_request"
+            file="real_estate.transfer_request"
+    />
+</odoo>

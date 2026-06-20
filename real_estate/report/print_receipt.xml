@@ -1,0 +1,575 @@
+<odoo>
+    <template id="pr_customized_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row text-dark" style="font-family:'Roboto',sans-serif;">
+                    <div class="col-8">
+                        <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"
+                             class="center"/>
+                    </div>
+                    <div class="col-4" style="text-align:right; font-size:11px;margin-top:15px;">
+                        <h7 style="color:black;">
+                            <t t-if="o.env.company.street">
+                                <t t-esc="o.env.company.street"/>,
+                                <br/>
+                                <t t-esc="o.env.company.street2"/>,
+                                <br/>
+                                <t t-esc="o.env.company.city"/>
+                            </t>
+                        </h7>
+                        <br/>
+                        <h7 style="color:black;">
+                            <t t-if="o.env.company.phone">
+                                <t t-esc="o.env.company.phone"/>
+                            </t>
+                        </h7>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="pr_customized_footer">
+        <div class="footer">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Printed By:
+                        <span t-esc="request.env.user.name"/>
+                    </span>
+                </div>
+                <div class="col-4 text-center" style="margin-top:50px;"/>
+
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Print Date:
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="payment_receipt_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="real_estate.pr_customized_header"/>
+                <t t-call="real_estate.pr_customized_footer"/>
+                <t t-call="web.external_layout">
+                    <div class="page text-dark" style="font-family:'Roboto',sans-serif;font-size:15px;">
+                        <h4 style="color:#191970; text-align:center;">
+                            <b>Payment Receipt
+                            </b>
+                        </h4>
+                        <h5 style="color:#191970; text-align:center">
+                            <b>Office Copy</b>
+                        </h5>
+                        <br/>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Customer Name:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Customer No:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-esc="o.partner_id.ref"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Payment Journal:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-field="o.journal_id"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Memo:</strong>
+                                    </div>
+                                    <div class="col-8">
+                                        <span t-esc="o.communication"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Receipt #:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <b>
+                                            <span t-field="o.name"/>
+                                        </b>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Date:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span t-field="o.payment_date"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Cheque Name:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span t-esc="o.cheque_name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Cheque No:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span t-esc="o.cheque_no"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="table table-bordered table-sm" style="margin-top:15px;">
+                            <thead>
+                                <tr style="background-color:#191970;">
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Number</th>
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Category
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white;font-weight: normal;text-align:center;">Plot Number
+                                    </th>
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Invoice
+                                        Number
+                                    </th>
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Payment
+                                        Type
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white;text-align:center;font-weight: normal;">Total
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white; text-align:center;font-weight: normal;">Paid
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white;text-align:center;font-weight: normal;">Due
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="total" t-value="0"/>
+                                <t t-set="total_paid" t-value="0"/>
+                                <t t-if="o.is_advance_payment">
+                                    <tr style="color:black;">
+                                        <th/>
+                                        <th/>
+                                        <th/>
+                                        <th/>
+                                        <th class="text-capitalize" style="color:black;font-weight: normal;">Advance
+                                            Payment
+                                        </th>
+                                        <th/>
+                                        <th style="color:black;font-weight: normal; text-align:right;">
+                                            <span t-esc="o.amount"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </th>
+                                        <th/>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr t-foreach="o.invoice_ids" t-as="inv" style="color:black;">
+                                        <th style="color:black;font-weight: normal;">
+                                            <t t-if="o.invoice_ids.property_invoice_type=='token'">
+                                                <span t-esc="o.invoice_ids.token_id.serial_number"/>
+                                            </t>
+                                            <t t-elif="o.invoice_ids.property_invoice_type=='investment_installment'">
+                                                <span t-esc="o.invoice_ids.investment_id.sequence_no"/>
+                                            </t>
+                                            <t t-elif="o.invoice_ids.property_invoice_type=='investment'">
+                                                <span t-esc="o.invoice_ids.investment_id.sequence_no"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="inv.file_ids.name"/>
+                                            </t>
+                                        </th>
+                                        <th class="text-capitalize" style="color:black;font-weight: normal;">
+                                            <t t-if="o.invoice_ids.property_invoice_type=='token'">
+                                                <span t-esc="o.invoice_ids.token_id.token_line_ids[0].category_id.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="inv.file_ids.category_id.name"/>
+                                            </t>
+                                        </th>
+                                        <th style="color:black;font-weight: normal;">
+                                            <t t-if="o.invoice_ids.property_invoice_type=='token'">
+                                                <span t-esc="o.invoice_ids.token_id.token_line_ids[0].inventory_id.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="inv.file_ids.unit_number"/>
+                                            </t>
+                                        </th>
+                                        <th style="color:black;font-weight: normal;">
+                                            <span t-field="inv.name"/>
+                                        </th>
+                                        <th class="text-capitalize" style="color:black;font-weight: normal;">
+                                            <t t-set="values" t-value="dict(([
+		                                ('initial_payment', 'Initial Payment'),
+		                                ('adv_and_securities', 'Advances and Securities'),
+		                                ('installment', 'Installment'),
+		                                ('initial_payment_plus_installment', 'Initial Payment + Installment'),
+		                                ('transfer_application', 'Transfer Application'),
+		                                ('rent', 'Rent'),
+		                                ('others', 'Others'),('token', 'Token'),('investment', 'Investment'),
+		                                ('investment_installment', 'Investment Installment')
+		                                ]))"/>
+                                            <t t-esc="values[o.invoice_ids.property_invoice_type]"/>
+                                        </th>
+                                        <th class="text-right" style="color:black;font-weight: normal;">
+                                            <span t-field="o.invoice_ids[0].amount_total"/>
+                                        </th>
+                                        <th class="text-right" style="color:black;font-weight: normal;">
+                                            <span t-esc="o.amount"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </th>
+                                        <th class="text-right" style="color:black;font-weight: normal;">
+                                            <span t-field="inv.amount_residual"/>
+                                        </th>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <t t-if="o.invoice_ids">
+                            <p style="color:#191970; margin-top:20px;">
+                                <strong>Amount In Words :</strong>
+                                <span t-if="o.currency_id" t-esc="o.currency_id.amount_to_text(o.amount)"/>
+                            </p>
+                        </t>
+                        <t t-else="">
+                            <p style="color:#191970; margin-top:20px;">
+                                <strong>Amount In Words :</strong>
+                                <span t-if="o.currency_id" t-esc="o.currency_id.amount_to_text(o.amount)"/>
+                            </p>
+                        </t>
+                        <div class="row" style="margin-top:80px;color:#191970">
+                            <div class="col-4 text-center">
+                                <span t-esc="o.create_uid.name"/>
+                            </div>
+                            <div class="col-4 text-center"/>
+                            <div class="col-4 text-center"/>
+                        </div>
+                        <div class="row" style="color:#191970">
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline">Receipt By</span>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline">Approved By</span>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline">Customer Signature</span>
+                            </div>
+                        </div>
+                        <div class="row"
+                             style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;margin-top:110px;">
+                            <div class="col-4 text-center">
+                                <span>Printed By:
+                                    <span t-esc="request.env.user.name"/>
+                                </span>
+                            </div>
+                            <div class="col-4 text-center"/>
+                            <div class="col-4 text-center">
+                                <span>Print Date:
+                                    <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-12">
+                                <hr style="height:2px;border-width:0;color:gray;background-color:black"/>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="o_clean_header">
+                            <div class="row">
+                                <div class="col-8">
+                                    <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)"
+                                         alt="Logo"/>
+                                </div>
+                                <div class="col-4" style="text-align:right; font-size:11px;margin-top:15px;">
+                                    <h7 style="color:black;">
+                                        <t t-if="o.env.company.street">
+                                            <t t-esc="o.env.company.street"/>,
+                                            <br/>
+                                            <t t-esc="o.env.company.street2"/>,
+                                            <br/>
+                                            <t t-esc="o.env.company.city"/>
+                                        </t>
+                                    </h7>
+                                    <br/>
+                                    <h7 style="color:black;">
+                                        <t t-if="o.env.company.phone">
+                                            <t t-esc="o.env.company.phone"/>
+                                        </t>
+                                    </h7>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 style="color:#191970; text-align:center;">
+                            <b>Payment Receipt
+                            </b>
+                        </h4>
+                        <h5 style="color:#191970; text-align:center;">
+                            <b>Customer Copy</b>
+                        </h5>
+                        <br/>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Customer Name:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Customer No:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-esc="o.partner_id.ref"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Payment Journal:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <span t-field="o.journal_id"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>Memo:</strong>
+                                    </div>
+                                    <div class="col-8">
+                                        <span t-esc="o.communication"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Receipt #:</strong>
+                                    </div>
+                                    <div class="col-7">
+                                        <b>
+                                            <span t-field="o.name"/>
+                                        </b>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Date:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span t-field="o.payment_date"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Cheque Name:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span t-esc="o.cheque_name"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-2"/>
+                                    <div class="col-4">
+                                        <strong>Cheque No:</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <span t-esc="o.cheque_no"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="table table-bordered table-sm" style="margin-top:15px;">
+                            <thead>
+                                <tr style="background-color:#191970;">
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Number</th>
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Category
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white;font-weight: normal;text-align:center;">Plot Number
+                                    </th>
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Invoice
+                                        Number
+                                    </th>
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">Payment
+                                        Type
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white;text-align:center;font-weight: normal;">Total
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white; text-align:center;font-weight: normal;">Paid
+                                    </th>
+                                    <th class="text-capitalize"
+                                        style="color:white;text-align:center;font-weight: normal;">Due
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="total" t-value="0"/>
+                                <t t-set="total_paid" t-value="0"/>
+                                <t t-if="o.is_advance_payment">
+                                    <tr style="color:black;">
+                                        <th/>
+                                        <th/>
+                                        <th/>
+                                        <th/>
+                                        <th class="text-capitalize" style="color:black;font-weight: normal;">Advance
+                                            Payment
+                                        </th>
+                                        <th/>
+                                        <th style="color:black;font-weight: normal; text-align:right;">
+                                            <span t-esc="o.amount"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </th>
+                                        <th/>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr t-foreach="o.invoice_ids" t-as="inv" style="color:black;">
+                                        <th style="color:black;font-weight: normal;">
+                                            <t t-if="o.invoice_ids.property_invoice_type=='token'">
+                                                <span t-esc="o.invoice_ids.token_id.serial_number"/>
+                                            </t>
+                                            <t t-elif="o.invoice_ids.property_invoice_type=='investment_installment'">
+                                                <span t-esc="o.invoice_ids.investment_id.sequence_no"/>
+                                            </t>
+                                            <t t-elif="o.invoice_ids.property_invoice_type=='investment'">
+                                                <span t-esc="o.invoice_ids.investment_id.sequence_no"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="inv.file_ids.name"/>
+                                            </t>
+                                        </th>
+                                        <th class="text-capitalize" style="color:black;font-weight: normal;">
+                                            <t t-if="o.invoice_ids.property_invoice_type=='token'">
+                                                <span t-esc="o.invoice_ids.token_id.token_line_ids[0].category_id.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="inv.file_ids.category_id.name"/>
+                                            </t>
+                                        </th>
+                                        <th style="color:black;font-weight: normal;">
+                                            <t t-if="o.invoice_ids.property_invoice_type=='token'">
+                                                <span t-esc="o.invoice_ids.token_id.token_line_ids[0].inventory_id.name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-esc="inv.file_ids.unit_number"/>
+                                            </t>
+                                        </th>
+                                        <th style="color:black;font-weight: normal;">
+                                            <span t-field="inv.name"/>
+                                        </th>
+                                        <th class="text-capitalize" style="color:black;font-weight: normal;">
+                                            <t t-set="values" t-value="dict(([
+		                                ('initial_payment', 'Initial Payment'),
+		                                ('adv_and_securities', 'Advances and Securities'),
+		                                ('installment', 'Installment'),
+		                                ('initial_payment_plus_installment', 'Initial Payment + Installment'),
+		                                ('transfer_application', 'Transfer Application'),
+		                                ('rent', 'Rent'),
+		                                ('others', 'Others'),('token', 'Token'),('investment', 'Investment'),
+		                                ('investment_installment', 'Investment Installment')
+		                                ]))"/>
+                                            <t t-esc="values[o.invoice_ids.property_invoice_type]"/>
+                                        </th>
+                                        <th class="text-right" style="color:black;font-weight: normal;">
+                                            <span t-field="o.invoice_ids[0].amount_total"/>
+                                        </th>
+                                        <th class="text-right" style="color:black;font-weight: normal;">
+                                            <span t-esc="o.amount"
+                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </th>
+                                        <th class="text-right" style="color:black;font-weight: normal;">
+                                            <span t-field="inv.amount_residual"/>
+                                        </th>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <t t-if="o.invoice_ids">
+                            <p style="color:#191970; margin-top:20px;">
+                                <strong>Amount In Words :</strong>
+                                <span t-if="o.currency_id" t-esc="o.currency_id.amount_to_text(o.amount)"/>
+                            </p>
+                        </t>
+                        <t t-else="">
+                            <p style="color:#191970; margin-top:20px;">
+                                <strong>Amount In Words :</strong>
+                                <span t-if="o.currency_id" t-esc="o.currency_id.amount_to_text(o.amount)"/>
+                            </p>
+                        </t>
+                        <div class="row" style="margin-top:80px;color:#191970">
+                            <div class="col-4 text-center">
+                                <span t-esc="o.create_uid.name"/>
+                            </div>
+                            <div class="col-4 text-center"/>
+                            <div class="col-4 text-center"/>
+                        </div>
+                        <div class="row" style="color:#191970">
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline">Receipt By</span>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline">Approved By</span>
+                            </div>
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline">Customer Signature</span>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_receipt_report" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">300</field>
+        <field name="page_width">240</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="True"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <report id="action_payment_receipt_report"
+            model="account.payment"
+            string="Payment Customer Receipt"
+            report_type="qweb-pdf"
+            name="real_estate.payment_receipt_report"
+            paperformat="paperformat_receipt_report"
+            file="real_estate.payment_receipt_report" menu="True"/>
+
+</odoo>

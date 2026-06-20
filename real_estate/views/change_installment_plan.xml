@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    	<record id="real_estate.change_installment_plan_form" model="ir.ui.view">
+            <field name="name">real_estate change_installment_plan_form</field>
+            <field name="model">change.installment.plan</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="file_id" domain="[('project_type', '=', 'housing_society')]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="membership_id" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="tracking_id"/>
+                                <field name="member_id"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group name="left_panel">
+                            </group>
+
+                            <group class="oe_subtotal_footer oe_right">
+                        		<button string="Search" name="search_file" type="object" class="btn-primary"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Change Installment Plan" autofocus="autofocus">
+                                <field name="return_line">
+                                    <list create="false">
+                                        <field name="file_id"/>
+                                        <field name="membership_id"/>
+                                        <field name="category_id"/>
+                                        <field name="size_id"/>
+                                        <field name="sector_id"/>
+                                    </list>
+
+                                    <form>
+                                        <sheet>
+                                            <group>                        
+                                                <field name="file_id"/>
+                                            </group>
+                                            <notebook colspan="4">
+                                                <page string="Payment Plan" autofocus="autofocus">
+                                                    <form>
+                                                        <sheet>
+                                                            <group>
+                                                                <group>
+                                                                    <field name="plan_description"/>
+                                                                    <field name="interval_id"/>
+                                                                    <field name="total_installment"/>
+                                                                    <field name="starting_date"/>
+                                                                </group>
+                                                                <group>
+                                                                    <field name="balloting_amount"
+                                                                           string="Final Amount"/>
+                                                                    <field name="balance_amount"/>
+                                                                </group>
+                                                            </group>
+                                                            <notebook colspan="4">
+
+                                                                <page string="Additional Amount" >
+                                                                    <field name="add_product_line">
+                                                                        <list editable="bottom">
+                                                                            <field name="is_fully_paid" invisible='True'/>
+                                                                            <field name="product_id" options="{'no_create': True, 'no_open': True}"/>
+                                                                            <field name="payment_type"/>
+                                                                            <field name="value"/>
+                                                                            <field name="total" sum='total'/>
+                                                                            <field name="initial_payment" sum='total'/>
+                                                                            <field name="remaining_payment" sum='total'/>
+                                                                            <field name="no_of_installment" readonly="is_fully_paid == True"/>
+                                                                            <field name="per_installment"/>
+                                                                        </list>
+                                                                    </field>
+                                                                </page>
+                                                            </notebook> 
+                                                        </sheet>
+                                                    </form>
+                                                </page>
+                                            </notebook>
+                                        </sheet>
+
+                                        <footer>
+                                            <button string="Create Installment Plan" name="create_new_installment_plan" type="object" class="btn-primary"/>
+                                            <button string="Discard" class="btn-default" special="cancel"/>
+                                        </footer>
+                                    </form>
+
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <footer>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="real_estate.action_change_installment_plan" model="ir.actions.act_window">
+            <field name="name">Change Installment Plan</field>
+            <field name="res_model">change.installment.plan</field>
+            <field name="type">ir.actions.act_window</field>
+
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="real_estate.change_installment_plan_form"/>
+            <field name="target">new</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+        </record>
+
+        <menuitem
+            id="real_estate.change_installment_plan"
+            name="Change Installment Plan"
+            action="real_estate.action_change_installment_plan"
+            parent="real_estate.menu_transfer"
+            sequence="1"
+        />
+
+</odoo>

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="land_development.sector_form">
+            <field name="name">land_development sector_form</field>
+            <field name="model">sector</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="project_type" invisible='1'/>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field 
+                                    name="society_id" 
+                                    options="{'no_create': True, 'no_open': True}" 
+                                    string="Project"
+                                    domain="[('is_society', '=', True),('project_type', 'in', ['skyscraper', False])]"
+                                />
+                                <field
+                                    name="branch_id"
+                                    options="{'no_create': True, 'no_open': True}"
+                                    string="Branch"
+                                    required="1"
+                                />
+                                <field name="total_plots" string="Total Units"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field
+                                    name="phase_id"
+                                    options="{'no_create': True, 'no_open': True}"
+                                    string="Building"
+                                    domain="[('is_society', '!=', True),('project_type', 'in', ['skyscraper', False])]"
+                                />
+                                <field name="area" string="Floor Area"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="plot_inventory" string="Unit Inventory" autofocus="autofocus">
+                                <field name="plot_inventory_ids" readonly = '1' string="Unit Inventory">
+                                    <list>
+                                        <field name="serial_number" string="Unit"/>
+                                        <field name="category_id" string='Category'/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="size_id" string="Size"/>
+                                        <field name="unit_class_id" string="Type"/>
+                                        <field name="standard_area" string="Total Area (sft)"/>
+                                        <field name="possession_status" string="Status"/>
+                                    </list>
+                                    <form>
+                                        <sheet>
+                                            <div class="oe_title">
+                                                <h1>
+                                                    <field name="project_type" invisible="1"/>
+                                                    <field name="serial_number" default_focus="1" placeholder="Name" string="Unit number"/>
+                                                </h1>
+                                            </div>
+                                            <group>
+                                                <group>
+                                                    <field name="society_id" options="{'no_create': True, 'no_open': True}" readonly='1' string="Project"/>
+                                                    <field name="phase_id" options="{'no_create': True, 'no_open': True}" readonly='1' string="Building"/>
+                                                    <field name="sector_id" options="{'no_create': True, 'no_open': True}" readonly='1' string="Floor"/>
+                                                    <field name="category_id" string="Category" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                                    <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                                    <field name="size_id" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                                    <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                                    <field name="location_id" invisible="1" options="{'no_create': True, 'no_open': True}" readonly='1'/>
+                                                </group>
+                                                <group>
+                                                    <field name="name" string="Unit Number"/>
+                                                    <field name="state" readonly='0'/>
+                                                    <field name="demarcation_id" context="{'default_plot_inventory': id}"/>
+                                                    <field name="net_area"/>
+                                                    <field name="balcony_area"/>
+                                                    <field name="standard_area" string="Total Area (sft)"/>
+                                                    <field name="actual_area"/>
+                                                    <field name="possession_status"/>
+                                                    <field name="investment_id" string="Investment No." invisible="1"/>
+                                                    <field name="partner_id" string="Investor" invisible="1"/>
+                                                    <field name="deal_price" invisible="1"/>
+                                                </group>
+                                            </group>
+                                            <notebook colspan="4">
+                                                <page name="price_list" string="Price List">
+                                                    <field name="price_list" readonly="1">
+                                                        <list editable="bottom">
+                                                            <field name="starting_date"/>
+                                                            <field name="end_date"/>
+                                                            <field name="price"/>
+                                                        </list>
+                                                    </field>
+                                                </page>
+                                            </notebook>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                            <page name="floor_planning" string="Floor Planning" autofocus="autofocus">
+                                <field name="floor_planning_ids" string="Unit Inventory">
+                                    <list editable="bottom">
+                                        <field name="rent_area" required="1"/>
+                                        <field name="common_area"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+<!--                    <div class="oe_chatter">-->
+<!--                        <field name="message_follower_ids" widget="mail_followers"/>-->
+<!--                        <field name="activity_ids" widget="mail_activity"/>-->
+<!--                        <field name="message_ids" widget="mail_thread"/>-->
+<!--                    </div>-->
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="land_development.sector_tree">
+            <field name="name">land_development sector_tree</field>
+            <field name="model">sector</field>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="code"/>
+<!--                    <field name="phase_id" string="Blocks"/>-->
+<!--                    <field name="society_id" string="Building"/>-->
+                    <field name="total_plots" string="Total Units"/>
+                </list>
+            </field>
+        </record>
+
+<!--        <record model="ir.ui.view" id="land_development.sector_search">-->
+<!--            <field name="name">land_development sector_search</field>-->
+<!--            <field name="model">sector</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <search>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="code"/>-->
+<!--                    <field name="total_plots" string="Total Units"/>-->
+<!--                    <field name="society_id" string="Project"/>-->
+<!--                    <field name="phase_id" string="Building"/>-->
+<!--                    <group expand="0" string="Group By">-->
+
+<!--                        <filter name='group_by_society_id' string="Project" domain="[]" context="{'group_by':'society_id'}"/>-->
+<!--                    </group>-->
+
+<!--                    <group expand="0" string="Group By">-->
+
+<!--                        <filter name='group_by_phase_id' string="Building" domain="[]" context="{'group_by':'phase_id'}"/>-->
+<!--                    </group>-->
+<!--                </search>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record model="ir.actions.act_window" id="land_development.action_sector">
+            <field name="name">Floors</field>
+            <field name="res_model">sector</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add an New Floor.
+              </p><p>
+                The Floor will be created in context with the Blocks and Buildings.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','in',['skyscraper', False])
+                ]
+            </field>
+<!--            <field name="search_view_id" ref="land_development.sector_search"/>-->
+            <field name="context">
+                {
+                    'search_default_group_by_society_id': 1,
+                    'search_default_group_by_phase_id': 1,
+                    'default_project_type':'skyscraper',
+                    'current_view': 'building'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+<!--            <field name="search_view_id" ref="land_development.sector_search"/>-->
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.sector_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.sector_form')}),
+                ]"
+            />
+        </record>
+
+        <menuitem
+            id="land_development.sector"
+            name="Floors"
+            action="land_development.action_sector"
+            parent="land_development.menu_society"
+            sequence="4"
+        />
+
+    </data>
+</odoo>

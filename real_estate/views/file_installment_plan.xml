@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="real_estate.file_installment_plan1" model="ir.ui.view">
+            <field name="name">real_estate file_installment</field>
+            <field name="model">installment.plan</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+
+                <list create="true">
+                    <field name="installment_number" string="Sr. No"/>
+                    <field name="file_id" string="File"/>
+                    <field name="file_type" invisible="1"/>
+                    <field name="double_check_paid_amount" invisible="1"/>
+                    <field name="installment_type" invisible="0"/>
+                    <field name="installment_name" invisible="0"/>
+                    <field name="property_invoice_type" invisible="1"/>
+                    <field name="date"/>
+                    <field name="payment_date" string="Payment date" readonly="0"/>
+                    <field name="amount" sum="Total"/>
+                    <field name="invoice_created" invisible="0"/>
+                    <field name="invoice"/>
+                    <field name="invoice_id" invisible="0"/>
+                    <field name="tax_amount"/>
+                    <field name="state" string="Invoice Status" invisible="0"/>
+                    <field name="tax_amount" invisible="0"/>
+                    <field name="amount_paid" sum="Amount Paid" readonly="0"/>
+                    <field name="residual" sum="Remaining Amount" readonly="0"/>
+                    <field name="payment_status" string="Status"/>
+
+                    <field name="new_installment_number" invisible="1"/>
+                    <field name="company_id" invisible="0" readonly="1" force_save="1"/>
+
+                </list>
+            </field>
+        </record>
+
+        <record
+                model="ir.actions.act_window"
+                id="real_estate.action_file_installment_plan11">
+
+            <field name="name">File Installment</field>
+            <field name="res_model">installment.plan</field>
+
+            <field name="view_mode">list</field>
+        </record>
+
+        <menuitem
+                id="real_estate.file_installment_plan11"
+                name="File Installment"
+                parent="real_estate.menu_fms"
+                action="real_estate.action_file_installment_plan11"
+                sequence='3'
+        />
+        <!--    Record Rule for Multi Company-->
+        <record id="real_estate.installment_plan_rule" model="ir.rule">
+            <field name="name">installment_plan multi-company</field>
+            <field name="model_id" ref="model_installment_plan"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+</odoo>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ///////////////////////////////////////////////////////////////   -->
+    <record id="real_estate.res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">real_estate res_config_settings_view_form</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="41"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app-settings-block data-string="Real Estate" string="Real Estate" data-key="real_estate" >
+<!--                    groups="real_estate.group_rsms_manager"-->
+                    <block title="File Settings">
+                        <setting>
+                            <label for="balloting_percentage" string="Balloting"/>
+                            <div class="text-muted">
+                                The percentage you add on below will be your companies set balloting percentage of total sale value.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="balloting_percentage" string="Percentage" class="col-md-3 o_light_label"/>
+                                    <field name="balloting_percentage"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="token_partner_id" string="Token Partner" class="col-md-3 o_light_label"/>
+                                    <field name="token_partner_id"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="account_journal_id" string="Journal" class="col-md-3 o_light_label"/>
+                                    <field name="account_journal_id" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="ownership_percentage" string="Ownership Percentage"/>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <field name="ownership_percentage"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="File Payment Terms">
+                        <setting>
+                            <label for="payment_terms_installment_id" string="Installment"/>
+                            <div class="text-muted">
+                                Payment terms for installment files.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="payment_terms_installment_id" string="Installments Payment" class="col-md-3 o_light_label"/>
+                                    <field name="payment_terms_installment_id" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="payment_terms_initial_id" string="Initial and Final"/>
+                            <div class="text-muted">
+                                Payment terms for initial payment and final payment.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="payment_terms_initial_id" string="Initial Payment" class="col-md-3 o_light_label"/>
+                                    <field name="payment_terms_initial_id" options="{'no_create': True}"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="payment_terms_final_id" string="Final Payment" class="col-md-3 o_light_label"/>
+                                    <field name="payment_terms_final_id" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Payment Steps">
+                        <setting>
+                            <label for="payment_type" string="Payment Steps"/>
+                            <div class="text-muted">
+                                In One Step Payment Invoice and payments will be generated and validated in
+                                one go.While, In Two Step Payment only the Invoice will be created.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="payment_type" string="Payment Steps" class="col-md-3 o_light_label"/>
+                                    <field name="payment_type"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="transfer_fee" string="File Transfer Fee" class="col-md-3 o_light_label"/>
+                                    <field name="transfer_fee"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="allow_bank_finance" string="Allow Bank Finance" class="col-md-3 o_light_label"/>
+                                    <field name="allow_bank_finance"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="installment_tax_ids" string="Tax for Installments" class="col-md-3 o_light_label"/>
+                                    <field name="installment_tax_ids" widget="many2many_tags"
+                                           domain="[('type_tax_use','=','sale')]" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Correspondence Letters">
+                        <setting>
+                            <label for="correspondence_letter_postman" string="Postman"/>
+                            <div class="text-muted">
+                                The users who are responsible for letters to post to the customers.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="correspondence_letter_postman" string="Postman" class="col-md-3 o_light_label"/>
+                                    <field name="correspondence_letter_postman" widget="many2many_tags"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="File Refund">
+                        <setting>
+                            <label for="knockoff_journal_id" string="Knockoff open invoices"/>
+                            <div class="text-muted">
+                                For refund purpuses we have to knockoff the open invoices.Below are the journals and
+                                and payment mathods for those dummy payments which we are doing for invoice knock off.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="knockoff_journal_id" string="Journal" class="col-md-3 o_light_label"/>
+                                    <field name="knockoff_journal_id" widget="selection"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="knockoff_payment_method_id" string="Payment Methods" class="col-md-3 o_light_label"/>
+                                    <field name="knockoff_payment_method_id"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Plot Merger Application">
+                        <setting>
+                            <label for="merjer_knockoff_journal_id" string="Knockoff open invoices"/>
+                            <div class="text-muted">
+                                For Plot Merger purpuses we have to knockoff the open invoices.Below are the journals and
+                                and payment mathods for those dummy payments which we are doing for invoice knock off.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="merjer_knockoff_journal_id" string="Journal" class="col-md-3 o_light_label"/>
+                                    <field name="merjer_knockoff_journal_id" class="col-md-5" widget="selection"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="merjer_knockoff_payment_method_id" string="Payment Methods" class="col-md-3 o_light_label"/>
+                                    <field name="merjer_knockoff_payment_method_id"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting>
+                            <label for="merjer_adjust_journal_id" string="Adjust payments"/>
+                            <div class="text-muted">
+                                For Plot Merger purpuses we have to adjust payments.Below are the journals and
+                                and payment mathods for those dummy payments which we are doing for invoice knock off.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="merjer_adjust_journal_id" string="Journal" class="col-md-3 o_light_label"/>
+                                    <field name="merjer_adjust_journal_id" class="col-md-5" widget="selection"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="merjer_adjust_payment_method_id" string="Payment Methods" class="col-md-3 o_light_label"/>
+                                    <field name="merjer_adjust_payment_method_id"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label for="merjer_adjust_advance_journal_id" string="Advance Payment Journal" class="col-md-3 o_light_label"/>
+                                    <field name="merjer_adjust_advance_journal_id"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+<!--                    <block title="File Cancellation Application">-->
+<!--                        <setting>-->
+<!--                            <label for="file_cancel_adjust_account_id" string="Adjust Payment"/>-->
+<!--                            <div class="text-muted">-->
+<!--                                For File Cancellation we have to adjust Booking payments.Below are the journals and-->
+<!--                                and payment methods for those Booking payments.-->
+<!--                            </div>-->
+<!--                            <div class="row mt16">-->
+<!--                                <label for="file_cancel_adjust_account_id" string="Account" class="col-md-3 o_light_label"/>-->
+<!--&lt;!&ndash;                                <field name="file_cancel_adjust_account_id" options="{'no_create_edit': True, 'no_open': True}"&ndash;&gt;-->
+<!--&lt;!&ndash;                                       domain="[('company_id', '=', company_id), ('account_type', '=', 'asset_receivable'), ('reconcile', '=', True)]"/>&ndash;&gt;-->
+<!--                            </div>-->
+<!--                            <div class="row mt16">-->
+<!--                                <label for="file_cancel_adjust_journal_id" string="Journal" class="col-md-3 o_light_label"/>-->
+<!--                                <field name="file_cancel_adjust_journal_id" options="{'no_create_edit': True, 'no_open': True}"-->
+<!--                                       domain="[('company_id', '=', company_id)]"/>-->
+<!--                            </div>-->
+<!--                        </setting>-->
+<!--                    </block>-->
+                    <block title="Settings">
+                        <setting>
+                            <field name="group_unit_size_in_range"/>
+                            <div class="text-muted">
+                                Allow set unit size in range or in exect
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Provisional Allotment">
+                        <setting>
+                            <field name="show_provisional_allotment"/>
+                            <div class="text-muted">
+                                Show Download Button for Provisional Allotment on Customer Portal
+                            </div>
+                        </setting>
+                    </block>
+                </app-settings-block>
+            </xpath>
+        </field>
+    </record>
+
+    <record
+            id="real_estate.action_rsms_config"
+            model="ir.actions.act_window">
+
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+<!--    <menuitem-->
+<!--            id="real_estate.menu_rsms_config"-->
+<!--            name="Settings"-->
+<!--            parent="real_estate.menu_settings"-->
+<!--            sequence="0"-->
+<!--            action="real_estate.action_rsms_config"-->
+<!--            groups="base.group_system"-->
+<!--    />-->
+
+</odoo>

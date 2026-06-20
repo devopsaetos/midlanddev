@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.res_kin_form">
+            <field name="name">real_estate res_kin_form</field>
+            <field name="model">res.kin</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="relation_with_member"/>
+                            </group>
+                            <group>
+                                <field name="cnic" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                <field name="mobile"
+                                       placeholder='+923008765432'
+                                       widget="mask"
+                                       data-inputmask="'mask': '+99-999-9999999'"
+                                       required="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.res_kin_tree">
+            <field name="name">real_estate res_kin_tree</field>
+            <field name="model">res.kin</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="relation_with_member"/>
+                    <field name="cnic"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.res_kin_search">
+            <field name="name">real_estate res_kin_search</field>
+            <field name="model">res.kin</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="relation_with_member"/>
+                    <field name="cnic"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_res_kin">
+            <field name="name">Kin</field>
+            <field name="res_model">res.kin</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'current_view': 'realestate'}</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add an New Kin.
+              </p>
+            </field>
+        </record>
+
+        <menuitem
+            id="real_estate.res_kin"
+            name="Kin"
+            parent="real_estate.menu_society"
+            action="real_estate.action_res_kin"
+            sequence='8'
+        />
+
+</odoo>
