@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="purchase_order_form_po_bridge_ext" model="ir.ui.view">
+        <field name="name">purchase.order.form.po.bridge</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add project/task fields in the header area -->
+            <field name="partner_ref" position="after">
+                <field name="project_id"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                <field name="task_id"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </field>
+            <!-- Pass task context to order lines for cost sheet default -->
+            <field name="order_line" position="attributes">
+                <attribute name="context">{'default_task': task_id}</attribute>
+            </field>
+            <!-- Add cost sheet column in order lines list -->
+            <xpath expr="//field[@name='order_line']//field[@name='product_id']" position="after">
+                <field name="task_cost_sheet_id"
+                       optional="show"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

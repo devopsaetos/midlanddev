@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="requisition_order_form_ext" model="ir.ui.view">
+        <field name="name">requisition.order.form.ext</field>
+        <field name="model">requisition.order</field>
+        <field name="inherit_id" ref="purchase_requisitions.requisition_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Add project/task after issue_date -->
+            <field name="issue_date" position="after">
+                <field name="project_id"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                <field name="task_id"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </field>
+            <!-- Pass task context to order lines -->
+            <field name="order_line_ids" position="attributes">
+                <attribute name="context">{'default_type': context.get('default_type'), 'default_task': task_id}</attribute>
+            </field>
+            <!-- Add cost sheet column in RFQ order lines list -->
+            <xpath expr="//field[@name='order_line_ids']//list//field[@name='product_id']" position="after">
+                <field name="task_cost_sheet_id"
+                       optional="show"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

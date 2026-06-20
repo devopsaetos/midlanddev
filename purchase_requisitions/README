@@ -1,0 +1,7 @@
+
+
+
+1) 11.0.0.2 | date : 28/02
+
+--> add warning if picking type internal is not defined when user try 
+to create internal picking.

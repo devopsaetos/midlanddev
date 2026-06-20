@@ -1,0 +1,27 @@
+{
+    'name': 'Construction Subcontracting',
+    'version': '19.0.1.0.0',
+    'category': 'Construction',
+    'summary': 'Manage subcontracting for construction job orders',
+    'author': 'NCP',
+    'license': 'LGPL-3',
+    'depends': [
+        'project',
+        'purchase',
+        'account',
+        'construction_costing',
+    ],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/data.xml',
+        'wizard/subcontract_purchase_order.xml',
+        'views/task_subcontracting_view.xml',
+        'views/task_subcontracting_menu.xml',
+        'views/project_task.xml',
+        'views/purchase.xml',
+        'views/task_cost_view_ext.xml',
+        'views/account_move.xml',
+    ],
+    'installable': True,
+    'application': False,
+}

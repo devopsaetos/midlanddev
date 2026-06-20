@@ -1,0 +1,25 @@
+{
+    'name': 'Construction Budget',
+    'version': '19.0.1.0.0',
+    'category': 'Construction',
+    'summary': 'Project and task-level budget planning for construction projects',
+    'author': 'NCP',
+    'license': 'LGPL-3',
+    'depends': [
+        'project',
+        'project_ext',
+        'construction_costing',
+        'uom',
+    ],
+    'data': [
+        'security/groups.xml',
+        'security/ir.model.access.csv',
+        'data/data.xml',
+        'views/project_budget.xml',
+        'views/task_budget.xml',
+        'views/project_task.xml',
+        'views/project_project.xml',
+    ],
+    'installable': True,
+    'application': False,
+}

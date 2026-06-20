@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="purchase_requisitions.Main">
+        <div class="statment-main">
+            <t t-if="state.rendered">
+                <h1 class="text-center">Comparison Statement</h1>
+                <div style="margin-top:20px;" class="row">
+                    <div class="col-6">
+                        <h3 style="margin-left:1%;"><b>RFQ code :</b> <u><span t-esc="state.rfq_code"/></u></h3>
+                        <h3 style="margin-left:1%;"><b>RFQ Date :</b> <u><span t-esc="state.rfq_date"/></u></h3>
+                    </div>
+                    <div class="col-6">
+                        <h3 style="margin-right:2%; float:right;"><b>State :</b> <u><span class="state" t-esc="state.cs_state"/></u></h3>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <table class="table table-bordered table-sm text-dark">
+                        <thead>
+                            <tr class="first-row">
+                                <th colspan="4" style="width:30%;"></th>
+                                <t t-foreach="state.herder_data" t-as="col1" t-key="col1_index">
+                                    <th colspan="3" class="vendor-name-col" t-att-data-qoutation-data="col1[1]">
+                                        <div class="dropdown">
+                                            <a data-toggle="dropdown" href="#">
+                                                <span t-att-id="col1[1]">
+                                                    <t t-esc="col1[0]"/>
+                                                </span>
+                                                <i class="fa fa-caret-down" role="img" aria-label="Unfolded" title="Unfolded"></i>
+                                            </a>
+                                            <ul class="dropdown-menu" role="menu">
+                                                <li role="presentation">
+                                                    <a role="menuitem" class="view-source" tabindex="-1" t-att-data-move-id="col1[1]" t-on-click="onViewQuotation">
+                                                        View Quotation
+                                                    </a>
+                                                </li>
+                                                <li role="presentation" class="approve-qoutation-li">
+                                                    <a role="menuitem" class="approve-qoutation" tabindex="-1" t-att-data-move-id="col1[1]" t-on-click="onApproveQuotation">
+                                                        Approve Quotation
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </th>
+                                </t>
+                            </tr>
+                            <tr style="background-color:gray; color:black;">
+                                <t t-foreach="state.header1" t-as="col1" t-key="col1_index">
+                                    <th style="width:15%">
+                                        <strong><span t-esc="col1"/></strong>
+                                    </th>
+                                </t>
+                                <t t-foreach="state.herder_data" t-as="col1" t-key="col1_index">
+                                    <th><strong><p>Qty</p></strong></th>
+                                    <th><strong><p>Unit Price</p></strong></th>
+                                    <th><strong><p>Total</p></strong></th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.lines_data" t-as="line" t-key="line_index">
+                                <t t-foreach="line" t-as="cell" t-key="cell_index">
+                                    <td><span t-esc="cell"/></td>
+                                </t>
+                            </tr>
+                            <tr>
+                                <td colspan="4"><p>Total Value</p></td>
+                                <t t-foreach="state.herder_data" t-as="col" t-key="col_index">
+                                    <td colspan="3"><span t-esc="state.total_values_qouatations[col[1]]"/></td>
+                                </t>
+                            </tr>
+                            <tr style="background-color:#9EECF7;">
+                                <td colspan="100%"><h1>Evaluation Criteria</h1></td>
+                            </tr>
+                            <tr t-foreach="state.vendor_citeria" t-as="line" t-key="line_index">
+                                <td colspan="2"><span t-esc="line['field_id']"/></td>
+                                <t t-foreach="state.herder_data" t-as="col" t-key="col_index">
+                                    <td colspan="3"><span t-esc="line[col[1]]"/></td>
+                                </t>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="text-center p-5">Loading...</div>
+            </t>
+        </div>
+    </t>
+</templates>

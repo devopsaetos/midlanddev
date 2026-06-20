@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_construction_subcontracts"
+              name="Sub Contractors"
+              parent="construction_costing.menu_construction_root"
+              action="action_job_subcontracts"
+              sequence="20"/>
+
+</odoo>

@@ -1,0 +1,8 @@
+<odoo>
+    <report id="purchase_requisition_report_id"
+                string="Purchase Requisition"
+                model="material.purchase.requisition"
+                report_type="qweb-pdf"
+                file="purchase_requisitions.purchase_requisition_template_view"
+                name="purchase_requisitions.purchase_requisition_template_view"/>
+</odoo>

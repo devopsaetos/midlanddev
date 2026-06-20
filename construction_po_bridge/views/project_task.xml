@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_task_form_po_bridge_ext" model="ir.ui.view">
+        <field name="name">project.task.form.po.bridge</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="button_purchase_order"
+                        invisible="total_po == 0"
+                        icon="fa-file-text-o">
+                    <field name="total_po" widget="statinfo" string="Purchase Orders"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

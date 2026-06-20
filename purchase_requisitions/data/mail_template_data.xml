@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!--Email template -->
+        <record id="email_template_edi_quotation" model="mail.template">
+            <field name="name">RFQ - Send by Email</field>
+            <field name="email_from">
+                ${(object.sudo().create_uid.email and '&quot;%s&quot; &lt;%s&gt;' % (object.sudo().create_uid.name, object.sudo().create_uid.email) or '')|safe}
+            </field>
+            <field name="subject">${object.company_id.name} Order (Ref ${object.name or 'n/a' })</field>
+            <field name="partner_to">${object.partner_id.id}</field>
+            <field name="model_id" ref="purchasing.model_quotation_order"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="report_template" ref="report_quotation_order"/>
+            <field name="report_name">RFQ_${(object.name or '').replace('/','_')}</field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[
+<p>Dear
+% if object.partner_id.is_company and object.partner_id.child_ids:
+    ${object.partner_id.child_ids[0].name}
+% else :
+    ${object.partner_id.name}
+% endif
+,</p><p>
+Here is, in attachment, a ${object.state in ('draft', 'sent') and 'request for quotation' or 'purchase order confirmation'} <strong>${object.name}</strong>
+% if object.partner_ref:
+    with reference: ${object.partner_ref}
+% endif
+% if object.origin:
+    (RFQ origin: ${object.origin})
+% endif
+from ${object.company_id.name}.
+</p>
+
+<p>Do not hesitate to contact us if you have any further question.</p>
+<p>
+    To gain access to your account, you can use the following link:
+</p>
+<div style="text-align: center; margin-top: 16px;">
+    <a href="/my/purchase/${object.id}" style="padding: 5px 10px; font-size: 12px; line-height: 18px; color: #FFFFFF; border-color:#875A7B; text-decoration: none; display: inline-block; margin-bottom: 0px; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; white-space: nowrap; background-image: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius:3px">Go to My Account</a>
+</div>
+<p>Best regards,</p>
+
+]]></field>
+        </record>
+
+
+        <!--Default Notification Email template for invoices-->
+        <record id="purchasing.mail_template_data_notification_email_quotation_order" model="mail.template">
+            <field name="name">Purchase Order Notification Email</field>
+            <field name="subject">${object.subject}</field>
+            <field name="model_id" ref="mail.model_mail_message"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[<html>
+                <head></head>
+                % set company = record and record.company_id or ctx.get('company')
+                <body style="margin: 0; padding: 0;">
+                <table border="0" width="100%" cellpadding="0" bgcolor="#ededed" style="padding: 20px; background-color: #ededed" summary="o_mail_notification">
+                    <tbody>
+
+                      <!-- HEADER -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#875A7B" style="min-width: 590px; background-color: rgb(0,158,251); padding: 20px;">
+                            <tr>
+                              <td valign="middle">
+                                  <span style="font-size:20px; color:white; font-weight: bold;">
+                                      ${object.record_name}
+                                  </span>
+                              </td>
+                              <td valign="middle" align="right">
+                                  <img src="/logo.png?company=${company.id}" style="padding: 0px; margin: 0px; height: auto; width: 80px;" alt="${company.name}">
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <!-- CONTENT -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#ffffff" style="min-width: 590px; background-color: rgb(255, 255, 255); padding: 20px;">
+                            <tbody>
+                              <td valign="top" style="font-family:Arial,Helvetica,sans-serif; color: #555; font-size: 14px;">
+                                ${object.body | safe}
+                              </td>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <!-- FOOTER -->
+                      <tr>
+                        <td align="center" style="min-width: 590px;">
+                          <table width="590" border="0" cellpadding="0" bgcolor="#875A7B" style="min-width: 590px; background-color: rgb(0,158,251); padding: 20px;">
+                            <tr>
+                              <td valign="middle" align="left" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                ${company.name}<br/>
+                                ${company.phone or ''}
+                              </td>
+                              <td valign="middle" align="right" style="color: #fff; padding-top: 10px; padding-bottom: 10px; font-size: 12px;">
+                                % if company.email:
+                                <a href="mailto:${company.email}" style="text-decoration:none; color: white;">${company.email}</a><br/>
+                                % endif
+                                % if company.website:
+                                    <a href="${company.website}" style="text-decoration:none; color: white;">
+                                        ${company.website}
+                                    </a>
+                                % endif
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <!--
+                      <tr>
+                        <td align="center">
+                            Powered by <a href="https://www.odoohq.com">odoo</a>.
+                        </td>
+                      </tr>
+                       -->
+                    </tbody>
+                </table>
+                </body>
+                </html>
+            ]]></field>
+        </record>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record id="material_purchase_requisition" model="ir.sequence">
+            <field name="name">Purchase Requisition</field>
+            <field name="code">material.purchase.requisition</field>
+            <field name="prefix">EPR/00</field>
+            <field name="padding">3</field>
+        </record>
+
+        <!-- Sequences for requisition.order -->
+        <record id="seq_requisition_order" model="ir.sequence">
+            <field name="name">Requisition Order</field>
+            <field name="code">requisition.order</field>
+            <field name="prefix">RQ/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_quotation_order" model="ir.sequence">
+            <field name="name">Quotation Order</field>
+            <field name="code">quotation.order</field>
+            <field name="prefix">QO/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="action_create_purchase_RFQ" model="ir.actions.server">
+            <field name="name">Create RFQ</field>
+            <field name="model_id" ref="purchase_requisitions.model_requisition_line"/>
+            <field name="binding_model_id" ref="purchase_requisitions.model_requisition_line"/>
+
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.action_convert_to_rfq()
+            </field>
+        </record>
+
+        <record id="action_create_purchase_PO" model="ir.actions.server">
+            <field name="name">Create PO</field>
+            <field name="model_id" ref="purchase_requisitions.model_requisition_line"/>
+            <field name="binding_model_id" ref="purchase_requisitions.model_requisition_line"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.action_convert_to_po()
+            </field>
+        </record>
+
+        <record id="action_create_purchase_quote_analysis" model="ir.actions.server">
+            <field name="name">Create Purchase Order</field>
+            <field name="model_id" ref="purchase_requisitions.model_quotation_order_line"/>
+            <field name="binding_model_id" ref="purchase_requisitions.model_quotation_order_line"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                action = records.action_create_po_vendor_wise()
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_project_view_form_ext" model="ir.ui.view">
+        <field name="name">project.project.form.ext</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- Add team, category, sub-category after the partner_id field -->
+            <field name="partner_id" position="after">
+                <field name="team_id"/>
+                <field name="category_id"/>
+                <field name="sub_category_id"
+                       invisible="not category_id"/>
+            </field>
+            <field name="user_id" position="after">
+                <field name="member_ids" widget="many2many_tags"/>
+                <field name="attach_pdf_required" invisible="1"/>
+                <field name="attach_pdf" invisible="not attach_pdf_required"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extend the project list view to show the new fields -->
+    <record id="project_project_view_list_ext" model="ir.ui.view">
+        <field name="name">project.project.list.ext</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <field name="user_id" position="before">
+                <field name="team_id" optional="show"/>
+                <field name="category_id" optional="show"/>
+                <field name="sub_category_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

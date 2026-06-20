@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem
+        name="Teams"
+        id="project_ext_menu_team"
+        parent="project.menu_project_config"
+        action="project_team_action"
+        sequence="20"
+        groups="project.group_project_manager"
+    />
+
+    <menuitem
+        name="Categories"
+        id="project_ext_menu_category"
+        parent="project.menu_project_config"
+        action="project_category_action"
+        sequence="21"
+        groups="project.group_project_manager"
+    />
+
+    <menuitem
+        name="Sub Categories"
+        id="project_ext_menu_sub_category"
+        parent="project.menu_project_config"
+        action="project_sub_category_action"
+        sequence="22"
+        groups="project.group_project_manager"
+    />
+
+</odoo>

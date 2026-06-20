@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add task_cost_sheet_id column to the global timesheet list view -->
+    <record id="hr_timesheet_line_tree_cost_sheet" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.cost.sheet</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="task_id" position="after">
+                <field name="task_cost_sheet_id" optional="show"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

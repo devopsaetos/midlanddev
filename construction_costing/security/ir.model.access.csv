@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_task_cost_sheet_manager,task.cost.sheet manager,model_task_cost_sheet,project.group_project_manager,1,1,1,1
+access_task_cost_sheet_user,task.cost.sheet user,model_task_cost_sheet,project.group_project_user,1,1,1,0
+access_task_cost_line_manager,task.cost.line manager,model_task_cost_line,project.group_project_manager,1,1,1,1
+access_task_cost_line_user,task.cost.line user,model_task_cost_line,project.group_project_user,1,1,1,0
+access_task_cost_overhead_manager,task.cost.overhead manager,model_task_cost_overhead,project.group_project_manager,1,1,1,1
+access_task_cost_overhead_user,task.cost.overhead user,model_task_cost_overhead,project.group_project_user,1,1,1,0

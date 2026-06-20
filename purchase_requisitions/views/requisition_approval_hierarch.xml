@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--Form View section for requisition hierarchy-->
+        <record id="requisition_approval_hierarchy_form_view" model="ir.ui.view">
+            <field name="name">requisition approval hierarchy form view</field>
+            <field name="model">requisition.approval.hierarchy</field>
+            <field name="arch" type="xml">
+                <form string="Purchase Requisition Approval Hierarchy">
+                    <sheet>
+                        <group string="Approval Hierarchy">
+                            <group>
+                                <field name="department_id" required="1"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="approval_base" required="1"/>
+                            </group>
+                            <group>
+                                <field name="date_from" widget="date"/>
+                                <field name="date_to" widget="date"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Approval Hierarchy Lines">
+                                <field name="approval_hierarchy_line_ids">
+                                    <list string="Approval Hierarchy Lines" editable="bottom">
+                                        <field name="id" invisible="1"/>
+                                        <field name="user_id" options="{'no_create': True,'no_open': True}"/>
+                                        <field name="min_limit"/>
+                                        <field name="max_limit"/>
+                                        <field name="manager_id" readonly="1"/>
+                                        <field name="approval_hierarchy_id" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!--Here is the sequence section for approval hierarchy-->
+        <record id="requisition_approval_hierarchy" model="ir.sequence">
+            <field name="name">Requisition Approval Hierarchy</field>
+            <field name="code">requisition.approval.hierarchy</field>
+            <field name="prefix">RAH/00</field>
+            <field name="padding">3</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--Here are the tree view section of approval hierarchy-->
+        <record id="purchase_requisition_approval_hierarchy_tree_view" model="ir.ui.view">
+            <field name="name">requisition.approval.hierarchy.tree.view</field>
+            <field name="model">requisition.approval.hierarchy</field>
+            <field name="arch" type="xml">
+                <list string="Approval Hierarchy">
+                    <field name="department_id" options="{'no_create': True,'no_open': True}"/>
+                    <field name="approval_base"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </list>
+            </field>
+        </record>
+
+        <!--Here the action section for hierarchy-->
+        <record id="action_requisition_approval_hierarchy" model="ir.actions.act_window">
+            <field name="name">Requisition Approval Hierarchy</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">requisition.approval.hierarchy</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a Hierarchy.
+                </p>
+            </field>
+        </record>
+
+        <!--Here are the menuitems-->
+        <menuitem id="menu_purchase_requisition_approval_hierarchy"
+                  name="Configuration"
+                  parent="menu_requisition"
+        />
+
+        <menuitem id="menu_settings" name="Settings" parent="menu_purchase_requisition_approval_hierarchy"
+
+                  sequence="1"/>
+<!--        action="purchase.action_purchase_configuration"-->
+
+        <menuitem id="menu_sub_purchase_requisition_approval_hierarchy"
+                  name="Approval Hierarchy"
+                  parent="menu_purchase_requisition_approval_hierarchy"
+                  action="action_requisition_approval_hierarchy"
+                  sequence="2"/>
+
+    </data>
+</odoo>

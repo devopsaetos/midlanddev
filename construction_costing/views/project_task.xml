@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_task_form_cost_sheet_ext" model="ir.ui.view">
+        <field name="name">project.task.form.cost.sheet</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <!-- "Create Cost Sheet" button in the task header -->
+            <header position="inside">
+                <button name="action_create_costsheet"
+                        string="Create Cost Sheet"
+                        type="object"
+                        class="btn-primary"
+                        invisible="cost_sheet_count > 0"/>
+            </header>
+            <!-- Stat button in the top-right button box -->
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="button_view_costsheet"
+                        invisible="cost_sheet_count == 0"
+                        icon="fa-usd">
+                    <field name="cost_sheet_count" widget="statinfo" string="Cost Sheets"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

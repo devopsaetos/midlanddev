@@ -1,0 +1,27 @@
+{
+    'name': 'Construction Costing',
+    'version': '19.0.1.0.0',
+    'category': 'Construction',
+    'summary': 'Construction job costing and cost sheet management',
+    'author': 'NCP',
+    'license': 'LGPL-3',
+    'depends': [
+        'project',
+        'project_ext',
+        'purchase',
+        'account',
+        'hr_timesheet',
+        'sale_management',
+        'stock',
+        'uom',
+    ],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/costing_management.xml',
+        'views/project_task.xml',
+        'views/project_project_views.xml',
+        'views/timesheet_views.xml',
+    ],
+    'installable': True,
+    'application': False,
+}

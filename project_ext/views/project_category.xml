@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Project Category -->
+
+    <record id="project_category_view_list" model="ir.ui.view">
+        <field name="name">project.category.list</field>
+        <field name="model">project.category</field>
+        <field name="arch" type="xml">
+            <list string="Project Categories">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="attach_pdf"/>
+                <field name="sub_category_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="project_category_view_form" model="ir.ui.view">
+        <field name="name">project.category.form</field>
+        <field name="model">project.category</field>
+        <field name="arch" type="xml">
+            <form string="Project Category">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Category Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="attach_pdf"/>
+                        </group>
+                        <group>
+                            <field name="stage_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Sub Categories">
+                            <field name="sub_category_ids">
+                                <list editable="bottom" delete="false" create="false">
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="project_category_action" model="ir.actions.act_window">
+        <field name="name">Project Categories</field>
+        <field name="res_model">project.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Project Sub Category -->
+
+    <record id="project_sub_category_view_list" model="ir.ui.view">
+        <field name="name">project.sub.category.list</field>
+        <field name="model">project.sub.category</field>
+        <field name="arch" type="xml">
+            <list string="Project Sub Categories">
+                <field name="code"/>
+                <field name="category_id"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="project_sub_category_view_form" model="ir.ui.view">
+        <field name="name">project.sub.category.form</field>
+        <field name="model">project.sub.category</field>
+        <field name="arch" type="xml">
+            <form string="Project Sub Category">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Sub Category Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="category_id"/>
+                        <field name="code"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="project_sub_category_action" model="ir.actions.act_window">
+        <field name="name">Project Sub Categories</field>
+        <field name="res_model">project.sub.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="cost_sheet_subcontract_ext" model="ir.ui.view">
+        <field name="name">task.cost.sheet.form.subcontract</field>
+        <field name="model">task.cost.sheet</field>
+        <field name="inherit_id" ref="construction_costing.task_cost_sheet_form_view"/>
+        <field name="arch" type="xml">
+            <field name="analytic_account_id" position="after">
+                <field name="task_subcontract_id"
+                       readonly="stage == 'done'"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

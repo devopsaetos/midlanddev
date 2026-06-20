@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_price_history,product.price.history,model_product_price_history,,1,1,1,1
+access_charge_type,charge.type,model_charge_type,,1,1,1,1
+access_account_cost_center,account.cost.center,model_account_cost_center,,1,1,1,1
+access_stock_transaction,stock.transaction,model_stock_transaction,,1,1,1,1
+access_stock_transaction_line,stock.transaction.line,model_stock_transaction_line,,1,1,1,1
+access_stock_insufficient_transaction,stock.insufficient.transaction,model_stock_insufficient_transaction,,1,1,1,1
+access_issue_requistion,issue.requistion,model_issue_requistion,,1,1,1,1
+access_issue_requistion_line,issue.requistion.line,model_issue_requistion_line,,1,1,1,1
+access_maintenance_request_line,maintenance.request.line,model_maintenance_request_line,,1,1,1,1

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_task_form_stock_bridge_ext" model="ir.ui.view">
+        <field name="name">project.task.form.stock.bridge</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <!-- Header buttons -->
+            <header position="inside">
+                <button name="action_create_issue_requisition"
+                        string="Create Issue Requisition"
+                        type="object"
+                        class="btn-primary"/>
+                <button name="action_create_stock_transaction"
+                        string="Create Stock Transaction"
+                        type="object"
+                        class="btn-primary"/>
+            </header>
+            <!-- Stat buttons -->
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="button_view_issue_requisitions"
+                        invisible="issue_requisition_count == 0"
+                        icon="fa-list-alt">
+                    <field name="issue_requisition_count" widget="statinfo"
+                           string="Issue Req."/>
+                </button>
+                <button class="oe_stat_button" type="object"
+                        name="button_view_stock_transactions"
+                        invisible="stock_transaction_count == 0"
+                        icon="fa-exchange">
+                    <field name="stock_transaction_count" widget="statinfo"
+                           string="Stock Trans."/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

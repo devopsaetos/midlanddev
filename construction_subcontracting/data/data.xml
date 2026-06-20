@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_task_subcontract" model="ir.sequence">
+            <field name="name">Task Subcontract</field>
+            <field name="code">task.subcontract</field>
+            <field name="prefix">SUB/</field>
+            <field name="padding">4</field>
+        </record>
+    </data>
+</odoo>

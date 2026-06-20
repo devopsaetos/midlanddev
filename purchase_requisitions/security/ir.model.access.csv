@@ -1,0 +1,13 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+purchase_requisition_user,purchase_requisition_name,purchase_requisitions.model_material_purchase_requisition,,1,1,1,1
+requisition_line_user,requisition_line_name,purchase_requisitions.model_requisition_line,,1,1,1,1
+access_requisition_order,requisition_order,purchase_requisitions.model_requisition_order,,1,1,1,1
+access_requisition_order_line,requisition_order_line,purchase_requisitions.model_requisition_order_line,,1,1,1,1
+access_quotation_order,quotation_order,purchase_requisitions.model_quotation_order,,1,1,1,1
+access_quotation_order_line,quotation_order_line,purchase_requisitions.model_quotation_order_line,,1,1,1,1
+access_requisition_approval_hierarchy,requisition_approval_hierarchy,purchase_requisitions.model_requisition_approval_hierarchy,,1,1,1,1
+access_approval_hierarchy_line,approval_hierarchy_line,purchase_requisitions.model_approval_hierarchy_line,,1,1,1,1
+access_evaluation_criteria,evaluation_criteria,purchase_requisitions.model_evaluation_criteria,,1,1,1,1
+access_evaluation_connector,evaluation.connector,purchase_requisitions.model_evaluation_connector,,1,1,1,1
+access_comparative_statement,comparative.statement,purchase_requisitions.model_comparative_statement,,1,1,1,1
+access_comparative_statement_line,comparative.statement.line,purchase_requisitions.model_comparative_statement_line,,1,1,1,1

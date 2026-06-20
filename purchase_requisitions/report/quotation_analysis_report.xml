@@ -1,0 +1,231 @@
+<odoo>
+    <template id="qo_customized_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row text-dark" style="font-family:'Roboto',sans-serif;">
+                    <div class="col-8">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" alt="Logo"
+                             class="center" style="width:150px; height:100px;"/>
+                    </div>
+                    <div class="col-4" style="text-align:right; font-size:11px;margin-top:15px;">
+                        <h7 style="color:black;">
+                            <t t-if="res_company.street">
+                                <t t-esc="res_company.street"/>,
+                                <br/>
+                                <t t-esc="res_company.street2"/>,
+                                <br/>
+                                <t t-esc="res_company.city"/>
+                            </t>
+                        </h7>
+                        <br/>
+                        <h7 style="color:black;">
+                            <t t-if="res_company.phone">
+                                <t t-esc="res_company.phone"/>
+                            </t>
+                        </h7>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="qo_customized_footer">
+        <div class="footer">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:black;">
+                <div class="col-4 text-center" style="margin-top:0px;">
+                    <span>Printed By:
+                        <span t-esc="request.env.user.name"/>
+                    </span>
+                </div>
+                <div class="col-4 text-center" style="margin-top:0px;"/>
+
+                <div class="col-4 text-center" style="margin-top:0px;">
+                    <span>Print Date:
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="quotation_analysis">
+        <t t-call="web.html_container">
+            <t t-call="purchase_requisitions.qo_customized_header"/>
+            <t t-call="purchase_requisitions.qo_customized_footer"/>
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="o">
+                    <div class="page text-dark" style="font-family:'Roboto',sans-serif;font-size:15px">
+                        <div class="row">
+                            <div class="col-12">
+                                <h2 class="text-center text-capitalize" style="color: #191970;">
+                                    Quotation Analysis Report
+                                </h2>
+                            </div>
+                        </div>
+                        <br/>
+                        <table class="table table-sm table-bordered"
+                               style="margin-top:20px;font-family:'Roboto',sans-serif;font-size:15px;">
+                            <thead>
+                                <tr class="text-white text-capitalize text-center" style="background-color:#191970;">
+                                    <th class="text-white text-capitalize text-center">
+                                        S/No
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Vendor Name
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Response Date
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Source Doc
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Product
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Quantity
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        UOM
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Unit Price
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Sub Total
+                                    </th>
+                                    <th class="text-white text-capitalize text-center">
+                                        Payment Terms
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <t t-set="quotation"
+                                   t-value="request.env['quotation.order'].search([('requisition_rfq_id', '=', o.id)])"/>
+                                <t t-set="vendor_wise_quotation"
+                                   t-value="quotation.read_group([('requisition_rfq_id', '=', o.id)], ['partner_id'], ['partner_id'])"/>
+
+
+                                <t t-foreach="vendor_wise_quotation" t-as="op">
+
+                                    <tr style="page-break-inside: avoid; margin:0px; font-size:15px; font-style:octarine; padding:0px;background-color:#95B9C7;text-align:left;">
+                                        <th class="text-capitalize text-black" colspan="10">
+                                            <b>
+                                                <t t-esc="op['partner_id'][1]"/>
+                                            </b>
+                                        </th>
+                                    </tr>
+                                    <t t-set="total_qty" t-value="0"/>
+                                    <t t-set="total_unit_price" t-value="0"/>
+                                    <t t-set="total_subtotal" t-value="0"/>
+                                    <t t-set="counter" t-value="0"/>
+                                    <t t-set="qot" t-value="quotation.search(op['__domain'])"/>
+
+                                    <tr style="page-break-inside: avoid;font-family:'Roboto',sans-serif;font-size:15px;color:black;"
+                                        t-foreach="qot.order_line"
+                                        t-as="po">
+                                        <td scope="col" class="text-center">
+                                            <t t-set="counter" t-value="counter+1"/>
+                                            <t t-esc="counter"/>
+                                        </td>
+                                        <td scope="col" class="text-left text-capitalize">
+                                            <t t-esc="qot.partner_id.name"/>
+                                        </td>
+                                        <td scope="col" class="text-left text-capitalize">
+                                            <t t-esc="qot.response_date.strftime('%d-%m-%Y')"/>
+                                        </td>
+                                        <td scope="col" class="text-left text-capitalize">
+                                            <t t-esc="qot.origin"/>
+                                        </td>
+                                        <td scope="col" class="text-left">
+                                            <t t-esc="po.product_id.name"/>
+                                        </td>
+                                        <td scope="col" class="text-center">
+                                            <t t-esc="'{0:,.2f}'.format(po.product_qty)"/>
+                                            <t t-set="total_qty"
+                                               t-value="total_qty+po.product_qty"/>
+                                        </td>
+                                        <td scope="col" class="text-center">
+                                            <t t-esc="po.product_uom.name"/>
+                                        </td>
+                                        <td scope="col" class="text-right">
+                                            <t t-esc="'{0:,.2f}'.format(po.price_unit)"/>
+                                            <t t-set="total_unit_price"
+                                               t-value="total_unit_price+po.price_unit"/>
+                                        </td>
+                                        <td scope="col" class="text-right">
+                                            <t t-esc="'{0:,.2f}'.format(po.price_subtotal)"/>
+                                            <t t-set="total_subtotal"
+                                               t-value="total_subtotal+po.price_subtotal"/>
+                                        </td>
+                                        <td scope="col" class="text-left" style="background-color:white;">
+                                            <t t-esc="qot.payment_term_id.name"/>
+                                        </td>
+
+                                    </tr>
+                                    <tr class="border-black o_total table_body_row table-active text-dark">
+                                        <td name="td_amount_total_label" colspan="5" class="left">
+                                            <b>Total</b>
+                                        </td>
+                                        <td class="text-center text-dark">
+                                            <t t-esc="'{0:,.2f}'.format(total_qty)"/>
+                                        </td>
+                                        <td></td>
+                                        <td class="text-right text-dark">
+                                            <t t-esc="'{0:,.2f}'.format(total_unit_price)"/>
+                                        </td>
+                                        <td class="text-right text-dark">
+                                            <t t-esc="'{0:,.2f}'.format(total_subtotal)"/>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </t>
+
+                            </tbody>
+
+
+                        </table>
+                        <div class="row"
+                             style="font-family:'Roboto',sans-serif;font-size:15px;color:#191970; margin-top:80px">
+                            <div class="col-4 text-center">
+                                <t t-esc="docs.create_uid.name"/>
+                            </div>
+                            <div class="col-4"/>
+                            <div class="col-4"/>
+                        </div>
+                        <div class="row" style="font-family:'Roboto',sans-serif;font-size:15px;color:#191970;">
+                            <div class="col-4 text-center" style="text-decoration:overline">Prepared By</div>
+                            <div class="col-4 text-center" style="text-decoration:overline">Checked By</div>
+                            <div class="col-4 text-center" style="text-decoration:overline">Approved By</div>
+                        </div>
+
+                    </div>
+                </t>
+
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_quotation_analysis" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">25</field>
+        <field name="dpi">90</field>
+    </record>
+    <report id="action_quotation_analysis"
+            string="Quotation Analysis Report"
+            model="requisition.order"
+            report_type="qweb-pdf"
+            file="purchase_requisitions.quotation_analysis"
+            name="purchase_requisitions.quotation_analysis"
+            paperformat="paperformat_quotation_analysis"
+            print_report_name="'Quotation Analysis - %s'" menu="True"/>
+
+</odoo>

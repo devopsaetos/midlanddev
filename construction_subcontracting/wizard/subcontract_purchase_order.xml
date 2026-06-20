@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_subcontract_create_po_wizard" model="ir.ui.view">
+        <field name="name">subcontract.purchase.wizard.form</field>
+        <field name="model">subcontract.purchase.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Purchase Order">
+                <field name="line_ids">
+                    <list string="Subcontract Lines" create="false" editable="bottom">
+                        <field name="check"/>
+                        <field name="product_id" readonly="1"/>
+                        <field name="name" readonly="1"/>
+                        <field name="available_qty" readonly="1"/>
+                        <field name="given_qty" readonly="1"/>
+                        <field name="uom_id" readonly="1"/>
+                        <field name="rate" readonly="1"/>
+                        <field name="value" readonly="1"/>
+                        <field name="qty"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="create_purchase_order" type="object"
+                            string="Create Purchase Order" class="btn-primary"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_create_purchase_order" model="ir.actions.act_window">
+        <field name="name">Create Purchase Order</field>
+        <field name="res_model">subcontract.purchase.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_subcontract_create_po_wizard"/>
+    </record>
+
+</odoo>

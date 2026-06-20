@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add project/task to quotation order form header -->
+    <record id="quotation_order_form_ext" model="ir.ui.view">
+        <field name="name">quotation.order.form.ext</field>
+        <field name="model">quotation.order</field>
+        <field name="inherit_id" ref="purchase_requisitions.quotation_order_form"/>
+        <field name="arch" type="xml">
+            <field name="date_validity" position="after">
+                <field name="project_id"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+                <field name="task_id"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Add cost sheet to quotation order lines analysis list (used for PO creation) -->
+    <record id="quotation_order_line_tree_ext" model="ir.ui.view">
+        <field name="name">quotation.order.line.tree.ext</field>
+        <field name="model">quotation.order.line</field>
+        <field name="inherit_id" ref="purchase_requisitions.quotation_order_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="task_cost_sheet_id"
+                       optional="show"
+                       options="{'no_quick_create': True, 'no_create_edit': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

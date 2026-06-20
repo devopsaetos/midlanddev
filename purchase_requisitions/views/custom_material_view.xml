@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<!--        Material Purchase Requisition Form View-->
+        <record id="material_purchase_requisition_form_view" model="ir.ui.view">
+            <field name="name">material.purchase.requisition.form.view</field>
+            <field name="model">material.purchase.requisition</field>
+            <field name="arch" type="xml">
+                <form string="Purchase Requisition">
+                    <header>
+                        <button name="department_approval" string="Approve" type="object" class="btn-primary"
+                                groups="purchase_requisitions.group_requisition_department_manager"
+                                invisible="state in ('approved','hod','cancel','draft','reject','ceo', 'expire')"/>
+                        <button name="hod_approval" string="Approve" type="object" class="btn-primary"
+                                groups="purchase_requisitions.group_purchase_requisition_department_head"
+                                invisible="state in ('approved','department','cancel','draft','reject','ceo', 'expire')"/>
+                        <button name="ceo_approval" string="Approve" type="object" class="btn-primary"
+                                groups="purchase_requisitions.group_purchase_requisition_ceo"
+                                invisible="state in ('approved','cancel','draft','reject','department','hod', 'expire')"/>
+                        <button name="reject_requisition" string="Reject" type="object" class="btn-primary"
+                                invisible="state in ('approved','cancel','reject','draft', 'expire')"/>
+                        <button name="confirm_requisition" string="Confirm" type="object" class="btn-primary"
+                                invisible="state in ('approved','cancel','reject','department','hod','ceo', 'expire')"/>
+                        <button name="cancel_requisition" type="object" string="Cancel"
+                                class="btn-primary" invisible="state == 'approved'"/>
+                        <button name="action_reset_draft" type="object" string="Reset To Draft"
+                                invisible="state in ('approved','draft','department','hod','ceo')"
+                                class="btn-primary"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet string="Purchase Requisitions">
+                        <div class="oe_button_box" name="button_box">
+                            <button name="view_lines_status" string="Lines Status" type="object"
+                                    icon="fa-list" invisible="state != 'approved'"/>
+                        </div>
+
+                        <div class="oe_title oe_left">
+                            <h1>
+                                <field name="sequence"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="requisition_responsible_id" options='{"no_open": True}'/>
+                                <field name="employee_id" options="{'no_create': True,'no_open': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="department_id" options='{"no_open": True}'/>
+                                <field name="warehouse_id" options='{"no_open": True}'/>
+                                <field name="requisition_description" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="requisition_date"/>
+                                <field name="schedule_date" required="1"
+                                       readonly="state != 'draft'"/>
+                                <field name="company_id" options="{'no_create': True, 'no_open': True}"
+                                       readonly="1"/>
+                                <field name="currency_id" options="{'no_create': True,'no_open': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="currency_check" invisible="1"/>
+                                <field name="exchange_rate" invisible="1"/>
+                                <field name="line_number" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Requisitions Lines">
+                                <field name="requisition_line_ids" widget="section_and_note_one2many"
+                                       readonly="state in ('department', 'hod', 'ceo', 'approved')"
+                                       mode="tree,kanban"
+                                       context="{'default_type': context.get('default_type'),
+                                                 's_date':schedule_date,
+                                                 'default_warehouse_id': warehouse_id}">
+                                    <form>
+                                        <field name="display_type" invisible="1"/>
+                                        <field name="sequence" invisible="1"/>
+                                        <group>
+                                            <group invisible="display_type != False">
+                                                <field name="product_id"
+                                                       required="display_type == False"
+                                                       force_save="1"
+                                                       widget="many2one_barcode"
+                                                />
+                                                <field name="price_unit"/>
+                                                <field name="sequence" invisible="1"/>
+                                            </group>
+                                        </group>
+                                        <label for="name" string="Description"
+                                               invisible="display_type != False"/>
+                                        <label for="name" string="Section Name (eg. Products, Services)"
+                                               invisible="display_type != 'line_section'"/>
+                                        <label for="name" string="Note"
+                                               invisible="display_type != 'line_note'"/>
+                                        <field name="name"/>
+                                        <field name="state" invisible="1"/>
+                                    </form>
+                                    <list string="Requisitions Lines" editable="bottom">
+                                        <control>
+                                            <create name="add_line_control" string="Add a line"/>
+                                            <create name="add_section_control" string="Add a section"
+                                                    context="{'default_display_type': 'line_section'}"/>
+                                            <create name="add_note_control" string="Add a note"
+                                                    context="{'default_display_type': 'line_note'}"/>
+                                        </control>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="id" invisible="1"/>
+                                        <field name="product_id"
+                                               options="{'no_create': True,'no_open': True}"
+                                               readonly="state != 'draft'"/>
+                                        <field name="name" widget="section_and_note_text" optional="show"
+                                               readonly="state != 'draft'"/>
+                                        <field name="product_expense" invisible="1"
+                                               readonly="state != 'draft'"/>
+                                        <field name="category_id"
+                                               options="{'no_create': True,'no_open': True}"
+                                               readonly="state != 'draft'"/>
+                                        <field name="on_hand_quantity" readonly="1" force_save="1"/>
+                                        <field name="qty" string="Required Quantity" readonly="state != 'draft'"/>
+                                        <field name="qty_done" string="Done" readonly="state != 'draft'"/>
+                                        <field name="remaining_quantity" string="Remaining"
+                                               readonly="state != 'draft'"/>
+                                        <field name="uom_id" options="{'no_create': True,'no_open': True}"
+                                               readonly="1"/>
+                                        <field name="price_unit" readonly="state != 'draft'"/>
+                                        <field name="schedule_date" readonly="state != 'draft'"/>
+                                        <field name="warehouse_id"/>
+                                        <field name="display_type" force_save="1" invisible="1"/>
+                                        <field name="state" invisible="1"/>
+                                        <field name="total_val"/>
+                                    </list>
+                                    <kanban class="o_kanban_mobile">
+                                        <field name="name"/>
+                                        <field name="product_id"/>
+                                        <field name="price_unit"/>
+                                        <field name="display_type"/>
+                                        <templates>
+                                            <t t-name="card">
+                                                <t t-if="record.display_type.raw_value === 'line_section' || record.display_type.raw_value === 'line_note'">
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <span>
+                                                                <t t-esc="record.name.value"/>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="row">
+                                                        <div class="col-8">
+                                                            <strong>
+                                                                <t t-esc="record.product_id.value"/>
+                                                            </strong>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <t t-esc="record.price_unit.value"/>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                                <group name="note_group" col="6">
+                                    <group colspan="4">
+                                        <field name="reason_for_requisition" nolabel="1"
+                                               placeholder="Reasons For Requisition..."/>
+                                    </group>
+                                    <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                                        <field name="amount_untaxed" widget="monetary"
+                                               options="{'currency_field': 'currency_id'}" class="font-weight-bold"/>
+                                    </group>
+                                    <div class="oe_clear"/>
+                                </group>
+                            </page>
+                            <page string="Other Information">
+                                <group>
+                                    <group>
+                                        <field name="confirmed_by_id" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="department_manager_id" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="hod_id" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="ceo_id" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="rejected_by" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                    </group>
+                                    <group>
+                                        <field name="confirmed_date" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="department_approval_date" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="hod_approval_date" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="ceo_approval_date" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="rejected_date" readonly="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+
+        <!--        Material Purchase Requisition Tree View-->
+        <record id="material_purchase_requisition_tree_view" model="ir.ui.view">
+            <field name="name">material.purchase.requisition.tree.view</field>
+            <field name="model">material.purchase.requisition</field>
+            <field name="arch" type="xml">
+                <list string="Purchase Requisition">
+                    <field name="sequence" string="Number"/>
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="requisition_responsible_id"/>
+                    <field name="requisition_date"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!--        Material Purchase Requisition Action-->
+        <record id="action_material_purchase_requisition" model="ir.actions.act_window">
+            <field name="name">Purchase Requisition</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">material.purchase.requisition</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a requisition.
+                </p>
+                <p>
+                    The requisition contains the history of requisition date schedule date requester warehouse and
+                    locations etc.
+                </p>
+            </field>
+        </record>
+
+
+        <!--        Material Purchase Requisition sequence-->
+        <record id="material_purchase_requisition" model="ir.sequence">
+            <field name="name">Purchase Requisition</field>
+            <field name="code">material.purchase.requisition</field>
+            <field name="prefix">EPR/00</field>
+            <field name="padding">3</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!--        Material Purchase Requisition Lines Tree View-->
+        <record id="requisition_line_tree_view" model="ir.ui.view">
+            <field name="name">requisition.line.tree.view</field>
+            <field name="model">requisition.line</field>
+            <field name="arch" type="xml">
+                <list string="Requisition Line">
+                    <field name="product_id"/>
+                    <field name="name"/>
+                    <field name="qty"/>
+                    <field name="uom_id"/>
+                    <field name="vendor_id"/>
+                </list>
+            </field>
+        </record>
+
+<!--        HR Department Form View Inherit-->
+        <record id="inherit_bi_hr_department_form" model="ir.ui.view">
+            <field name="name">inherit.bi.hr.department.form</field>
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_form"/>
+            <field name="arch" type="xml">
+                <field name="manager_id" position="after">
+                    <field name="destination_location_id"/>
+                </field>
+            </field>
+        </record>
+
+
+<!--        Material Purchase Requisitions Menus-->
+        <menuitem id="menu_requisition" name="Purchase Requisitions"
+                  web_icon="purchase_requisitions,static/description/icon.png"/>
+
+        <menuitem id="menu_purchase_requisition"
+                  name="Purchase Requisition"
+                  parent="menu_requisition"
+                  sequence="1"/>
+
+        <menuitem id="menu_sub_purchase_requisition"
+                  name="Purchase Requisition"
+                  parent="menu_purchase_requisition"
+                  action="action_material_purchase_requisition"
+                  sequence="1"/>
+
+<!--        &lt;!&ndash;        Material Purchase Requisition Lines Tree View&ndash;&gt;-->
+<!--        <record id="requisition_line_pool_tree_view" model="ir.ui.view">-->
+<!--            <field name="name">requisition.line.requesition.pool.tree.view</field>-->
+<!--            <field name="model">requisition.line</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <list string="Approved Requisitions" create="0" delete="0">-->
+<!--                    <field name="requisition_id"/>-->
+<!--                    <field name="employee_id"/>-->
+<!--                    <field name="department_id"/>-->
+<!--                    <field name="requisition_date"/>-->
+<!--                    <field name="category_id" context="{'from_purchasing': True, }"/>-->
+<!--                    <field name="product_id"/>-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="qty"/>-->
+<!--                    <field name="qty_done" string="Done"/>-->
+<!--                    <field name="remaining_quantity" string="Remaining"/>-->
+<!--                    <field name="uom_id"/>-->
+<!--                    <field name="state"/>-->
+<!--                </list>-->
+<!--            </field>-->
+<!--        </record>-->
+
+
+        <!--        Material Purchase Requisition Lines Tree View For Requisition Poll-->
+        <record id="action_accepted_material_purchase_requisition_lines" model="ir.actions.act_window">
+            <field name="name">Approved Requisitions</field>
+            <field name="res_model">requisition.line</field>
+            <field name="view_mode">list</field>
+            <field name="context">{'from_purchasing': True, 'group_by': 'requisition_id'}</field>
+            <field name="domain">[('state', 'in', ('approved', 'rfq_created', 'qo_created'))]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create a Requisition, the first step of a new Request.
+                </p>
+                <p>
+                    Once the Purchase Requisition is confirmed, it will become visible here.
+                    You'll be able to create Purchase orders and Request For Quotation.
+                    From the Action by selecting records.
+                </p>
+            </field>
+        </record>
+
+<!--        <menuitem id="menu_accepted_sub_purchase_requisition"-->
+<!--                  name="Requisition Pool"-->
+<!--                  parent="purchase.menu_procurement_management"-->
+<!--                  action="action_accepted_material_purchase_requisition_lines"-->
+<!--                  sequence="10"-->
+<!--        />-->
+
+<!--        &lt;!&ndash;        Material Purchase Requisition Lines Tree View&ndash;&gt;-->
+<!--        <record id="requisition_line_status_tree_view" model="ir.ui.view">-->
+<!--            <field name="name">requisition.line.tree.view</field>-->
+<!--            <field name="model">requisition.line</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <list string="Requisition Lines" create="0" delete="0" edit="0">-->
+<!--                    <field name="name"/>-->
+<!--                    <field name="state"/>-->
+<!--                    <field name="rfq_date"/>-->
+<!--                    <field name="rfq_id"/>-->
+<!--                    <field name="qo_date"/>-->
+<!--                    <field name="quotation_id"/>-->
+<!--                    <field name="po_id"/>-->
+<!--                    <field name="po_date"/>-->
+<!--                    <field name="po_quantity"/>-->
+<!--                    <field name="qty_received"/>-->
+<!--                </list>-->
+<!--            </field>-->
+<!--        </record>-->
+
+    </data>
+</odoo>

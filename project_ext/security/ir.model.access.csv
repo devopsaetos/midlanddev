@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_team_manager,project.team manager,model_project_team,project.group_project_manager,1,1,1,1
+access_project_team_user,project.team user,model_project_team,project.group_project_user,1,0,0,0
+access_project_category_manager,project.category manager,model_project_category,project.group_project_manager,1,1,1,1
+access_project_category_user,project.category user,model_project_category,project.group_project_user,1,0,0,0
+access_project_sub_category_manager,project.sub.category manager,model_project_sub_category,project.group_project_manager,1,1,1,1
+access_project_sub_category_user,project.sub.category user,model_project_sub_category,project.group_project_user,1,0,0,0

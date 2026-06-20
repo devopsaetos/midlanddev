@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_task_form_subcontract_ext" model="ir.ui.view">
+        <field name="name">project.task.form.subcontract</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button name="action_create_subcontract"
+                        string="Create Sub Contract"
+                        type="object"
+                        class="btn-primary"/>
+            </header>
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" type="object"
+                        name="button_view_subcontract"
+                        invisible="subcontract_count == 0"
+                        icon="fa-file-text-o">
+                    <field name="subcontract_count" widget="statinfo" string="Sub Contracts"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        By inheriting assets_backend Odoo knows we'll want to use this JS code in the backend from Odoo.
+        All asset inheritance should always be done on the 'web' module, which holds all assets.
+    -->
+    <template id="assets_backend" name="purchase_requisitions assets" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <!-- Links to the path of the JS file in your own module. Include your module name! -->
+            <link rel="stylesheet" type="text/scss" href="/purchase_requisitions/static/src/scss/dynamic_common_style.scss"/>
+            <script type="text/javascript" src="/purchase_requisitions/static/src/js/comparative_statement.js"></script>
+<!--            <link rel="stylesheet" type="text/css" href="/tutorial_manage_assets/static/src/css/hello_world.css"/>-->
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_task_subcontract_manager,task.subcontract manager,model_task_subcontract,project.group_project_manager,1,1,1,1
+access_task_subcontract_user,task.subcontract user,model_task_subcontract,project.group_project_user,1,1,1,0
+access_subtract_plan_products_manager,subtract.plan.products manager,model_subtract_plan_products,project.group_project_manager,1,1,1,1
+access_subtract_plan_products_user,subtract.plan.products user,model_subtract_plan_products,project.group_project_user,1,1,1,0
+access_subcontract_purchase_wizard,subcontract.purchase.wizard,model_subcontract_purchase_wizard,project.group_project_user,1,1,1,1
+access_subcontract_purchase_wizard_line,subcontract.purchase.wizard.line,model_subcontract_purchase_wizard_line,project.group_project_user,1,1,1,1

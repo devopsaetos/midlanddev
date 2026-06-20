@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="supply_chain_customizations.product_price_list_history_view_tree" model="ir.ui.view">
+        <field name="name">supply_chain_customizations.product_price_list_history_view_tree</field>
+        <field name="model">product.price.history</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="product_id"/>
+                <field name="create_date"/>
+                <field name="datetime" string="Transaction Date"/>
+                <field name="reference"/>
+                <field name="cost"/>
+                <field name="company_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="product_price_history_action" model="ir.actions.act_window">
+        <field name="name">Product Price History</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.price.history</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem
+            id="supply_chain_customizations.product_pricelist_menu"
+            name="Product Pricelist History"
+            parent="stock.menu_stock_inventory_control"
+            action="supply_chain_customizations.product_price_history_action"
+            sequence='16'
+    />
+</odoo>

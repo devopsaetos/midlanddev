@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="comparative_statement_form_view" model="ir.ui.view">
+            <field name="name">comparative.statement.form.view</field>
+            <field name="model">comparative.statement</field>
+            <field name="arch" type="xml">
+                <form string="Comparative Statement">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="show_vendor_dashboard" string="Comparative Statement" type="object"
+                                    icon="fa-plus-square"
+                                    help="Display an option to view the comparative statement dashboard"
+                                    class="oe_stat_button"/>
+                        </div>
+                        <div class="oe_title oe_left">
+                            <h1>
+                                <field name="sequence"/>
+                            </h1>
+                        </div>
+                        <group>
+
+                            <field name="rfq_id" required="1"/>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="creation_date"/>
+                            </group>
+                            <group>
+                                <field name="closure_date"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Tree View-->
+        <record id="comparative_statement_tree_view" model="ir.ui.view">
+            <field name="name">comparative.statement.tree.view</field>
+            <field name="model">comparative.statement</field>
+            <field name="arch" type="xml">
+                <list string="Comparative Statement" decoration-info="(state == 'draft')">
+                    <field name="rfq_id"/>
+                    <field name="creation_date"/>
+                    <field name="closure_date"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- action -->
+        <record id="action_comparative_statement" model="ir.actions.act_window">
+            <field name="name">Comparative Statement</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">comparative.statement</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create A Comparative Statement
+                </p>
+                <p>
+                    The comparative statement would contain information about an rfq and all quotations provided by
+                    vendors against that rfq!
+                </p>
+            </field>
+        </record>
+
+        <!-- Sequence -->
+        <record id="sequence_comparative_statement" model="ir.sequence">
+            <field name="name">Comparative Statement</field>
+            <field name="code">comparative.statement</field>
+            <field name="prefix">CS/00</field>
+            <field name="padding">3</field>
+            <!--            <field name="company_id" eval="False"/>-->
+        </record>
+
+        <!-- Menu Item-->
+        <menuitem id="menu_comparative_statement"
+                  name="Comparative Statement"
+                  parent="menu_purchase_requisition"
+                  action="action_comparative_statement"
+                  sequence="5"
+        />
+
+    </data>
+</odoo>

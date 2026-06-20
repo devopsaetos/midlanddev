@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="group_project_director" model="res.groups">
+        <field name="name">Project Director</field>
+        <field name="privilege_id" ref="project.res_groups_privilege_project"/>
+        <field name="implied_ids" eval="[(4, ref('project.group_project_manager'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <record id="group_task_team_members" model="res.groups">
+        <field name="name">Team Member</field>
+        <field name="privilege_id" ref="project.res_groups_privilege_project"/>
+        <field name="implied_ids" eval="[(4, ref('project.group_project_user'))]"/>
+    </record>
+
+    <!-- Project Director sees all project budgets -->
+    <record model="ir.rule" id="rule_project_budget_director">
+        <field name="name">Construction Budget: Director sees all</field>
+        <field name="model_id" ref="model_project_budget"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_project_director'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Project Director sees all task budgets -->
+    <record model="ir.rule" id="rule_task_budget_director">
+        <field name="name">Construction Task Budget: Director sees all</field>
+        <field name="model_id" ref="model_task_budget"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_project_director'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="evaluation_criteria_form_view" model="ir.ui.view">
+            <field name="name">evaluation.criteria.form.view</field>
+            <field name="model">evaluation.criteria</field>
+            <field name="arch" type="xml">
+                <form string="Evaluation Criteria">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="value"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="evaluation_criteria_tree_view">
+            <field name="model">evaluation.criteria</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="value"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="evaluation_criteria_action">
+            <field name="name">Evaluation Criteria</field>
+            <field name="res_model">evaluation.criteria</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="action_evaluation_criteria"
+                sequence="3"
+                name="Evaluation Criteria"
+                parent="menu_purchase_requisition_approval_hierarchy"
+                action="evaluation_criteria_action"/>
+
+    </data>
+</odoo>

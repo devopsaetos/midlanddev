@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_project_form_cost_financials" model="ir.ui.view">
+        <field name="name">project.project.cost.financials</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[last()]" position="after">
+                <page string="Project Financials">
+                    <group>
+                        <group>
+                            <field name="overhead_type"/>
+                            <field name="rate" string="Absorption Rate (%)" widget="percentage"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

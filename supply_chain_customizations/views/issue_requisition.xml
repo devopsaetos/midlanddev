@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="issue_requistion_view_form" model="ir.ui.view">
+        <field name="name">issue_requistion_view_form</field>
+        <field name="model">issue.requistion</field>
+        <field name="arch" type="xml">
+            <form string="Issue Requistion Form">
+                <header>
+                    <button name="action_set_confirm" confirm="Want To Confirm or Not ?" string="Confirm"
+                            class="oe_highlight" type="object" invisible="state != 'draft'"/>
+                    <button name="action_set_issued" type="object" class="oe_highlight" string="Valid"
+                            invisible="state != 'valid'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,valid,request,issue"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="request_by_id" readonly="state == 'issue'"
+                                   options='{"no_create": True}'/>
+                            <field name="operation_type" readonly="state == 'issue'"/>
+                            <field name="warehouse_id" readonly="state == 'issue'"
+                                   invisible="operation_type != 'transfer'"
+                                   options='{"no_create": True}' force_sace="1"/>
+                            <field name="location_id" readonly="state == 'issue'"
+                                   options='{"no_create": True}'/>
+                            <field name="picking_type_id"
+                                   readonly="state == 'issue'"
+                                   options='{"no_create": True}' invisible="1"/>
+                            <field name="location_dest_id"
+                                   readonly="state == 'issue'" invisible="operation_type != 'transfer'"
+                                   options='{"no_create": True}'/>
+                        </group>
+                        <group>
+                            <field name="schedule_date"/>
+                            <field name="date" readonly="state == 'issue'"/>
+                            <field name="company_id" readonly="state == 'issue'"/>
+<!--                            <field name="branch_id" invisible="1"/>-->
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="products" string="Products">
+                            <field name="line_ids" readonly="state == 'issue'">
+                                <list editable="bottom">
+                                    <!--                                    <field name="issue_requistion_id" invisible="1"/>-->
+                                    <field name="product_id" options='{"no_create": True}'/>
+                                    <field name="uom_id" options='{"no_create": True}'/>
+                                    <field name="quantity"/>
+                                    <field name="onhand_quantity"/>
+                                    <field name="location_dest_id" invisible="0"/>
+                                    <field name="analytic_account_id" options='{"no_create": True}'/>
+                                    <!--                                    <field name="analytic_tag_ids" widget="many2many_tags"-->
+                                    <!--                                           options='{"no_create": True}'/>-->
+                                    <field name="cost_center_id"/>
+                                    <field name="memo_text"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="issue_requsition_view_tree" model="ir.ui.view">
+        <field name="name">issue_requsition_view_tree</field>
+        <field name="model">issue.requistion</field>
+        <field name="arch" type="xml">
+            <list string="issue_requsition_tree">
+                <field name="name"/>
+                <field name="request_by_id"/>
+                <field name="date"/>
+                <field name="location_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+    <record id="issue_requistion_action" model="ir.actions.act_window">
+        <field name="name">Material Requisition</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">issue.requistion</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem name="Material Requisition" id="sub_menu_issue_requistion_menu_view"
+              parent="stock.menu_stock_warehouse_mgmt" action="issue_requistion_action"
+    />
+</odoo>

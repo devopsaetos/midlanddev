@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_budget_manager,project.budget manager,model_project_budget,project.group_project_manager,1,1,1,1
+access_project_budget_user,project.budget user,model_project_budget,project.group_project_user,1,0,0,0
+access_project_budget_tasks_manager,project.budget.tasks manager,model_project_budget_tasks,project.group_project_manager,1,1,1,1
+access_project_budget_tasks_user,project.budget.tasks user,model_project_budget_tasks,project.group_project_user,1,1,1,0
+access_project_budget_material_line_manager,project.budget.material.line manager,model_project_budget_material_line,project.group_project_manager,1,1,1,1
+access_project_budget_material_line_user,project.budget.material.line user,model_project_budget_material_line,project.group_project_user,1,1,1,0
+access_task_budget_manager,task.budget manager,model_task_budget,project.group_project_manager,1,1,1,1
+access_task_budget_user,task.budget user,model_task_budget,project.group_project_user,1,1,1,0
+access_task_budget_material_line_all,task.budget.material.line all,model_task_budget_material_line,project.group_project_user,1,1,1,1
+access_task_budget_service_line_all,task.budget.service.line all,model_task_budget_service_line,project.group_project_user,1,1,1,1
