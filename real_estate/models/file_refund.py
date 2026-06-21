@@ -108,13 +108,13 @@ class FileRefund(models.Model):
             'invoice_date_due': fields.Date.today(),
             'invoice_line_ids': [
                 (0, 0, {
-                    'product_id': self.env.ref('real_estate.refund_product').id,
+                    'product_id': self.env.ref('real_estate.refund_product').product_id.id,
                     'name': self.env.ref('real_estate.refund_product').name,
-                    'account_id': self.env.ref('real_estate.refund_product').property_account_expense_id.id,
+                    'account_id': self.env.ref('real_estate.refund_product').product_id.property_account_expense_id.id,
                     'price_unit': amount_paid
                 }),
                 (0, 0, {
-                    'product_id': self.env.ref('real_estate.deductions').id,
+                    'product_id': self.env.ref('real_estate.deductions').product_id.id,
                     'name': self.env.ref('real_estate.deductions').name,
                     # 'account_id': self.env.ref('real_estate.deductions').property_account_expense_id.id,
                     'price_unit': (deduction_amount + processing_fee) * -1

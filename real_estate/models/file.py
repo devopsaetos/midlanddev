@@ -593,6 +593,12 @@ class File(models.Model):
     @api.model
     def _product_income_account(self, product):
         """Return the income account for a product, falling back to category then first income account."""
+        if product and product._name == 'product.realestate':
+            product = product.product_id
+        if not product:
+            return self.env['account.account'].search(
+                [('account_type', 'in', ('income', 'income_other')),
+                 ('company_ids', 'in', self.env.company.ids)], limit=1)
         account = product.property_account_income_id
         if not account:
             account = product.categ_id.property_account_income_categ_id
@@ -1101,7 +1107,7 @@ class File(models.Model):
             self.check_duplicity(self.manual_installment_plan_ids)
             if self.manual_installment_plan_ids:
                 prod = [(0, 0, {
-                    'product_id': rec.product_id.id,
+                    'product_id': rec.product_id.product_id.id,
                     'name': rec.product_id.name,
                     'account_id': self._product_income_account(rec.product_id).id,
                     'price_unit': rec.amount_manual,
@@ -1124,7 +1130,7 @@ class File(models.Model):
             down_payment = self.env.ref('real_estate.downpayment_product')
             if self.initial_payment:
                 prod = [(0, 0, {
-                    'product_id': down_payment.id,
+                    'product_id': down_payment.product_id.id,
                     'name': down_payment.name,
                     'account_id': self._product_income_account(down_payment).id,
                     'price_unit': self.initial_payment,
@@ -1495,47 +1501,53 @@ class File(models.Model):
                     tax_ids = self.env.company.installment_tax_ids.ids
                     prod = []
                     if installment['installment_type'] == 'final':
+                        _re = self.env.ref('real_estate.final_product')
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.final_product').id,
-                            'name': self.env.ref('real_estate.final_product').name,
-                            'account_id': self._product_income_account(self.env.ref('real_estate.final_product')).id,
+                            'product_id': _re.product_id.id,
+                            'name': _re.name,
+                            'account_id': self._product_income_account(_re).id,
                             'price_unit': installment['installment_amount'],
                             'tax_ids': tax_ids,
                         })]
                     elif installment['installment_type'] == 'installment':
+                        _re = self.env.ref('real_estate.installment_product')
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.installment_product').id,
-                            'name': self.env.ref('real_estate.installment_product').name,
-                            'account_id': self._product_income_account(self.env.ref('real_estate.installment_product')).id,
+                            'product_id': _re.product_id.id,
+                            'name': _re.name,
+                            'account_id': self._product_income_account(_re).id,
                             'price_unit': installment['installment_amount'],
                             'tax_ids': tax_ids,
                         })]
                     elif installment['installment_type'] == 'balloon':
+                        _re = self.env.ref('real_estate.balloon_payment')
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.balloon_payment').id,
-                            'name': self.env.ref('real_estate.balloon_payment').name,
-                            'account_id': self._product_income_account(self.env.ref('real_estate.balloon_payment')).id,
+                            'product_id': _re.product_id.id,
+                            'name': _re.name,
+                            'account_id': self._product_income_account(_re).id,
                             'price_unit': installment['installment_amount']
                         })]
                     elif installment['installment_type'] == 'possession_amount':
+                        _re = self.env.ref('real_estate.possession_amount_product')
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.possession_amount_product').id,
-                            'name': self.env.ref('real_estate.possession_amount_product').name,
-                            'account_id': self._product_income_account(self.env.ref('real_estate.possession_amount_product')).id,
+                            'product_id': _re.product_id.id,
+                            'name': _re.name,
+                            'account_id': self._product_income_account(_re).id,
                             'price_unit': installment['installment_amount']
                         })]
                     elif installment['installment_type'] == 'confirmation_amount':
+                        _re = self.env.ref('real_estate.confirmation_amount_product')
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
-                            'name': self.env.ref('real_estate.confirmation_amount_product').name,
-                            'account_id': self._product_income_account(self.env.ref('real_estate.confirmation_amount_product')).id,
+                            'product_id': _re.product_id.id,
+                            'name': _re.name,
+                            'account_id': self._product_income_account(_re).id,
                             'price_unit': installment['installment_amount']
                         })]
                     elif installment['installment_type'] == 'balloting_amount':
+                        _re = self.env.ref('real_estate.balloting_product')
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.balloting_product').id,
-                            'name': self.env.ref('real_estate.balloting_product').name,
-                            'account_id': self._product_income_account(self.env.ref('real_estate.balloting_product')).id,
+                            'product_id': _re.product_id.id,
+                            'name': _re.name,
+                            'account_id': self._product_income_account(_re).id,
                             'price_unit': installment['installment_amount']
                         })]
                     installment_line = self.env['installment.plan'].sudo().browse(installment['installment_id'])
@@ -1787,7 +1799,7 @@ class File(models.Model):
                             and installment.product_id.id in [installment_product.id, final_product.id]:
                         try:
                             prod = [(0, 0, {
-                                'product_id': installment.product_id.id,
+                                'product_id': installment.product_id.product_id.id,
                                 'name': installment.product_id.name,
                                 'account_id': self._product_income_account(installment.product_id).id,
                                 'price_unit': installment.amount_manual,
@@ -1857,10 +1869,11 @@ class File(models.Model):
 
                         if installment.state != 'paid' and not installment.invoice_created and payment_amount > 0:
                             print("CREATING INVOICE AGAINST THIS %s FILE: " % (rec))
+                            _re = self.env.ref('real_estate.installment_product')
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.installment_product').id,
-                                'name': self.env.ref('real_estate.installment_product').name,
-                                'account_id': self._product_income_account(self.env.ref('real_estate.installment_product')).id,
+                                'product_id': _re.product_id.id,
+                                'name': _re.name,
+                                'account_id': self._product_income_account(_re).id,
                                 'price_unit': installment.amount,
                             })]
 
@@ -2169,7 +2182,7 @@ class FilePayment(models.Model):
     _rec_name = 'product_id'
     _description = "File Payment"
 
-    product_id = fields.Many2one('product.product', domain="[('is_include_property_system','=', True)]")
+    product_id = fields.Many2one('product.realestate', ondelete='set null')
     payment_type = fields.Selection([
         ('fix', 'Fix'),
         ('percentage', 'Percentage')
@@ -2229,9 +2242,8 @@ class InstallmentPlan(models.Model):
 
     # serial_no = fields.Integer()
     line_calculated = fields.Boolean(default=False)
-    product_id = fields.Many2one('product.product',
+    product_id = fields.Many2one('product.realestate', ondelete='set null',
                                  default=lambda self: self.env.ref('real_estate.installment_product').id,
-                                 domain="[('is_include_property_system','=', True)]"
                                  )
     date = fields.Date(required=True)
     percentage = fields.Float(digits=(2, 6))
@@ -2602,7 +2614,7 @@ class InvoicePopup(models.TransientModel):
                 for rec in self.invoice_line:
                     if rec.initial_payment:
                         prod.append((0, 0, {
-                            'product_id': rec.product_id.id,
+                            'product_id': rec.product_id.product_id.id,
                             'name': member.member_name,
                             'account_id': file._product_income_account(rec.product_id).id,
                             'price_unit': (rec.initial_payment * member.ownership) / 100,
@@ -2611,7 +2623,7 @@ class InvoicePopup(models.TransientModel):
                         }))
         else:
             prod = [(0, 0, {
-                'product_id': rec.product_id.id,
+                'product_id': rec.product_id.product_id.id,
                 'name': rec.product_id.name,
                 'account_id': file._product_income_account(rec.product_id).id,
                 'price_unit': rec.initial_payment,
@@ -2711,7 +2723,7 @@ class InvoicePopupLine(models.TransientModel):
     _name = "invoice.popup.line"
     _description = "Invoice Popup Line"
 
-    product_id = fields.Many2one('product.product', domain="[('is_include_property_system', '=', 1)]")
+    product_id = fields.Many2one('product.realestate', ondelete='cascade')
     payment_type = fields.Selection([
         ('fix', 'Fix'),
         ('percentage', 'Percentage')
@@ -2827,7 +2839,7 @@ class NewProductLine(models.Model):
     _name = 'new.product.line'
     _description = "New Product Line"
 
-    product_id = fields.Many2one('product.product')
+    product_id = fields.Many2one('product.realestate', ondelete='set null')
     payment_type = fields.Selection([
         ('fix', 'Fix'),
         ('percentage', 'Percentage')

@@ -34,7 +34,7 @@ class PredefinePlanLine(models.Model):
     _name = 'predefine.plan.line'
     _description = "Predefine Plan Lines"
 
-    product_id = fields.Many2one('product.product', required=True)
+    product_id = fields.Many2one('product.realestate', required=True, ondelete='restrict')
     basis = fields.Selection([
         ('percentage', 'Percentage'),
         ('fix', 'Fix'),

@@ -109,7 +109,7 @@
     </record>
 
     <menuitem id="design_and_mapping_menu_item_id" name="Design &amp; Map"
-              web_icon="society_charges,static/description/icon.png"/>
+              web_icon="society_charges,static/description/real_estate_icon.png"/>
     <menuitem id="real_estate.file_charges_schedule_menu" name="Charges Schedule"
               parent="design_and_mapping_menu_item_id" action="real_estate.file_charges_schedule_action" sequence="2"/>
     <!--               parent="real_estate.menu_price_plan" -->

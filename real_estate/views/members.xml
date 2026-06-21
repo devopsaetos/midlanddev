@@ -16,14 +16,20 @@
                                 <field name="no_of_invoices" string="Invoices" widget="statinfo"/>
                             </button>
                             <button
-                                    name="open_file"
+                                    name="open_realestate_files"
                                     type="object"
                                     class="oe_stat_button"
-                                    icon="fa-folder-open-o"
+                                    icon="fa-home"
                             >
-
-                                <field name="no_of_files" string="Files" widget="statinfo"/>
-
+                                <field name="no_of_realestate_files" string="Real Estate" widget="statinfo"/>
+                            </button>
+                            <button
+                                    name="open_project_files"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-building-o"
+                            >
+                                <field name="no_of_project_files" string="Project" widget="statinfo"/>
                             </button>
                             <button
                                     name="toggle_active"
@@ -591,14 +597,26 @@
                             </page>
 
                             <page name='file_line_ids' string="Files">
-                                <field name='file_line_ids' context="{'default_membership_id': id, 'default_project_type': 'housing_society', 'current_view': 'realestate', 'form_view_ref': 'real_estate.file_form'}">
+                                <separator string="Real Estate Files"/>
+                                <field name='realestate_file_line_ids' context="{'default_membership_id': id, 'default_project_type': 'housing_society', 'current_view': 'realestate', 'form_view_ref': 'real_estate.file_form'}">
                                     <list delete="false">
                                         <field name='tracking_id'/>
-                                        <field name='unit_number'/>
-                                        <field name="society_id"/>
-                                        <field name="phase_id"/>
-                                        <field name='sector_id'/>
-                                        <field name='street_id'/>
+                                        <field name='unit_number' string="Plot Number"/>
+                                        <field name="society_id" string="Society"/>
+                                        <field name="phase_id" string="Phase"/>
+                                        <field name='sector_id' string="Sector"/>
+                                        <field name='street_id' string="Street"/>
+                                    </list>
+                                </field>
+                                <separator string="Project Files"/>
+                                <field name='project_file_line_ids' context="{'default_membership_id': id, 'default_project_type': 'skyscraper', 'current_view': 'building', 'form_view_ref': 'land_development.file_form'}">
+                                    <list delete="false">
+                                        <field name='tracking_id'/>
+                                        <field name='unit_number' string="Unit"/>
+                                        <field name="society_id" string="Project"/>
+                                        <field name="phase_id" string="Building"/>
+                                        <field name='sector_id' string="Floor"/>
+                                        <field name='street_id' string="Street"/>
                                     </list>
                                 </field>
                             </page>

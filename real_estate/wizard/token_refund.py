@@ -38,7 +38,7 @@ class TokenRefund(models.TransientModel):
                     'invoice_date': fields.Date.today(),
                     'journal_id': company.knockoff_journal_id.id,
                     'invoice_line_ids': [(0, None, {
-                        'product_id': token_refund.id,
+                        'product_id': token_refund.product_id.id,
                         'name': token_refund.name,
                         'quantity': 1.0,
                         'price_unit': token.token_fees,

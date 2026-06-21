@@ -32,6 +32,7 @@ access_factor,factor,model_factor,group_rsms_user,1,1,1,1
 access_price_list,price.list,model_price_list,group_rsms_user,1,1,1,1
 access_price_list_line,price.list.line,model_price_list_line,group_rsms_user,1,1,1,1
 access_product_template,product.template,model_product_template,group_rsms_user,1,1,1,1
+access_product_realestate,product.realestate,model_product_realestate,group_rsms_user,1,1,1,1
 access_setup,setup,model_setup,group_rsms_user,1,1,1,1
 access_requirements,requirements,model_requirements,group_rsms_user,1,1,1,1
 access_res_authority,res.authority,model_res_authority,group_rsms_user,1,1,1,1

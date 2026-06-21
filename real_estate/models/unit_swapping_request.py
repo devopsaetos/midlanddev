@@ -648,10 +648,10 @@ class UnitSwappingRequest(models.Model):
                     if new_price > old_price:
                         adjustment_amount = new_price - old_price
                         prod = [(0, 0, {
-                            'product_id': self.env.ref('real_estate.investment_installment').id,
+                            'product_id': self.env.ref('real_estate.investment_installment').product_id.id,
                             'name': self.env.ref('real_estate.investment_installment').name,
                             'account_id': self.env.ref(
-                                'real_estate.investment_installment').property_account_income_id.id,
+                                'real_estate.investment_installment').product_id.property_account_income_id.id,
                             'price_unit': adjustment_amount
                         })]
                         invoice = self.create_invoice(adjustment_amount, prod)
@@ -787,9 +787,9 @@ class UnitSwappingRequest(models.Model):
     def generate_invoice(self):
         if self.apply_charges and self.charges_amount:
             prod = [(0, 0, {
-                'product_id': self.env.ref('real_estate.unit_swapping_charges').id,
+                'product_id': self.env.ref('real_estate.unit_swapping_charges').product_id.id,
                 'name': self.env.ref('real_estate.unit_swapping_charges').name,
-                'account_id': self.env.ref('real_estate.unit_swapping_charges').property_account_income_id.id,
+                'account_id': self.env.ref('real_estate.unit_swapping_charges').product_id.property_account_income_id.id,
                 'price_unit': self.charges_amount
             })]
             invoice = self.env['account.move'].create({
@@ -846,9 +846,9 @@ class UnitSwappingRequest(models.Model):
     def create_credit_note(self, amount):
         if amount > 0:
             prod = [(0, 0, {
-                'product_id': self.env.ref('real_estate.investment_adjustment').id,
+                'product_id': self.env.ref('real_estate.investment_adjustment').product_id.id,
                 'name': self.env.ref('real_estate.investment_adjustment').name,
-                'account_id': self.env.ref('real_estate.investment_adjustment').property_account_income_id.id,
+                'account_id': self.env.ref('real_estate.investment_adjustment').product_id.property_account_income_id.id,
                 'price_unit': amount
             })]
             # Credit Note

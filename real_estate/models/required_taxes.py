@@ -101,7 +101,7 @@ class OtherCharges(models.Model):
     _description = "Other Charges"
 
     amount = fields.Float()
-    product_id = fields.Many2one('product.product', required=True, default=lambda s: s.env.ref('real_estate.file_transfer').id)
+    product_id = fields.Many2one('product.product', required=True, default=lambda s: s.env.ref('real_estate.file_transfer').product_id.id)
 
     required_taxes_id = fields.Many2one('required.taxes')
 

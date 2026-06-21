@@ -127,7 +127,7 @@ class AccountPaymentExt(models.Model):
 					rec.invoice_id.file_ids.payment_states = 'open'
 				if rec.invoice_id.file_ids.payment_type == 'lump_sum':
 					rec.invoice_id.file_ids.overall_status = 'close'
-				if rec.invoice_id.transfer_application_id and rec.invoice_id.invoice_line_ids.product_id == self.env.ref('real_estate.file_transfer'):
+				if rec.invoice_id.transfer_application_id and rec.invoice_id.invoice_line_ids.product_id == self.env.ref('real_estate.file_transfer').product_id:
 					rec.invoice_id.transfer_application_id.payment_received = True
 				if rec.invoice_id.unit_swap_request_id and rec.invoice_id.amount_residual == 0.00:
 					rec.invoice_id.unit_swap_request_id.invoice_paid = True
@@ -148,11 +148,11 @@ class AccountPaymentExt(models.Model):
 
 					if installment.state != 'paid' and not installment.invoice_created and payment_amount > 0:
 						print("CREATING INVOICE AGAINST THIS %s FILE: " % (adv_pay.file_id))
+						_re = self.env.ref('real_estate.installment_product')
 						prod = [(0, 0, {
-							'product_id': self.env.ref('real_estate.installment_product').id,
-							'name': self.env.ref('real_estate.installment_product').name,
-							'account_id': self.env.ref(
-								'real_estate.installment_product').property_account_income_id.id,
+							'product_id': _re.product_id.id,
+							'name': _re.name,
+							'account_id': _re.product_id.property_account_income_id.id,
 							'price_unit': installment.amount,
 						})]
 

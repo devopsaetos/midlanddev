@@ -12,13 +12,13 @@
     'author': "Wahab Ali Malik || Syed Hamza || Mudassir Ali Zaidi || Axiom Team",
     'website': "https://www.axiomworld.net",
     'category': 'Sales/Real Estate',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'license': 'OEEL-1',
+    'pre_init_hook': 'pre_init_hook',
 
     'depends': [
         'base',
         'crm',
-        'product',
         'default_payment',
     ],
 
@@ -36,6 +36,7 @@
         'views/templates.xml',
         'views/account_invoice_ext.xml',
         'views/product_product_ext.xml',
+        'views/product_realestate.xml',
         'views/ir_sequence.xml',
         'views/kin.xml',
         'views/cnic.xml',

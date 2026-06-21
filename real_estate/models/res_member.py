@@ -50,6 +50,8 @@ class ResMember(models.Model):
     token_id = fields.Many2one('token.money')
     no_of_invoices = fields.Integer(compute='_compute_no_of_invoices')
     no_of_files = fields.Integer(compute='_compute_no_of_files')
+    no_of_realestate_files = fields.Integer(compute='_compute_no_of_realestate_files')
+    no_of_project_files = fields.Integer(compute='_compute_no_of_project_files')
     tracking_id = fields.Char(compute='_compute_tracking_id', search="_search_tracking_id")
     token_generated = fields.Boolean(related='token_id.token_generated', readonly=True)
 
@@ -153,6 +155,10 @@ class ResMember(models.Model):
     dob = fields.Date('Date of Birth ')
 
     file_line_ids = fields.One2many('file', 'membership_id', string='File Lines', ondelete='restrict')
+    realestate_file_line_ids = fields.One2many('file', 'membership_id', string='Real Estate Files',
+        domain=[('project_type', 'in', ['housing_society', False])])
+    project_file_line_ids = fields.One2many('file', 'membership_id', string='Project Files',
+        domain=[('project_type', '=', 'skyscraper')])
     authorised_representative_ids = fields.One2many('authorised.representative', 'member_id', ondelete='cascade')
     authorized_user_ids = fields.One2many('partner.authorized.user', 'member_id', ondelete='cascade')
 
@@ -701,6 +707,54 @@ class ResMember(models.Model):
     def _compute_no_of_files(self):
         for rec in self:
             rec.no_of_files = len(self.env['file'].search([('membership_id', '=', rec.id)]))
+
+    def _compute_no_of_realestate_files(self):
+        for rec in self:
+            rec.no_of_realestate_files = self.env['file'].search_count([
+                ('membership_id', '=', rec.id),
+                ('project_type', 'in', ['housing_society', False]),
+            ])
+
+    def _compute_no_of_project_files(self):
+        for rec in self:
+            rec.no_of_project_files = self.env['file'].search_count([
+                ('membership_id', '=', rec.id),
+                ('project_type', '=', 'skyscraper'),
+            ])
+
+    def open_realestate_files(self):
+        tree_view = (self.env.ref('real_estate.file_tree').id, 'list')
+        form_view = (self.env.ref('real_estate.file_form').id, 'form')
+        return {
+            'type': 'ir.actions.act_window',
+            'views': [tree_view, form_view],
+            'view_mode': 'list,form',
+            'name': _('Real Estate Files'),
+            'res_model': 'file',
+            'domain': [('membership_id', '=', self.id), ('project_type', 'in', ['housing_society', False])],
+            'context': {
+                'default_membership_id': self.id,
+                'default_project_type': 'housing_society',
+                'current_view': 'realestate',
+            },
+        }
+
+    def open_project_files(self):
+        tree_view = (self.env.ref('land_development.file_tree').id, 'list')
+        form_view = (self.env.ref('land_development.file_form').id, 'form')
+        return {
+            'type': 'ir.actions.act_window',
+            'views': [tree_view, form_view],
+            'view_mode': 'list,form',
+            'name': _('Project Files'),
+            'res_model': 'file',
+            'domain': [('membership_id', '=', self.id), ('project_type', '=', 'skyscraper')],
+            'context': {
+                'default_membership_id': self.id,
+                'default_project_type': 'skyscraper',
+                'current_view': 'building',
+            },
+        }
 
     @api.constrains('cnic', 'email', 'mobile', 'vat')
     def _check_something(self):

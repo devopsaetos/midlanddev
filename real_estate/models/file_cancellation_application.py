@@ -131,7 +131,7 @@ class FileCancelApplication(models.Model):
                         'ref': f"{rec.name} - {rec.file_id.name}",
                         'type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
-                            'product_id': rec.env.ref('real_estate.refund_product').id,
+                            'product_id': rec.env.ref('real_estate.refund_product').product_id.id,
                             'name': f"Adjustment Amount For File {rec.file_id.name}",
                             'quantity': 1,
                             'price_unit': installment_paid_amount,
@@ -158,7 +158,7 @@ class FileCancelApplication(models.Model):
                             'ref': f"{rec.name} - {rec.file_id.name}",
                             'type': 'out_refund',
                             'invoice_line_ids': [(0, 0, {
-                                'product_id': rec.env.ref('real_estate.refund_product').id,
+                                'product_id': rec.env.ref('real_estate.refund_product').product_id.id,
                                 'name': f"Booking Adjustment Amount For File {rec.file_id.name}",
                                 'quantity': 1,
                                 'price_unit': net_booking_amount,
@@ -233,7 +233,7 @@ class FileCancelApplication(models.Model):
                         'ref': f"{rec.name} - {rec.file_id.name}",
                         'type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
-                            'product_id': rec.env.ref('real_estate.refund_product').id,
+                            'product_id': rec.env.ref('real_estate.refund_product').product_id.id,
                             'name': f"Adjustment Amount For File {rec.file_id.name}",
                             'quantity': 1,
                             'price_unit': installment_paid_amount,

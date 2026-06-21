@@ -436,9 +436,8 @@ class ProposeInstallmentPlan(models.Model):
         ('balloon','Balloon'),
         ('final','Final Payment'),
     ], default='installment')
-    product_id = fields.Many2one('product.product',
+    product_id = fields.Many2one('product.realestate', ondelete='set null',
                                  default=lambda self: self.env.ref('real_estate.installment_product').id,
-                                 domain="[('is_include_property_system','=', True)]"
                                  )
     date = fields.Date(required=True)
     percentage = fields.Float(digits=(2, 6))

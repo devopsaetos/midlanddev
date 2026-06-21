@@ -4,6 +4,7 @@ from . import res_config_settings
 from . import account_invoice_ext
 from . import crm_lead_ext
 from . import product_product_ext
+from . import product_realestate
 from . import res_country_code
 from . import correspondence
 from . import kin

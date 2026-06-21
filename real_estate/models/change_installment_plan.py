@@ -196,7 +196,7 @@ class AddProductLine(models.TransientModel):
     _name = 'add.product.line'
     _description = "Add Product Line"
 
-    product_id = fields.Many2one('product.product', required=True, domain="[('is_include_property_system','=', True)]")
+    product_id = fields.Many2one('product.realestate', required=True, ondelete='cascade')
     payment_type = fields.Selection([
         ('fix', 'Fix'),
         ('percentage', 'Percentage')

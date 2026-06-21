@@ -394,7 +394,7 @@
                                             <page name="installment_plan" string="Installment Plan"
                                                   invisible="create_manually == True">
                                                 <field name="installment_plan_ids">
-                                                    <list editable="bottom" decoration-info="invoice_created == True">
+                                                    <list editable="bottom" decoration-info="invoice_created == True" limit="0">
                                                         <field name="installment_number" string="Sr. No"/>
                                                         <field name="file_type" invisible="1"/>
                                                         <field name="double_check_paid_amount" invisible="1"/>

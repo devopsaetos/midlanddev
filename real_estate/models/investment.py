@@ -310,9 +310,9 @@ class Investment(models.Model):
             raise ValidationError(_('Create Installment Plan first.'))
         if self.total_amount:
             prod = [(0, 0, {
-                'product_id': self.env.ref('real_estate.investment').id,
+                'product_id': self.env.ref('real_estate.investment').product_id.id,
                 'name': self.env.ref('real_estate.investment').name,
-                'account_id': self.env.ref('real_estate.investment').property_account_income_id.id,
+                'account_id': self.env.ref('real_estate.investment').product_id.property_account_income_id.id,
                 'price_unit': self.down_payment
             })]
             invoice = self.env['account.move'].create({
@@ -819,10 +819,10 @@ class Investment(models.Model):
                     if installment.date <= date and not installment.invoice_created:
                         try:
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.investment_installment').id,
+                                'product_id': self.env.ref('real_estate.investment_installment').product_id.id,
                                 'name': self.env.ref('real_estate.investment_installment').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.investment_installment').property_account_income_id.id,
+                                    'real_estate.investment_installment').product_id.property_account_income_id.id,
                                 'price_unit': installment.balance_amount
                             })]
 

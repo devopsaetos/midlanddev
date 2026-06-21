@@ -143,7 +143,7 @@ class PlotMergerApplication(models.Model):
                     (0, 0, {
                         'name': 'Processing Fee',
                         'partner_id': self.membership_id.partner_id.id,
-                        'account_id': self.env.ref('real_estate.file_transfer').property_account_income_id.id,
+                        'account_id': self.env.ref('real_estate.file_transfer').product_id.property_account_income_id.id,
                         'credit': self.merger_fee,
                     }),
                     (0, 0, {
@@ -196,61 +196,61 @@ class PlotMergerApplication(models.Model):
                                             for member in line.file_id.membership_id.cnic_line_ids:
                                                 if installment.installment_type == 'final':
                                                     prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.final_product').id,
+                                                        'product_id': self.env.ref('real_estate.final_product').product_id.id,
                                                         'name': member.member_name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.final_product').property_account_income_id.id,
+                                                            'real_estate.final_product').product_id.property_account_income_id.id,
                                                         'price_unit': (installment.amount * member.ownership) / 100,
                                                         # 'tax_ids': tax_ids,
                                                     }))
                                                 elif installment.installment_type == 'installment':
                                                     prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.installment_product').id,
+                                                        'product_id': self.env.ref('real_estate.installment_product').product_id.id,
                                                         'name': member.member_name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.installment_product').property_account_income_id.id,
+                                                            'real_estate.installment_product').product_id.property_account_income_id.id,
                                                         'price_unit': (installment.amount * member.ownership) / 100,
                                                         #                                                         'tax_ids': tax_ids,
                                                     }))
                                                 elif installment.installment_type == 'balloon':
                                                     prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloon_payment').id,
+                                                        'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
                                                         'name': member.member_name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.balloon_payment').property_account_income_id.id,
+                                                            'real_estate.balloon_payment').product_id.property_account_income_id.id,
                                                         'price_unit': (installment.amount * member.ownership) / 100
                                                     }))
                                                 elif installment.installment_type == 'possession_amount':
                                                     prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.possession_amount_product').id,
+                                                        'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
                                                         'name': self.env.ref('real_estate.possession_amount_product').name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.possession_amount_product').property_account_income_id.id,
+                                                            'real_estate.possession_amount_product').product_id.property_account_income_id.id,
                                                         'price_unit': installment.amount
                                                     })]
                                                 elif installment.installment_type == 'confirmation_amount':
                                                     prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
+                                                        'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
                                                         'name': self.env.ref('real_estate.confirmation_amount_product').name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.confirmation_amount_product').property_account_income_id.id,
+                                                            'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
                                                         'price_unit': installment.amount
                                                     })]
                                                 elif installment.installment_type == 'balloting_amount':
                                                     prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloting_product').id,
+                                                        'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
                                                         'name': self.env.ref('real_estate.balloting_product').name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.balloting_product').property_account_income_id.id,
+                                                            'real_estate.balloting_product').product_id.property_account_income_id.id,
                                                         'price_unit': installment.amount
                                                     })]
                                         else:
                                             if installment.installment_type == 'final':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.final_product').id,
+                                                    'product_id': self.env.ref('real_estate.final_product').product_id.id,
                                                     'name': self.env.ref('real_estate.final_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.final_product').property_account_income_id.id,
+                                                        'real_estate.final_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount,
@@ -258,47 +258,47 @@ class PlotMergerApplication(models.Model):
                                                 })]
                                             elif installment.installment_type == 'installment':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.installment_product').id,
+                                                    'product_id': self.env.ref('real_estate.installment_product').product_id.id,
                                                     'name': self.env.ref('real_estate.installment_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.installment_product').property_account_income_id.id,
+                                                        'real_estate.installment_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount,
                                                     #                                                     'tax_ids': tax_ids,
                                                 })]
                                             elif installment.installment_type == 'balloon':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloon_payment').id,
+                                                    'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
                                                     'name': self.env.ref('real_estate.balloon_payment').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.balloon_payment').property_account_income_id.id,
+                                                        'real_estate.balloon_payment').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]
                                             elif installment.installment_type == 'possession_amount':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.possession_amount_product').id,
+                                                    'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
                                                     'name': self.env.ref('real_estate.possession_amount_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.possession_amount_product').property_account_income_id.id,
+                                                        'real_estate.possession_amount_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]
                                             elif installment.installment_type == 'confirmation_amount':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
+                                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
                                                     'name': self.env.ref('real_estate.confirmation_amount_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.confirmation_amount_product').property_account_income_id.id,
+                                                        'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]
                                             elif installment.installment_type == 'balloting_amount':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloting_product').id,
+                                                    'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
                                                     'name': self.env.ref('real_estate.balloting_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.balloting_product').property_account_income_id.id,
+                                                        'real_estate.balloting_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]
@@ -411,108 +411,108 @@ class PlotMergerApplication(models.Model):
                                             for member in line.file_id.membership_id.cnic_line_ids:
                                                 if installment.installment_type == 'final':
                                                     prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.final_product').id,
+                                                        'product_id': self.env.ref('real_estate.final_product').product_id.id,
                                                         'name': member.member_name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.final_product').property_account_income_id.id,
+                                                            'real_estate.final_product').product_id.property_account_income_id.id,
                                                         'price_unit': (installment.amount * member.ownership) / 100,
                                                         #                                                         'tax_ids': tax_ids,
                                                     }))
                                                 elif installment.installment_type == 'installment':
                                                     prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.installment_product').id,
+                                                        'product_id': self.env.ref('real_estate.installment_product').product_id.id,
                                                         'name': member.member_name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.installment_product').property_account_income_id.id,
+                                                            'real_estate.installment_product').product_id.property_account_income_id.id,
                                                         'price_unit': (installment.amount * member.ownership) / 100,
                                                         #                                                         'tax_ids': tax_ids,
                                                     }))
                                                 elif installment.installment_type == 'balloon':
                                                     prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloon_payment').id,
+                                                        'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
                                                         'name': member.member_name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.balloon_payment').property_account_income_id.id,
+                                                            'real_estate.balloon_payment').product_id.property_account_income_id.id,
                                                         'price_unit': (installment.amount * member.ownership) / 100
                                                     }))
                                                 elif installment.installment_type == 'possession_amount':
                                                     prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.possession_amount_product').id,
+                                                        'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
                                                         'name': self.env.ref('real_estate.possession_amount_product').name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.possession_amount_product').property_account_income_id.id,
+                                                            'real_estate.possession_amount_product').product_id.property_account_income_id.id,
                                                         'price_unit': installment.amount
                                                     })]
                                                 elif installment.installment_type == 'confirmation_amount':
                                                     prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
+                                                        'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
                                                         'name': self.env.ref('real_estate.confirmation_amount_product').name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.confirmation_amount_product').property_account_income_id.id,
+                                                            'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
                                                         'price_unit': installment.amount
                                                     })]
                                                 elif installment.installment_type == 'balloting_amount':
                                                     prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloting_product').id,
+                                                        'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
                                                         'name': self.env.ref('real_estate.balloting_product').name,
                                                         'account_id': self.env.ref(
-                                                            'real_estate.balloting_product').property_account_income_id.id,
+                                                            'real_estate.balloting_product').product_id.property_account_income_id.id,
                                                         'price_unit': installment.amount
                                                     })]
                                         else:
                                             if installment.installment_type == 'final':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.final_product').id,
+                                                    'product_id': self.env.ref('real_estate.final_product').product_id.id,
                                                     'name': self.env.ref('real_estate.final_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.final_product').property_account_income_id.id,
+                                                        'real_estate.final_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount,
                                                     #                                                     'tax_ids': tax_ids,
                                                 })]
                                             elif installment.installment_type == 'installment':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.installment_product').id,
+                                                    'product_id': self.env.ref('real_estate.installment_product').product_id.id,
                                                     'name': self.env.ref('real_estate.installment_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.installment_product').property_account_income_id.id,
+                                                        'real_estate.installment_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount,
                                                     #                                                     'tax_ids': tax_ids,
                                                 })]
                                             elif installment.installment_type == 'balloon':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloon_payment').id,
+                                                    'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
                                                     'name': self.env.ref('real_estate.balloon_payment').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.balloon_payment').property_account_income_id.id,
+                                                        'real_estate.balloon_payment').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount,
                                                 })]
                                             elif installment.installment_type == 'possession_amount':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.possession_amount_product').id,
+                                                    'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
                                                     'name': self.env.ref('real_estate.possession_amount_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.possession_amount_product').property_account_income_id.id,
+                                                        'real_estate.possession_amount_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]
                                             elif installment.installment_type == 'confirmation_amount':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
+                                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
                                                     'name': self.env.ref('real_estate.confirmation_amount_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.confirmation_amount_product').property_account_income_id.id,
+                                                        'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]
                                             elif installment.installment_type == 'balloting_amount':
                                                 prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloting_product').id,
+                                                    'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
                                                     'name': self.env.ref('real_estate.balloting_product').name,
                                                     'account_id': self.env.ref(
-                                                        'real_estate.balloting_product').property_account_income_id.id,
+                                                        'real_estate.balloting_product').product_id.property_account_income_id.id,
                                                     'price_unit': installment.amount,
                                                     # 'price_unit': installment.amount
                                                 })]

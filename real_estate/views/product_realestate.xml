@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="real_estate.product_realestate_list">
+        <field name="name">product.realestate.list</field>
+        <field name="model">product.realestate</field>
+        <field name="arch" type="xml">
+            <list string="Real Estate Products">
+                <field name="name"/>
+                <field name="type"/>
+                <field name="is_include_net_amount"/>
+                <field name="is_include_property_system"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="real_estate.product_realestate_form">
+        <field name="name">product.realestate.form</field>
+        <field name="model">product.realestate</field>
+        <field name="arch" type="xml">
+            <form string="Real Estate Product">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="type"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="is_include_net_amount"/>
+                            <field name="is_include_property_system"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="real_estate.action_product_realestate">
+        <field name="name">Real Estate Products</field>
+        <field name="res_model">product.realestate</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="real_estate.menu_product_realestate"
+        name="Real Estate Products"
+        parent="real_estate.menu_configuration"
+        action="real_estate.action_product_realestate"
+        sequence="90"
+    />
+</odoo>

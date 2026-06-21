@@ -70,11 +70,11 @@ class AmountAdjust(models.TransientModel):
         for file in self.application_id.target_merger_id:
             
             if file.ajustment_priority == 'installment':
-                priority_product = self.env.ref('real_estate.installment_product')
+                priority_product = self.env.ref('real_estate.installment_product').product_id
             elif file.ajustment_priority == 'balloting':
-                priority_product = self.env.ref('real_estate.balloting_product')
+                priority_product = self.env.ref('real_estate.balloting_product').product_id
             elif file.ajustment_priority == 'preference':
-                priority_product = self.env.ref('real_estate.preferences_product')
+                priority_product = self.env.ref('real_estate.preferences_product').product_id
             elif file.ajustment_priority == 'file':
                 priority_product = 'file'
 
