@@ -49,7 +49,7 @@
                                 name="image_1920"
                                 widget='image'
                                 class="oe_avatar"
-                                style="width:100px; height:100px"
+                                style="width:120px; height:120px"
                         />
                         <div class="oe_title">
                             <h1>
