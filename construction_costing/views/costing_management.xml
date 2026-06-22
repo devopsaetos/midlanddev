@@ -191,6 +191,7 @@
     <!-- ─── Menus ─────────────────────────────────────────────────── -->
     <menuitem id="menu_construction_root"
               name="Construction"
+              web_icon="construction_costing,static/description/icon_construction.png"
               sequence="50"/>
 
     <menuitem id="menu_construction_cost_sheets"

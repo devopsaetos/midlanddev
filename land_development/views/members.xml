@@ -31,7 +31,7 @@
                                     class="oe_stat_button"
                                     icon="fa-building-o"
                             >
-                                <field name="no_of_project_files" string="Project" widget="statinfo"/>
+                                <field name="no_of_project_files" string="Building" widget="statinfo"/>
                             </button>
                             <button
                                     name="toggle_active"

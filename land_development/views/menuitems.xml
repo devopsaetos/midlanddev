@@ -3,7 +3,7 @@
 
   <!-- Main Menuitem -->
     <menuitem 
-        name="Project"
+        name="Building"
         id="land_development.menu_root"
         web_icon="land_development,static/description/building.png"
         sequence='2'

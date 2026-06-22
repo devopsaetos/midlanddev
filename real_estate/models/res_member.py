@@ -157,7 +157,7 @@ class ResMember(models.Model):
     file_line_ids = fields.One2many('file', 'membership_id', string='File Lines', ondelete='restrict')
     realestate_file_line_ids = fields.One2many('file', 'membership_id', string='Real Estate Files',
         domain=[('project_type', 'in', ['housing_society', False])])
-    project_file_line_ids = fields.One2many('file', 'membership_id', string='Project Files',
+    project_file_line_ids = fields.One2many('file', 'membership_id', string='Building Files',
         domain=[('project_type', '=', 'skyscraper')])
     authorised_representative_ids = fields.One2many('authorised.representative', 'member_id', ondelete='cascade')
     authorized_user_ids = fields.One2many('partner.authorized.user', 'member_id', ondelete='cascade')
@@ -746,7 +746,7 @@ class ResMember(models.Model):
             'type': 'ir.actions.act_window',
             'views': [tree_view, form_view],
             'view_mode': 'list,form',
-            'name': _('Project Files'),
+            'name': _('Building Files'),
             'res_model': 'file',
             'domain': [('membership_id', '=', self.id), ('project_type', '=', 'skyscraper')],
             'context': {

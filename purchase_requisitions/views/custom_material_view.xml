@@ -278,8 +278,8 @@
 
 
 <!--        Material Purchase Requisitions Menus-->
-        <menuitem id="menu_requisition" name="Purchase Requisitions"
-                  web_icon="purchase_requisitions,static/description/icon.png"/>
+        <menuitem id="menu_requisition" name="Requisitions"
+                  web_icon="purchase_requisitions,static/description/icon_requ.png"/>
 
         <menuitem id="menu_purchase_requisition"
                   name="Purchase Requisition"
