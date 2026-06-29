@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Create file.installment.payment records for existing confirmed midland payments -->
+    <function model="midland.payment" name="_migrate_create_missing_installment_records"/>
+</odoo>

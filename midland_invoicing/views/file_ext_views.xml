@@ -25,12 +25,23 @@
                         string="Generate Invoices"
                         type="object"
                         class="oe_highlight"
-                        invisible="file_status not in ('draft', 'lock')"/>
+                        invisible="file_status not in ('draft', 'lock') or midland_invoice_count &gt; 0"/>
             </field>
 
         </field>
     </record>
 
+    <!-- Add midland_invoice_ref column to Installment Payments list -->
+    <record id="file_payments_midland_ext" model="ir.ui.view">
+        <field name="name">file.payments.midland.ext</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="real_estate.file_payments_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_id']" position="after">
+                <field name="midland_invoice_ref" optional="show"/>
+            </xpath>
+        </field>
+    </record>
 
     <!-- Inherit building file form: same smart button + Generate Invoices button -->
     <record id="building_file_form_midland_invoice_ext" model="ir.ui.view">
@@ -56,7 +67,7 @@
                         string="Generate Invoices"
                         type="object"
                         class="oe_highlight"
-                        invisible="file_status not in ('draft', 'lock')"/>
+                        invisible="file_status not in ('draft', 'lock') or midland_invoice_count &gt; 0"/>
             </field>
 
         </field>

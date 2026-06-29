@@ -474,7 +474,8 @@
                                         <field name="invoice_date"/>
                                         <field name="invoice_amount"/>
                                         <field name="payment_date"/>
-                                        <field name="payment_id"/>
+                                        <field name="payment_id" optional="show"/>
+                                        <field name="midland_payment_ref" optional="show"/>
                                         <field name="payment_amount" sum="Amount"/>
                                         <field name="property_invoice_type"/>
                                         <field name="payment_amount_residual" string="Available Amount"

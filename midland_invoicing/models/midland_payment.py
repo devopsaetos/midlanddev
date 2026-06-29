@@ -167,6 +167,7 @@ class MidlandPayment(models.Model):
                 rec._confirm_no_entry(partner, debit_account)
 
             rec.state = 'confirmed'
+            rec._create_installment_payment_records()
 
     # ── Mode: true — Dr Bank / Cr Receivable + reconcile ─────────────────────
 
@@ -402,6 +403,7 @@ class MidlandPayment(models.Model):
                     new_paid = max(0.0, inv.amount_paid - line.payment_amount_paid)
                     new_state = 'not_paid' if new_paid <= 0 else 'partial'
                     inv.write({'amount_paid': new_paid, 'payment_state': new_state})
+            rec._delete_installment_payment_records()
             rec.state = 'cancelled'
 
     def action_reset_to_draft(self):
@@ -410,7 +412,62 @@ class MidlandPayment(models.Model):
                 raise ValidationError(
                     _('Cannot reset to draft: journal entry %s is posted.') % rec.jv_id.name
                 )
+            rec._delete_installment_payment_records()
             rec.write({'state': 'draft', 'jv_id': False})
+
+    @api.model
+    def _migrate_create_missing_installment_records(self):
+        confirmed = self.search([('state', '=', 'confirmed'), ('file_id', '!=', False)])
+        FIP = self.env['file.installment.payment']
+        for payment in confirmed:
+            existing = FIP.search([('midland_payment_line_id.payment_id', '=', payment.id)])
+            if existing:
+                # Update empty fields on already-created records
+                for fip in existing:
+                    mpl = fip.midland_payment_line_id
+                    inv = mpl.invoice_id if mpl else False
+                    vals = {}
+                    if not fip.invoice_date and inv and inv.invoice_date:
+                        vals['invoice_date'] = inv.invoice_date
+                    if not fip.payment_date and payment.date:
+                        vals['payment_date'] = payment.date
+                    if not fip.property_invoice_type and inv and inv.property_invoice_type:
+                        vals['property_invoice_type'] = inv.property_invoice_type
+                    if not fip.midland_invoice_ref and inv and inv.name:
+                        vals['midland_invoice_ref'] = inv.name
+                    if vals:
+                        fip.write(vals)
+            else:
+                payment._create_installment_payment_records()
+
+    def _create_installment_payment_records(self):
+        rec = self
+        if not rec.file_id:
+            return
+        FIP = self.env['file.installment.payment']
+        for line in rec.invoice_line_ids:
+            inv = line.invoice_id
+            if not inv:
+                continue
+            FIP.create({
+                'midland_payment_line_id': line.id,
+                'name': rec.name,
+                'invoice_amount': inv.amount_total,
+                'invoice_residual': inv.amount_residual,
+                'payment_amount': line.payment_amount_paid or line.payment_amount,
+                'file_id': rec.file_id.id,
+                'invoice_date': inv.invoice_date,
+                'payment_date': rec.date,
+                'property_invoice_type': inv.property_invoice_type,
+                'midland_invoice_ref': inv.name,
+            })
+
+    def _delete_installment_payment_records(self):
+        rec = self
+        fip = self.env['file.installment.payment'].search(
+            [('midland_payment_line_id.payment_id', '=', rec.id)]
+        )
+        fip.unlink()
 
     def action_view_jv(self):
         self.ensure_one()
@@ -457,9 +514,11 @@ class MidlandPaymentLine(models.Model):
         required=True, ondelete='cascade', index=True,
     )
     invoice_id = fields.Many2one('midland.invoice', string='Invoice', required=True)
+    file_id = fields.Many2one('file', related='payment_id.file_id', store=True, index=True, string='File')
 
     number = fields.Char(related='invoice_id.name', string='Number', store=True)
     invoice_date = fields.Date(related='invoice_id.invoice_date', store=True)
+    payment_date = fields.Date(related='payment_id.date', store=True, string='Payment Date')
     currency_id = fields.Many2one(related='invoice_id.currency_id', store=True)
     due_date = fields.Date(string='Due Date')
     total = fields.Monetary(

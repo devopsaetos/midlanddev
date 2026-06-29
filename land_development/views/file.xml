@@ -531,7 +531,8 @@
                                     <field name="file_payment_view_ids" readonly="1" nolabel="1">
                                         <list string="Payments">
                                             <field name="payment_date"/>
-                                            <field name="payment_id"/>
+                                            <field name="payment_id" optional="show"/>
+                                            <field name="midland_payment_ref" optional="show"/>
                                             <field name="move_id" string="Invoice"/>
                                             <field name="payment_amount" string="Amount" sum="Amount"/>
                                             <field name="payment_amount_residual" string="Available Amount"
