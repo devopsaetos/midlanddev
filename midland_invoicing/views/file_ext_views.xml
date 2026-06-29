@@ -37,7 +37,7 @@
         <field name="model">file</field>
         <field name="inherit_id" ref="real_estate.file_payments_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='invoice_id']" position="after">
+            <xpath expr="//field[@name='installment_payments']//field[@name='invoice_id']" position="after">
                 <field name="midland_invoice_ref" optional="show"/>
             </xpath>
         </field>
