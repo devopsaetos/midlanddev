@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.dealer_category_view_form1" model="ir.ui.view">
+            <field name="name">unit_booking dealer_category_view_form</field>
+            <field name="model">dealer.category</field>
+            <field name="arch" type="xml">
+                <form create="false" delete="false">
+                    <header>
+                        <button name="approve_category"
+                                string="Approve"
+                                type="object"
+                                 invisible="state != 'draft'"
+                                class="btn-primary"/>
+                        <field name="state" widget="statusbar" invisible="0"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" required="1"
+                                       placeholder="Category"
+                                       readonly="state != 'draft'"
+                                />
+                            </h1>
+                        </div>
+                        <group string="Fee">
+                            <group>
+                                <field name="registration_fee"
+                                       required="1"
+                                       readonly="state != 'draft'"
+                                />
+                            </group>
+                            <group>
+                                <field name="security_fee"
+                                       required="1"
+                                       readonly="state != 'draft'"
+                                />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.dealer_category_view_tree" model="ir.ui.view">
+            <field name="name">unit_booking dealer_category_view_tree</field>
+            <field name="model">dealer.category</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="name" readonly="1"/>
+                    <field name="registration_fee"/>
+                    <field name="security_fee"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_dealer_category">
+            <field name="name">Dealer Category</field>
+            <field name="res_model">dealer.category</field>
+            <field name="view_mode">list,form</field>
+        </record>
+        <menuitem
+                id="unit_booking.dealer_category_menu"
+                name="Dealer Category"
+                parent="unit_booking.agent_menu_root"
+                action="unit_booking.action_dealer_category"
+                sequence='3'
+        />
+    </data>
+</odoo>

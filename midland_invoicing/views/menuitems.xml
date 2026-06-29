@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_midland_invoicing_root"
+              name="Midland Invoicing"
+              sequence="50"/>
+
+    <menuitem id="menu_midland_invoicing_invoices"
+              name="Customer Invoices"
+              parent="menu_midland_invoicing_root"
+              action="action_midland_invoice"
+              sequence="10"/>
+
+    <menuitem id="menu_midland_invoicing_payments"
+              name="Payments"
+              parent="menu_midland_invoicing_root"
+              action="action_midland_payment"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.booking_allotment_view_form1" model="ir.ui.view">
+            <field name="name">unit_booking booking_allotment_view_form</field>
+            <field name="model">unit.booking.allotment</field>
+            <field name="arch" type="xml">
+                <form create="false" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button class='btn btn-primary'
+                                name="generate_invoice"
+                                type="object"
+                                string="Generate Invoice"
+                                invisible="state != 'draft'"
+                        />
+                        <button class='btn btn-primary'
+                                name="calculate_rebate"
+                                type="object"
+                                string="Calculate Rebate"
+                                invisible="state != 'draft'"
+                        />
+
+                        <button class='btn btn-primary'
+                                name="close_deal"
+                                type="object"
+                                string="Close"
+                                invisible="state in ['closed','cancel']"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="view_open_file"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Files : "
+                                    invisible="state != 'invoice'"
+                                    icon="fa-file-text-o"
+                            >
+                                <field name="no_of_files"/>
+                            </button>
+                            <button
+                                    name="view_issued_file_to_customer"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Processed : "
+                                    icon="fa-file-text-o"
+                                    invisible="state != 'invoice'"
+                                    groups="unit_booking.group_can_do_scanning"
+                            >
+                                <field name="no_of_issued_files"/>
+                            </button>
+                            <button
+                                    name="open_file_allotment"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Scanning"
+                                    icon="fa-folder-open-o"
+                                    invisible="state != 'draft'"
+                                    groups="unit_booking.group_can_do_scanning"
+                            >
+                            </button>
+                            <button
+                                    name="open_file_issuance_to_agent"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="File Issuance"
+                                    icon="fa-folder-open-o"
+                                    invisible="state != 'invoice'"
+                            >
+                            </button>
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Invoices :  "
+                                    icon="fa-pencil-square-o"
+                                    invisible="not no_of_invoices">
+                                <field name="no_of_invoices" invisible="not no_of_invoices"/>
+                            </button>
+                        </div>
+                        <widget name="web_ribbon" text="Sub-Dealer Allotment" bg_color="bg-info"
+                                invisible="state == 'draft' or not issue_to_subagent"/>
+                        <widget name="web_ribbon" text="Dealer Allotment" bg_color="bg-success"
+                                invisible="state == 'draft' or issue_to_subagent"/>
+
+                        <div class="oe_title" readonly="1">
+                            <h1>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group string="Allotment Detail">
+                            <group>
+                                <field name="issue_to_subagent"
+                                       string="Issue To Sub-Dealer?"
+                                       invisible="state != 'draft'"
+                                       widget="boolean_toggle"/>
+
+                                <field name="partner_id" string="Allotted To" required="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       force_save="1"
+                                       domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','main_agent')]"
+                                       readonly="state != 'draft'"/>
+                                <!--                            <label for="grace_period"/>-->
+                                <!--                            <div class="o_row">-->
+                                <!--                                <field name="grace_period" readonly="state != 'draft'"/>-->
+                                <!--                                <span>Months</span>-->
+                                <!--                            </div>-->
+                                <field name="partner_subagent_id" string="Sub Dealer" invisible="1"/>
+                                <field name="main_dealer" string="Main Dealer" force_save="1"
+                                       readonly="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="not issue_to_subagent"/>
+                                <field name="unit_batch_id"
+                                       required="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="predefine_plan_id"
+                                       string="Plan Name"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="not predefine_plan_id" readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="interval_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="total_installment"
+                                       required="balance_amount != 0"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="remaining_installments" invisible="1"/>
+
+                                <field name="options" string="Investment Option" required="1"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+                                <!--                            <field name="reservation_type" required="1"-->
+                                <!--                                   readonly="state != 'draft'"/>-->
+
+                                <field name="deal_pack_id"
+                                       required="0"
+                                       readonly="state != 'draft' or unit_batch_id"
+                                       options="{'no_create': True}"/>
+
+                                <field name="launch_type"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="payment_states" readonly="1" force_save="1"/>
+
+                                <field name="no_of_units"/>
+                            </group>
+                            <group>
+                                <field name="unit_selection_option" string="Selection By"
+                                       readonly="state != 'draft'" required="1"/>
+
+                                <field name="booking_date" force_save="1"
+                                       readonly="state != 'draft' or unit_batch_id"
+                                       required="1"/>
+
+                                <field name="start_date" required="1"
+                                       readonly="state != 'draft' or unit_batch_id"
+                                       force_save="1"/>
+
+                                <field name="end_date" required="1" force_save="1"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="installment_starting_date" required="1" force_save="1"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="journal_id" string="Mode of Payment" options="{'no_create': True}"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="total_amount" string="Total Deal Amount" readonly="1" force_save="1"/>
+
+                                <field name="down_payment" readonly="1" force_save="1"/>
+
+                                <field name="balance_amount" readonly="1" force_save="1"/>
+
+                                <field name="balloting_amount" readonly="0" force_save="1" invisible="1"/>
+
+                                <field name="amount_paid" invisible="1"/>
+
+                                <field name="amount_received" invisible="1"/>
+
+                                <field name="generate_invoices_for_installment" invisible="1"/>
+
+                            </group>
+                        </group>
+                        <group string="Property Information">
+                            <group>
+                                <field name="society_id"
+                                       domain="[('project_type','=','housing_society'),('is_society','=',True)]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="sector_id"
+                                       string="Block"
+                                       domain="[('project_type','=','housing_society')]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="not phase_id" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="phase_id"
+                                       domain="[('project_type','=','housing_society'),('is_society','!=',True)]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or unit_batch_id"/>
+
+                                <field name="category_id"
+                                       domain="[('project_type','=','housing_society')]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="not phase_id" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Booking Files">
+                                <field name="unit_booking_allotment_line_ids"
+                                       readonly="state != 'draft'">
+                                    <list editable="bottom">
+                                        <field name="units_booking_id" options="{'no_open': True}"
+                                               force_save="1" readonly="1" string="File"/>
+                                        <field name="society_id" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="phase_id" force_save="1" readonly="1" options="{'no_open': True}"/>
+                                        <field name="sector_id" string="Block" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="category_id" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="unit_category_type_id" string="Product" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="price" force_save="1" readonly="1" options="{'no_open': True}"/>
+                                        <field name="batch_id" force_save="1" readonly="1" options="{'no_open': True}"/>
+                                        <field name="state"/>
+                                    </list>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="units_booking_id" options="{'no_open': True}"
+                                                           force_save="1" readonly="1" string="File"/>
+                                                    <field name="society_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="phase_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="sector_id" string="Block" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                </group>
+                                                <group>
+                                                    <field name="category_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="unit_category_type_id" string="Product" force_save="1"
+                                                           readonly="1" options="{'no_open': True}"/>
+                                                    <field name="price" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="batch_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="state"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                        <footer>
+                                            <button string="Discard" class="btn-default" special="cancel"/>
+                                        </footer>
+                                    </form>
+                                </field>
+                            </page>
+                            <page string="Installment Plan">
+                                <field name="installment_created" invisible='1'/>
+                                <button
+                                        name="create_installment_plan"
+                                        type="object"
+                                        string="Create Installment Plan"
+                                        class="oe_highlight"
+                                        invisible="installment_created or state != 'draft'"
+                                />
+                                <button
+                                        name="reset_installment_plan"
+                                        type="object"
+                                        string="Reset Installment Plan"
+                                        class="oe_highlight"
+                                        invisible="not installment_created or state != 'draft'"
+                                />
+                                <button
+                                        name="generate_invoice_for_plan"
+                                        type="object"
+                                        string="Generate Invoices"
+                                        class="oe_highlight"
+                                        invisible="not installment_created or generate_invoices_for_installment"
+                                />
+                                <field name="booking_plan_ids" readonly="1">
+                                    <list editable="bottom" decoration-info="invoice_created == True"
+                                          default_order="installment_number asc">
+                                        <field name="installment_number" string="Sr. No"/>
+                                        <field name="installment_type" invisible="1"/>
+                                        <field name="installment_name" invisible="0"/>
+                                        <field name="property_invoice_type" invisible="1"/>
+                                        <field name="date"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="file_adjusted_amount" string="File Adjusted" sum="Total"/>
+                                        <field name="adjustment_amount" string="Adjustment" sum="Total"/>
+                                        <field name="balance_amount" sum="Total"/>
+                                        <field name="invoice_id" invisible="1"/>
+                                        <field name="amount_paid" sum="Amount Paid" readonly="0"/>
+                                        <field name="payment_date" string="Payment date" readonly="0"/>
+                                        <field name="residual" sum="Remaining Amount" readonly="0"/>
+                                        <field name="invoice"/>
+                                        <field name="payment_status" string="Status"/>
+                                        <field name="state" string="Invoice Status" invisible="1"/>
+                                        <field name="invoice_created" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="History">
+                                <field name="booking_allotment_history_ids" readonly="1">
+                                    <list editable="bottom">
+                                        <field name="installment_number" string="Sr. No"/>
+                                        <field name="date" string="Change Date"/>
+                                        <field name="transaction_type"/>
+                                        <field name="file_id"/>
+                                        <field name="old_balance"/>
+                                        <field name="new_balance"/>
+                                        <field name="amount"/>
+                                        <field name="new_amount"/>
+                                        <field name="payment_received"/>
+                                        <field name="payment_date"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Swap History">
+                                <field name="unit_swap_history">
+                                    <list>
+                                        <field name="is_checked"/>
+                                        <field name="units_booking_id" force_save="1" string="File"/>
+                                        <field name="society_id"/>
+                                        <field name="phase_id"/>
+                                        <field name="sector_id" string="Block"/>
+                                        <field name="category_id"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="batch_id"/>
+                                        <field name="new_units_booking_id" string="New File"/>
+                                        <field name="unit_booking_allotment_id" invisible="1"/>
+                                        <field name="swap_request_id" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="rebate_calculation" string="Rebate">
+                                <sheet>
+                                    <group name="dealer_rebate" string="Rebate">
+                                        <group>
+                                            <field name="rebate_settlement" readonly="0" required="1"/>
+                                            <field name="settlement_date" readonly="0"/>
+                                            <field name="rebate_id"
+                                                   options="{'no_create': True, 'no_open': True}"/>
+                                        </group>
+                                        <group>
+                                            <field name="rebate_amount" force_save="1" readonly="1"/>
+                                            <field name="net_of_rebate" force_save="1" readonly="1"/>
+                                            <field name="separate_rebate" force_save="1" readonly="1"/>
+                                        </group>
+                                        <field name="rebate_on_allotment_ids">
+                                            <list editable="bottom">
+                                                <field name="sector_id" string="Block"
+                                                       options="{'no_create': True, 'no_open': True}" required="0"/>
+                                                <field name="category_id" options="{'no_create': True, 'no_open': True}"
+                                                       required="1"/>
+                                                <field name="settlement_option" required="1"/>
+                                                <field name="calculation_basis" required="1"/>
+                                                <field name="rate_calculation" required="1"/>
+                                                <field name="total_rebate" required="1"/>
+                                                <field name="rebate_at_deal" required="1"/>
+                                                <field name="rebate_at_sale"/>
+                                            </list>
+                                        </field>
+                                    </group>
+                                </sheet>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.booking_allotment_view_tree" model="ir.ui.view">
+            <field name="name">unit_booking booking_allotment_view_tree</field>
+            <field name="model">unit.booking.allotment</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="name"/>
+                    <field name="partner_id" string="Dealer"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id" string="Block"/>
+                    <field name="total_amount" string="Total Deal Amount"/>
+                    <field name="down_payment"/>
+                    <field name="balance_amount"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.booking_allotment_view_search">
+            <field name="name">unit_booking booking_allotment_view_search</field>
+            <field name="model">unit.booking.allotment</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_booking_allotment">
+            <field name="name">Deal</field>
+            <field name="res_model">unit.booking.allotment</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{
+                'search_default_group_by_batch_id': 1,
+                'current_view': 'realestate',
+                'default_project_type':'housing_society'}
+            </field>
+            <field name="domain">
+                [
+                ('project_type','=','housing_society')
+                ]
+            </field>
+        </record>
+
+        <menuitem
+                id="unit_booking.booking_allotment_menu11"
+                name="Deal"
+                parent="unit_booking.deal_management_root"
+                action="unit_booking.action_booking_allotment"
+                sequence='2'
+        />
+        <!--        Record Rules for Multi Company-->
+        <!--        Record Rule-->
+        <record id="unit_booking.deal_rule" model="ir.rule">
+            <field name="name">Deal multi-company</field>
+            <field name="model_id" ref="model_unit_booking_allotment"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.unit_booking_rule" model="ir.rule">
+            <field name="name">Units Booking multi-company</field>
+            <field name="model_id" ref="model_units_booking"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+    </data>
+</odoo>

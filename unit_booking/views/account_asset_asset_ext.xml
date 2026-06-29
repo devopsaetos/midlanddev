@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="unit_booking.account_asset_form_ext">
+            <field name="name">unit_booking account_asset_form_ext</field>
+            <field name="model">account.asset</field>
+            <field name="inherit_id" ref="account_asset.view_account_asset_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[1]/page[2]" position="after">
+                    <page name="asset_info" string="Asset Info">
+                        <group>
+                            <group>
+                                <field name="dealer_asset_allocation_id" force_save="1"
+                                       readonly="1"/>
+                                <field name="asset_status" force_save="1"
+                                       readonly="1"/>
+                                <field name="is_asset_issued" force_save="1"
+                                       readonly="1"/>
+                            </group>
+                            <group>
+
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+</odoo>

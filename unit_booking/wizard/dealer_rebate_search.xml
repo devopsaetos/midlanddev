@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.dealer_rebate_search_form1" model="ir.ui.view">
+            <field name="name">unit_booking dealer_rebate_search_form</field>
+            <field name="model">dealer.rebate.search</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <sheet>
+                        <group>
+                            <group>
+
+                                <field name="settlement_date"/>
+
+                            </group>
+                            <group>
+
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+
+                            </group>
+                            <group class="oe_subtotal_footer oe_right">
+                                <button
+                                        class='btn btn-primary'
+                                        name="run"
+                                        type="object"
+                                        string="Run"
+                                />
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Deals">
+                                <field name="search_line_ids">
+                                    <list create="false" editable="bottom">
+                                        <field name="select" string="Select" readonly="0" force_save="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="partner_id" options="{'no_open': True}"
+                                               readonly="1" force_save="1" string="Dealer"/>
+                                        <field name="allotment_id" options="{'no_open': True}"
+                                               readonly="1" force_save="1" string="Deal"/>
+                                        <field name="rebate_id" readonly="1" force_save="1"
+                                               options="{'no_open': True}" string="Rebate"/>
+                                        <field name="calculated_rebate" string="Calculated Rebate"
+                                               readonly="1" force_save="1"/>
+                                        <field name="rebate_given" string="Rebate Given"
+                                               readonly="0" force_save="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="approved_rebate" string="Done" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.dealer_rebate_search_action">
+            <field name="name">Run</field>
+            <field name="res_model">dealer.rebate.search</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+                id="unit_booking.dealer_rebate_search_menu"
+                name="Rebate Run"
+                parent="unit_booking.deal_management_root"
+                action="unit_booking.dealer_rebate_search_action"
+                sequence='2'
+        />
+    </data>
+</odoo>

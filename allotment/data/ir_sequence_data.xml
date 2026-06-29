@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequences for Allotment Request -->
+        <record id="seq_allotment_request" model="ir.sequence">
+            <field name="name">Allotment Request Sequence</field>
+            <field name="code">allotment.request.sequence</field>
+            <field name="prefix">ARS-</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequences for Allotment Request Batch -->
+        <record id="seq_allotment_request_cancellation" model="ir.sequence">
+            <field name="name">Allotment Batch Sequence</field>
+            <field name="code">allotment.batch.sequence</field>
+            <field name="prefix">ARB-</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequences for Print Queue -->
+        <record id="seq_print_queue" model="ir.sequence">
+            <field name="name">Print Queue Sequence</field>
+            <field name="code">print.queue</field>
+            <field name="prefix">PQ/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

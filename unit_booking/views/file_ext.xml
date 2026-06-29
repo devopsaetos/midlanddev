@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="unit_booking.file_ext_form">
+            <field name="name">unit_booking file_ext_form</field>
+            <field name="model">file</field>
+            <field name="inherit_id" ref="real_estate.file_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='file_detail']" position="after">
+                    <group string="Dealer Details"
+                           invisible="not booking_agent_id">
+                        <group>
+                            <field name="processed_by" force_save="1" readonly="1"/>
+
+                            <field name="booking_agent_id" invisible="not booking_agent_id"
+                                   force_save="1" readonly="1"
+                                   options="{'no_create': True}" string="Dealer"/>
+
+                            <field name="booking_sub_agent_id"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','sub_agent'),('unit_booking_agent_id','=',booking_agent_id)]"
+                                   invisible="not booking_sub_agent_id"
+                                   force_save="1" readonly="1"
+                                   options="{'no_create': True}" string="Sub Dealer"/>
+
+                            <field name="other_agent_id"
+                                   invisible="processed_by not in ['other_agent','other_sub_agent']"
+                                   force_save="1" readonly="1"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','main_agent')]"
+                                   options="{'no_create': True}" string="Other Dealer"/>
+                        </group>
+                        <group>
+
+                            <field name="other_sub_agent_id"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','sub_agent'),('unit_booking_agent_id','=',other_agent_id)]"
+                                   invisible="processed_by != 'other_sub_agent'"
+                                   force_save="1" readonly="1"
+                                   options="{'no_create': True}" string="Other Sub Dealer"/>
+
+                            <field name="other_main_sub_agent_id"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','sub_agent'),('unit_booking_agent_id','=',booking_agent_id)]"
+                                   invisible="processed_by != 'main_other_sub_agent'"
+                                   force_save="1" readonly="1"
+                                   options="{'no_create': True}" string="Other Sub Dealer"/>
+                            <field name="free_lance_detail"
+                                   invisible="processed_by != 'free_lancer'"
+                                   force_save="1" readonly="1"
+                                   string="Free Lancer"/>
+                        </group>
+                    </group>
+                </xpath>
+                <!--                <field name='to_check' position="after">-->
+                <!--                    <field name="units_booking_id" string="File"/>-->
+                <!--                </field>-->
+            </field>
+        </record>
+
+    </data>
+</odoo>

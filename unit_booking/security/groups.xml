@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.module.category" id="unit_booking.module_category_unit_booking">
+            <field name="name">Unit Booking</field>
+            <field name="sequence">0</field>
+            <field name="visible" eval="0"/>
+        </record>
+
+        <record id="unit_booking.group_can_undo_assignment" model="res.groups">
+            <field name="name">Undo Assignment</field>
+            <field name="comment">Member of this groups are allowed to Undo Assignment.</field>
+        </record>
+
+        <record id="unit_booking.group_can_do_assignment" model="res.groups">
+            <field name="name">Open File Assignment</field>
+            <field name="comment">Member of this groups are allowed to do Assignment.</field>
+        </record>
+
+        <record id="unit_booking.group_can_do_printing" model="res.groups">
+            <field name="name">Open File Printing</field>
+            <field name="comment">Member of this groups are allowed to do printing.</field>
+        </record>
+
+        <record id="unit_booking.group_can_do_reset_printing_state" model="res.groups">
+            <field name="name">Open File Reset Printing State</field>
+            <field name="comment">Member of groups are allowed to do reset printing state.</field>
+        </record>
+
+        <record id="unit_booking.group_can_do_scanning" model="res.groups">
+            <field name="name">Open File Scanning</field>
+            <field name="comment">Member of this group are allowed to do Scanning.</field>
+        </record>
+
+        <record id="unit_booking.group_can_create_and_close_batch" model="res.groups">
+            <field name="name">Create Open File</field>
+            <field name="comment">Member of this group are allowed to create open files from batch and close the batch.</field>
+        </record>
+
+        <record id="unit_booking.group_can_create_asset_allocation_request" model="res.groups">
+            <field name="name">Asset Request Allocation</field>
+            <field name="comment">Member of this group are allowed to create asset allocation request.</field>
+        </record>
+
+
+        <record id="unit_booking.group_can_approve_asset_allocation_request" model="res.groups">
+            <field name="name">Approve Asset Allocation Request</field>
+            <field name="comment">Member of this group are allowed to approve asset allocation request.</field>
+        </record>
+
+    </data>
+</odoo>

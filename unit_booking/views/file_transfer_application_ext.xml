@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="unit_booking.file_tranfer_ext_form">
+            <field name="name">unit_booking file_transfer_ext_form</field>
+            <field name="model">transfer.application</field>
+            <field name="inherit_id" ref="real_estate.transfer_application_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[4]" position="before">
+                    <group string="Dealer Details">
+                        <group>
+
+                            <field name="dealer_id"
+                                   options="{'no_open': True,'no_create': True}"
+                            />
+                        </group>
+
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

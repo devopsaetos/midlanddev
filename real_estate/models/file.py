@@ -2137,10 +2137,15 @@ class File(models.Model):
             if 'token_generated' in val:
                 val['token_generated'] = True
             if val.get('name', _('New')) == _('New'):
-                val['name'] = self.env['ir.sequence'].next_by_code("file") or _('New')
-            if val.get('tracking_id', _('*')) == _('*') and val.get('type') != 'investor' and self._context.get(
-                    'current_view') == 'realestate':
-                val['tracking_id'] = self.env['ir.sequence'].next_by_code("file.tracking") or _('*')
+                if val.get('project_type') == 'skyscraper' or self._context.get('current_view') == 'buildings':
+                    val['name'] = self.env['ir.sequence'].next_by_code("file.skyscraper") or _('New')
+                else:
+                    val['name'] = self.env['ir.sequence'].next_by_code("file") or _('New')
+            if val.get('tracking_id', _('*')) == _('*') and val.get('type') != 'investor':
+                if val.get('project_type') == 'skyscraper' or self._context.get('current_view') == 'buildings':
+                    val['tracking_id'] = self.env['ir.sequence'].next_by_code("file.tracking.building") or _('*')
+                elif val.get('project_type') == 'housing_society' or self._context.get('current_view') == 'realestate':
+                    val['tracking_id'] = self.env['ir.sequence'].next_by_code("file.tracking") or _('*')
             if val.get('secret_token', _('New')) == _('New'):
                 val['secret_token'] = secrets.token_hex(10)
 

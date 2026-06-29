@@ -1,0 +1,95 @@
+<odoo>
+
+    <record model="ir.ui.view" id="allotment_form">
+        <field name="name">allotment.form</field>
+        <field name="model">allotment</field>
+        <field name="arch" type="xml">
+            <form string="Allotment">
+                <header>
+                    <button name="create_allotment_request"
+                            string="Generate Request"
+                            class="oe_highlight"
+                            type="object"
+                            />
+                </header>
+                <sheet>
+                    <group name="search_allotment" string="Search Allotment">
+                        <group>
+                            <field name="date"/>
+                            <field name="search_line_ids" invisible="1"/>
+                            <field name="society_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('is_society','=',1),
+                                            ('project_type','=','housing_society')]"/>
+                            <field name="phase_id" options="{'no_create': True, 'no_open': True}"
+                                   domain="[('is_society','!=',1),
+                                            ('project_type','=','housing_society')]"/>
+                            <field name="sector_id" options="{'no_create':True, 'no_open':True}"
+                                   invisible="allotment_type == 'transfer'"
+                                   domain="[('project_type','=','housing_society')]"/>
+                        </group>
+                        <group>
+                            <field name="allotment_type"/>
+                            <field name="category_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   invisible="allotment_type == 'transfer'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="unit_category_type_id" string="Product"
+                                   domain="[('project_type','=','housing_society')]"
+                                   invisible="allotment_type == 'transfer'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="size_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   invisible="allotment_type == 'transfer'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="file_id"
+                                   domain="[('project_type', '=', 'housing_society'),('payment_states', '=', 'close'),('society_id', '=', society_id),('phase_id', '=', phase_id),('inventory_id', '=', False), ('unit_number', '=', False)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="membership_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   invisible="allotment_type == 'transfer'"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <notebook collspan="4">
+                        <page string="Files" autofocus="autofocus">
+                            <field name="file_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="membership_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="tracking_id"/>
+                                    <field name="society_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="phase_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="sector_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="street_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="inventory_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="category_id" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="unit_category_type_id" string="Product" options="{'no_create':True, 'no_open':True}"/>
+                                    <field name="preference_ids" widget="many2many_tags"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button string="Discard" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_allotment_wizard" model="ir.actions.act_window">
+        <field name="name">Allotment</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">allotment</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="real_estate.menu_allotment"
+              name="Unit Allotment"
+              parent="allotment.allotment_real_estate_menu"
+              action="action_allotment_wizard"
+    />
+
+</odoo>

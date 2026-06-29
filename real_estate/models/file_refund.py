@@ -100,7 +100,7 @@ class FileRefund(models.Model):
         refund_invoice = self.env['account.move'].create({
             'name': self.file_id.name,
             # 'file_ids': self.file_id.id,
-            'type': 'in_invoice',
+            'move_type': 'in_invoice',
             'company_id': self.env.company.id,
             'journal_id': self.env.company.knockoff_journal_id.id,
             'partner_id': self.membership_id.partner_id.id,

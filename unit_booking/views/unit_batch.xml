@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.unit_batch_generation_form" model="ir.ui.view">
+            <field name="name">unit_booking unit_batch_generation_form</field>
+            <field name="model">unit.batch.generation</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form duplicate="false">
+                    <header>
+                        <field name="state" widget="statusbar" invisible="0"/>
+                        <button
+                                name="close_batch"
+                                type="object"
+                                class="oe_highlight"
+                                string="Close"
+                                groups="unit_booking.group_can_create_and_close_batch"
+                                invisible="state in ['draft', 'close']">
+
+                        </button>
+                        <button
+                                name="create_batch"
+                                type="object"
+                                class="oe_highlight"
+                                string="Create Open File"
+                                groups="unit_booking.group_can_create_and_close_batch"
+                                invisible="state == 'close'">
+                        </button>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_file_assignment"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Assignment"
+                                    icon="fa-folder-open-o"
+                                    invisible="state == 'draft'"
+                                    groups="unit_booking.group_can_do_assignment"
+                            >
+                            </button>
+                            <button
+                                    name="view_open_file"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Open File"
+                                    icon="fa-folder-open-o"
+                                    invisible="state == 'draft'"
+                            >
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="project_type" invisible="1"/>
+                                <field name="batch_name" required="1" placeholder="Batch Name"
+                                       readonly="state != 'draft'"/>
+                            </h1>
+                        </div>
+                        <group string="General Info">
+                            <group>
+                                <field name="name"/>
+                                <field name="deal_pack_id" options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="launch_type"
+                                       required="1"
+                                       force_save="1"
+                                       readonly="state != 'draft' or deal_pack_id"/>
+                                <field name="society_id"
+                                       domain="[
+                                                ('is_society','=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="date"
+                                       required="1"
+                                       string="Creation Date"
+                                       readonly="state != 'draft'"/>
+                                <field name="open_date"
+                                       required="1"
+                                       readonly="state != 'draft'"/>
+                                <field name="close_date"
+                                       required="1"
+                                       readonly="state != 'draft'"/>
+                                <field name="phase_id"
+                                       domain="[
+                                                ('is_society','!=',1),
+                                                ('project_type','=','housing_society')
+                                               ]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft'"
+                                />
+                            </group>
+
+                            <group name="installment_plan" string="Installment Details">
+                                <!--&lt;!&ndash;                                                <field name="token_generated" invisible="1"/>&ndash;&gt;-->
+                                <field name="plan_type"
+                                       readonly="payment_type == 'lump_sum' or state != 'draft'"
+                                       required="1"/>
+                                <field name="predefine_plan_id" string="Plan Name"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="plan_type != 'predefine' or not plan_type" readonly="state != 'draft'" required="plan_type == 'predefine'"/>
+                                <field name="plan_description" invisible="1"/>
+                                <field name="payment_type"
+                                       invisible="plan_type == 'predefine'" readonly="state != 'draft'"/>
+                                <field name="interval_id"
+                                       readonly="payment_type == 'lump_sum' or state != 'draft'"
+                                       options="{'no_create': True, 'no_open': True}" required="1"/>
+
+                                <field name="total_installment"
+                                       widget="regex_mask" data-inputmask-regex="^\d+$"
+                                       invisible="payment_type == 'lump_sum'" readonly="state != 'draft' or plan_type != 'custom'" required="plan_type != 'predefine' and payment_type == 'installments'"
+                                       force_save="1"/>
+
+                                <field name="installment_starting_date"
+                                       readonly="state != 'draft'"
+                                       force_save="1" required="1"/>
+
+                                <field name="initial_payment_basis"
+                                       invisible="plan_type != 'custom'" readonly="state != 'draft'" required="plan_type == 'custom'"/>
+
+                                <field name="value"
+                                       invisible="plan_type != 'custom'" readonly="state != 'draft'" required="plan_type == 'custom'"/>
+<!--                                <field name="installment_start_date" readonly="state != 'draft'"/>-->
+                            </group>
+                            <group></group>
+                        </group>
+
+                        <notebook colspan="4">
+                            <page string="Details" autofocus="autofocus">
+                                <field name="batch_line_ids" readonly="state == 'close'">
+                                    <list editable="bottom">
+
+                                        <field name="line_created" invisible="1"/>
+
+                                        <field name="selected_line" string="Select"
+                                               readonly="line_created"/>
+
+                                        <field name="prefix"
+                                               readonly="line_created"
+                                               required="1" widget="regex_mask" data-inputmask-regex="^[a-zA-Z]{3}$"/>
+
+                                        <field name="starting_number"
+                                               widget="regex_mask" data-inputmask-regex="^\d{7}$"
+                                               readonly="line_created"
+                                               required="1"/>
+
+                                        <field name="ending_number"
+                                               readonly="line_created"
+                                               widget="regex_mask" data-inputmask-regex="^\d{7}$"
+                                               required="1"/>
+
+                                        <field name="sector_id"
+                                               string="Block"
+                                               domain="[('project_type','=','housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               required="0"
+                                               invisible="1"
+                                        />
+
+                                        <field name="category_id" domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               invisible="1"/>
+
+                                        <field name="unit_category_type_id" string="Product"
+                                               domain="[('project_type', '=', 'housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               invisible="1"/>
+
+                                        <field name="total" sum="Total" readonly="1" force_save="1"/>
+
+                                        <field name="with_out_assignment" string="Remaining"
+                                               sum="Total" readonly="1" force_save="1"/>
+
+                                        <field name="batch_id" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                        <notebook>
+                            <page string="Assignment">
+                                <field name="assignment_line_ids" readonly="1" force_save="1">
+                                    <list>
+                                        <field name="name" string="Sequence Number"/>
+                                        <field name="prefix"/>
+                                        <field name="batch_id"/>
+                                        <field name="assignment_date" string="Date"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.unit_batch_generation_tree" model="ir.ui.view">
+            <field name="name">unit_booking unit_batch_generation_tree</field>
+            <field name="model">unit.batch.generation</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="name"/>
+                    <field name="batch_name"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="date" string="Date"/>
+                    <field name="open_date" string="Open Date"/>
+                    <field name="close_date" string="Close Date"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.unit_batch_generation_search">
+            <field name="name">unit_booking unit_batch_generation_search</field>
+            <field name="model">unit.batch.generation</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="batch_name" string="Batch Name"/>
+                    <field name="name"/>
+                    <field name="date" string="Date"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_unit_batch_generation">
+            <field name="name">Batch</field>
+            <field name="res_model">unit.batch.generation</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{
+                'current_view': 'realestate',
+                'default_project_type':'housing_society'}
+            </field>
+            <field name="domain">
+                [
+                ('project_type','=','housing_society')
+                ]
+            </field>
+
+        </record>
+
+        <menuitem
+                id="unit_booking.unit_batch_generation_menu"
+                name="Batch"
+                action="unit_booking.action_unit_batch_generation"
+                parent="unit_booking.file_management_root"
+                sequence="1"
+        />
+        <!--        Record Rule for Multi Company-->
+        <record id="unit_booking.batch_rule" model="ir.rule">
+            <field name="name">Batch multi-company</field>
+            <field name="model_id" ref="model_unit_batch_generation"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+    </data>
+</odoo>

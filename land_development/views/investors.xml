@@ -248,6 +248,7 @@
             />
         </record>
 
+        <!--
         <menuitem
                 id="land_development.investors"
                 name="Investor"
@@ -255,6 +256,7 @@
                 action="land_development.action_investors"
                 sequence='1'
         />
+        -->
 
     </data>
 </odoo>

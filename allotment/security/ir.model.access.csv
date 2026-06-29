@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_allotment_batch,allotment.batch,model_allotment_batch,,1,1,1,1
+access_allotment_batch_line,allotment.batch.line,model_allotment_batch_line,,1,1,1,1
+access_print_queue,print.queue,model_print_queue,,1,1,1,1
+access_print_queue_line,print.queue.line,model_print_queue_line,,1,1,1,1
+access_document_issuance,document.issuance,model_document_issuance,,1,1,1,1
+access_printing_history,printing.history,model_printing_history,,1,1,1,1
+access_allotment_details,allotment.details,model_allotment_details,,1,1,1,1
+access_file_allotment_application,file.allotment.application,model_file_allotment_application,,1,1,1,1
+

@@ -45,7 +45,7 @@ class RequiredDocuments(models.Model):
 
     # @api.model
     # def create(self, vals):
-    #     res = super(RequiredDocuments, self).create(vals)
+    #     res = super().create(vals_list)
         # for record in res.required_documents_line_ids:
         # if not all(res.required_documents_line_ids.mapped('attachment')):
         #     raise ValidationError('Please attach all the required documents.')

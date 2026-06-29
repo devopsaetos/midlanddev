@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_config_settings_investment_files" model="ir.ui.view">
+        <field name="name">view_account_config_settings investment_files</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="52"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="File Financials" string="File Financials" name="file_financials">
+                    <block title="Investment">
+                        <setting string="Journal" help="Select Journal For Creating JV Of Open File.">
+                            <field name="investment_file_journal_id"
+                                   options="{'no_create_edit': True}"/>
+                        </setting>
+                        <setting string="Send E-Signature Email on File Lock"
+                                 help="Enable email sending when File is locked so the recipient can submit their E-Signature via link.">
+                            <field name="file_signature_email"/>
+                        </setting>
+                    </block>
+                    <block title="Confirmation Adjustment">
+                        <setting string="Journal" help="Journal used for Confirmation Adjustment of files.">
+                            <field name="confirmation_adjustment_journal_id"
+                                   options="{'no_create_edit': True, 'no_open': True}"
+                                   domain="[('company_id', '=', company_id)]"/>
+                        </setting>
+                        <setting string="Adjustment Account" help="Account used for Confirmation Adjustment of files.">
+                            <field name="confirmation_adjustment_account_id"
+                                   options="{'no_create_edit': True, 'no_open': True}"
+                                   domain="[('company_ids', 'in', [company_id]), ('reconcile', '=', True)]"/>
+                        </setting>
+                    </block>
+                    <block title="Commission Adjustment">
+                        <setting string="Commission Adjustment Account" help="Account used for Commission Adjustment of files.">
+                            <field name="commission_adjustment_account_id"
+                                   options="{'no_create_edit': True, 'no_open': True}"
+                                   domain="[('company_ids', 'in', [company_id])]"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

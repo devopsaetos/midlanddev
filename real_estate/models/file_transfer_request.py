@@ -355,7 +355,7 @@ class ReqInvoicePopup(models.TransientModel):
             'partner_id': self.partner_id.id,
             'invoice_date': self.date,
             'company_id': self.env.company.id,
-            'type': 'out_invoice',
+            'move_type': 'out_invoice',
             # 'user_id': self.required_tax_id.user_id.id,
             'required_tax_id': self.required_tax_id.id,
             'invoice_line_ids': prod

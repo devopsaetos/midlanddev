@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="allotment_batch_view_form" model="ir.ui.view">
+            <field name="name">allotment_batch_view_form</field>
+            <field name="model">allotment.batch</field>
+            <field name="arch" type="xml">
+                <form string="allotment_batch_form">
+                    <header>
+                        <button name="action_set_review" type="object" string="Review" class="btn-primary"
+                                invisible="state != 'draft'"/>
+                        <button name="action_set_approve" type="object" string="Aprrove" class="btn-primary"
+                                invisible="state != 'review'"/>
+                        <button name="action_set_cancel" type="object" string="Cancel" class="btn-primary"
+                                invisible="state not in ['draft', 'review']"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,review,approve,print,issued,cancel"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="date"/>
+                            </group>
+                            <group>
+                                <field name="batch_responsibe_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="Files" string="Files">
+                                <field name="batch_line_ids" readonly="state != 'draft'">
+                                    <list editable="top" create="0">
+                                        <field name="check"/>
+                                        <field name="file_id" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="membership_id" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="tracking_no"/>
+                                        <field name="society_id" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="phase_id" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="category_id" options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="unit_category_type_id"
+                                               options="{'no_create':True, 'no_open':True}"/>
+                                        <field name="preference_ids" widget="many2many_tags"/>
+                                        <field name="sector_id" readonly="not sector_id"/>
+                                        <field name="street_id" readonly="not street_id"/>
+                                        <field name="inventory_id"
+                                               domain="[('state','=','avalible_for_sale'),
+                                                        ('project_type','=','housing_society'),
+                                                        ('society_id','=',society_id),
+                                                        ('phase_id','=',phase_id)]"/>
+                                        <field name="size_id"/>
+                                        <field name="unit_number"/>
+                                        <field name="state" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="other_info" string="Other Info"
+                                  invisible="not review_responsibe_id">
+                                <group>
+                                    <group>
+                                        <field name="review_responsibe_id"
+                                               invisible="not review_responsibe_id"/>
+                                        <field name="approved_responsibe_id"
+                                               invisible="not approved_responsibe_id"/>
+                                        <field name="issued_responsibe_id"
+                                               invisible="not approved_responsibe_id"/>
+                                        <field name="printed_responsibe_id"
+                                               invisible="not printed_responsibe_id"/>
+                                        <field name="canceled_responsibe_id"
+                                               invisible="not canceled_responsibe_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="review_date"
+                                               invisible="not review_date"/>
+                                        <field name="approved_date"
+                                               invisible="not approved_date"/>
+                                        <field name="issued_date" invisible="not issued_date"/>
+                                        <field name="printed_date"
+                                               invisible="not printed_date"/>
+                                        <field name="canceled_date"
+                                               invisible="not canceled_date"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="allotment_batch_view_tree" model="ir.ui.view">
+            <field name="name">allotment_batch_view_tree</field>
+            <field name="model">allotment.batch</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="allotment_batch_action" model="ir.actions.act_window">
+            <field name="name">Allotment Batch</field>
+            <field name="res_model">allotment.batch</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="allotment_request_batch"
+                name="Allotment Batch"
+                action="allotment_batch_action"
+                parent="allotment.allotment_real_estate_menu"
+        />
+
+    </data>
+</odoo>

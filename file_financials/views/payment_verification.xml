@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="file_financials.payment_verification_input" name="Payment Verification Input">
+        <t t-call="web.html_container">
+            <style>
+                body
+                {
+                background: #000428; /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #004e92, #000428); /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                }
+                .company-logo
+                {
+                width: auto;
+                height: 210px !important;
+                }
+                i
+                {
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                }
+                @media only screen and (max-width: 768px)
+                {
+                .company-logo {width: 300px !important; height: 100px !important;}
+                .watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                }
+                .card, .card-body
+                {
+                background: url("/unit_booking/static/description/silver-bg.jpg");
+                background-size: cover;
+                }
+                .text-muted span
+                {
+                font-weight: bolder;
+                color: rgb(0 0 0 / 50%) !important;
+                }
+                .rounded-circle
+                {
+                border-radius: 50% !important;
+                border: 2px solid darkgrey;
+                }
+                .watermark {
+                position: fixed;
+                font-size: 180px;
+                font-weight: bolder;
+                opacity: 0.5;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(20deg);
+                -webkit-transform: rotate(20deg);
+                transform: rotate(-40deg);
+                top: 280px !important;
+                }
+            </style>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"/>
+            <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"/>
+            <section>
+                <div class="container py-5 px-5" style="color: #fff;">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <center>
+                                <img class="company-logo"
+                                     t-att-src="image_data_uri(payment.company_id.logo)" alt=""/>
+                            </center>
+                        </div>
+                    </div>
+                    <hr/>
+                    <form action="/payment/verify_details" method="post">
+                        <input type="hidden" id="id" name="id" t-att-value="payment.id"/>
+                        <div class="form-group">
+                            <label for="cnic">Enter Member CNIC</label>
+                            <input type="text" class="form-control" id="cnic" name="cnic" data-inputmask="'mask': '99999-9999999-9'"
+                                   placeholder="XXXXX-XXXXXXX-X" required=""/>
+                            <small id="emailHelp" class="form-text text-muted">Enter the CNIC. e.g. (34123-1234567-8)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="file_name">Enter Payment No.</label>
+                            <input type="text" class="form-control" id="name" name="name" required=""/>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Payment Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required=""/>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Verify</button>
+                    </form>
+                </div>
+            </section>
+            <script>
+                $("#cnic").inputmask();
+            </script>
+        </t>
+    </template>
+    <template id="file_financials.payment_verification" name="Payment Verification">
+        <t t-call="web.html_container">
+            <style>
+                body
+                {
+                background: #000428; /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #004e92, #000428); /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                }
+                .company-logo
+                {
+                width: auto;
+                height: 225px !important;
+                }
+                i
+                {
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                }
+                @media only screen and (max-width: 768px)
+                {
+                .company-logo {width: 300px !important; height: 100px !important;}
+                .watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                }
+                .card, .card-body
+                {
+                background: url("/unit_booking/static/description/silver-bg.jpg");
+                background-size: cover;
+                }
+                .text-muted span
+                {
+                font-weight: bolder;
+                color: rgb(0 0 0 / 50%) !important;
+                }
+                .rounded-circle
+                {
+                border-radius: 50% !important;
+                border: 2px solid darkgrey;
+                }
+                .watermark {
+                position: fixed;
+                font-size: 180px;
+                font-weight: bolder;
+                opacity: 0.5;
+                z-index: 99;
+                width: auto;
+                -ms-transform: rotate(20deg);
+                -webkit-transform: rotate(20deg);
+                transform: rotate(-40deg);
+                top: 280px !important;
+                }
+                table tr td
+                {
+                padding: 5px !important;
+                text-align: left !important;
+                font-size: 19px !important;
+                color: rgb(0 0 0 / 50%) !important;
+                padding-right: 18px !important;
+                padding-left: 10px !important;
+                padding-top: 20px !important;
+                }
+                table tr td:not(:first-child)
+                {
+                border-top: none !important;
+                border-right: none !important;
+                border-left: none !important;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+                }
+            </style>
+            <section>
+                <div class="container py-5">
+                    <div class="watermark">
+                        <t t-if="payment.state == 'cancelled'">
+                            <p class="text-danger">CANCELLED</p>
+                        </t>
+                        <t t-if="payment.state == 'posted'">
+                            <p class="text-success text-center" style="margin-top: 35px; margin-left: 55px;">VERIFIED</p>
+                        </t>
+                        <t t-if="payment.state in ('draft', 'sent', 'under_clearance')">
+                            <p class="text-warning text-center">IN<br/>PROCESS</p>
+                        </t>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <center>
+                                <img class="company-logo"
+                                     t-att-src="image_data_uri(payment.company_id.logo)" alt=""/>
+                            </center>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card mb-4 m-3">
+                                <div class="card-body text-center box--gradient silver">
+                                    <t t-if="payment.partner_id.image_1920">
+                                        <img t-att-src="image_data_uri(payment.partner_id.image_1920)" alt=""
+                                             class="rounded-circle img-fluid" style="width: 155px; height:155px;"/>
+                                    </t>
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <h5 class="text-center">
+                                            <span t-esc="payment.partner_id.name" class="text-center" style="font-weight: bolder !important;"/>
+                                        </h5>
+                                    </div>
+                                    <div class="d-flex justify-content-left mx-2">
+                                        <t t-if="payment.file_id">
+                                            <table style="border: none !important;">
+                                                <tr>
+                                                    <td>File No.</td>
+                                                    <td>
+                                                        <span t-esc="payment.file_id.name" style="font-weight: bolder !important;"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Category</td>
+                                                    <td>
+                                                        <span t-esc="payment.file_id.category_id.name" style="font-weight: bolder !important;"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Product</td>
+                                                    <td>
+                                                        <span t-esc="payment.file_id.unit_category_type_id.name" style="font-weight: bolder !important;"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card mb-4 m-3">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Payment Status</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="fw-bold mb-0">
+                                                <t t-if="payment.state == 'cancelled'">
+                                                    <span class="text-danger">Cancelled</span>
+                                                </t>
+                                                <t t-if="payment.state == 'posted'">
+                                                    <span class="text-success">Verified</span>
+                                                </t>
+                                                <t t-if="payment.state in ('draft', 'sent', 'under_clearance')">
+                                                    <p class="text-warning">In Process</p>
+                                                </t>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Payment No.</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="payment.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Payment Mode</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span class="text-capitalize" t-esc="payment.mode_of_payments"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Payment Journal</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span class="text-capitalize" t-esc="payment.journal_id.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <t t-if="payment.mode_of_payments == 'cheque'">
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Cheque No.</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span class="text-capitalize" t-esc="payment.cheque_no"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Cheque Name</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span class="text-capitalize" t-esc="payment.cheque_name"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Bank Name</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span class="text-capitalize" t-esc="payment.cheque_ref"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Payment Amount</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="payment.amount" t-options='{"widget": "float", "precision": 2}'/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Payment Date</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="payment.payment_date" t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Remarks</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span class="text-capitalize" t-esc="payment.communication"/>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="card mb-4 m-3">
+                                <div class="card-body text-center box--gradient silver">
+                                    <h5>
+                                        <i class="fa fa-map-marker" style="font-size:30px;"/>
+                                        <span t-esc="payment.company_id.street"/>
+                                        <span t-esc="payment.company_id.street2"/>
+                                        <span t-esc="payment.company_id.city"/>
+                                        <span t-esc="payment.company_id.state_id.name"/>
+                                        <span t-esc="payment.company_id.country_id.name"/>
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </t>
+    </template>
+</odoo>

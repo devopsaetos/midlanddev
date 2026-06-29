@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="unit_booking.account_invoice_ext_form">
+            <field name="name">unit_booking account_invoice_ext_form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@id='header_left_group']" position="inside">
+                    <field name="units_booking_id" string="File"/>
+                </xpath>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

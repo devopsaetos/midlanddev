@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="deal_pack_form_view" model="ir.ui.view">
+            <field name="name">deal_pack.form</field>
+            <field name="model">deal.pack</field>
+            <field name="arch" type="xml">
+                <form string="Deal Pack" duplicate="false" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar" invisible="0"/>
+                        <button name="approve_deal_pack"
+                                type="object"
+                                class="oe_highlight"
+                                string="Approve"
+                                invisible="state in ['cancel','approve']"/>
+                        <button name="cancel_deal_pack"
+                                type="object"
+                                class="oe_highlight"
+                                string="Cancel"
+                                invisible="state in ['cancel','approve']"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="deal_pack_name"
+                                       readonly="state in ['cancel','approve']"
+                                       placeholder="Deal Name" required="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name" string="Sequence"/>
+                                <field name="start_date" readonly="state in ['cancel','approve']"/>
+                                <field name="end_date" readonly="state in ['cancel','approve']"/>
+                            </group>
+                            <group>
+                                <field name="launch_type" required="1"
+                                       readonly="state in ['cancel','approve']"/>
+                                <field name="total_quantity"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                                <page string="Lines">
+                                    <field name="deal_pack_lines_ids" readonly="state in ['cancel','approve']">
+                                        <list editable="bottom">
+                                            <field name="sector_id" string="Block"/>
+                                            <field name="category_id" required="1"/>
+                                            <field name="unit_category_type_id"
+                                                   string="Product"
+                                                   required="1"/>
+                                            <field name="quantity"
+                                                   required="1"
+                                                   widget="regex_mask" data-inputmask-regex="^\d+$"/>
+                                        </list>
+                                    </field>
+                                </page>
+                            </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="deal_pack_tree_view" model="ir.ui.view">
+            <field name="name">deal_pack.tree</field>
+            <field name="model">deal.pack</field>
+            <field name="arch" type="xml">
+                <list string="Deal Pack" delete="false">
+                    <field name="name" string="Sequence #"/>
+                    <field name="deal_pack_name" string="Name"/>
+                    <field name="launch_type"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="deal_pack_search_view" model="ir.ui.view">
+            <field name="name">deal_pack.search</field>
+            <field name="model">deal.pack</field>
+            <field name="arch" type="xml">
+                <search string="Deal Pack">
+                    <field name="deal_pack_name" string="Name"/>
+                    <field name="launch_type"/>
+                    <separator string="Group By"/>
+                        <filter string="Launch Type" name="launch_type" domain="[]"
+                                context="{'group_by':'launch_type'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="deal_pack_act_window" model="ir.actions.act_window">
+            <field name="name">Deal Pack</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">deal.pack</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click here to create a deal pack.
+                </p>
+            </field>
+        </record>
+
+        <menuitem name="Deal Pack"
+                  id="deal_pack_menu"
+                  parent="unit_booking.deal_management_root"
+                  action="deal_pack_act_window"
+                  sequence="1"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="file_correspandence_history" model="ir.ui.view">
+        <field name="name">file.correspondance.letter</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="real_estate.file_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='allotment_no']" position="replace">
+                <field name="allotment_id" readonly="1" force_save="1"/>
+            </xpath>
+            <xpath expr="/form/sheet/notebook/page[3]" position="inside">
+                <group string="Document Details">
+                    <field name="allotment_detail_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="transaction_type"/>
+                            <field name="print_date"/>
+                            <field name="print_by"/>
+                            <field name="issue_date"/>
+                            <field name="issued_by"/>
+                            <field name="allotment_batch_id"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="unit_booking.booking_cancellation_view_form" model="ir.ui.view">
+        <field name="name">unit_booking cancellation_view_form</field>
+        <field name="model">unit.booking.cancellation</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button class='btn btn-primary' name="approve_cancellation" type="object" string="Approve"
+                            invisible="state != 'draft'"/>
+                    <button class='btn btn-primary' name="cancel_cancellation" type="object" string="Cancel"
+                            invisible="state != 'draft'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                                name="open_file_cancellation_scanning"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Scanning"
+                                icon="fa-folder-open-o"
+                                invisible="state != 'draft'"
+                        >
+                        </button>
+                    </div>
+                    <div class="oe_title" readonly="1">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="request_type" required="1"
+                                   readonly="state != 'draft'"/>
+                            <field name="unit_booking_allotment_id" required="1"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="agent_id" string="Dealer"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','main_agent')]"/>
+                        </group>
+                        <group>
+                            <field name="unit_selection_option" string="Selection By"
+                                       readonly="state != 'draft'" required="1"/>
+
+                            <field name="date" readonly="state != 'draft'"/>
+
+                            <field name="unit_batch_id" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Cancellation Files">
+                            <field name="unit_booking_cancellation_line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="units_booking_id" readonly="1" force_save="1" string="File"/>
+                                    <field name="society_id" readonly="1" force_save="1"/>
+                                    <field name="phase_id" readonly="1" force_save="1"/>
+                                    <field name="sector_id" string="Block" readonly="1" force_save="1"/>
+                                    <field name="category_id" readonly="1" force_save="1"/>
+                                    <field name="unit_category_type_id" readonly="1" force_save="1" string="Product"/>
+                                    <field name="unit_booking_allotment_id" readonly="1" force_save="1"/>
+                                    <field name="batch_id" readonly="1" force_save="1"/>
+                                    <field name="price" readonly="1" force_save="1"/>
+                                    <field name="unit_booking_cancellation_id" invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="unit_booking.booking_cancellation_view_tree" model="ir.ui.view">
+        <field name="name">unit_booking cancellation_view_tree</field>
+        <field name="model">unit.booking.cancellation</field>
+        <field name="arch" type="xml">
+            <list delete="false">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="request_type"/>
+                <field name="unit_booking_allotment_id"/>
+                <field name="unit_batch_id"/>
+                <field name="agent_id" string="Dealer"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="unit_booking.action_booking_cancellation">
+        <field name="name">Cancellation</field>
+        <field name="res_model">unit.booking.cancellation</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{
+            'current_view': 'realestate'
+            }
+        </field>
+    </record>
+
+<!--    <menuitem-->
+<!--            id="unit_booking.booking_cancellation_menu"-->
+<!--            name="Cancellation"-->
+<!--            parent="unit_booking.process_management_root"-->
+<!--            action="unit_booking.action_booking_cancellation"-->
+<!--            sequence='4'-->
+<!--    />-->
+</odoo>

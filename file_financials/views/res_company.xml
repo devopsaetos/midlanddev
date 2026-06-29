@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_company_form_view_extension" model="ir.ui.view">
+        <field name="name">res_company_form_view_extension</field>
+        <field name="model">res.company</field>
+        <field name="priority" eval="52"/>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='social_media']" position="after">
+                <field name="owner_mobile" placeholder='+923001234567' widget="mask" data-inputmask="'mask': '+99-999-9999999'"/>
+                <field name="mobile_numbers">
+                    <list editable="bottom">
+                        <field name="name"/>
+                        <field name="number"/>
+                    </list>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

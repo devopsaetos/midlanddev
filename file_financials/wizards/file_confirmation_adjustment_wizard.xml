@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="file_financials.file_confirmation_adjustment_wizard_form" model="ir.ui.view">
+            <field name="name">file_financials.file_confirmation_adjustment_wizard_form</field>
+            <field name="model">file.confirmation.adjustment.wizard</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="file_id"
+                                       readonly="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="from_file" invisible="1"/>
+                                <field name="confirmation_residual" readonly="1" force_save="1"/>
+                                <field name="adjust_commission" force_save="1" required="1"/>
+                            </group>
+                            <group>
+                                <field name="advance_payment_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                                <field name="advance_residual" readonly="1" force_save="1"/>
+                                <field name="amount" required="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Adjust Confirmation" name="generate_file_confirmation_adjustments" type="object" class="btn-primary"/>
+                        <button string="Discard" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="file_financials.action_file_confirmation_adjustment_wizard" model="ir.actions.act_window">
+            <field name="name">Confirmation Adjustment</field>
+            <field name="res_model">file.confirmation.adjustment.wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="file_financials.file_confirmation_adjustment_wizard_form"/>
+            <field name="context">{ 'current_view': 'realestate'}</field>
+            <field name="target">new</field>
+        </record>
+<!--        <menuitem-->
+<!--            id="file_financials.file_confirmation_adjustment_wizard"-->
+<!--            name="Installment Invoices"-->
+<!--            action="file_financials.action_file_confirmation_adjustment_wizard"-->
+<!--            parent="file_financials.invoices"-->
+<!--            sequence="1"-->
+<!--        />-->
+        <record model="ir.ui.view" id="issued_file_form_view_confirmation_adjustment">
+            <field name="name">issued_file_form_view_confirmation_adjustment</field>
+            <field name="model">file</field>
+            <field name="inherit_id" ref="real_estate.file_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='file_status']" position="after">
+                    <field name="show_adjust_confirmation_button" force_save="1" invisible="1"/>
+                </xpath>
+                <xpath expr="//button[@name='open_installment_wizard']" position="before">
+                    <button
+                            name="open_confirmation_adjustment_wizard"
+                            type="object"
+                            string="Adjust Confirmation"
+                            icon="fa-pencil-square-o"
+                            class="oe_stat_button"
+                            invisible="not show_adjust_confirmation_button"
+                    />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

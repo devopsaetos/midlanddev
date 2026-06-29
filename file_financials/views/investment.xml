@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="real_estate_investment_form_view_ext">
+        <field name="name">real_estate_investment_form_view_ext</field>
+        <field name="model">investment</field>
+        <field name="inherit_id" ref="real_estate.investment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='receive_payment']" position="after">
+                <button class="btn btn-primary" name="update_booking_amount_on_open_files" type="object" string="Update Booking On Files"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="rebate_invoice_ids" widget="many2many_tags" readonly="1" force_save="1" invisible="1"
+                       string="Rebate Invoices"/>
+                <button
+                        name="rebate_invoices"
+                        type="object"
+                        string="Rebate Invoices"
+                        icon="fa-list"
+                        class="oe_stat_button"
+                        invisible="not rebate_id"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="replace">
+                <field name="partner_id" string="Investor Name"
+                       options="{'no_create': True, 'no_open': True}"
+                       readonly="state in 'payment'"/>
+            </xpath>
+            <xpath expr="//field[@name='plan_type']" position="before">
+                <field name="launch_type_id"/>
+                <field name="platter_id"/>
+                <field name="multiple_plans"/>
+            </xpath>
+            <xpath expr="//field[@name='sector_id']" position="before">
+            </xpath>
+            <xpath expr="//field[@name='mode_of_payments']" position="replace"/>
+            <xpath expr="//field[@name='payment_states']" position="replace"/>
+            <xpath expr="//field[@name='amount_received']" position="after">
+                <field name="mode_of_payments"/>
+                <field name="payment_states" readonly="1" force_save="1"/>
+                <field name="files_to_show" force_save="1"/>
+            </xpath>
+            <xpath expr="//field[@name='interval_id']" position="before">
+                <field name="payment_type" required="1" force_save="1"/>
+            </xpath>
+            <!--            <xpath expr="//field[@name='predefine_plan_id']" position="attributes">-->
+            <!--                <attribute name="attrs">{'invisible': [('multiple_plans','=',True)]}</attribute>-->
+            <!--            </xpath>-->
+            <xpath expr="//sheet/notebook[last()]" position="inside">
+                <page name="rebate_calculation" string="Rebate">
+                    <sheet>
+                        <group name="dealer_rebate" string="Rebate">
+                            <group>
+                                <field name="marketing_company_id"/>
+                                <field name="rebate_settlement" readonly="0" required="1"/>
+                                <field name="rebate_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="settlement_date" readonly="0"/>
+                                <field name="net_of_rebate" force_save="1" readonly="1" invisible="1"/>
+                                <field name="separate_rebate" force_save="1" readonly="1" invisible="1"/>
+                                <field name="deal_rebate_invoice_created" force_save="1" invisible="1"/>
+                                <!--                                <button name="create_deal_rebate_bill" string="Create Deal Rebate Invoice" type="object" class="btn btn-primary"-->
+                                <!--                                        invisible="deal_rebate_invoice_created"/>-->
+                            </group>
+                            <group>
+                                <field name="deal_rebate_amount" force_save="1" readonly="1" invisible="1"/>
+                                <field name="sale_rebate_amount" force_save="1" readonly="1" invisible="1"/>
+                                <field name="rebate_amount" force_save="1" readonly="1" invisible="1"/>
+                                <field name="invoiced_rebate_amount" force_save="1" readonly="1" invisible="1"/>
+                                <field name="paid_rebate_amount" force_save="1" readonly="1" invisible="1"/>
+                                <field name="payable_rebate_amount" force_save="1" readonly="1" invisible="1"/>
+                                <!--                                Rebate Calculated as policy-->
+                                <field name="total_rebate_amount" string="Total Rebate Amount"/>
+                                <field name="dealer_rebate_amount" readonly="1" force_save="1"/>
+                                <field name="marketing_rebate_amount" readonly="1" force_save="1"/>
+                                <button name="compute_rebate_amount_process" type="object" string="Calculate Rebate" class="oe_highlight"/>
+                            </group>
+                            <field name="rebate_on_allotment_ids">
+                                <list editable="bottom">
+                                    <field name="partner_id" options="{'no_create': True, 'no_open': True}" invisible="1"/>
+                                    <field name="sector_id" string="Block"
+                                           options="{'no_create': True, 'no_open': True}" required="0" invisible="1"/>
+                                    <field name="category_id" options="{'no_create': True, 'no_open': True}"
+                                           required="1" invisible="1"/>
+                                    <field name="agent_type"/>
+                                    <field name="transaction_type"/>
+                                    <field name="settlement_option" required="1"/>
+                                    <field name="calculation_basis" required="1"/>
+                                    <field name="rate_calculation" required="0" invisible="1"/>
+                                    <field name="total_rebate" required="1" sum="Total" string="Rebate"/>
+                                    <field name="rebate_at_deal" required="0" invisible="1"/>
+                                    <field name="rebate_at_sale" invisible="1"/>
+                                    <field name="marketing_rebate_percentage" invisible="1"/>
+                                    <field name="dealer_rebate_percentage" invisible="1"/>
+                                    <field name="rebate_amount" readonly="1" force_save="1" sum="Total"/>
+                                    <field name="rebate_given" readonly="1" force_save="1"/>
+                                    <field name="move_id" readonly="1" force_save="1"/>
+                                </list>
+                            </field>
+                        </group>
+                    </sheet>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='start_date']" position="attributes">
+                <attribute name="string">Plan Start Date</attribute>
+            </xpath>
+            <xpath expr="//field[@name='reservation_type']" position="after">
+                <field name="show_in_portal"/>
+                <field name="allow_old_prices"/>
+                <field name="allow_request_print"/>
+                <field name="allow_not_paid_requests"/>
+                <field name="development_charges_included" force_save="1" required="1"/>
+            </xpath>
+            <xpath expr="//field[@name='booking_date']" position="after">
+                <field name="deal_close_date"/>
+            </xpath>
+            <xpath expr="//field[@name='installment_starting_date']" position="attributes">
+                <attribute name="string">Installment Start Date</attribute>
+            </xpath>
+            <xpath expr="//field[@name='investor_unit_price']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
+                   position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+            <xpath expr="//button[@name='generate_invoice_for_plan']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[6]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!--            <xpath expr="//field[@name='investment_line_ids']" position="after">-->
+            <xpath expr="//form/sheet" position="inside">
+                <group>
+                    <label for="notes"/>
+                    <field name="notes" nolabel="1"/>
+                </group>
+            </xpath>
+            <!-- payment_plan_ids commented out: payment.plan model not in registry
+            <xpath expr="//field[@name='investment_plan_ids']" position="after">
+                <group name="payment_plan" string="Payment Plan">
+                    <field name="payment_plan_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="investment_id" invisible="1"/>
+                            <field name="transaction_type" string="Transaction Type" force_save="1"/>
+                            <field name="date" string="Date" force_save="1"/>
+                            <field name="amount" string="Amount" force_save="1"/>
+                            <field name="mode_of_payment" force_save="1"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+            -->
+        </field>
+    </record>
+    <record model="ir.actions.act_window" id="file_financials.action_launch_type">
+        <field name="name">Launch Type</field>
+        <field name="res_model">launch.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem
+            name="Launch Types"
+            id="file_financials.launch_type_menu_item_id"
+            parent="real_estate.menu_configuration"
+            action="file_financials.action_launch_type"
+    />
+</odoo>

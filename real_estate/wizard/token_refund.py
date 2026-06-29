@@ -33,7 +33,7 @@ class TokenRefund(models.TransientModel):
                 invoice = self.env['account.move'].create({
                     'partner_id': self.partner_id.partner_id.id,
                     'token_id': self.token_id.id,
-                    'type': 'in_invoice',
+                    'move_type': 'in_invoice',
                     'company_id': company.id,
                     'invoice_date': fields.Date.today(),
                     'journal_id': company.knockoff_journal_id.id,

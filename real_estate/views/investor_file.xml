@@ -254,6 +254,7 @@
             <field name="context">{'current_view': 'realestate', 'search_default_group_by_investor_id': 1}</field>
         </record>
 
+        <!--
         <menuitem
                 id="real_estate.investor_file"
                 name="Open Files"
@@ -261,5 +262,6 @@
                 action="real_estate.action_investor_file"
                 sequence='4'
         />
+        -->
 
 </odoo>

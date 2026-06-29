@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!--Email template -->
+    <record id="file_e_signature_mail_template" model="mail.template">
+        <field name="name">File E Signature Submit Mail</field>
+        <field name="email_from">
+            ${(object.company_id.email)|safe}
+        </field>
+        <field name="subject">FILE - ${object.name} - E Signature Submission</field>
+        <field name="email_to">${object.membership_id.email}</field>
+        <field name="model_id" ref="model_file"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html"><![CDATA[
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 14px; color: rgb(34, 34, 34); background-color: #FFF;">
+                    <p>Dear <b>${object.membership_id.name}</b>,</p>
+                    <p>Hope this email finds you well.</p>
+                    <p>Please follow the Link below to Submit your Signature for your File. So that the File procedure should be completed and will be delivered to you.</b></p>
+                    <div style="margin: 16px 0px 16px 0px;">
+                        <a href="${('%s' % (object.e_signature_link)) | safe}"
+                            style="background-color: #875A7B; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                            Open Link
+                        </a>
+                    </div>
+                </div>
+            ]]></field>
+    </record>
+</odoo>

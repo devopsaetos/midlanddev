@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="unit_booking.seq_internal_serial" model="ir.sequence">
+            <field name="name">Serial Number</field>
+            <field name="code">unit.booking</field>
+            <field name="prefix">OPF</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="unit_booking.seq_internal_batch" model="ir.sequence">
+            <field name="name">Batch Serial</field>
+            <field name="code">batch.serial.code</field>
+            <field name="prefix">BS</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="unit_booking.seq_internal_assignment" model="ir.sequence">
+            <field name="name">Assignment Serial</field>
+            <field name="code">assignment.serial.code</field>
+            <field name="prefix">ASG-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_booking_allotment_number" model="ir.sequence">
+            <field name="name">Booking Allotment Number</field>
+            <field name="code">booking.allotment</field>
+            <field name="prefix">ALT/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_booking_issuance_number" model="ir.sequence">
+            <field name="name">Booking Issuance Number</field>
+            <field name="code">booking.issuance</field>
+            <field name="prefix">ISU/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_deal_pack_number" model="ir.sequence">
+            <field name="name">Deal Pack Number</field>
+            <field name="code">deal.pack</field>
+            <field name="prefix">DEAL/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_issuance_request_number" model="ir.sequence">
+            <field name="name">Issuance Request Number</field>
+            <field name="code">issuance.request.number</field>
+            <field name="prefix">IRN/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_duplicate_request_number" model="ir.sequence">
+            <field name="name">Open File Duplicate Request Number</field>
+            <field name="code">open.file.duplicate</field>
+            <field name="prefix">OFD/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_dealer_unit_booking" model="ir.sequence">
+            <field name="name">Dealer Number</field>
+            <field name="code">dealer.sequence.number</field>
+            <field name="prefix">AJD-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+                    <!--unit swap request-->
+        <record id="seq_unit_swap_request" model="ir.sequence">
+            <field name="name">Unit Swap Request Sequence</field>
+            <field name="code">unit.swap.request.sequence</field>
+            <field name="prefix">USR-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+                    <!--unit cancellation request-->
+        <record id="seq_unit_booking_cancellation_request" model="ir.sequence">
+            <field name="name">Unit Booking Cancellation Request</field>
+            <field name="code">unit.cancellation.request.sequence</field>
+            <field name="prefix">UCR-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_unit_booking_undo_assignment_request" model="ir.sequence">
+            <field name="name">Unit Booking Undo Assignment Request</field>
+            <field name="code">undo.assignment.request.sequence</field>
+            <field name="prefix">UAR-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_number_rebate_policy" model="ir.sequence">
+            <field name="name">Unit Booking Rebate Policy</field>
+            <field name="code">rebate.policy</field>
+            <field name="prefix">RP-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_number_asset_allocation" model="ir.sequence">
+            <field name="name">Dealer Asset Allocation</field>
+            <field name="code">dealer.asset.allocation</field>
+            <field name="prefix">DAA-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_number_renewal_request" model="ir.sequence">
+            <field name="name">Dealer Renewal Request</field>
+            <field name="code">dealer.renewal.request</field>
+            <field name="prefix">DRR-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_number_dealer_cancellation" model="ir.sequence">
+            <field name="name">Dealer Cancellation Request</field>
+            <field name="code">dealer.cancellation.request</field>
+            <field name="prefix">DCR-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_number_buy_back_open_file" model="ir.sequence">
+            <field name="name">Buy Back Open File</field>
+            <field name="code">buy.back.open.file</field>
+            <field name="prefix">BBO-</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -160,7 +160,7 @@ class AccountPaymentExt(models.Model):
 							# 'file_ids': adv_pay.file_id.id,
 							# 'invoice_payment_ref': adv_pay.file_id.name,
 							'partner_id': adv_pay.file_id.membership_id.partner_id.id,
-							'type': 'out_invoice',
+							'move_type': 'out_invoice',
 							'journal_id': self.env.company.account_journal_id.id,
 							'property_invoice_type': 'installment',
 							'user_id': adv_pay.file_id.user_id.id,

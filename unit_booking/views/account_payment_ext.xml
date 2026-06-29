@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="unit_booking.view_account_payment_form">
+            <field name="name">unit_booking view_account_payment_form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='file_id']" position="attributes">
+                    <attribute name="invisible">payment_type != 'inbound' or is_advance_payment</attribute>
+                    <attribute name="required">advance_against == 'file' and is_advance_payment and payment_type == 'inbound'</attribute>
+                </xpath>
+                <xpath expr="//field[@name='investment_id']" position="attributes">
+                    <attribute name="invisible">payment_type != 'inbound' or is_advance_payment</attribute>
+                    <attribute name="required">advance_against == 'investment' and is_advance_payment and payment_type == 'inbound'</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

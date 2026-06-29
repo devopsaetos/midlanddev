@@ -157,7 +157,7 @@ class WebSettingsDashboard(http.Controller):
         invoice_ids = request.env['account.move'].search([
             ('user_id', '=', saleperson_id),
             ('state','=', 'posted'),
-            ('type','=', 'out_invoice'),
+            ('move_type', '=', 'out_invoice'),
             ])
 
         members = list(dict.fromkeys([rec.partner_id for rec in invoice_ids]))
@@ -221,7 +221,7 @@ class WebSettingsDashboard(http.Controller):
     def followup_data(self, **kw):
         data = []
         invoices = request.env['account.move']
-        out_invoices = invoices.search([('type', '=', 'out_invoice')])
+        out_invoices = invoices.search([('move_type', '=', 'out_invoice')])
         salepersons = out_invoices.mapped('user_id')
         # check if the user is administrator or saleperson
         current_user = request.env.user
@@ -254,7 +254,7 @@ class WebSettingsDashboard(http.Controller):
 
     def sm_inv_sc(self, invoice, rec_id, ageing):
         return invoice.search_count([
-            ('type', '=', 'out_invoice'),
+            ('move_type', '=', 'out_invoice'),
             ('user_id', '=', rec_id),
             ('state','=', 'posted'),
             ('ageing', '=', ageing)
@@ -262,7 +262,7 @@ class WebSettingsDashboard(http.Controller):
 
     def sm_inv_total(self, invoice, rec_id, ageing):
         return sum(invoice.search([
-            ('type', '=', 'out_invoice'),
+            ('move_type', '=', 'out_invoice'),
             ('user_id', '=', rec_id),
             ('state','=', 'posted'),
             ('ageing','=', ageing)]).mapped('amount_residual'))

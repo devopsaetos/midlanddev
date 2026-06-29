@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.printing_documents_search_wizard">
+            <field name="name">file_financials_report.printing_documents_search_wizard</field>
+            <field name="model">print.documents.search</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="document_type" required="1"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="unit_category_type_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sector_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="greeting_letter"/>
+                                <field name="file"/>
+                                <field name="ledger"/>
+                            </group>
+                            <group>
+                                <field name="investor_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                                <field name="investment_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="category_id" domain="[('project_type','=','housing_society')]" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="file_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="receipt"/>
+                                <field name="confirmation_receipt"/>
+                                <button string="Search" name="search_records" type="object" class="btn-primary"/>
+                            </group>
+                            <field name="search_line_ids" nolabel="1" create="false">
+                                <list editable="bottom">
+                                    <field name="select"/>
+                                    <field name="print_queue_id" readonly="1"/>
+                                    <field name="file_id" readonly="1"/>
+                                    <field name="membership_id" readonly="1"/>
+                                    <field name="investment_id" readonly="1"/>
+                                    <field name="unit_category_type_id" readonly="1"/>
+                                    <field name="category_id" readonly="1"/>
+                                    <field name="booking_date" readonly="1"/>
+                                    <field name="sector_id" readonly="1"/>
+                                    <field name="greeting_letter"/>
+                                    <field name="file"/>
+                                    <field name="ledger"/>
+                                    <field name="receipt"/>
+                                    <field name="confirmation_receipt"/>
+                                </list>
+                            </field>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Create Request" name="create_print_request" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="file_financials.action_printing_documents_search_wizard">
+            <field name="name">Search Documents</field>
+            <field name="res_model">print.documents.search</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        <menuitem
+                name="Print Documents"
+                id="file_financials.printing_documents_search"
+                parent="file_financials.file_printing_process_menu_item"
+                action="file_financials.action_printing_documents_search_wizard"
+        />
+
+    </data>
+</odoo>

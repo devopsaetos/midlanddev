@@ -267,6 +267,7 @@
             />
         </record>
 
+        <!--
         <menuitem
                 id="land_development.investor_file"
                 name="Open Files"
@@ -274,6 +275,7 @@
                 action="land_development.action_investor_file"
                 sequence='4'
         />
+        -->
 
     </data>
 </odoo>

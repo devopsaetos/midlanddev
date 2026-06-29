@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.open_file_assignment_view_form1" model="ir.ui.view">
+            <field name="name">unit_booking open_file_assignment_view_form</field>
+            <field name="model">open.file.assignment</field>
+            <field name="arch" type="xml">
+                <form create="false" delete="false">
+                    <header>
+                        <field name="is_assignment_created" invisible="1"/>
+                        <button name="file_assignment"
+                                string="Assignment"
+                                type="object"
+                                invisible="is_assignment_created"
+                                class="btn-primary"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="file_selection"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Undo Assignment"
+                                    icon="fa-folder-open-o"
+                                    groups="unit_booking.group_can_undo_assignment"
+                            >
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group string="Unit Details">
+                            <group>
+                                <field name="prefix" invisible="1"
+                                       readonly="is_assignment_created"/>
+                                <field name="prefix_id"
+                                       required="1"
+                                       domain="[('batch_id','=',batch_id)]"
+                                       readonly="is_assignment_created"
+                                       options="{'no_create': True, 'no_open': True}"
+                                />
+                                <field name="prefix_starting_number"/>
+                                <field name="prefix_ending_number"/>
+                            </group>
+                            <group>
+                                <field name="assignment_date" required="1"
+                                       readonly="is_assignment_created"/>
+                                <field name="batch_id"
+                                       required="1"
+                                       readonly="is_assignment_created"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Assignment Detail">
+                                <field name="open_file_assignment_line_ids"
+                                       readonly="is_assignment_created">
+                                    <list editable="bottom">
+
+                                        <field name="sector_id"
+                                               string="Block"
+                                               options="{'no_create': True, 'no_open': True}"/>
+
+                                        <field name="category_id" required="1"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('project_type','=','housing_society')]"/>
+
+                                        <field name="unit_category_type_id" string="Product" required="1"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('project_type','=','housing_society')]"/>
+
+                                        <field name="unit_size_id" string="Size" required="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+
+                                        <field name="unit_booking_starting_id" string="Starting No."
+                                               required="1"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('prefix_id','=',parent.prefix_id),('state','=','open'),('batch_id','=',parent.batch_id)]"/>
+
+                                        <field name="starting_number" invisible="1"/>
+
+                                        <field name="no_of_units" string="Quantity" required="0"/>
+
+                                        <field name="unit_booking_ending_id" string="Ending No."
+                                               required="1"
+                                               readonly="not unit_booking_starting_id"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('prefix_id','=',parent.prefix_id),('state','=','open')]"/>
+
+                                        <field name="ending_number" invisible="1"/>
+
+                                        <field name="prefix_id" invisible="1"/>
+
+                                        <field name="rate_type" string="Rate Basis" required="1"/>
+
+                                        <field name="rate" string="Rate" required="1"/>
+
+                                        <field name="unit_price" string="Per Unit Price" readonly="1" force_save="1"/>
+
+                                        <field name="processing_fee" string="Processing Fee" required="1"/>
+
+                                        <field name="predefine_plan_id" string="Plan Name" readonly="1" force_save="1"
+                                               options="{'no_create': True, 'no_open': True}"/>
+
+                                        <field name="open_file_assignment_id" invisible="1"/>
+
+                                        <field name="is_undo_assignment" invisible="0" string="Undo" readonly="1" force_save="1"/>
+                                        <field name="undo_date" invisible="0" string="Undo Date" readonly="1" force_save="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Undo Assignment History" invisible="1">
+                                <field name="undo_assignment_line_ids" readonly="1" invisible="1">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="undo_date"/>
+                                        <field name="sector_id" string="Block"/>
+                                        <field name="category_id"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="unit_booking_starting_id" string="Starting No."/>
+                                        <field name="no_of_units" string="Quantity" required="0"/>
+                                        <field name="unit_booking_ending_id" string="Ending No."/>
+                                        <field name="batch_id" string="Batch"/>
+                                        <field name="open_file_assignment_id" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="unit_booking.open_file_assignment_view_tree" model="ir.ui.view">
+            <field name="name">unit_booking open_file_assignment_view_tree</field>
+            <field name="model">open.file.assignment</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="name" string="Sequence Number"/>
+                    <field name="prefix"/>
+                    <field name="batch_id"/>
+                    <field name="assignment_date" string="Date"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_open_file_assignment">
+            <field name="name">Open File Assignment</field>
+            <field name="res_model">open.file.assignment</field>
+            <field name="view_mode">list,form</field>
+        </record>
+<!--        <menuitem-->
+<!--                id="unit_booking.open_file_assignment_menu"-->
+<!--                name="Open File Assignment"-->
+<!--                parent="unit_booking.menu_root"-->
+<!--                action="unit_booking.action_open_file_assignment"-->
+<!--                sequence='4'-->
+<!--        />-->
+    </data>
+</odoo>

@@ -10,7 +10,6 @@ class ProductProduct(models.Model):
         for product, vals in zip(products, vals_list):
             if not (self.env.context.get('create_from_tmpl') and len(product.product_tmpl_id.product_variant_ids) == 1):
                 product._set_standard_price(vals.get('standard_price') or 0.0)
-        # self.clear_caches()
         return products
 
     def write(self, values):

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.investment_rebate_wizard">
+            <field name="name">file_financials_report.investment_rebate_wizard</field>
+            <field name="model">investment.rebate.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="deal_closure" required="1"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                            <group>
+                                <field name="investor_id"/>
+                                <field name="investment_id"/>
+                                <button string="Search" name="search_records" type="object" class="btn-primary"/>
+                            </group>
+                                <field name="search_line_ids" nolabel="1" create="false">
+                                    <list editable="bottom">
+                                        <field name="select"/>
+                                        <field name="investment_rebate_line_id" readonly="1" invisible="1"/>
+                                        <field name="agent_type" readonly="1"/>
+                                        <field name="transaction_type" readonly="1"/>
+                                        <field name="investor_id" readonly="1"/>
+                                        <field name="investment_id" readonly="1"/>
+                                        <field name="calculated_rebate" readonly="1" sum="Total"/>
+                                        <field name="settlement_option" required=""/>
+                                        <field name="actual_amount" sum="Total"/>
+                                    </list>
+                                </field>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Create Request" name="create_rebate_request" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="file_financials.action_investment_rebate_wizard">
+            <field name="name">Rebate Run</field>
+            <field name="res_model">investment.rebate.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+        <menuitem
+                name="Rebate Run"
+                id="file_financials.investment_rebate_wizard_menu_item"
+                parent="file_financials.rebate_menu_item"
+                action="file_financials.action_investment_rebate_wizard"
+        />
+    </data>
+</odoo>

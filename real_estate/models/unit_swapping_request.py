@@ -794,7 +794,7 @@ class UnitSwappingRequest(models.Model):
             })]
             invoice = self.env['account.move'].create({
                 'partner_id': self.membership_id.partner_id.id,
-                'type': 'out_invoice',
+                'move_type': 'out_invoice',
                 'unit_swap_request_id': self.id,
                 'investment_id': self.investment_id.id,
                 # 'file_ids': self.file_id.id,
@@ -814,7 +814,7 @@ class UnitSwappingRequest(models.Model):
             'view_mode': 'list,form',
             'name': _('Invoices'),
             'res_model': 'account.move',
-            'domain': [('unit_swap_request_id', '=', self.id), ('type', '=', 'out_invoice'), ('partner_id', '=', self.membership_id.partner_id.id)],
+            'domain': [('unit_swap_request_id', '=', self.id), ('move_type', '=', 'out_invoice'), ('partner_id', '=', self.membership_id.partner_id.id)],
             'context': {'default_partner_id': self.membership_id.partner_id.id},
         }
 
@@ -854,7 +854,7 @@ class UnitSwappingRequest(models.Model):
             # Credit Note
             invoice = self.env['account.move'].create({
                 'partner_id': self.investment_id.partner_id.partner_id.id,
-                'type': 'out_refund',
+                'move_type': 'out_refund',
                 'unit_swap_request_id': self.id,
                 'investment_id': self.investment_id.id,
                 'invoice_date': fields.Date.today(),
@@ -871,7 +871,7 @@ class UnitSwappingRequest(models.Model):
         if amount > 0 and prod:
             invoice = self.env['account.move'].create({
                 'partner_id': self.investment_id.partner_id.partner_id.id,
-                'type': 'out_invoice',
+                'move_type': 'out_invoice',
                 'unit_swap_request_id': self.id,
                 'investment_id': self.investment_id.id,
                 # 'file_ids': self.file_id.id,

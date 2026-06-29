@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit file form: add smart button + Generate Invoices button -->
+    <record id="file_form_midland_invoice_ext" model="ir.ui.view">
+        <field name="name">file.form.midland.invoice.ext</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="real_estate.file_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Smart button in button_box -->
+            <div name="button_box" position="inside">
+                <button name="action_view_midland_invoices"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="midland_invoice_count == 0">
+                    <field name="midland_invoice_count" widget="statinfo" string="Invoices"/>
+                </button>
+            </div>
+
+            <!-- Generate Invoices button in header (before file_status statusbar) -->
+            <field name="file_status" position="before">
+                <button name="action_generate_installment_invoices"
+                        string="Generate Invoices"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="file_status not in ('draft', 'lock')"/>
+            </field>
+
+        </field>
+    </record>
+
+
+    <!-- Inherit building file form: same smart button + Generate Invoices button -->
+    <record id="building_file_form_midland_invoice_ext" model="ir.ui.view">
+        <field name="name">building.file.form.midland.invoice.ext</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="land_development.file_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Smart button in button_box -->
+            <div name="button_box" position="inside">
+                <button name="action_view_midland_invoices"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="midland_invoice_count == 0">
+                    <field name="midland_invoice_count" widget="statinfo" string="Invoices"/>
+                </button>
+            </div>
+
+            <!-- Generate Invoices button before file_status statusbar -->
+            <field name="file_status" position="before">
+                <button name="action_generate_installment_invoices"
+                        string="Generate Invoices"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="file_status not in ('draft', 'lock')"/>
+            </field>
+
+        </field>
+    </record>
+
+</odoo>

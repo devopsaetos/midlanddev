@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.investment_lines_ext">
+            <field name="name">file_financials.investment_lines_ext</field>
+            <field name="model">investment</field>
+            <field name="inherit_id" ref="real_estate.investment_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='inventory_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='deal_price']" position="after">
+                    <field name="own_plan" invisible="1" force_Save="1"/>
+                    <!--                    <field name="predefine_plan_id" invisible="not own_plan" readonly="not own_plan"/>-->
+                    <field name="predefine_plan_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="booking_value" sum="Total"/>
+                    <field name="confirmation_value" sum="Total"/>
+                    <field name="posession_value" invisible="1" force_Save="1" sum="Total"/>
+                    <field name="balloting_value" invisible="1" force_Save="1" sum="Total"/>
+                    <field name="final_value" invisible="1" force_Save="1" sum="Total"/>
+                    <field name="balloon_value" invisible="1" force_Save="1" sum="Total"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

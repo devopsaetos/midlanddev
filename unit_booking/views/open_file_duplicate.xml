@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.open_file_duplicate_form" model="ir.ui.view">
+            <field name="name">unit_booking open_file_duplicate_request_form</field>
+            <field name="model">open.file.duplicate</field>
+            <field name="arch" type="xml">
+                <form create="false" duplicate="false" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <field name="duplicate_file" invisible="1"/>
+                        <button
+                                name="approve_request"
+                                type="object"
+                                string="Approve Request"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"
+                        />
+                        <button
+                                name="request_cancel"
+                                type="object"
+                                string="Cancel"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"
+                        />
+                    </header>
+                    <sheet>
+                        <field
+                                name="qr_code"
+                                widget='image'
+                                class="oe_avatar"
+                                style="width:100px; height:100px"
+                        />
+                        <div class="oe_title">
+                            <h1>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name" readonly="1"/>
+                                <field name="payment_type" invisible="1"/>
+                            </h1>
+                        </div>
+                        <field name="transaction_type" readonly="1"/>
+                        <widget name="web_ribbon" text="Duplicate File" bg_color="bg-success"
+                                invisible="not duplicate_file"/>
+                        <group string="Unit Details">
+                            <group>
+                                <field name="batch_id" readonly="1" required="1"/>
+                                <field name="units_booking_id" readonly="1" required="1" string="File"/>
+                                <field name="society_id" readonly="1"/>
+                                <field name="sector_id" string="Block" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="tracking_number" string='Sequence Number' readonly="1"/>
+                                <field name="number" invisible="1"/>
+                                <field name="phase_id" readonly="1"/>
+                                <field name="category_id" readonly="1"/>
+                                <field name="unit_category_type_id" string="Product" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Customer Detail">
+                            <group>
+                                <field name="transferee_partner_id"
+                                       readonly="state != 'draft'"
+                                       context="{
+                                        'form_view_ref': 'real_estate.view_partner_form',
+                                    }"
+                                />
+                                <field widget="mask" data-inputmask="'mask': '99999-9999999-9'" required="1"
+                                       name="transferee_cnic_number" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="transferee_relation_name" string="Father/Spouse "
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group string="Dealer Details"
+                               invisible="not agent_id">
+                            <group>
+                                <field name="agent_id" invisible="not agent_id"
+                                       options="{'no_create': True}" string="Dealer"/>
+                            </group>
+                            <group>
+                                <field name="sub_agent_id"
+                                       domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','sub_agent'),('unit_booking_agent_id','=',agent_id)]"
+                                       invisible="not sub_agent_id"
+                                       options="{'no_create': True}" string="Sub Dealer"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group name="installment_plan" string="Installment Details">
+
+                                <field name="plan_type"
+                                       readonly="state != 'draft' or payment_type == 'lump_sum'"/>
+
+                                <field name="include_installment" invisible="1"/>
+
+                                <field name="predefine_plan_id" string="Plan Name" readonly="1"
+                                       invisible="plan_type != 'predefine' or not plan_type"/>
+                                <field name="payment_type" readonly="1"/>
+                                <!--                                                <label for="grace_period"/>-->
+                                <field name="interval_id"
+                                       readonly="state != 'draft' or payment_type == 'lump_sum'"
+                                       options="{'no_create': True}"/>
+
+                                <field name="starting_date" string="Start Date" readonly="1"
+                                       invisible="payment_type == 'lump_sum'"/>
+
+                                <field name="total_installment"
+                                       invisible="payment_type == 'lump_sum'" readonly="state != 'draft'"/>
+
+                                <field name="payment_states" readonly="1" string="Installment Status" invisible="1"/>
+
+                                <field name="balloon_payment_interval" force_save="1"
+                                       string="Balloon Interval" invisible="1"/>
+
+                                <field name="balloon_payment_frequency" force_save="1" readonly="1"
+                                       string="Frequency" invisible="1"/>
+                                <!--                                                <field name="create_manually"/>-->
+                            </group>
+                            <group string="Payment Details">
+
+                                <field name="sale_amount" force_save="1"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="ttl_sale_amount" force_save="1"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="net_sale_amount" force_save="1"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="discount_amount" force_save="1"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="initial_payment" force_save="1"
+                                       invisible="payment_type == 'lump_sum'"
+                                       readonly="state != 'draft'" required="payment_type == 'installments'"/>
+
+                                <field name="balloting_amount"
+                                       string="Final Payment" force_save="1"
+                                       invisible="payment_type == 'lump_sum'"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="balloon_payment" force_save="1" invisible="1"/>
+
+                                <field name="balance_amount" force_save="1"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="installment_plan" string="Installment Plan" autofocus="autofocus">
+                                <field name="unit_booking_plan_ids" readonly="1">
+                                    <list decoration-info="invoice_created == True">
+
+                                        <field name="installment_number" string="Sr. No"/>
+
+                                        <field name="file_type" invisible="1"/>
+
+                                        <field name="double_check_paid_amount" invisible="1"/>
+
+                                        <field name="installment_type" invisible="1"/>
+
+                                        <field name="installment_name" invisible="0"/>
+
+                                        <field name="property_invoice_type" invisible="1"/>
+
+                                        <field name="date"/>
+
+                                        <field name="payment_date" string="Payment date" readonly="0"/>
+
+                                        <field name="amount" sum="Total"/>
+
+                                        <field name="invoice_created" invisible="1"/>
+
+                                        <field name="invoice"/>
+
+                                        <field name="invoice_id" invisible="1"/>
+
+                                        <field name="state" string="Invoice Status" invisible="1"/>
+
+                                        <field name="amount_paid" sum="Amount Paid" readonly="0"/>
+
+                                        <field name="residual" sum="Remaining Amount" readonly="0"/>
+
+                                        <field name="payment_status" string="Status"/>
+
+                                        <field name="new_installment_number" invisible="1"/>
+                                    </list>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="installment_number" string="Sr. No"/>
+                                                    <field name="file_type" invisible="1"/>
+                                                    <field name="double_check_paid_amount"
+                                                           invisible="0"/>
+                                                    <field name="installment_type" invisible="0"/>
+                                                    <field name="property_invoice_type" invisible="1"/>
+                                                    <field name="date"/>
+                                                    <field name="payment_date" string="Payment date"
+                                                           readonly="1"/>
+                                                    <field name="amount" sum="Total"/>
+                                                    <field name="invoice_created" invisible="0"/>
+                                                    <field name="invoice"/>
+                                                    <field name="units_booking_id" string="File"/>
+                                                </group>
+                                                <group>
+                                                    <field name="invoice_id" string="Invoice Ref #"
+                                                           invisible="0"/>
+                                                    <field name="state" string="Invoice Status"
+                                                           invisible="1"/>
+                                                    <field name="amount_paid" sum="Amount Paid"
+                                                           readonly="1"/>
+                                                    <field name="residual" sum="Remaining Amount"
+                                                           readonly="1"/>
+                                                    <field name="payment_status" string="Status"/>
+                                                    <field name="new_installment_number" invisible="1"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                            <page name="required_document" string="Required Document">
+                                <field name="required_documents_line_ids" readonly="state == 'approve'">
+                                    <list editable="bottom">
+
+                                        <field name="description"/>
+
+                                        <field name="attachment"/>
+
+                                        <field name="party" invisible="0"/>
+
+                                        <field name="date"/>
+
+                                        <field name="units_booking_id" invisible="1"/>
+
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.open_file_duplicate_tree" model="ir.ui.view">
+            <field name="name">unit_booking open_file_duplicate_tree</field>
+            <field name="model">open.file.duplicate</field>
+            <field name="arch" type="xml">
+                <list duplicate="false" delete="false">
+                    <field name="tracking_number"/>
+                    <field name="name" string="Sequence Number"/>
+                    <field name="date" string="Date"/>
+                    <field name="state"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id" string="Block"/>
+                    <field name="category_id"/>
+                    <field name="unit_category_type_id" string="Product"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.open_file_duplicate_search">
+            <field name="name">unit_booking open_file_duplicate_view_search</field>
+            <field name="model">open.file.duplicate</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="batch_id"/>
+                    <field name="name"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id" string="Block"/>
+                    <field name="category_id"/>
+                    <field name="unit_category_type_id" string="Product"/>
+                    <separator string="Group By"/>
+                        <filter name='group_by_batch_id'
+                                string="Batch Number" domain="[]" context="{'group_by':'batch_id'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_open_file_duplicate_request">
+            <field name="name">Open File Duplicate Request</field>
+            <field name="res_model">open.file.duplicate</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{
+                'search_default_group_by_batch_id': 1,
+                'current_view': 'realestate',
+                'default_project_type':'housing_society'}
+            </field>
+            <field name="domain">
+                [
+                ('project_type','=','housing_society')
+                ]
+            </field>
+        </record>
+
+        <menuitem
+                id="unit_booking.open_file_duplicate_request_menu"
+                name="Duplicate File Request"
+                parent="unit_booking.process_management_root"
+                action="unit_booking.action_open_file_duplicate_request"
+                sequence='2'
+        />
+    </data>
+</odoo>

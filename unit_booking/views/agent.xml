@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="unit_booking.agent_form">
+            <field name="name">unit_booking agent_form</field>
+            <field name="model">res.partner</field>
+            <field name="priority">40</field>
+            <field name="arch" type="xml">
+                <form string="Partners">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <field name="is_invoice_generation" invisible="1"/>
+
+                        <button name="in_process"
+                                type="object"
+                                class="oe_highlight"
+                                string="In Process"
+                                invisible="state != 'draft'"
+                        />
+
+                        <button name="create_invoice"
+                                type="object"
+                                class="oe_highlight"
+                                string="Invoice"
+                                invisible="state != 'in_process'"
+                        />
+
+                        <button name="set_to_approve"
+                                type="object"
+                                class="oe_highlight"
+                                string="Approve"
+                                invisible="state != 'invoice'"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Invoices :  "
+                                    icon="fa-pencil-square-o"
+                                    invisible="not is_invoice_generation">
+                                <field name="no_of_invoices"/>
+                            </button>
+                            <button
+                                    name="open_allocation"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Allocation"
+                                    icon="fa-folder-open-o"
+                                    invisible="not dealer_asset_allocation_id"/>
+                        </div>
+                        <field
+                                name="image_1920"
+                                widget='image'
+                                class="oe_avatar"
+                                style="width:100px; height:100px"
+                                readonly="state == 'approve'"
+                        />
+
+                        <div class="oe_title">
+                            <h1>
+                                <field name="ref" default_focus="1" placeholder="Member No."/>
+                                <field name="dealer_asset_allocation_id" invisible="1"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group>
+
+                                <field name="name"
+                                       required="1"
+                                       widget="regex_mask"
+                                       data-inputmask-regex="^[a-zA-Z-\s]+$"
+                                       readonly="state != 'draft'"/>
+
+                                <field name="is_unit_booking_agent" invisible="1" readonly="0"/>
+                                <field name="unit_booking_agent_type"
+                                       readonly="state != 'draft'"
+                                       required="1" string="Type"/>
+                                <field name="unit_booking_agent_id" string="Main Dealer"
+                                       options="{'no_open': True,'no_create': True}"
+                                       invisible="unit_booking_agent_type != 'sub_agent'" readonly="state != 'draft'" required="unit_booking_agent_type == 'sub_agent'"/>
+                            </group>
+                            <group>
+                                <field name="company_type"
+                                       readonly="state != 'draft'"
+                                       string="Dealer Type" required="1"/>
+                                <field name="dealer_category_id"
+                                       required="1"
+                                       options='{"no_open": True,"no_create": True}'
+                                       readonly="state != 'draft'"
+                                />
+                                <field name="valid_till"
+                                       required="1"
+                                       readonly="state != 'draft'"
+                                />
+                            </group>
+                        </group>
+                        <group invisible="company_type not in 'person'">
+                            <!-- General Info (dob, relation_name, gender removed - fields on res.member not res.partner) -->
+                            <group name='contact_info' invisible="company_type not in 'person'"
+                                   string="Contact Info">
+                                <field
+                                        class="oe_damage_control_1"
+                                        name="email"
+                                        string="Email"
+                                        widget="email"
+                                        context="{'gravatar_image': True}"
+                                        placeholder='for_example123@mail.com'
+                                        readonly="state != 'draft'"
+                                        options="{'no_open': True,'no_create': True}"
+                                />
+
+                                <!-- mobile removed: field does not exist on res.partner in Odoo 19 -->
+                                <field
+                                        name="phone"
+                                        widget="mask"
+                                        data-inputmask="'mask': '9999999999'"
+                                        placeholder='042987654'
+                                        class="o_phone_number" readonly="state != 'draft'"/>
+
+                            </group>
+                        </group>
+                        <group>
+                            <group name='primary_address' string="Primary Address">
+                            </group>
+                            <!-- Correspondence Address section removed (is_same, corespondence_* fields on res.member not res.partner) -->
+                            <group style="width: 40%;">
+                                <div class="o_address_format">
+                                    <field
+                                            name="street"
+                                            placeholder="Street..."
+                                            class="o_address_street"
+                                            readonly="state != 'draft'"/>
+
+                                    <field
+                                            name="street2"
+                                            placeholder="Street 2..."
+                                            class="o_address_street"
+                                            readonly="state != 'draft'"/>
+
+                                    <field
+                                            name="city"
+                                            required="1"
+                                            placeholder="City"
+                                            class="o_address_city"
+                                            readonly="state != 'draft'"/>
+
+                                    <field
+                                            name="state_id"
+                                            string="Province"
+                                            class="o_address_state"
+                                            placeholder="State"
+                                            options='{"no_open": True}'
+                                            readonly="state != 'draft'"
+                                            context="{'country_id': country_id, 'zip': zip}"/>
+
+                                    <field
+                                            name="zip"
+                                            placeholder="ZIP"
+                                            class="o_address_zip"
+                                            readonly="state != 'draft'"/>
+
+                                    <field
+                                            name="country_id"
+                                            required="1"
+                                            placeholder="Country"
+                                            class="o_address_country"
+                                            force_save="1"
+                                            readonly="state != 'draft'"
+                                            options='{"no_open": True, "no_create": True}'/>
+                                </div>
+                            </group>
+                        </group>
+                        <group name="id_info" invisible="company_type not in 'person'">
+                            <group string="Identification Info">
+
+                                <field name='identification_type'
+                                       readonly="state != 'draft'"/>
+
+                                <field
+                                        widget="mask"
+                                        data-inputmask="'mask': '999999-999999-9'"
+                                        name='nicop'
+                                        invisible="identification_type != 'ni_cop'" readonly="state != 'draft'"/>
+
+                                <!-- cnic, cnic_expiry_date, passport, passport_expiry_date, form_b,
+                                     cnic_front, cnic_back, passport_front, form_b_front,
+                                     relation_name removed — fields exist on res.member not res.partner -->
+
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Registration Details">
+                                <group>
+                                    <group>
+                                        <field name="registration_fee"
+                                               options="{'no_open': True,'no_create': True}"
+                                               readonly="state != 'draft'"
+                                        />
+                                        <field name="security_fee"
+                                               options="{'no_open': True,'no_create': True}"
+                                               readonly="state != 'draft'"
+                                        />
+                                    </group>
+                                    <group>
+
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Company info" invisible="company_type not in 'company'">
+                                <group>
+                                    <group name='aop_info' string="Company Information">
+                                        <field name="vat"
+                                               readonly="state != 'draft'"
+                                               string="NTN" placeholder="e.g. 7929261-0"/>
+                                        <field name="email"
+                                               readonly="state != 'draft'"
+                                               placeholder='for_example123@mail.com'
+                                               widget="email" context="{'gravatar_image': True}"/>
+                                        <field name="phone"
+                                               widget="mask"
+                                               data-inputmask="'mask': '9999999999'"
+                                               placeholder='042987654'
+                                               class="o_phone_number" readonly="state != 'draft'"/>
+                                        <!-- cp_name, cp_code_mobile_id, cp_mobile, cp_code_landline_id,
+                                             cp_landline, cp_desigination, nature_of_business, fax, uan
+                                             removed — fields exist on res.member not res.partner -->
+                                    </group>
+                                </group>
+                            </page>
+                            <!-- Joint Owner Detail page removed: cnic_line_ids field exists on res.member not res.partner -->
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.agent_tree">
+            <field name="name">unit_booking agent_tree</field>
+            <field name="model">res.partner</field>
+            <field name="priority">40</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="ref"/>
+                    <field name="name"/>
+                    <field name="company_type" string="Dealer Type" invisible="0"/>
+                    <field name="unit_booking_agent_type" string="Type"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.agent_search">
+            <field name="name">unit_booking agent_search</field>
+            <field name="model">res.partner</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="phone"/>
+                    <separator string="Group By"/>
+                        <filter name='dealer_type' string="Dealer Type" domain="[]"
+                                context="{'group_by':'unit_booking_agent_type'}"/>
+                        <filter name='dealer' string="Dealer" domain="[]"
+                                context="{'group_by':'unit_booking_agent_id'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_agents">
+            <field name="name">Dealer</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">list,form,search</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add an New Dealer.
+                </p>
+            </field>
+            <field name="domain">[('unit_booking_agent_type','in', ('sub_agent','main_agent'))]</field>
+            <field name="context">{"default_is_unit_booking_agent":1,
+                "default_company_type":'person'}
+            </field>
+            <field name="search_view_id" ref="unit_booking.agent_search"/>
+            <field name="view_ids" eval="[(5, 0, 0),
+                    (0, 0, {'view_mode': 'list', 'view_id': ref('unit_booking.agent_tree')}),
+                    (0, 0, {'view_mode': 'form', 'view_id': ref('unit_booking.agent_form')}),
+                ]"/>
+        </record>
+
+        <menuitem
+                id="unit_booking.agent"
+                name="Dealer"
+                parent="unit_booking.agent_menu_root"
+                action="unit_booking.action_agents"
+                sequence='1'
+        />
+
+    </data>
+</odoo>

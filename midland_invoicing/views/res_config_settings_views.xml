@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_midland_invoicing" model="ir.ui.view">
+        <field name="name">res.config.settings.midland.invoicing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='invoicing_settings']" position="after">
+                <block title="Midland Invoicing" name="midland_invoicing_block">
+                    <setting string="Create Entry for Invoices"
+                             help="If enabled: posting a Midland Invoice creates Dr Receivable / Cr Revenue JV. Payment creates Dr Bank / Cr Receivable and reconciles. If disabled: no JV at invoice time — single Dr Bank / Cr Revenue entry at payment only.">
+                        <field name="midland_create_invoice_entry"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

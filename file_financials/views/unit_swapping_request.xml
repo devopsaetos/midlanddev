@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.unit_swapping_request_tree_view_ext">
+            <field name="name">file_financials.unit_swapping_request_tree_view_ext</field>
+            <field name="model">unit.swapping.request</field>
+            <field name="inherit_id" ref="land_development.unit_swapping_request_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='membership_id']" position="after">
+                    <field name="transferee_partner_id"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="file_financials.unit_swapping_request_form_ext">
+            <field name="name">file_financials.unit_swapping_request_form_ext</field>
+            <field name="model">unit.swapping.request</field>
+            <field name="inherit_id" ref="real_estate.unit_swapping_request_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='approve_request']" position="before">
+                    <button name="in_process"
+                            type="object"
+                            class="oe_highlight"
+                            string="Confirm"
+                            invisible="state != 'draft'"/>
+                    <button name="request_printed"
+                            type="object"
+                            class="oe_highlight"
+                            string="Print"
+                            invisible="state != 'in_process'"/>
+                </xpath>
+                <xpath expr="//button[@name='approve_request']" position="replace">
+                    <button name="approve_request"
+                            type="object"
+                            class="oe_highlight"
+                            string="Approve"
+                            groups="real_estate.group_approve_transfer_req"
+                            invisible="state not in ['in_process','printed']"/>
+                </xpath>
+                <xpath expr="//button[@name='request_cancel']" position="replace">
+                    <button name="request_cancel"
+                            type="object"
+                            class="oe_highlight"
+                            string="Cancel"
+                            groups="real_estate.group_approve_transfer_req"
+                            invisible="state not in ['draft', 'printed', 'in_process']"/>
+                </xpath>
+                <xpath expr="//field[@name='transferee_relation_name']" position="before">
+                    <field name="validation_date" readonly="1" force_save="1"/>
+                </xpath>
+                <xpath expr="//field[@name='investment_id']" position="after">
+                    <field name="from_sub_investor" readonly="1" force_save="1" invisible="not from_sub_investor"/>
+                </xpath>
+                <xpath expr="//field[@name='investor_id']" position="after">
+                    <field name="sub_investor_id" readonly="1" force_save="1" invisible="not from_sub_investor"/>
+                </xpath>
+                <xpath expr="//group[@name='investment_details']" position="before">
+                    <group name="payment_details" string="Payment Details" invisible="transaction_type != 'open_file'">
+                        <group>
+                            <field name="paid_to"/>
+                            <field name="mode_of_payments"/>
+                            <field name="include_confirmation"/>
+                            <field name="sale_on" force_save="1" required="1"/>
+                            <field name="change_payment_type" force_save="1"/>
+                        </group>
+                        <group>
+                            <field name="document_number"/>
+                            <field name="cheque_name"/>
+                            <field name="bank_name"/>
+                            <field name="installment_starting_date" force_save="1" required="1"/>
+                        </group>
+                    </group>
+                    <group name="modification_details" string="Modification Details" invisible="sale_on != 'new_price' and not change_payment_type">
+                        <group>
+                            <field name="new_payment_type" invisible="not change_payment_type" required="change_payment_type"/>
+                            <field name="new_price" invisible="sale_on != 'new_price'" required="sale_on == 'new_price'"/>
+                        </group>
+                        <group>
+                            <field name="new_predefine_plan_id" required="sale_on == 'new_price' or change_payment_type"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+        <!--        CRON JOB -->
+        <record id="ir_cron_file_issuance_request_expiry" model="ir.cron">
+            <field name="name">File Issuance Request Date Validity</field>
+            <field name="model_id" ref="model_unit_swapping_request"/>
+            <field name="state">code</field>
+            <field name="code">model.validate_issuance_request_date()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

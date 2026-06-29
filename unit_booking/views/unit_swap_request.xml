@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.unit_swap_request_view_form" model="ir.ui.view">
+            <field name="name">unit_booking unit_swap_request_view_form</field>
+            <field name="model">unit.booking.swap.request</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="true" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar"
+                               statusbar_colors='{"draft":"yellow","approve":"green"}'/>
+                        <button name="approve_request"
+                                type="object"
+                                class="oe_highlight"
+                                string="Approve"
+                                invisible="state in ['cancel','approve']"/>
+                        <button name="request_cancel"
+                                type="object"
+                                class="oe_highlight"
+                                string="Cancel"
+                                invisible="state in ['cancel','approve']"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group string="Unit Details">
+                            <group>
+                                <field name="transaction_type" readonly="1" force_save="1"/>
+                                <field name="batch_id" readonly="1" force_save="1"/>
+                                <field name="agent_id" readonly="1" force_save="1"/>
+                            </group>
+                            <group>
+                                <field name="deal_pack_id" readonly="1"/>
+                                <field name="unit_booking_allotment_id" readonly="1"/>
+                                <field name="sub_agent_id" readonly="1" force_save="1"
+                                       invisible="not sub_agent_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Unit Detail">
+                                <field name="swap_request_line_ids" readonly="state in ['cancel','approve']">
+                                    <list editable="bottom">
+                                        <field name="is_checked"/>
+                                        <field name="units_booking_id" string="File" force_save="1"/>
+                                        <field name="society_id"/>
+                                        <field name="phase_id"/>
+                                        <field name="sector_id" string="Block"/>
+                                        <field name="category_id"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="batch_id"/>
+                                        <field name="new_units_booking_id" string="New File"/>
+                                        <field name="unit_booking_allotment_id" invisible="1"/>
+                                        <field name="swap_request_id" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.unit_swap_request_view_tree" model="ir.ui.view">
+            <field name="name">unit_booking unit_swap_request_view_tree</field>
+            <field name="model">unit.booking.swap.request</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false" delete="false">
+                    <field name="name"/>
+                    <field name="transaction_type"/>
+                    <field name="batch_id"/>
+                    <field name="unit_booking_allotment_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_unit_swap_request">
+            <field name="name">Swap Request</field>
+            <field name="res_model">unit.booking.swap.request</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="unit_booking.unit_swap_request_menu"
+                name="Unit Swap Request"
+                parent="unit_booking.process_management_root"
+                action="unit_booking.action_unit_swap_request"
+                sequence='3'
+        />
+    </data>
+</odoo>

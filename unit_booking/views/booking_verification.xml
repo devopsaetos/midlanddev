@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="unit_booking.booking_verification" name="File Verification">
+        <t t-call="web.html_container">
+            <style type="text/css">
+                .container {
+                width: 100% !important;
+                }
+                body.o_in_iframe {
+                margin: 0px !important;
+                padding: 0px !important;
+                }
+                body {
+                background-color: #e5e5e5 !important;
+                overflow: hidden !important;
+                font-family: "Montserrat", sans-serif !important;
+                width: 100% !important;
+                height: 100vh !important;
+                background-image: url("/real_estate/static/description/bg.png");
+                background-repeat: no-repeat !important;
+                background-size: cover !important;
+                background-position: center center !important;
+                }
+                header {
+                background-color: #333333 !important;
+                width: 100% !important;
+                padding: 10px 50px !important;
+                }
+                header img {
+                width: 120px !important;
+                }
+                .form_extra_info .file_col {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important;
+                }
+                .border_none {
+                border: 0px !important;
+                }
+                /* File Verification */
+                .file-verification-card {
+                background: #ffffff !important;
+                box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.2) !important;
+                backdrop-filter: blur(40px) !important;
+                border-radius: 20px !important;
+                max-width: 530px !important;
+                }
+                .file-verification-card-extra {
+                width: 100% !important;
+                margin: 100px auto !important;
+                padding: 50px 35px !important;
+                }
+                .file-verification-card-extra {
+                background: radial-gradient(
+                88.36% 242.47% at 6.16% 6.3%,
+                rgba(255, 255, 255, 0.35) 0%,
+                rgba(255, 255, 255, 0.05) 100%
+                ) !important;
+                border: 1px solid rgba(255, 255, 255, 0.8) !important;
+                box-shadow: 0px 30px 40px rgba(0, 0, 0, 0.05) !important;
+                backdrop-filter: blur(12px) !important;
+                border-radius: 32px !important;
+                max-width: 950px !important;
+                }
+                .file-verification-card-extra h2 {
+                font-weight: 700 !important;
+                font-size: 25px !important;
+                line-height: 35px !important;
+                text-align: center !important;
+                position: relative !important;
+                }
+                .file-verification-card-extra h2 {
+                color: #000 !important;
+                }
+                .file-verification-card-extra h2:before {
+                content: "" !important;
+                position: absolute !important;
+                bottom: -8px !important;
+                left: 50% !important;
+                transform: translatex(-50%) !important;
+                width: 120px !important;
+                height: 3px !important;
+                border-radius: 10px !important;
+                transition: all 0.5s ease !important;
+                }
+                .file-verification-card-extra h2:before {
+                background: #000 !important;
+                }
+                .file-verification-card-extra:hover h2:before {
+                width: 150px !important;
+                }
+                .file-verification-card-extra .file_row {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                grid-row-gap: 15px !important;
+                }
+                .file-verification-card-extra .file_row {
+                margin-top: 30px !important;
+                }
+                .file-verification-card-extra .file_col {
+                border-bottom: 1px solid rgba(255, 202, 197, 0.5) !important;
+                padding-bottom: 15px !important;
+                }
+                .file-verification-card-extra .file_col h4 {
+                font-weight: 600 !important;
+                font-size: 16px !important;
+                line-height: 20px !important;
+                color: #000000 !important;
+                }
+                .file-verification-card-extra .file_col p {
+                font-weight: 400 !important;
+                font-size: 16px !important;
+                line-height: 19px !important;
+                color: #000000 !important;
+                }
+                .file-verification-card-extra {
+                position: relative !important;
+                }
+                .file-verification-card-extra .user_profile {
+                width: 100px !important;
+                height: 100px !important;
+                position: absolute !important;
+                right: 20px !important;
+                top: 30px !important;
+                border: 2px solid #e25041 !important;
+                border-radius: 12px !important;
+                }
+                .file-verification-card-extra .user_profile .img {
+                width: 100% !important;
+                }
+                /* Footer */
+                footer{
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                }
+                .footer_socials {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                padding: 30px 0;
+                padding-right: 30px;
+                background-color: #D0D0D0;
+                margin-top: -5px;
+                }
+                .footer_socials li {
+                display: inline-block;
+                margin-right: 5px;
+                padding: 0;
+                }
+                .footer_socials li:before {
+                display: none;
+                }
+                .footer_socials li .socials-item-icon {
+                background-color: #7f7f7f;
+                color: #fff;
+                width: 20px;
+                height: 20px;
+                display: grid;
+                place-items: center;
+                }
+                .footer_socials li :is(span, a) {
+                font-size: 16px;
+                color: #5a5958;
+                }
+
+                @media only screen and (max-width: 992px) {
+                .file-verification-card-extra {
+                max-width: 95%;
+                }
+                }
+                @media only screen and (max-width: 767px) {
+                body{
+                overflow-y: scroll
+                }
+                footer{
+                position: unset
+                }
+                .footer_socials{
+                padding: 20px 0;
+                justify-content: center;
+                }
+                .footer_socials li,.footer_socials li a{
+                font-size: 12px;
+                }
+                .parent_row {
+                grid-template-columns: repeat(1, 1fr) !important;
+                grid-row-gap: 0px !important;
+                }
+                .m_0 {
+                margin: 0px !important;
+                }
+                .file-verification-card-extra .user_profile {
+                position: unset !important;
+                width: 100% !important;
+                max-width: max-content !important;
+                margin: 0 auto !important;
+                margin-bottom: 20px !important;
+                }
+                .file-verification-card-extra .file_row {
+                margin-top: 20px !important;
+                }
+                }
+            </style>
+            <!--                        NEW CODE STARTS HERE-->
+            <header>
+                <img src="/real_estate/static/description/NCHP_Logo.png" alt=""/>
+            </header>
+            <!-- File Verification -->
+            <div class="file-verification-card-extra">
+                <h2>File Verification</h2>
+                <div class="file_row parent_row">
+                    <div class="file_col border_none">
+                        <div class="file_row">
+                            <div class="file_col">
+                                <h4>File No.</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.sequence_number"/>
+                                </p>
+                            </div>
+                            <div class="file_col">
+                                <h4>Tracking ID:</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.name"/>
+                                </p>
+                            </div>
+                            <div class="file_col">
+                                <h4>Agent Name</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.unit_booking_allotment_id.partner_id.name"/>
+                                </p>
+                            </div>
+                            <div class="file_col">
+                                <h4>Installment Start Date</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.starting_date"/>
+                                </p>
+                            </div>
+                            <div class="file_col" style="border-bottom: none !important;">
+                                <h4>Total Installments</h4>
+                            </div>
+                            <div class="file_col" style="border-bottom: none !important;">
+                                <p>
+                                    <span t-esc="unit.total_installment"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file_col border_none">
+                        <div class="file_row m_0">
+                            <div class="file_col">
+                                <h4>Society</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.society_id.name"/>
+                                </p>
+                            </div>
+                            <div class="file_col">
+                                <h4>Phase</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.phase_id.name"/>
+                                </p>
+                            </div>
+                            <div class="file_col">
+                                <h4>Category</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.category_id.name"/>
+                                </p>
+                            </div>
+                            <div class="file_col">
+                                <h4>Product</h4>
+                            </div>
+                            <div class="file_col">
+                                <p>
+                                    <span t-esc="unit.unit_category_type_id.name"/>
+                                </p>
+                            </div>
+                            <div class="file_col" style="border-bottom: none !important;">
+                                <h4>Size</h4>
+                            </div>
+                            <div class="file_col" style="border-bottom: none !important;">
+                                <p>
+                                    <span t-esc="unit.unit_size_id.name"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer>
+                <!--                <div class="location_on_map">-->
+                <!--                    <img src="/real_estate/static/description/address.png" width="100%" alt=""/>-->
+                <!--                </div>-->
+                <div class="footer_socials" style="padding:0px !important;">
+                    <ul>
+                        <li>
+                            <img src="/real_estate/static/description/address.png" width="100%" alt=""/>
+
+                        </li>
+                        <!--                        <li></li>-->
+                        <!--                        <li></li>-->
+                        <li>@ 2016 <a href="/">NEWCITY.COM</a> ALL RIGHTS RESERVED.
+                        </li>
+                    </ul>
+                </div>
+            </footer>
+            <!--                        NEW CODE ENDS HERE-->
+        </t>
+    </template>
+</odoo>

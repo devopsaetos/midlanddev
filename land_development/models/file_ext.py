@@ -6,7 +6,5 @@ class FileExt(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        for vals in vals_list:
-            if vals.get('tracking_id', _('*')) == _('*') and vals.get('type') != 'investor' and self._context.get('current_view') == 'buildings':
-                vals['tracking_id'] = self.env['ir.sequence'].next_by_code("file.tracking.building") or _('*')
+        # tracking_id and name are now handled in base File.create() based on project_type
         return super(FileExt, self).create(vals_list)

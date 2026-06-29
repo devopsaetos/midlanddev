@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="unit_booking.issuance_request_verification" name="File Verification">
+        <t t-call="web.html_container">
+            <style>
+                body
+                {
+                background: #000428; /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #004e92, #000428); /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                }
+                .company-logo
+                {
+                width: auto;
+                height: 225px !important;
+                }
+                i
+                {
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                }
+                @media only screen and (max-width: 768px)
+                {
+                .company-logo {width: 300px !important; height: 100px !important;}
+                .watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                }
+                .card, .card-body
+                {
+                background: url("/unit_booking/static/description/silver-bg.jpg");
+                background-size: cover;
+                }
+                .text-muted span
+                {
+                font-weight: bolder;
+                color: rgb(0 0 0 / 50%) !important;
+                }
+                .rounded-circle
+                {
+                border-radius: 50% !important;
+                border: 2px solid darkgrey;
+                }
+                .watermark {
+                position: fixed;
+                font-size: 180px;
+                font-weight: bolder;
+                opacity: 0.5;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(20deg);
+                -webkit-transform: rotate(20deg);
+                transform: rotate(-40deg);
+                top: 280px !important;
+                }
+            </style>
+            <section>
+                <div class="container py-5">
+                    <t t-if="issuance_request.state == 'cancel'">
+                        <div class="watermark">
+                            <p>CANCELLED</p>
+                        </div>
+                    </t>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <center>
+                                <img class="company-logo"
+                                     t-att-src="image_data_uri(issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.logo)" alt=""/>
+                            </center>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card mb-4 m-3">
+                                <div class="card-body text-center box--gradient silver">
+                                    <t t-if="issuance_request.member_image">
+                                        <img t-att-src="image_data_uri(issuance_request.member_image)" alt=""
+                                             class="rounded-circle img-fluid" style="width: 155px; height:155px;"/>
+                                    </t>
+                                    <!--                                    <h5 class="my-3"><span t-esc="issuance_request.transferee_name"/></h5>-->
+                                    <div class="d-flex justify-content-left mb-2">
+                                        <h5 class="my-3">
+                                            <!--                                            <hr/>-->
+                                            <i class="fa fa-user-circle" style="margin-left: 0px;"/>
+                                            <span t-esc="issuance_request.transferee_name"/>
+                                            <hr/>
+                                            <i class="fa fa-address-card-o"/>
+                                            <span t-esc="issuance_request.transferee_cnic_number"/>
+                                            <hr/>
+                                            <i class="fa fa-phone"/>
+                                            <span t-esc="issuance_request.transferee_mobile"/>
+                                            <hr/>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card mb-4 m-3">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Request No.</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Request Date</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.create_date.strftime('%d %b %Y')"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Agent Name</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.investor_id.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Society</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Phase</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.phase_id.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Category</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.category_id.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <p class="mb-0">Product</p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <p class="text-muted mb-0">
+                                                <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.unit_category_type_id.name"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="card mb-4 m-3">
+                                <div class="card-body text-center box--gradient silver">
+                                    <h5>
+                                        <i class="fa fa-map-marker" style="font-size:30px;"/>
+                                        <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.street"/>
+                                        <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.street2"/>
+                                        <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.city"/>
+                                        <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.state_id.name"/>
+                                        <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.country_id.name"/>
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!--            <style type="text/css">-->
+            <!--                .container {-->
+            <!--                width: 100% !important;-->
+            <!--                }-->
+            <!--                body.o_in_iframe {-->
+            <!--                margin: 0px !important;-->
+            <!--                padding: 0px !important;-->
+            <!--                }-->
+            <!--                body {-->
+            <!--                background-color: #e5e5e5 !important;-->
+            <!--                overflow: hidden !important;-->
+            <!--                font-family: "Montserrat", sans-serif !important;-->
+            <!--                width: 100% !important;-->
+            <!--                height: 100vh !important;-->
+            <!--                background-image: url("/real_estate/static/description/bg.png");-->
+            <!--                background-repeat: no-repeat !important;-->
+            <!--                background-size: cover !important;-->
+            <!--                background-position: center center !important;-->
+            <!--                }-->
+            <!--                header {-->
+            <!--                background-color: #333333 !important;-->
+            <!--                width: 100% !important;-->
+            <!--                padding: 10px 50px !important;-->
+            <!--                }-->
+            <!--                header img {-->
+            <!--                width: 500px !important;-->
+            <!--                }-->
+            <!--                .form_extra_info .file_col {-->
+            <!--                border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important;-->
+            <!--                }-->
+            <!--                .border_none {-->
+            <!--                border: 0px !important;-->
+            <!--                }-->
+            <!--                /* File Verification */-->
+            <!--                .file-verification-card {-->
+            <!--                background: #ffffff !important;-->
+            <!--                box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.2) !important;-->
+            <!--                backdrop-filter: blur(40px) !important;-->
+            <!--                border-radius: 20px !important;-->
+            <!--                max-width: 530px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra {-->
+            <!--                width: 100% !important;-->
+            <!--                margin: 100px auto !important;-->
+            <!--                padding: 50px 35px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra {-->
+            <!--                background: radial-gradient(-->
+            <!--                88.36% 242.47% at 6.16% 6.3%,-->
+            <!--                rgba(255, 255, 255, 0.35) 0%,-->
+            <!--                rgba(255, 255, 255, 0.05) 100%-->
+            <!--                ) !important;-->
+            <!--                border: 1px solid rgba(255, 255, 255, 0.8) !important;-->
+            <!--                box-shadow: 0px 30px 40px rgba(0, 0, 0, 0.05) !important;-->
+            <!--                backdrop-filter: blur(12px) !important;-->
+            <!--                border-radius: 32px !important;-->
+            <!--                max-width: 950px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra h2 {-->
+            <!--                font-weight: 700 !important;-->
+            <!--                font-size: 25px !important;-->
+            <!--                line-height: 35px !important;-->
+            <!--                text-align: center !important;-->
+            <!--                position: relative !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra h2 {-->
+            <!--                color: #000 !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra h2:before {-->
+            <!--                content: "" !important;-->
+            <!--                position: absolute !important;-->
+            <!--                bottom: -8px !important;-->
+            <!--                left: 50% !important;-->
+            <!--                transform: translatex(-50%) !important;-->
+            <!--                width: 120px !important;-->
+            <!--                height: 3px !important;-->
+            <!--                border-radius: 10px !important;-->
+            <!--                transition: all 0.5s ease !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra h2:before {-->
+            <!--                background: #000 !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra:hover h2:before {-->
+            <!--                width: 150px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .file_row {-->
+            <!--                display: grid !important;-->
+            <!--                grid-template-columns: repeat(2, 1fr) !important;-->
+            <!--                grid-row-gap: 15px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .file_row {-->
+            <!--                margin-top: 30px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .file_col {-->
+            <!--                border-bottom: 1px solid rgba(255, 202, 197, 0.5) !important;-->
+            <!--                padding-bottom: 15px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .file_col h4 {-->
+            <!--                font-weight: 600 !important;-->
+            <!--                font-size: 16px !important;-->
+            <!--                line-height: 20px !important;-->
+            <!--                color: #000000 !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .file_col p {-->
+            <!--                font-weight: 400 !important;-->
+            <!--                font-size: 16px !important;-->
+            <!--                line-height: 19px !important;-->
+            <!--                color: #000000 !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra {-->
+            <!--                position: relative !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .user_profile {-->
+            <!--                width: 100px !important;-->
+            <!--                height: 100px !important;-->
+            <!--                position: absolute !important;-->
+            <!--                right: 20px !important;-->
+            <!--                top: 30px !important;-->
+            <!--                border: 2px solid #e25041 !important;-->
+            <!--                border-radius: 12px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .user_profile .img {-->
+            <!--                width: 100% !important;-->
+            <!--                }-->
+            <!--                /* Footer */-->
+            <!--                footer{-->
+            <!--                position: fixed;-->
+            <!--                bottom: 0;-->
+            <!--                left: 0;-->
+            <!--                right: 0;-->
+            <!--                }-->
+            <!--                .footer_socials {-->
+            <!--                display: flex;-->
+            <!--                justify-content: center;-->
+            <!--                align-items: center;-->
+            <!--                padding: 30px 0;-->
+            <!--                padding-right: 30px;-->
+            <!--                background-color: #D0D0D0;-->
+            <!--                margin-top: -5px;-->
+            <!--                }-->
+            <!--                .footer_socials li {-->
+            <!--                display: inline-block;-->
+            <!--                margin-right: 5px;-->
+            <!--                padding: 0;-->
+            <!--                }-->
+            <!--                .footer_socials li:before {-->
+            <!--                display: none;-->
+            <!--                }-->
+            <!--                .footer_socials li .socials-item-icon {-->
+            <!--                background-color: #7f7f7f;-->
+            <!--                color: #fff;-->
+            <!--                width: 20px;-->
+            <!--                height: 20px;-->
+            <!--                display: grid;-->
+            <!--                place-items: center;-->
+            <!--                }-->
+            <!--                .footer_socials li :is(span, a) {-->
+            <!--                font-size: 16px;-->
+            <!--                color: #5a5958;-->
+            <!--                }-->
+
+            <!--                @media only screen and (max-width: 992px) {-->
+            <!--                .file-verification-card-extra {-->
+            <!--                max-width: 95%;-->
+            <!--                }-->
+            <!--                }-->
+            <!--                @media only screen and (max-width: 767px) {-->
+            <!--                body{-->
+            <!--                overflow-y: scroll-->
+            <!--                }-->
+            <!--                footer{-->
+            <!--                position: unset-->
+            <!--                }-->
+            <!--                .footer_socials{-->
+            <!--                padding: 20px 0;-->
+            <!--                justify-content: center;-->
+            <!--                }-->
+            <!--                .footer_socials li,.footer_socials li a{-->
+            <!--                font-size: 12px;-->
+            <!--                }-->
+            <!--                .parent_row {-->
+            <!--                grid-template-columns: repeat(1, 1fr) !important;-->
+            <!--                grid-row-gap: 0px !important;-->
+            <!--                }-->
+            <!--                .m_0 {-->
+            <!--                margin: 0px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .user_profile {-->
+            <!--                position: unset !important;-->
+            <!--                width: 100% !important;-->
+            <!--                max-width: max-content !important;-->
+            <!--                margin: 0 auto !important;-->
+            <!--                margin-bottom: 20px !important;-->
+            <!--                }-->
+            <!--                .file-verification-card-extra .file_row {-->
+            <!--                margin-top: 20px !important;-->
+            <!--                }-->
+            <!--                }-->
+            <!--            </style>-->
+            <!--                        NEW CODE STARTS HERE-->
+            <!--            <header>-->
+            <!--                &lt;!&ndash;                <img src="/real_estate/static/description/NCHP_Logo.png" alt=""/>&ndash;&gt;-->
+            <!--                <center>-->
+            <!--                    <img t-att-src="image_data_uri(issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.logo)" alt=""/>-->
+            <!--                </center>-->
+            <!--            </header>-->
+            <!-- File Verification -->
+            <!--            <div class="file-verification-card-extra">-->
+            <!--                <h2>Request Verification</h2>-->
+            <!--                <br/>-->
+            <!--                <center>-->
+            <!--                    <img t-if="issuance_request.member_image"-->
+            <!--                         t-att-src="image_data_uri(issuance_request.member_image)"-->
+            <!--                         style="width: 130px;height: 130px;"-->
+            <!--                         alt="Logo"/>-->
+            <!--                </center>-->
+            <!--                <div class="file_row parent_row">-->
+            <!--                    <div class="file_col border_none">-->
+            <!--                        <div class="file_row">-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Request No.</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Customer Name:</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.transferee_name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>CNIC:</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.transferee_cnic_number"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Mobile No.</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.transferee_mobile"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Agent Name</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.investor_id.name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            &lt;!&ndash;                            <div class="file_col" style="border-bottom: none !important;">&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                <h4>Total Installments</h4>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                            </div>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                            <div class="file_col" style="border-bottom: none !important;">&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                <p>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                    <span t-esc="issuance_request.total_installment"/>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                </p>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                            </div>&ndash;&gt;-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                    <div class="file_col border_none">-->
+            <!--                        <div class="file_row m_0">-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Request Date</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.create_date.strftime('%d %b %Y')"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Society</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Phase</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.phase_id.name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Category</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.category_id.name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <h4>Product</h4>-->
+            <!--                            </div>-->
+            <!--                            <div class="file_col">-->
+            <!--                                <p>-->
+            <!--                                    <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.unit_category_type_id.name"/>-->
+            <!--                                </p>-->
+            <!--                            </div>-->
+            <!--                            &lt;!&ndash;                            <div class="file_col" style="border-bottom: none !important;">&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                <h4>Size</h4>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                            </div>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                            <div class="file_col" style="border-bottom: none !important;">&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                <p>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                    <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.size_id.name"/>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                                </p>&ndash;&gt;-->
+            <!--                            &lt;!&ndash;                            </div>&ndash;&gt;-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
+
+            <!-- Footer -->
+            <!--            <footer>-->
+            <!--                &lt;!&ndash;                <div class="location_on_map">&ndash;&gt;-->
+            <!--                &lt;!&ndash;                    <img src="/real_estate/static/description/address.png" width="100%" alt=""/>&ndash;&gt;-->
+            <!--                &lt;!&ndash;                </div>&ndash;&gt;-->
+            <!--                <div class="footer_socials" style="padding:0px !important;">-->
+            <!--&lt;!&ndash;                    <ul>&ndash;&gt;-->
+            <!--&lt;!&ndash;                        <li>&ndash;&gt;-->
+            <!--&lt;!&ndash;                            <img src="/real_estate/static/description/address.png" width="100%" alt=""/>&ndash;&gt;-->
+            <!--                        <p style="font-weight: bolder !important; text-align: center !important; font-size:26px !important;">-->
+            <!--                            <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.street"/>-->
+            <!--                            <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.street2"/>-->
+            <!--                            <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.city"/>-->
+            <!--                            <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.state_id.name"/>-->
+            <!--                            <span t-esc="issuance_request.unit_swapping_request_lines[0].investor_file_id.society_id.company_id.country_id.name"/>-->
+            <!--                        </p>-->
+            <!--&lt;!&ndash;                        </li>&ndash;&gt;-->
+            <!--                        &lt;!&ndash;                        <li></li>&ndash;&gt;-->
+            <!--                        &lt;!&ndash;                        <li></li>&ndash;&gt;-->
+            <!--&lt;!&ndash;                        <li>@ 2016 <a href="/">NEWCITY.COM</a> ALL RIGHTS RESERVED.&ndash;&gt;-->
+            <!--&lt;!&ndash;                        </li>&ndash;&gt;-->
+            <!--&lt;!&ndash;                    </ul>&ndash;&gt;-->
+            <!--                </div>-->
+            <!--            </footer>-->
+            <!--                        NEW CODE ENDS HERE-->
+        </t>
+    </template>
+</odoo>

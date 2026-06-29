@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.renewal_form_view" model="ir.ui.view">
+            <field name="name">unit_booking renewal_form_view</field>
+            <field name="model">dealer.renewal.req</field>
+            <field name="arch" type="xml">
+                <form string="Dealer Renewal Request" duplicate="false" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <field name="is_invoice_generation" invisible="1"/>
+
+                        <button name="in_process"
+                                type="object"
+                                class="oe_highlight"
+                                string="In Process"
+                                invisible="state != 'draft'"
+                        />
+
+                        <button name="create_invoice"
+                                type="object"
+                                class="oe_highlight"
+                                string="Invoice"
+                                invisible="state != 'in_process'"
+                        />
+
+                        <button name="set_to_approve"
+                                type="object"
+                                class="oe_highlight"
+                                string="Approve"
+                                invisible="state != 'invoice'"
+                        />
+                    </header>
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Invoices :  "
+                                    icon="fa-pencil-square-o"
+                                    invisible="not is_invoice_generation">
+                                <field name="no_of_invoices"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="sequence"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+
+                                <field name="dealer_id" force_save="1" readonly="1"
+                                       options="{'no_open': True,'no_create': True}"
+                                       string="Dealer"/>
+                                <field name="name"/>
+
+                                <field name="is_unit_booking_agent"
+                                       invisible="1" readonly="0"
+                                />
+                                <field name="unit_booking_agent_type" string="Type"
+                                />
+                                <field name="unit_booking_agent_id" string="Main Dealer"
+                                       options="{'no_open': True,'no_create': True}"
+                                       invisible="unit_booking_agent_type != 'sub_agent'"/>
+                            </group>
+                            <group>
+                                <field name="company_type"
+                                       string="Dealer Type"/>
+                                <field name="dealer_category_id"
+                                       required="1"
+                                       options='{"no_open": True,"no_create": True}'
+                                />
+                                <field name="valid_till"
+                                       required="1"
+                                />
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="security_fee"/>
+                                <field name="registration_fee"/>
+                            </group>
+                            <group>
+                                <field name="next_renewal_date"
+                                       required="1"
+                                       readonly="state != 'draft'"
+                                />
+                                <field name="renewal_fee" required="1"
+                                       readonly="state != 'draft'"
+                                />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.renewal_tree_view" model="ir.ui.view">
+            <field name="name">unit_booking renewal_tree_view</field>
+            <field name="model">dealer.renewal.req</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="sequence"/>
+
+                    <field name="dealer_id"/>
+
+                    <field name="dealer_category_id" string="Category"/>
+
+                    <field name="unit_booking_agent_type" string="Type"/>
+
+                    <field name="valid_till" string="Validity"/>
+
+                    <field name="registration_fee"/>
+
+                    <field name="security_fee"/>
+
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="unit_booking.renewal_search_view" model="ir.ui.view">
+            <field name="name">unit_booking renewal_search_view</field>
+            <field name="model">dealer.renewal.req</field>
+            <field name="arch" type="xml">
+                <search string="Deal Pack">
+                    <field name="dealer_id" string="Name"/>
+                    <field name="state"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="unit_booking.dealer_renewal_action" model="ir.actions.act_window">
+            <field name="name">Dealer Renewal</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">dealer.renewal.req</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click here to create a deal pack.
+                </p>
+            </field>
+        </record>
+
+        <menuitem name="Dealer Renewal Request"
+                  id="unit_booking.dealer_renewal_menu"
+                  parent="unit_booking.agent_menu_root"
+                  action="unit_booking.dealer_renewal_action"
+                  sequence="1"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="unit_booking.unit_view" name="Unit Details">
+        <t t-call="portal.portal_layout">
+            <div id="wrapper">
+                <main class="main">
+                    <form action="" class="main-holder">
+                        <div class="container">
+                            <div class="head">
+                                <h2>Unit Detail</h2>
+                            </div>
+                            <div class="dashboard-info-area">
+                                <div class="dashboard-row">
+                                    <t t-foreach="unit" t-as="u">
+                                        <div class="dashboard-col">
+                                        <div class="dashboard-block">
+                                            <div class="block-heading">
+                                                <strong class="title">Registered Number.</strong>
+                                                <span class="text"><t t-esc="u.name"/></span>
+                                            </div>
+                                            <ul class="info-list">
+                                                <li>
+                                                    <strong class="name">Category:</strong>
+                                                    <span class="text"><t t-esc="u.category_id.name"/></span>
+                                                </li>
+                                            </ul>
+                                            <ul class="info-list">
+                                                <li>
+                                                    <strong class="name">Tracking Number:</strong>
+                                                    <span class="text"><t t-esc="u.sequence_number"/></span>
+                                                </li>
+                                                <li>
+                                                    <strong class="name">Address:</strong>
+                                                    <span class="text">Lahore</span>
+                                                </li>
+<!--                                                    <li>-->
+<!--                                                        <strong class="name">Unit Rate:</strong>-->
+<!--                                                        <span class="budget-text"><t t-esc="pt.unit_price" t-options='{"widget": "monetary", "display_currency": pt.currency_id}'/> /Month</span>-->
+<!--                                                    </li>-->
+                                                <!--                                                    <li>-->
+                                                <!--                                                        <strong class="name">Rental period:</strong>-->
+                                                <!--                                                        <span class="text"><t t-esc="pt.tenancy_period"/></span>-->
+                                                <!--                                                    </li>-->
+                                            </ul>
+
+                                        </div>
+                                    </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </main>
+            </div>
+        </t>
+    </template>
+</odoo>

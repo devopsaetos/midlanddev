@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Main Menu item -->
+    <menuitem
+            name="Investments"
+            id="file_financials.investment_main_menu"
+            web_icon="file_financials,static/description/icon.png"
+            sequence='1'
+    />
+    <!-- Sub-Menu Menu item -->
+
+    <menuitem
+            name="Investments Management"
+            id="file_financials.investment_management_menu_item"
+            parent="file_financials.investment_main_menu"
+            sequence='2'
+    />
+    <menuitem
+            name="Investments"
+            id="file_financials.investments_menu_item"
+            parent="file_financials.investment_management_menu_item"
+            action="real_estate.action_investment"
+            sequence='1'
+    />
+    <menuitem
+            id="file_financials.investor_file"
+            name="Open Files"
+            parent="file_financials.investment_management_menu_item"
+            action="real_estate.action_investor_file"
+            sequence='2'
+    />
+    <menuitem
+            id="file_financials.file_menu_item"
+            name="Issued Files"
+            parent="file_financials.investment_management_menu_item"
+            action="real_estate.action_file"
+            sequence='3'
+    />
+    <menuitem
+            name="Rebate"
+            id="file_financials.rebate_menu_item"
+            parent="file_financials.investment_main_menu"
+            sequence='3'
+    />
+    <menuitem
+            name="Prices &amp; Plans"
+            id="real_estate.menu_price_plan"
+            parent="file_financials.investment_main_menu"
+            sequence='4'
+    />
+    <menuitem
+            id="file_financials.process_menu_item"
+            name="Processes"
+            parent="file_financials.investment_main_menu"
+            sequence="5"
+    />
+    <menuitem
+            name="Reports"
+            id="file_financials.reports_menu_item"
+            parent="file_financials.investment_main_menu"
+            sequence='6'
+    />
+    <menuitem
+            name="Configuration"
+            id="file_financials.configuration_menu_item"
+            parent="file_financials.investment_main_menu"
+            sequence='7'
+    />
+    <!--    Actions Menu Items-->
+    <menuitem
+            id="file_financials.file_process_menu_item"
+            name="File Processing"
+            parent="file_financials.process_menu_item"
+            sequence="1"
+    />
+    <menuitem
+            id="file_financials.unit_search_menu_item"
+            name="Unit Search"
+            groups="real_estate.group_initiate_transfer_req"
+            action="real_estate.action_unit_swapping_search"
+            parent="file_financials.file_process_menu_item"
+            sequence="1"
+    />
+    <menuitem
+            id="file_financials.file_issuance_request_menu"
+            name="File Issuance Requests"
+            groups="real_estate.group_initiate_transfer_req,real_estate.group_approve_transfer_req"
+            action="real_estate.action_file_issuance_request"
+            parent="file_financials.file_process_menu_item"
+            sequence="2"
+    />
+</odoo>

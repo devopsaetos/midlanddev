@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_midland_invoice_user,midland.invoice user,model_midland_invoice,base.group_user,1,1,1,1
+access_midland_invoice_line_user,midland.invoice.line user,model_midland_invoice_line,base.group_user,1,1,1,1
+access_midland_payment_user,midland.payment user,model_midland_payment,base.group_user,1,1,1,1
+access_midland_payment_line_user,midland.payment.line user,model_midland_payment_line,base.group_user,1,1,1,1

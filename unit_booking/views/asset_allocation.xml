@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="unit_booking.dealer_asset_allocation_form">
+            <field name="name">unit_booking dealer_asset_allocation_form</field>
+            <field name="model">dealer.asset.allocation</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form duplicate="false">
+                    <header>
+                        <button name="allocation_request"
+                                type="object"
+                                string="Request"
+                                class="oe_highlight"
+                                invisible="record_state != 'draft'"
+                                groups="unit_booking.group_can_create_asset_allocation_request"
+                        />
+                        <button name="allocation_approve"
+                                type="object"
+                                string="Approve"
+                                class="oe_highlight"
+                                invisible="record_state != 'request'"
+                                groups="unit_booking.group_can_approve_asset_allocation_request"
+                        />
+                        <field name="record_state" widget="statusbar"/>
+                        <field name="issue_to_sub_dealer" invisible="1"/>
+                    </header>
+                    <sheet>
+                        <widget name="web_ribbon" text="Sub-Dealer" bg_color="bg-info"
+                                invisible="record_state == 'draft' or not issue_to_sub_dealer"/>
+                        <widget name="web_ribbon" text="Dealer" bg_color="bg-success"
+                                invisible="record_state == 'draft' or issue_to_sub_dealer"/>
+                        <div class="oe_title">
+                            <field name="sequence_number" invisible="0"/>
+                        </div>
+                        <group>
+                            <field name="name"
+                                   placeholder="Name"
+                                   required="1"
+                                   readonly="record_state != 'draft'"
+                            />
+                            <group>
+                                <field name="issue_to_sub_dealer"
+                                       string="Issue To Sub-Dealer?"
+                                       invisible="record_state != 'draft'"
+                                       widget="boolean_toggle"
+                                />
+
+                                <field name="partner_id" string="Allocated To" required="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       force_save="1"
+                                       readonly="record_state != 'draft'"
+                                />
+                                <field name="main_dealer_id" string="Main Dealer" force_save="1"
+                                       readonly="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="not issue_to_sub_dealer"
+                                />
+                            </group>
+                            <group>
+                                <field name="date" required="1"
+                                       readonly="record_state != 'draft'"
+                                />
+                                <field name="company_id"
+                                       readonly="1"
+                                />
+                                       readonly="1"
+                                /> --> -->
+                            </group>
+                        </group>
+                        <group name="asset_location" string="Allocation Location">
+                            <group>
+                                <field name="city_id"
+                                       readonly="record_state != 'draft'"/>
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="asset_detail" string="Asset Details">
+                                <field name="asset_ids" domain="[('asset_status','=','draft'),('state','=','open')]"
+                                       readonly="record_state != 'draft'"
+                                       options="{'no_create': True, 'no_open': True}">
+                                    <list string="Assets">
+                                        <field name="asset_group_id" string="Asset Group"/>
+                                        <field name="name"/>
+                                        <field name="state" invisible="1"/>
+                                        <field name="asset_status"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.dealer_asset_allocation_tree">
+            <field name="name">unit_booking dealer_asset_allocation_tree</field>
+            <field name="model">dealer.asset.allocation</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="sequence_number"/>
+                    <field name="name"/>
+                    <field name="issue_to_sub_dealer"/>
+                    <field name="partner_id" string="Allocated To"/>
+                    <field name="date"/>
+                    <field name="record_state" string="State"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.dealer_asset_allocation_search">
+            <field name="name">unit_booking dealer_asset_allocation_search</field>
+            <field name="model">dealer.asset.allocation</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="sequence_number"/>
+                    <field name="name"/>
+                    <field name="issue_to_sub_dealer"/>
+                    <field name="partner_id"/>
+                    <field name="date"/>
+                    <field name="record_state"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="unit_booking.action_dealer_asset_allocation">
+            <field name="name">Asset Allocation</field>
+            <field name="res_model">dealer.asset.allocation</field>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click On Create To Allocate Asset To Dealer
+                </p>
+            </field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="unit_booking.menu_dealer_asset_allocation"
+                name="Asset Allocation"
+                parent="unit_booking.agent_menu_root"
+                action="unit_booking.action_dealer_asset_allocation"
+                sequence='3'
+        />
+    </data>
+</odoo>

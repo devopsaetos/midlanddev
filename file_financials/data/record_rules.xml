@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--        Record Rules for Multi Company-->
+        <record id="file_financials.investment_plan_rule" model="ir.rule">
+            <field name="name">Investment Plan multi-company</field>
+            <field name="model_id" ref="model_investment_plan"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+        <record id="file_financials.investment_history_rule" model="ir.rule">
+            <field name="name">Investment History multi-company</field>
+            <field name="model_id" ref="model_investment_history"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+    </data>
+</odoo>

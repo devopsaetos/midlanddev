@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="unit_booking.booking_allotment" model="product.product">
+            <field name="name">Booking Payment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Booking payment of open files</field>
+        </record>
+
+        <record id="unit_booking.booking_allotment_installment" model="product.product">
+            <field name="name">Booking Installment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Investment installment of files</field>
+        </record>
+
+        <record id="unit_booking.dealer_registration" model="product.product">
+            <field name="name">Dealer Registration</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Unit Booking Dealer Registration</field>
+        </record>
+
+        <record id="unit_booking.dealer_security" model="product.product">
+            <field name="name">Dealer Security</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Unit Booking Dealer Security</field>
+        </record>
+
+        <record id="unit_booking.dealer_rebate" model="product.product">
+            <field name="name">Dealer Rebate</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Unit Booking Dealer Rebate</field>
+        </record>
+
+        <record id="unit_booking.dealer_renewal" model="product.product">
+            <field name="name">Dealer Renewal</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Unit Booking Dealer Renewal</field>
+        </record>
+
+        <record id="unit_booking.dealer_cancellation" model="product.product">
+            <field name="name">Dealer Cancellation</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Unit Booking Dealer Cancellation</field>
+        </record>
+
+        <record id="unit_booking.buy_back_open_file" model="product.product">
+            <field name="name">Buy Back Open File</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Buy Back Open File From Dealer</field>
+        </record>
+    </data>
+</odoo>

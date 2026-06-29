@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.predefine_plan_form_ext">
+            <field name="name">file_financials.predefine_plan_form_ext</field>
+            <field name="model">predefine.plan</field>
+            <field name="inherit_id" ref="land_development.predefine_plan_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/group/group/div[hasclass('o_row')]" position="replace">
+                    <div class="o_row">
+                        <field name="confirmation_amount_period"
+                               widget="regex_mask" data-inputmask-regex="^\d+$"
+                               required="1"/>
+                        <field name="confirmation_period_type"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

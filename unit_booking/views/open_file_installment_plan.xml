@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="unit_booking.open_file_installment_plan1" model="ir.ui.view">
+            <field name="name">unit_booking open_file_installment_plan1</field>
+            <field name="model">unit.booking.plan</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+
+                <list create="true">
+                    <field name="installment_number" string="Sr. No"/>
+                    <field name="file_type" invisible="1"/>
+                    <field name="double_check_paid_amount" invisible="1"/>
+                    <field name="installment_type" invisible="0"/>
+                    <field name="installment_name" invisible="0"/>
+                    <field name="property_invoice_type" invisible="1"/>
+                    <field name="date"/>
+                    <field name="payment_date" string="Payment date" readonly="0"/>
+                    <field name="amount" sum="Total"/>
+                    <field name="invoice_created" invisible="1"/>
+                    <field name="invoice"/>
+                    <field name="invoice_id" invisible="1"/>
+                    <field name="state" string="Invoice Status" invisible="1"/>
+                    <field name="amount_paid" sum="Amount Paid" readonly="0"/>
+                    <field name="residual" sum="Remaining Amount" readonly="0"/>
+                    <field name="payment_status" string="Status"/>
+                    <field name="new_installment_number" invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="unit_booking.action_open_file_installment_plan11">
+
+            <field name="name">File Installment</field>
+            <field name="res_model">unit.booking.plan</field>
+
+            <field name="view_mode">list</field>
+        </record>
+
+
+        <menuitem
+                id="unit_booking.open_file_installment_plan_menu1"
+                name="Open File Installment"
+                parent="unit_booking.file_management_root"
+                action="unit_booking.action_open_file_installment_plan11"
+                sequence='3'
+        />
+        <!--    Record Rule for Multi Company-->
+        <record id="unit_booking.unit_booking_plan_rule" model="ir.rule">
+            <field name="name">unit_booking_plan multi-company</field>
+            <field name="model_id" ref="model_unit_booking_plan"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('units_booking_id.society_id.company_id','=',False),
+                ('units_booking_id.society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -129,7 +129,7 @@ class FileCancelApplication(models.Model):
                         'invoice_date': rec.appointment_date,
                         'journal_id': rec.env.company.account_journal_id.id,
                         'ref': f"{rec.name} - {rec.file_id.name}",
-                        'type': 'out_refund',
+                        'move_type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
                             'product_id': rec.env.ref('real_estate.refund_product').product_id.id,
                             'name': f"Adjustment Amount For File {rec.file_id.name}",
@@ -156,7 +156,7 @@ class FileCancelApplication(models.Model):
                             'invoice_date': rec.appointment_date,
                             'journal_id': rec.env.company.account_journal_id.id,
                             'ref': f"{rec.name} - {rec.file_id.name}",
-                            'type': 'out_refund',
+                            'move_type': 'out_refund',
                             'invoice_line_ids': [(0, 0, {
                                 'product_id': rec.env.ref('real_estate.refund_product').product_id.id,
                                 'name': f"Booking Adjustment Amount For File {rec.file_id.name}",
@@ -197,7 +197,7 @@ class FileCancelApplication(models.Model):
                         'file_ids': rec.file_id.id,
                         'journal_id': rec.env.company.account_journal_id.id,
                         'ref': f"{rec.name} - {rec.file_id.name}",
-                        'type': 'out_refund',
+                        'move_type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
                             'product_id': rec.env.ref('file_financials.product_merger_adjustment').id,
                             'name': f"Adjustment Amount For File {rec.file_id.name}",
@@ -231,7 +231,7 @@ class FileCancelApplication(models.Model):
                         'invoice_date': rec.appointment_date,
                         'journal_id': rec.env.company.account_journal_id.id,
                         'ref': f"{rec.name} - {rec.file_id.name}",
-                        'type': 'out_refund',
+                        'move_type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
                             'product_id': rec.env.ref('real_estate.refund_product').product_id.id,
                             'name': f"Adjustment Amount For File {rec.file_id.name}",
@@ -296,7 +296,7 @@ class FileCancelApplication(models.Model):
                         # 'file_ids': rec.file_id.id,
                         'journal_id': rec.env.company.account_journal_id.id,
                         'ref': f"{rec.name} - {rec.file_id.name}",
-                        'type': 'out_refund',
+                        'move_type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
                             'product_id': rec.env.ref('file_financials.product_merger_adjustment').id,
                             'name': f"Adjustment Amount For File {rec.file_id.name}",

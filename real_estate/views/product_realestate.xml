@@ -7,9 +7,10 @@
             <list string="Real Estate Products">
                 <field name="name"/>
                 <field name="type"/>
+                <field name="property_account_income_id" string="Revenue Account"/>
                 <field name="is_include_net_amount"/>
                 <field name="is_include_property_system"/>
-                <field name="description"/>
+                <field name="description" optional="hide"/>
             </list>
         </field>
     </record>
@@ -25,10 +26,12 @@
                             <field name="name"/>
                             <field name="type"/>
                             <field name="description"/>
+                            <field name="property_account_income_id" string="Revenue Account"/>
                         </group>
                         <group>
                             <field name="is_include_net_amount"/>
                             <field name="is_include_property_system"/>
+                            <field name="product_id" readonly="1" string="Accounting Product"/>
                         </group>
                     </group>
                 </sheet>

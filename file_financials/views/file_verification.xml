@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="file_financials.access_blocked">
+        <t t-name="file_financials.access_blocked">
+            <div class="alert alert-danger">
+                <p>
+                    <t t-esc="message"/>
+                </p>
+            </div>
+        </t>
+    </template>
+    <template id="file_financials.file_verification_input" name="File Verification Input">
+        <t t-call="web.html_container">
+            <style>
+                body
+                {
+                background: #000428; /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #004e92, #000428); /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                }
+                .company-logo
+                {
+                width: auto;
+                height: 210px !important;
+                }
+                i
+                {
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                }
+                @media only screen and (max-width: 768px)
+                {
+                .company-logo {width: 300px !important; height: 100px !important;}
+                .watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                }
+                .card, .card-body
+                {
+                background: url("/unit_booking/static/description/silver-bg.jpg");
+                background-size: cover;
+                }
+                .text-muted span
+                {
+                font-weight: bolder;
+                color: rgb(0 0 0 / 50%) !important;
+                }
+                .rounded-circle
+                {
+                border-radius: 50% !important;
+                border: 2px solid darkgrey;
+                }
+                .watermark {
+                position: fixed;
+                font-size: 180px;
+                font-weight: bolder;
+                opacity: 0.5;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(20deg);
+                -webkit-transform: rotate(20deg);
+                transform: rotate(-40deg);
+                top: 280px !important;
+                }
+            </style>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"/>
+            <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"/>
+            <section>
+                <div class="container py-5 px-5" style="color: #fff;">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <center>
+                                <img class="company-logo"
+                                     t-att-src="image_data_uri(file.society_id.company_id.logo)" alt=""/>
+                            </center>
+                        </div>
+                    </div>
+                    <hr/>
+                    <form action="/file/verify_details" method="post">
+                        <input type="hidden" id="file_id" name="file_id" t-att-value="file.id"/>
+                        <div class="form-group">
+                            <label for="cnic">Enter Member CNIC</label>
+                            <input type="text" class="form-control" id="cnic" name="cnic" data-inputmask="'mask': '99999-9999999-9'"
+                                   placeholder="XXXXX-XXXXXXX-X" required=""/>
+                            <small id="emailHelp" class="form-text text-muted">Enter the CNIC. e.g. (34123-1234567-8)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="file_name">Enter File No.</label>
+                            <input type="text" class="form-control" id="file_name" name="file_name" required=""/>
+                        </div>
+                        <div class="form-group">
+                            <label for="booking_date">Booking Date</label>
+                            <input type="date" class="form-control" id="booking_date" name="booking_date" required=""/>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Verify</button>
+                    </form>
+                </div>
+            </section>
+            <script>
+                $("#cnic").inputmask();
+            </script>
+        </t>
+    </template>
+    <template id="file_financials.file_verification" name="File Verification">
+        <t t-call="web.html_container">
+            <style>
+                body
+                {
+                background: #000428; /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #004e92, #000428); /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                }
+                .company-logo
+                {
+                width: auto;
+                height: 225px !important;
+                }
+                i
+                {
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                }
+                @media only screen and (max-width: 768px)
+                {
+                .company-logo {width: 300px !important; height: 100px !important;}
+                .watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                .alloted_watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: green;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                }
+                .card, .card-body
+                {
+                background: url("/unit_booking/static/description/silver-bg.jpg");
+                background-size: cover;
+                }
+                .text-muted span
+                {
+                font-weight: bolder;
+                color: rgb(0 0 0 / 50%) !important;
+                }
+                .rounded-circle
+                {
+                border-radius: 50% !important;
+                border: 2px solid darkgrey;
+                }
+                .watermark {
+                position: fixed;
+                font-size: 180px;
+                font-weight: bolder;
+                opacity: 0.5;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(20deg);
+                -webkit-transform: rotate(20deg);
+                transform: rotate(-40deg);
+                top: 280px !important;
+                }
+                .alloted_watermark {
+                position: fixed;
+                font-size: 180px;
+                font-weight: bolder;
+                opacity: 0.5;
+                z-index: 99;
+                color: green;
+                width: auto;
+                -ms-transform: rotate(-20deg);
+                -webkit-transform: rotate(-20deg);
+                transform: rotate(40deg);
+                top: 280px !important;
+                }
+            </style>
+            <t t-if="file">
+                <section>
+                    <div class="container py-5">
+                        <t t-if="file.state == 'cancel'">
+                            <div class="watermark">
+                                <p>CANCELLED</p>
+                            </div>
+                        </t>
+                        <t t-if="file.state == 'suspend'">
+                            <div class="watermark">
+                                <p>SUSPENDED</p>
+                            </div>
+                        </t>
+                        <t t-if="file.file_status == 'approve' and file.inventory_id">
+                            <div class="alloted_watermark">
+                                <p>ALLOTTED</p>
+                            </div>
+                        </t>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <center>
+                                    <img class="company-logo"
+                                         t-att-src="image_data_uri(file.society_id.company_id.logo)" alt=""/>
+                                </center>
+                            </div>
+                        </div>
+                        <hr/>
+                        <t t-if="file.notes">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <p style="text-align: left; color:#fdd43a;" class="m-3">
+                                        <span class="mr-1" style="font-size:22px;">Please Note:</span>
+                                        <br/>
+                                        <t t-esc="file.notes"/>
+                                    </p>
+                                </div>
+                            </div>
+                        </t>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="card mb-4 m-3">
+                                    <div class="card-body text-center box--gradient silver">
+                                        <t t-if="file.membership_id.image_1920">
+                                            <img t-att-src="image_data_uri(file.membership_id.image_1920)" alt=""
+                                                 class="rounded-circle img-fluid" style="width: 155px; height:155px;"/>
+                                        </t>
+                                        <div class="d-flex justify-content-left mb-2">
+                                            <h5 class="my-3">
+                                                <i class="fa fa-user-circle" style="margin-left: 0px;"/>
+                                                <span t-esc="file.membership_id.name"/>
+                                                <hr/>
+                                                <i class="fa fa-address-card-o"/>
+                                                <span t-esc="file.membership_id.cnic"/>
+                                                <hr/>
+                                                <i class="fa fa-phone"/>
+                                                <span t-esc="file.membership_id.mobile"/>
+                                                <hr/>
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="card mb-4 m-3">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">File No.</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.name"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Tracking ID</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.tracking_id"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Booking Date</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.booking_date.strftime('%d %b %Y')"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <t t-if="file.investor_id">
+                                            <hr/>
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <p class="mb-0">Agent Name</p>
+                                                </div>
+                                                <div class="col-sm-9">
+                                                    <p class="text-muted mb-0">
+                                                        <span t-esc="file.investor_id.name"/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Society</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.society_id.name"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Phase</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.phase_id.name"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <t t-if="file.sector_id">
+                                            <hr/>
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <p class="mb-0">Sector</p>
+                                                </div>
+                                                <div class="col-sm-9">
+                                                    <p class="text-muted mb-0">
+                                                        <span t-esc="file.sector_id.name"/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-if="file.inventory_id">
+                                            <hr/>
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <p class="mb-0">Unit No.</p>
+                                                </div>
+                                                <div class="col-sm-9">
+                                                    <p class="text-muted mb-0">
+                                                        <span t-esc="file.inventory_id.name"/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-if="file.street_id">
+                                            <hr/>
+                                            <div class="row">
+                                                <div class="col-sm-3">
+                                                    <p class="mb-0">Street</p>
+                                                </div>
+                                                <div class="col-sm-9">
+                                                    <p class="text-muted mb-0">
+                                                        <span t-esc="file.street_id.name"/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Category</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.category_id.name"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <hr/>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <p class="mb-0">Product</p>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <p class="text-muted mb-0">
+                                                    <span t-esc="file.unit_category_type_id.name"/>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="card mb-4 m-3">
+                                    <div class="card-body text-center box--gradient silver">
+                                        <h5>
+                                            <i class="fa fa-map-marker" style="font-size:30px;"/>
+                                            <span t-esc="file.society_id.company_id.street"/>
+                                            <span t-esc="file.society_id.company_id.street2"/>
+                                            <span t-esc="file.society_id.company_id.city"/>
+                                            <span t-esc="file.society_id.company_id.state_id.name"/>
+                                            <span t-esc="file.society_id.company_id.country_id.name"/>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </t>
+    </template>
+    <template id="file_financials.file_verification_not_found" name="File Verification Not Found">
+        <t t-call="web.html_container">
+            <style>
+                body
+                {
+                background: #000428; /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #004e92, #000428); /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #004e92, #000428); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                }
+                .company-logo
+                {
+                width: auto;
+                height: 225px !important;
+                }
+                i
+                {
+                margin-left: 20px !important;
+                margin-right: 20px !important;
+                }
+                @media only screen and (max-width: 768px)
+                {
+                .company-logo {width: 300px !important; height: 100px !important;}
+                .watermark {
+                position: fixed;
+                font-size: 95px !important;
+                font-weight: bolder;
+                opacity: 0.6;
+                z-index: 99;
+                color: red;
+                width: auto;
+                -ms-transform: rotate(25deg) !important;
+                -webkit-transform: rotate(25deg) !important;
+                transform: rotate(-50deg) !important;
+                left: -65px !important;
+                top: 250px !important;
+                }
+                }
+                .card, .card-body
+                {
+                background: url("/unit_booking/static/description/silver-bg.jpg");
+                background-size: cover;
+                }
+                .text-muted span
+                {
+                font-weight: bolder;
+                color: rgb(0 0 0 / 50%) !important;
+                }
+            </style>
+            <section>
+                <div class="container py-5">
+                    <div class="row" style="margin-top:100 px; font-size:60px; font-weight: bolder; color: #fff;">
+                        <div class="col-lg-12">
+                            <center>
+                                Invalid Details
+                            </center>
+                        </div>
+                    </div>
+                    <hr/>
+                </div>
+            </section>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="unit_booking.reset_installment_plan_form1" model="ir.ui.view">
+            <field name="name">unit_booking reset_installment_plan_form</field>
+            <field name="model">reset.installment.plan</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group name="installment_plan" string="Installment Details">
+
+                                <field name="plan_type" readonly="1"/>
+
+                                <field name="predefine_plan_id" string="Plan Name" readonly="1"/>
+
+                                <field name="payment_type" readonly="1"/>
+
+                                <field name="interval_id" readonly="0"
+                                       options="{'no_create': True}"/>
+
+                                <field name="starting_date" string="Start Date" readonly="0"/>
+
+                                <field name="total_installment" readonly="0"/>
+
+                                <field name="balloon_payment_interval" force_save="1"
+                                       string="Balloon Interval" invisible="0"/>
+
+                                <field name="balloon_payment_frequency" force_save="1" readonly="0"
+                                       string="Balloon Frequency" invisible="0"/>
+
+                                <field name="balloon_payment_start"/>
+
+                                <field name="primary_amount_interval" string="Balloting Interval"
+                                       force_save="1" invisible="0"/>
+
+                                <field name="primary_amount_frequency" string="Balloting Frequency"
+                                       force_save="1" invisible="0"/>
+
+                                <field name="possession_amount_interval" string="Possession Interval"
+                                       force_save="1" invisible="0"/>
+                                <field name="possession_amount_frequency" string="Possession Frequency"
+                                       force_save="1" invisible="0"/>
+                            </group>
+                            <group string="Payment Details">
+
+                                <field name="sale_amount" force_save="1" readonly="1"/>
+
+                                <field name="ttl_sale_amount" force_save="1" readonly="1"/>
+
+                                <field name="net_sale_amount" force_save="1" readonly="1"/>
+
+                                <field name="initial_payment" force_save="1" readonly="1"/>
+
+                                <field name="discount_amount" force_save="1"/>
+
+                                <field name="balloon_payment" force_save="1"/>
+
+                                <field name="balloting_amount"
+                                       string="Final Payment" force_save="1" readonly="0"/>
+
+                                <field name="primary_amount" force_save="1" invisible="0"
+                                       string="Balloting Amount"/>
+
+                                <field name="possession_amount" force_save="1" invisible="0"
+                                       string="Possession Amount"/>
+
+                                <field name="confirmation_amount" string="Confirmation Amount"
+                                       force_save="1" invisible="0"/>
+
+                                <field name="balance_amount" force_save="1" readonly="1" string="Balance Amount"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Reset" name="reset_installment_plan" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.reset_installment_plan_action">
+            <field name="name">Plan Detail</field>
+            <field name="res_model">reset.installment.plan</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

@@ -244,7 +244,7 @@ class AccountPayment(models.Model):
                             ('active', '=', True),
                             ('payment_id', '=', False),
                             ('invoice_payment_state', '!=', 'paid'),
-                            ('type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
+                            ('move_type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
                         ]).ids
                         constraints = [('id', 'in', move_ids)]
                     else:
@@ -257,7 +257,7 @@ class AccountPayment(models.Model):
                             ('active', '=', True),
                             ('payment_id', '=', False),
                             ('invoice_payment_state', '!=', 'paid'),
-                            ('type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
+                            ('move_type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
                         ])
 
                         copied_moves = new_move_ids.browse([])
@@ -287,7 +287,7 @@ class AccountPayment(models.Model):
                 ('active', '=', True),
                 ('payment_id', '=', False),
                 ('invoice_payment_state', '!=', 'paid'),
-                ('type', 'in', ['out_invoice'] if rec.payment_type == 'inbound' else ['in_invoice'])
+                ('move_type', 'in', ['out_invoice'] if rec.payment_type == 'inbound' else ['in_invoice'])
             ])
 
             return return_value

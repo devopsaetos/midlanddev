@@ -195,7 +195,7 @@ class Investment(models.Model):
 
     def _compute_no_of_invoices(self):
         self.no_of_invoices = len(
-            self.env['account.move'].search([('investment_id', '=', self.id), ('type', '=', 'out_invoice')]))
+            self.env['account.move'].search([('investment_id', '=', self.id), ('move_type', '=', 'out_invoice')]))
 
     @api.depends('investment_plan_ids')
     def _compute_remaining_installments(self):
@@ -212,7 +212,7 @@ class Investment(models.Model):
             'view_mode': 'list,form',
             'name': _('Investment Invoices'),
             'res_model': 'account.move',
-            'domain': [('investment_id', '=', self.id), ('type', '=', 'out_invoice')],
+            'domain': [('investment_id', '=', self.id), ('move_type', '=', 'out_invoice')],
             'context': {'default_partner_id': self.partner_id.id},
         }
 
@@ -318,7 +318,7 @@ class Investment(models.Model):
             invoice = self.env['account.move'].create({
 
                 'partner_id': self.partner_id.id,
-                'type': 'out_invoice',
+                'move_type': 'out_invoice',
                 'investment_id': self.id,
                 'invoice_date': self.booking_date,
                 'journal_id': self.env.company.account_journal_id.id,
@@ -441,7 +441,7 @@ class Investment(models.Model):
                                 'investment_id': rec.id,
                                 # 'invoice_payment_ref': rec.sequence_no,
                                 'partner_id': rec.partner_id.id,
-                                'type': 'out_invoice',
+                                'move_type': 'out_invoice',
                                 'journal_id': self.env.company.account_journal_id.id,
                                 'property_invoice_type': 'allotment_installment',
                                 'invoice_date': invoices.date,
@@ -830,7 +830,7 @@ class Investment(models.Model):
                                 'investment_id': rec.id,
                                 # 'invoice_payment_ref': rec.sequence_no,
                                 'partner_id': rec.partner_id.id,
-                                'type': 'out_invoice',
+                                'move_type': 'out_invoice',
                                 'journal_id': self.env.company.account_journal_id.id,
                                 'property_invoice_type': 'investment_installment',
                                 'invoice_date': installment.date,
@@ -1566,9 +1566,6 @@ class InvestmentLine(models.Model):
                                 and rec.unit_category_type_id == recs.unit_category_type_id
                         ):
                             recs.list_price = rec.price
-            else:
-                recs.sale_amount = 0.0
-                recs.factor_amount = 0.0
 
 
 class InvestmentPlan(models.Model):

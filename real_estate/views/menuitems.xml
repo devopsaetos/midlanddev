@@ -17,12 +17,14 @@
             sequence='1'
     />
 
+    <!--
     <menuitem
             name="Portfolio Management"
             id="real_estate.menu_investment_parent"
             parent="real_estate.menu_root"
             sequence='2'
     />
+    -->
 
     <menuitem
             name="Processes"

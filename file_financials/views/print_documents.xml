@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--        Tree View-->
+        <record model="ir.ui.view" id="file_financials.document_printing_requests_tree_view">
+            <field name="name">file_financials.document_printing_requests_tree_view</field>
+            <field name="model">print.documents</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="false" delete="false">
+                    <field name="name"/>
+                    <field name="file_ids"/>
+                    <field name="document_type"/>
+                    <field name="create_date"/>
+                    <field name="create_uid"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!--        Form View-->
+        <record model="ir.ui.view" id="file_financials.document_printing_requests_form_view">
+            <field name="name">file_financials.document_printing_requests_form_view</field>
+            <field name="model">print.documents</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="false" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button string="Close" name="close" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button string="Print Membership Forms" name="print_files" type="object" class="btn-primary"
+                                invisible="state != 'draft'"/>
+                        <button string="Print Installment Plans" name="print_installment_plans" type="object" class="btn-primary"
+                                invisible="state != 'draft'"/>
+                        <button string="Print Greeting Letters" name="print_greeting_letters" type="object"
+                                class="btn-primary" invisible="state != 'draft'"/>
+                        <!--                        <button string="Print Ledgers" name="print_ledgers" type="object" class="btn-primary" invisible="state != 'draft'"/>-->
+                        <button string="Print Booking Receipts" name="print_receipts" type="object" class="btn-primary"
+                                invisible="state != 'draft'"/>
+                        <button string="Print Confirmation Receipts" name="print_confirmation_receipts" type="object" class="btn-primary"
+                                invisible="state != 'draft'"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" nolabel="1" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="document_type" required="1"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="unit_category_type_id"/>
+                                <field name="sector_id"/>
+                            </group>
+                            <group>
+                                <field name="file_ids" widget="many2many_tags"/>
+                                <field name="category_id" domain="[('project_type','=','housing_society')]"/>
+                                <field name="investor_id"/>
+                                <field name="investment_id"/>
+                            </group>
+                            <field name="printing_line_ids" nolabel="1" readonly="1">
+                                <list create="false" edit="false" delete="false">
+                                    <field name="select"/>
+                                    <field name="print_queue_id" readonly="1"/>
+                                    <field name="file_id" readonly="1"/>
+                                    <field name="membership_id" readonly="1"/>
+                                    <field name="investment_id" readonly="1"/>
+                                    <field name="unit_category_type_id" readonly="1"/>
+                                    <field name="category_id" readonly="1"/>
+                                    <field name="booking_date" readonly="1"/>
+                                    <field name="sector_id" readonly="1"/>
+                                    <field name="greeting_letter" readonly="1"/>
+                                    <field name="file" readonly="1"/>
+                                    <field name="ledger" readonly="1"/>
+                                    <field name="receipt" readonly="1"/>
+                                    <field name="confirmation_receipt" readonly="1"/>
+                                </list>
+                            </field>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="file_financials.action_document_printing_requests">
+            <field name="name">Printing Requests</field>
+            <field name="res_model">print.documents</field>
+            <field name="view_mode">list,form</field>
+        </record>
+        <menuitem
+                id="file_financials.file_printing_process_menu_item"
+                name="File Processing"
+                parent="file_financials.process_menu_item"
+                sequence="2"
+        />
+        <menuitem
+                name="Printing Requests"
+                id="file_financials.document_printing_requests_menu"
+                parent="file_financials.file_printing_process_menu_item"
+                action="file_financials.action_document_printing_requests"
+        />
+        <record id="printing_request_sequence" model="ir.sequence">
+            <field name="name">Printing Request Sequence</field>
+            <field name="code">printing.request.sequence</field>
+            <field name="prefix">PRQ-</field>
+            <field name="padding">6</field>
+        </record>
+    </data>
+</odoo>

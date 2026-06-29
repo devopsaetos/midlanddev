@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="investor_file_form_view_ext">
+            <field name="name">investor_file_form_view_ext</field>
+            <field name="model">investor.file</field>
+            <field name="inherit_id" ref="real_estate.investor_file_form"/>
+            <field name="arch" type="xml">
+                <!--                Sub Dealer-->
+                <xpath expr="//field[@name='investor_id']" position="after">
+                    <field name="issued_to_sub_dealer" force_save="1" readonly="1"/>
+                    <field name="sub_investor_id" force_save="1" readonly="1"/>
+                    <field name="development_charges_included" force_save="1" required="1"/>
+                </xpath>
+                <xpath expr="//field[@name='starting_date']" position="replace">
+                    <field name="starting_date" string="Start Date"/>
+                </xpath>
+                <xpath expr="//form/sheet/div[hasclass('oe_title')]" position="after">
+                    <div>
+                        <field name="qr_code" widget='image' class="oe_avatar" nolabel="1"
+                               style="margin-right:38px;"/>
+                    </div>
+                </xpath>
+                <!--                <xpath expr="//group[@name='installment_details']" position="after">-->
+                <!--                <xpath expr="//group[@name='installment_details']" position="after">-->
+                <xpath expr="//page[@name='file']" position="inside">
+                    <group name="installment_plan">
+                        <group>
+                            <field name="installment_created" invisible="1"/>
+                            <field name="payment_type" invisible="1"/>
+                            <field name="primary_amount" string="Balloting" force_save="1" invisible="1"/>
+                            <field name="confirmation_amount" force_save="1" invisible="1"/>
+                            <field name="possession_amount" force_save="1" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="token_generated" invisible="1"/>
+                            <field name="balloon_payment_interval" force_save="1"
+                                   string="Balloon Interval" invisible="1"/>
+                            <field name="balloon_payment_frequency" force_save="1"
+                                   string="Frequency" invisible="1"/>
+                            <field name="possession_amount_interval" force_save="1"
+                                   string="Possession Interval" invisible="1"/>
+                            <field name="possession_amount_frequency" force_save="1"
+                                   string="Possession Frequency" invisible="1"/>
+                            <field name="confirmation_amount_interval" force_save="1"
+                                   string="Confirmation Interval" invisible="1"/>
+                            <field name="confirmation_amount_frequency" force_save="1"
+                                   string="Confirmation Frequency" invisible="1"/>
+                            <field name="primary_amount_interval" force_save="1"
+                                   string="Primary Amount Interval" invisible="1"/>
+                            <field name="primary_amount_frequency" force_save="1"
+                                   string="Primary Amount Frequency" invisible="1"/>
+                            <field name="installment_tax_ids" force_save="1" invisible="1"/>
+                            <field name="initial_calculation_basis" force_save="1" invisible="1"/>
+                            <field name="initial_payment_percentage" force_save="1" invisible="1"/>
+                            <field name="balloting_calculation_basis" force_save="1" invisible="1"/>
+                            <field name="balloting_amount_percentage" force_save="1" invisible="1"/>
+                        </group>
+                    </group>
+                    <hr/>
+                    <h4>Installment Plan</h4>
+                    <button
+                            name="create_installment_plan"
+                            groups="real_estate.group_rsms_manager"
+                            type="object"
+                            string="Create Installment Plan"
+                            class="oe_highlight"
+                            invisible="state != 'open' or installment_created == True"/>
+                    <button
+                            name="reset_open_file_installment_plan"
+                            groups="real_estate.group_rsms_manager"
+                            type="object"
+                            string="Reset Installment Plan"
+                            class="oe_highlight"
+                            invisible="state != 'open' or not installment_created"
+                    />
+                    <field name="installment_plan_ids" nolabel="1" force_save="1" readonly="1">
+                        <list editable="bottom" decoration-info="invoice_created == True" limit="80">
+                            <field name="price_revised" invisible="1" force_save="1"/>
+                            <field name="file_type" invisible="1"/>
+                            <field name="double_check_paid_amount" invisible="1"/>
+                            <field name="installment_type" invisible="1"/>
+                            <field name="property_invoice_type" invisible="1"/>
+                            <field name="installment_number" string="Sr. No"/>
+                            <field name="installment_name" invisible="0"/>
+                            <field name="date" string="Installment Date"/>
+                            <field name="invoice"/>
+                            <field name="invoice_id" invisible="1"/>
+                            <field name="payment_journal_id" force_save="1" readonly="1"/>
+                            <field name="payment_date" string="Payment date" readonly="0"/>
+                            <field name="amount" sum="Total Amount"/>
+                            <field name="net_payment" readonly="1" force_save="1"/>
+                            <field name="rebate_adjustment" readonly="1" force_save="1"/>
+                            <field name="residual" sum="Amount Due" readonly="0"/>
+                            <field name="payment_status" string="Status"/>
+                            <field name="amount_paid" sum="Total Paid" readonly="0"/>
+                            <field name="dealer_share" readonly="1" force_save="1"/>
+                            <field name="marketing_share" readonly="1" force_save="1"/>
+                            <field name="rebate_amount" readonly="1" force_save="1"/>
+                            <field name="net_receivable" readonly="1" force_save="1"/>
+                            <field name="previous_amount" readonly="1" force_save="1" invisible="not price_revised"
+                                   string="Prev. Installment Amount"/>
+                            <field name="amount_difference" readonly="1" force_save="1" string="Difference" invisible="not price_revised"/>
+                            <field name="previous_dealer_rebate" readonly="1" force_save="1" invisible="not price_revised"/>
+                            <field name="dealer_rebate_difference" string="Difference" readonly="1" force_save="1" invisible="not price_revised"/>
+                            <field name="previous_marketing_rebate" readonly="1" force_save="1" invisible="not price_revised"/>
+                            <field name="marketing_rebate_difference" readonly="1" force_save="1" invisible="not price_revised"/>
+                            <field name="previous_total_rebate" readonly="1" force_save="1"/>
+                            <field name="total_rebate_difference" readonly="1" force_save="1" invisible="not price_revised" string="Difference"/>
+                            <field name="invoice_created" invisible="1"/>
+                            <field name="tax_amount"/>
+                            <field name="state" string="Invoice Status" invisible="1"/>
+                            <field name="new_installment_number" invisible="1"/>
+                            <field name="rebate_given" readonly="1" force_save="1" invisible="1"/>
+                            <field name="dealer_rebate_given" readonly="1" force_save="1" invisible="1"/>
+                            <field name="marketing_rebate_given" readonly="1" force_save="1" invisible="1"/>
+                            <field name="move_ids" widget="many2many_tags" readonly="1" force_save="1" invisible="1"/>
+                        </list>
+                        <form>
+                            <sheet>
+                                <group>
+                                    <group>
+                                        <field name="installment_number" string="Sr. No"/>
+                                        <field name="file_type" invisible="1"/>
+                                        <field name="double_check_paid_amount"
+                                               invisible="0"/>
+                                        <field name="installment_type" invisible="1"/>
+                                        <field name="installment_name" invisible="0"/>
+                                        <field name="property_invoice_type" invisible="1"/>
+                                        <field name="date"/>
+                                        <field name="payment_date" string="Payment date"
+                                               readonly="1"/>
+                                        <field name="amount" sum="Total"/>
+                                        <field name="invoice_created" invisible="0"/>
+                                        <field name="invoice"/>
+                                        <field name="file_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="invoice_id" string="Invoice Ref #"
+                                               invisible="0"/>
+                                        <field name="state" string="Invoice Status"
+                                               invisible="1"/>
+                                        <field name="amount_paid" sum="Amount Paid"
+                                               readonly="1"/>
+                                        <field name="residual" sum="Remaining Amount"
+                                               readonly="1"/>
+                                        <field name="payment_status" string="Status"/>
+                                        <field name="new_installment_number" invisible="1"/>
+                                    </group>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                </xpath>
+                <xpath expr="//sheet/notebook[last()]" position="inside">
+                    <page name="history" string="History">
+                        <field name="history_ids" nolabel="1" force_save="1" readonly="1">
+                            <list>
+                                <field name="create_date" readonly="1" force_save="1"/>
+                                <field name="net_sale_amount" readonly="1" force_save="1"/>
+                                <field name="predefine_plan_id" readonly="1" force_save="1"/>
+                                <field name="no_of_installments" readonly="1" force_save="1"/>
+                                <field name="discount" readonly="1" force_save="1"/>
+                                <field name="booking_marketing_share" readonly="1" force_save="1"/>
+                                <field name="booking_dealer_share" readonly="1" force_save="1"/>
+                                <field name="booking_rebate_amount" readonly="1" force_save="1"/>
+                                <field name="confirmation_marketing_share" readonly="1" force_save="1"/>
+                                <field name="confirmation_dealer_share" readonly="1" force_save="1"/>
+                                <field name="confirmation_rebate_amount" readonly="1" force_save="1"/>
+                            </list>
+                            <form>
+                                <sheet>
+                                    <group>
+                                        <group string="General Info">
+                                            <field name="create_date" readonly="1" force_save="1"/>
+                                            <field name="investor_file_id" readonly="1" force_save="1"/>
+                                            <field name="net_sale_amount" readonly="1" force_save="1"/>
+                                            <field name="predefine_plan_id" readonly="1" force_save="1"/>
+                                            <field name="no_of_installments" readonly="1" force_save="1"/>
+                                            <field name="discount" readonly="1" force_save="1"/>
+                                        </group>
+                                        <group string="Rebate Info">
+                                            <field name="booking_dealer_share" readonly="1" force_save="1"/>
+                                            <field name="booking_marketing_share" readonly="1" force_save="1"/>
+                                            <field name="booking_rebate_amount" readonly="1" force_save="1"/>
+                                            <field name="confirmation_marketing_share" readonly="1" force_save="1"/>
+                                            <field name="confirmation_dealer_share" readonly="1" force_save="1"/>
+                                            <field name="confirmation_rebate_amount" readonly="1" force_save="1"/>
+                                        </group>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </page>
+                    <page name="issuance_history" string="Issuance History">
+                        <field name="issuance_history_ids" nolabel="1" force_save="1" readonly="1">
+                            <list>
+                                <field name="create_date" readonly="1" force_save="1"/>
+                                <field name="investor_file_id" readonly="1" force_save="1" invisible="1"/>
+                                <field name="issuance_date" readonly="1" force_save="1"/>
+                                <field name="issuance_type" readonly="1" force_save="1"/>
+                                <field name="request_platform" readonly="1" force_save="1"/>
+                                <field name="request_id" readonly="1" force_save="1"/>
+                            </list>
+                            <form>
+                                <sheet>
+                                    <group>
+                                        <group>
+                                            <field name="issuance_date" readonly="1" force_save="1"/>
+                                            <field name="issuance_type" readonly="1" force_save="1"/>
+                                        </group>
+                                    <group>
+                                        <field name="request_platform" readonly="1" force_save="1"/>
+                                        <field name="request_id" readonly="1" force_save="1"/>
+                                        </group>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </page>
+                    <page name="other_info" string="Other Info">
+                        <group name="group_top">
+                            <group name="rebate_info" string="Rebate Info">
+                                <field name="rebate_amount" force_save="1" readonly="1"/>
+                                <field name="sale_rebate" force_save="1" readonly="1"/>
+                                <field name="is_sale_rebate_applied" force_save="1" readonly="1"/>
+                                <field name="rebate_invoices_created" force_save="1" readonly="1"/>
+                                <field name="rebate_invoice_ids" force_save="1" readonly="1" widget="many2many_tags"/>
+                                <field name="move_id" force_save="1" readonly="1"/>
+                                <button name="create_rebate_bills" string="Create Rebate Invoices" type="object" class="btn btn-primary"
+                                        invisible="rebate_invoices_created"/>
+                            </group>
+                            <group name="issuance_request_info" string="Issuance Info">
+                                <field name="issuance_request_created" force_save="1" readonly="1"/>
+                                <field name="issuance_request_id" force_save="1" readonly="1"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//field[@name='unit_class_id']" position="after">
+                    <field name="file_id" string="File #"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="file_financials.installment_plan_form_view">
+            <field name="name">file_financials.installment_plan_form_view</field>
+            <field name="model">installment.plan</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="investor_file_id" force_save="1" string="Open File No."/>
+                                <field name="file_id" force_save="1" string="File No."/>
+                                <field name="installment_number" string="Sr. No"/>
+                                <field name="installment_type" force_save="1" string="Installment Type"/>
+                                <field name="product_id" force_save="1" string="Product"/>
+                                <field name="installment_name" force_save="1" string="Installment Name"/>
+                                <field name="date" force_save="1" string="Date"/>
+                                <field name="amount" force_save="1" string="Installment Amount"/>
+                                <field name="amount_paid" force_save="1" string="Amount Paid"/>
+                                <field name="residual" force_save="1" string="Amount Due"/>
+                                <field name="invoice_created" force_save="1" string="Invoice Created"/>
+                                <field name="invoice_id" force_save="1" string="Invoice No."/>
+                                <field name="invoice" force_save="1" string="Invoice Ref."/>
+                                <field name="payment_status" force_save="1" string="Status"/>
+                                <field name="state" force_save="1" string="State"/>
+                            </group>
+                            <group>
+                                <field name="dealer_share" string="Dealer Share" force_save="1"/>
+                                <field name="marketing_share" string="Marketing Share" force_save="1"/>
+                                <field name="rebate_amount" string="Total Rebate" force_save="1"/>
+                                <field name="net_receivable" string="Net Receivable" force_save="1"/>
+                                <field name="rebate_adjustment" string="Rebate Adjustment" force_save="1"/>
+                                <field name="net_payment" string="Net Payment" force_save="1"/>
+                                <field name="account_status" string="Account Status" force_save="1"/>
+                                <field name="reason" string="Reason" force_save="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="line_calculated" force_save="1"/>
+                                <field name="percentage" force_save="1"/>
+                                <field name="amount_manual" force_save="1"/>
+                                <field name="new_installment_number" force_save="1"/>
+                                <field name="file_type" force_save="1"/>
+                                <field name="payment_date" force_save="1"/>
+                            </group>
+                            <group>
+                                <field name="property_invoice_type" force_save="1"/>
+                                <field name="double_check_paid_amount" force_save="1"/>
+                                <field name="investor_payment" force_save="1"/>
+                                <field name="tax_amount" force_save="1"/>
+                                <field name="company_id" force_save="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="file_financials.action_installment_plan_lines">
+            <field name="name">Installment Plan Lines</field>
+            <field name="res_model">installment.plan</field>
+            <field name="view_mode">list,form</field>
+        </record>
+        <menuitem
+                id="installment_plan_lines_menuitem_id"
+                name="Installment Plan Lines"
+                parent="real_estate.menu_price_plan"
+                action="file_financials.action_installment_plan_lines"
+        />
+    </data>
+</odoo>

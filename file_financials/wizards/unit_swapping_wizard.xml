@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.unit_swapping_search_form_extension">
+            <field name="name">file_financials.unit_swapping_search_form_extension</field>
+            <field name="model">unit.swapping</field>
+            <field name="inherit_id" ref="real_estate.unit_swapping_search_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='file_id']" position="replace">
+                    <field name="file_id" domain="[('project_type', '=', 'housing_society'),('state','=','available'),('file_status','in',('draft', 'lock', 'approve'))]"
+                           invisible="applicable_on != 'file'" options="{'no_create': True, 'no_open': True}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

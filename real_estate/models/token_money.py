@@ -175,7 +175,7 @@ class TokenMoney(models.Model):
                 raise ValidationError(_("Setup company journal before generate token."))
             invoice = self.env['account.move'].create({
                 'partner_id': self.partner_id.partner_id.id,
-                'type': 'out_invoice',
+                'move_type': 'out_invoice',
                 'company_id': company.id,
                 'crm_id': self.crm_id.id,
                 'token_id': self.id,
@@ -186,7 +186,7 @@ class TokenMoney(models.Model):
                 'invoice_line_ids': [(0, None, {
                     'product_id': token.id,
                     'name': token.name,
-                    'account_id': token.property_account_income_id.id or False,
+                    'account_id': token.product_id.property_account_income_id.id or False,
                     'quantity': 1.0,
                     'price_unit': self.token_fees,
                     'company_id': company.id,
@@ -237,7 +237,7 @@ class TokenMoney(models.Model):
         prod.append((0, 0, {
                     'product_id': lump_sum.id,
                     'name': lump_sum.name,
-                    'account_id': lump_sum.property_account_income_id.id or False,
+                    'account_id': lump_sum.product_id.property_account_income_id.id or False,
                     'quantity': 1.0,
                     'price_unit': self.balance_amount + self.token_fees,
                     'company_id': self.env.company.id,
@@ -245,7 +245,7 @@ class TokenMoney(models.Model):
         prod.append((0, 0, {
                     'product_id': token.id,
                     'name': token.name,
-                    'account_id': token.property_account_income_id.id or False,
+                    'account_id': token.product_id.property_account_income_id.id or False,
                     'quantity': 1.0,
                     'price_unit': -self.token_fees,
                     'company_id': self.env.company.id,
@@ -255,7 +255,7 @@ class TokenMoney(models.Model):
                 raise ValidationError(_("Setup company journal before generate token."))
             invoice = self.env['account.move'].create({
                 'partner_id': self.partner_id.partner_id.id,
-                'type': 'out_invoice',
+                'move_type': 'out_invoice',
                 'company_id': self.env.company.id,
                 'crm_id': self.crm_id.id,
                 'token_id': self.id,
@@ -1039,7 +1039,7 @@ class TokenMoney(models.Model):
                 credit_vals = {
                     'debit': 0.0,
                     'credit': abs(self.token_fees),
-                    'account_id': token_cancel.property_account_income_id.id,
+                    'account_id': token_cancel.product_id.property_account_income_id.id,
                     'company_id': self.env.company.id,
                 }
 

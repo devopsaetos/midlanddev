@@ -16,6 +16,12 @@ class ProductRealestate(models.Model):
     is_include_property_system = fields.Boolean(string='Include in Property System')
     product_id = fields.Many2one('product.product', string='Accounting Product',
                                   readonly=True, copy=False, ondelete='restrict')
+    property_account_income_id = fields.Many2one(
+        'account.account',
+        string='Revenue Account',
+        domain="[('account_type', 'not in', ['asset_receivable', 'liability_payable'])]",
+        help='Income/Revenue account used when crediting this product in journal entries.',
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -32,6 +38,11 @@ class ProductRealestate(models.Model):
                     'purchase_ok': False,
                 })
                 rec.product_id = shadow
+            # Sync revenue account to shadow product
+            if rec.property_account_income_id and rec.product_id:
+                rec.product_id.sudo().write({
+                    'property_account_income_id': rec.property_account_income_id.id,
+                })
         return records
 
     def unlink(self):
@@ -69,4 +80,11 @@ class ProductRealestate(models.Model):
                 if rec.product_id:
                     shadow_vals = {k: vals[k] for k in sync & vals.keys()}
                     rec.product_id.sudo().write(shadow_vals)
+        # Sync revenue account to shadow product whenever it changes
+        if 'property_account_income_id' in vals:
+            for rec in self:
+                if rec.product_id:
+                    rec.product_id.sudo().write({
+                        'property_account_income_id': vals['property_account_income_id'],
+                    })
         return res

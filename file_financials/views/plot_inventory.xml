@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="file_financials.plot_inventory_form_ext" model="ir.ui.view">
+            <field name="name">file_financials.plot_inventory_form_ext</field>
+            <field name="model">plot.inventory</field>
+            <field name="inherit_id" ref="real_estate.plot_inventory_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='unit_class_id']" position="after">
+                    <field name="investor_file_id" force_save="1" options="{'no_create': True,'no_edit': True,'no_create_edit': True, 'no_open': True}"/>
+                    <field name="file_id" force_save="1" options="{'no_create': True,'no_edit': True,'no_create_edit': True, 'no_open': True}"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

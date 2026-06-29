@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.investor_registration_form_view">
+            <field name="name">file_financials.investor_registration_form_view</field>
+            <field name="model">res.investor</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,in_process,approve"/>
+                        <field name="is_invoice_generation" invisible="1"/>
+                        <button name="in_process"
+                                type="object"
+                                class="oe_highlight"
+                                string="In Process"
+                                invisible="state != 'draft'"
+                        />
+                        <button name="approve"
+                                type="object"
+                                class="oe_highlight"
+                                string="Approve"
+                                invisible="state != 'in_process'"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Payments"
+                                    icon="fa-pencil-square-o"
+                                    invisible="not is_invoice_generation">
+                                <field name="no_of_invoices"/>
+                            </button>
+                            <button
+                                    name="toggle_active"
+                                    type="object"
+                                    class="oe_stat_button" icon="fa-archive">
+                                <field
+                                        name="active"
+                                        widget="boolean_button"
+                                        options='{"terminology": "archive"}'
+                                />
+                            </button>
+                        </div>
+                        <field
+                                name="image_1920"
+                                widget='image'
+                                class="oe_avatar"
+                                style="width:100px; height:100px"
+                                readonly="state == 'approve'"
+                        />
+
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"
+                                       required="1"
+                                       default_focus="1"
+                                       placeholder="Investor Name"
+                                       readonly="state != 'draft'"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="ref" readonly="1"/>
+                                <field name="investor_type" required="1"/>
+                                <field name="main_investor_id"
+                                       invisible="investor_type != 'sub_dealer'" readonly="state != 'draft'" required="investor_type == 'sub_dealer'"
+                                       options="{'no_open': True,'no_create': True}"
+                                />
+                                <!-- assigned_user_ids removed: field on res.member not res.investor -->
+                                <field name="investment_category"
+                                       required="1"
+                                       options="{'no_open': True,'no_create': True}"
+                                />
+                            </group>
+                            <group>
+                                <field name="company_type"
+                                       readonly="state != 'draft'"
+                                       string="Dealer Type" required="1"/>
+                                <field name="marketing_company_id"
+                                       invisible="investor_type == 'marketing_company'" readonly="state != 'draft'" required="investor_type == 'dealer'"
+                                       string="Marketing Company"
+                                       options="{'no_open': True,'no_create': True}"
+                                       domain="[]"
+                                />
+                                <field name="show_sale_summary"
+                                       invisible="investor_type != 'sub_dealer'" required="investor_type == 'sub_dealer'"
+                                />
+                                <!-- valid_till, vat, tracking_id, token_generated removed: not on res.investor -->
+                            </group>
+                        </group>
+                        <group invisible="company_type not in 'person'">
+                            <group name='general_info' string="General Info">
+                                <field name="owner_name" required="company_type not in 'person'"/>
+                                <!-- gender, dob removed: not on res.investor -->
+                                <field name='relation_name' string="Spouse/Father"
+                                       invisible="company_type != 'person'" readonly="state != 'draft'"/>
+                            </group>
+                            <group name='contact_info' invisible="company_type not in 'person'"
+                                   string="Contact Info">
+                                <field
+                                        name="email"
+                                        string="Email"
+                                        widget="email"
+                                        placeholder='for_example123@mail.com'
+                                        readonly="state != 'draft'"
+                                />
+                                <field
+                                        name="mobile"
+                                        readonly="state != 'draft'" required="company_type == 'person'"
+                                        placeholder='+923008765432'
+                                        widget="mask"
+                                        data-inputmask="'mask': '+99-999-9999999'"
+                                        class="o_phone_number"/>
+                                <field
+                                        name="phone"
+                                        widget="mask"
+                                        data-inputmask="'mask': '9999999999'"
+                                        placeholder='042987654'
+                                        class="o_phone_number" readonly="state != 'draft'"/>
+                                <!-- secondary_phone removed: not on res.investor -->
+                            </group>
+                        </group>
+                        <!-- Address section removed: street, city_id, state_id, zip, country_id,
+                             is_same, corespondence_* are not fields on the standalone res.investor model -->
+                        <group name="id_info" invisible="company_type not in 'person'">
+                            <group string="Identification Info">
+                                <field name='identification_type'
+                                       readonly="state != 'draft'"/>
+                                <field name='relation_name' string="Mother/Father"
+                                       invisible="identification_type != 'parent_cnic'" readonly="state != 'draft'"/>
+                                <field
+                                        widget="mask"
+                                        data-inputmask="'mask': '99999-9999999-9'"
+                                        name='cnic' string="CNIC Number"
+                                        invisible="identification_type not in ('cnic','parent_cnic')" readonly="state != 'draft'"/>
+                                <field
+                                        widget="mask"
+                                        data-inputmask="'mask': '999999-999999-9'"
+                                        name='nicop'
+                                        invisible="identification_type != 'ni_cop'" readonly="state != 'draft'"/>
+                                <field name='cnic_expiry_date'
+                                       string="CNIC Expiry Date"
+                                       invisible="identification_type not in ('cnic','parent_cnic')" readonly="state != 'draft'"/>
+                                <field name='passport'
+                                       invisible="identification_type != 'passport'" readonly="state != 'draft'"/>
+                                <field name='passport_expiry_date'
+                                       invisible="identification_type != 'passport'" readonly="state != 'draft'"/>
+                                <field name='form_b'
+                                       widget="mask"
+                                       data-inputmask="'mask': '99999-9999999-9'"
+                                       invisible="identification_type != 'form_b'" readonly="state != 'draft'"
+                                />
+                            </group>
+                            <group string="Authorized Person">
+                                <field name="kin_name" string="Name"/>
+                                <field name="kin_mobile" string="Mobile" widget="mask"
+                                       data-inputmask="'mask': '9999-9999999'"/>
+                                <field name="kin_cnic" string="CNIC" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                <field name="document"/>
+                            </group>
+                        </group>
+                        <group string="Scan Copy">
+                            <group>
+                                <field name='cnic_front'
+                                       string="CNIC Front"
+                                       widget='image'
+                                       style="width:100px; height:100"
+                                       invisible="identification_type not in ('cnic','parent_cnic','ni_cop')" readonly="state != 'draft'"
+                                />
+                                <field name='passport_front'
+                                       invisible="identification_type != 'passport'" readonly="state != 'draft'"
+                                       widget='image'
+                                       style="width:100px; height:100px"
+                                />
+                                <field name='form_b_front'
+                                       invisible="identification_type != 'form_b'" readonly="state != 'draft'"
+                                       widget='image'
+                                       style="width:100px; height:100px"
+                                />
+                            </group>
+                            <group>
+                                <field name='cnic_back'
+                                       string="CNIC Back"
+                                       widget='image'
+                                       style="width:100px; height:100"
+                                       invisible="identification_type not in ('cnic','parent_cnic','ni_cop')" readonly="state != 'draft'"
+                                />
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Registration Details" name="registration_details">
+                                <button name="create_registration_invoice" string="Create Payment" class="oe_highlight" type="object"
+                                        invisible="is_invoice_generation"/>
+                                <field name="fees_line_ids">
+                                    <list editable="bottom">
+                                        <field name="amenity_id" string="Fee Type" options="{'no_open': True,'no_create': True}"/>
+                                        <field name="refund_policy"/>
+                                        <field name="date"/>
+                                        <field name="mode_of_payments"/>
+                                        <field name="journal_id"/>
+                                        <field name="total_amount" string="Amount"/>
+                                        <field name="remarks"/>
+                                        <field name="move_id" string="Invoice#" force_save="1" readonly="1" invisible="1"/>
+                                        <field name="payment_id" string="Payment #" force_save="1" readonly="1"/>
+                                    </list>
+                                </field>
+                                <!-- registration_fee, security_fee removed: not on res.investor -->
+                            </page>
+                            <page string="Authorized Person" name="authorized_person_lines">
+                                <field name="authorised_representative_ids">
+                                    <list editable="bottom">
+                                        <field name="name" string="Name" required="1"/>
+                                        <field name="mobile" string="Mobile" required="1" widget="mask" data-inputmask="'mask': '9999-9999999'"/>
+                                        <field name="cnic" string="CNIC" required="0" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                        <field name="document"/>
+                                        <field name="status"/>
+                                    </list>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="name" string="Name" required="1"/>
+                                                    <field name="mobile" string="Mobile" required="1" widget="mask" data-inputmask="'mask': '9999-9999999'"/>
+                                                    <field name="cnic" string="CNIC" required="1" widget="mask" data-inputmask="'mask': '99999-9999999-9'"/>
+                                                    <field name="document"/>
+                                                    <field name="status"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
+                            <!-- authorized_user_ids page removed: authorized_user_ids not on res.investor -->
+                            <!-- Company info page removed: cp_*, nature_of_business, fax, uan not on res.investor -->
+                            <page string="Joint Owners"
+                                  invisible="company_type != 'company'"
+                                  autofocus="autofocus">
+                                <field name="cnic_line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="member_name" required="1"/>
+                                        <field name="cnic" widget="mask"
+                                               data-inputmask="'mask': '99999-9999999-9'" required="1"/>
+                                        <field name="cnic_expiry_date"/>
+                                        <field name="cnic_front"/>
+                                        <field name="cnic_back"/>
+                                        <field name="phone" widget="mask" placeholder="+92-300-2132132"/>
+                                        <field name="name" required="1"/>
+                                        <field name="father_spouse_cnic" widget="mask"
+                                               data-inputmask="'mask': '99999-9999999-9'" required="0"/>
+                                        <field name="ownership" string="Owner Percentage"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="file_financials.investor_registration_tree_view">
+            <field name="name">file_financials.investor_registration_tree_view</field>
+            <field name="model">res.investor</field>
+            <field name="priority">40</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="ref"/>
+                    <field name="name"/>
+                    <field name="cnic"/>
+                    <field name="mobile"/>
+                    <field name="email"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="file_financials.action_investor_registration">
+            <field name="name">Investors</field>
+            <field name="res_model">res.investor</field>
+            <field name="domain">[]</field>
+            <field name="context">
+                {
+                'default_company_type': 'person'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Investor.
+                </p>
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('file_financials.investor_registration_tree_view')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('file_financials.investor_registration_form_view')})]"
+            />
+        </record>
+        <menuitem
+                id="file_financials.investor_menu_item"
+                name="Investors"
+                parent="file_financials.investment_main_menu"
+                action="file_financials.action_investor_registration"
+                sequence='1'
+        />
+        <record model="ir.actions.act_window" id="real_estate.action_investors">
+            <field name="name">Investors</field>
+            <field name="res_model">res.investor</field>
+            <field name="domain">[]</field>
+            <field name="context">
+                {
+                'default_company_type': 'person'
+                }
+            </field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new Member.
+                </p>
+            </field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('file_financials.investor_registration_tree_view')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('real_estate.view_investor_form')})]"
+            />
+        </record>
+    </data>
+</odoo>

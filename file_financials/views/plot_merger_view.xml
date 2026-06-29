@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="file_financials.plot_merger_form_inherit" model="ir.ui.view">
+        <field name="name">file_financials.plot_merger_form_inherit</field>
+        <field name="model">plot.merger</field>
+        <field name="inherit_id" ref="real_estate.file_merger_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/group" position="replace">
+                <group>
+                    <group>
+                        <field name="merger_type"/>
+                    </group>
+                    <group>
+                        <field name="visibility_check" invisible="1"/>
+                    </group>
+                </group>
+                <group name="group_top" string="Client Details">
+                    <group>
+                        <field name="membership_source_id"/>
+                        <field name="membership_target_id"
+                               invisible="merger_type != 'member_to_member'"
+                        />
+                    </group>
+                    <group>
+
+                        <field name="cnic"
+                               string="CNIC"
+                               widget="mask"
+                               data-inputmask="'mask': '99999-9999999-9'"
+                        />
+                        <field name="tar_member_cnic"
+                               string="CNIC"
+                               widget="mask"
+                               data-inputmask="'mask': '99999-9999999-9'"
+                               invisible="merger_type != 'member_to_member'"
+                        />
+                        <button string="Search"
+                                name="search_file_related_record"
+                                type="object"
+                                class="btn-primary"/>
+                    </group>
+                </group>
+                <group name="group_bottom" string="Merger Details">
+                    <group name="group_left">
+                        <field name="waive_merger_application"/>
+                        <field name="appointment_date"/>
+                        <field name="notes"/>
+                    </group>
+                </group>
+            </xpath>
+            <!--            <xpath expr="//button[@name='search_related_file']" position="attributes">-->
+            <!--                <attribute name="invisible">1</attribute>-->
+            <!--            </xpath>-->
+            <xpath expr="//field[@name='membership_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='file_merger_line']/list/field[@name='membership_id']" position="after">
+                <field name="source"/>
+                <field name="target"/>
+                <field name="total_sale_amount" sum="Total"/>
+                <field name="ttl_invoiced_amount" sum="Total"/>
+                <field name="amount_received" sum="Total"/>
+                <field name="amount_remaining" sum="Total"/>
+            </xpath>
+        </field>
+    </record>
+    <menuitem
+            id="real_estate.menu_file_merger_form_inherit"
+            name="Merger Request"
+            action="real_estate.action_file_merger_form"
+            parent="real_estate.menu_merger"
+            sequence="5"
+            groups="real_estate.group_initiate_merger_req"
+    />
+    <menuitem id="real_estate.menu_file_merger_form" active="False"/>
+</odoo>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="print_queue_view_form" model="ir.ui.view">
+            <field name="name">Print Queue Form</field>
+            <field name="model">print.queue</field>
+            <field name="arch" type="xml">
+                <form string="print_queue_form">
+                    <header>
+                        <button name="print_action" type="object" string="Print Letters" class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="document_type" required="1"/>
+                                <field name="member_ids" widget="many2many_tags"
+                                       invisible="document_type != 'file'"/>
+                                <field name="batch_id" invisible="document_type != 'allotment'"/>
+                            </group>
+                            <group>
+                                <field name="allotment" required="1"/>
+                                <field name="transfer_application_id"
+                                       options="{'no_create': True}"
+                                       domain="[('state','=','transfered')]"
+                                       invisible="allotment != 'transfer'"
+                                       required="allotment == 'transfer'"/>
+                                <field name="transaction_ref"/>
+                                <field name="sector_id" domain="[('project_type','=','housing_society')]"
+                                       invisible="document_type != 'allotment'"/>
+                                <field name="files_ids" widget="many2many_tags"
+                                       invisible="document_type != 'file'"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="files" string="Files" autofocus="autofocus"
+                                  invisible="document_type != 'allotment'">
+                                <field name="line_ids" invisible="document_type != 'allotment'">
+                                    <list>
+                                        <field name="file_id"/>
+                                        <field name="membership_id"/>
+                                        <field name="tracking_no"/>
+                                        <field name="society_id"/>
+                                        <field name="phase_id"/>
+                                        <field name="unit_category_type_id"/>
+                                        <field name="category_id"/>
+                                        <field name="preference_ids"/>
+                                        <field name="sector_id"/>
+                                        <field name="street_id"/>
+                                        <field name="inventory_id"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="print_queue_view_tree" model="ir.ui.view">
+            <field name="name">print_queue_view_tree</field>
+            <field name="model">print.queue</field>
+            <field name="arch" type="xml">
+                <list string="print_queue_tree">
+                    <field name="document_type"/>
+                    <field name="transaction_ref"/>
+                    <field name="member_ids" widget="many2many_tags"/>
+                    <field name="batch_id"/>
+                    <field name="files_ids" invisible="document_type != 'file'"
+                           widget="many2many_tags"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="print_queue_action" model="ir.actions.act_window">
+            <field name="name">Print Queue</field>
+            <field name="res_model">print.queue</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="allotment_real_estate_menu"
+                name="Allotment"
+                parent="real_estate.menu_root"
+                sequence="20"
+        />
+
+        <menuitem
+                id="print_queue_menu"
+                name="Print Queue"
+                parent="allotment.allotment_real_estate_menu"
+                action="allotment.print_queue_action"
+        />
+
+    </data>
+</odoo>

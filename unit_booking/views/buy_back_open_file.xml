@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="unit_booking.buy_back_open_file_form">
+            <field name="name">unit_booking buy_back_open_file_form</field>
+            <field name="model">buy.back</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form duplicate="false">
+                    <header>
+                        <button name="in_process"
+                                type="object"
+                                string="In Process"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"
+                        />
+                        <button name="approve"
+                                type="object"
+                                string="Approve"
+                                class="oe_highlight"
+                                invisible="state != 'in_process'"
+                        />
+                        <field name="state" widget="statusbar"/>
+                        <field name="issue_to_sub_dealer" invisible="1"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                        <button
+                                name="buy_back_scanning"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Scanning"
+                                icon="fa-folder-open-o"
+                                invisible="state != 'draft'"
+                                groups="unit_booking.group_can_do_scanning"
+                        >
+                        </button>
+                            <button
+                                    name="open_invoices"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Invoices :  "
+                                    invisible="state != 'approve'"
+                                    icon="fa-pencil-square-o">
+
+                                <field name="no_of_invoices"/>
+                            </button>
+                    </div>
+                        <widget name="web_ribbon" text="Sub-Dealer" bg_color="bg-info"
+                                invisible="state == 'draft' or not issue_to_sub_dealer"/>
+                        <widget name="web_ribbon" text="Dealer" bg_color="bg-success"
+                                invisible="state == 'draft' or issue_to_sub_dealer"/>
+                        <div class="oe_title">
+                            <field name="sequence_number" invisible="0"/>
+                        </div>
+                        <group>
+                            <field name="name"
+                                   placeholder="Name"
+                                   required="1"
+                                   readonly="state != 'draft'"
+                            />
+                            <group>
+                                <field name="issue_to_sub_dealer"
+                                       string="Issue To Sub-Dealer?"
+                                       invisible="state != 'draft'"
+                                       widget="boolean_toggle"
+                                />
+
+                                <field name="partner_id" string="Allocated To" required="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       force_save="1"
+                                       readonly="state != 'draft'"
+                                />
+                                <field name="main_dealer_id" string="Main Dealer" force_save="1"
+                                       readonly="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="not issue_to_sub_dealer"
+                                />
+                                <field name="buy_back_option" string="Option" required="1"
+                                       readonly="state != 'draft'"
+                                />
+                                <field name="dealer_cancellation_id" string="Dealer Cancellation Ref"
+                                       readonly="state != 'draft'"
+                                />
+                            </group>
+                            <group>
+                                <field name="date" required="1"
+                                       readonly="state != 'draft'"
+                                />
+                                <field name="company_id"
+                                       readonly="1"
+                                />
+                                       readonly="1"
+                                /> --> -->
+                                <field name="total_initial_payment"
+                                       readonly="1"
+                                       invisible="not total_initial_payment"
+                                />
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="asset_detail" string="Asset Details">
+                                <field name="buy_back_line_ids"
+                                       readonly="state != 'draft'">
+                                    <list editable="bottom">
+                                        <field name="units_booking_id" options="{'no_open': True,'no_create': True}"
+                                               string="File"/>
+                                        <field name="society_id" options="{'no_open': True}"/>
+                                        <field name="phase_id" options="{'no_open': True}"/>
+                                        <field name="sector_id" string="Block" options="{'no_open': True}"/>
+                                        <field name="category_id" options="{'no_open': True}"/>
+                                        <field name="unit_category_type_id" options="{'no_open': True}"
+                                               string="Product"/>
+                                        <field name="batch_id" options="{'no_open': True}"/>
+                                        <field name="unit_booking_allotment_id" string="Deal"
+                                               options="{'no_open': True}"/>
+                                        <field name="price"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.buy_back_open_file_tree">
+            <field name="name">unit_booking buy_back_open_file_tree</field>
+            <field name="model">buy.back</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="sequence_number"/>
+                    <field name="name"/>
+                    <field name="issue_to_sub_dealer"/>
+                    <field name="partner_id" string="Dealer"/>
+                    <field name="date"/>
+                    <field name="state" string="State"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.buy_back_open_file_search">
+            <field name="name">unit_booking buy_back_open_file_search</field>
+            <field name="model">buy.back</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="sequence_number"/>
+                    <field name="name"/>
+                    <field name="issue_to_sub_dealer"/>
+                    <field name="partner_id"/>
+                    <field name="date"/>
+                    <field name="state"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="unit_booking.action_buy_back_open_file">
+            <field name="name">Buy Back</field>
+            <field name="res_model">buy.back</field>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click On Create To Buy Back Open File From Dealer
+                </p>
+            </field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="unit_booking.menu_buy_back_open_file"
+                name="Buy Back"
+                parent="unit_booking.agent_menu_root"
+                action="unit_booking.action_buy_back_open_file"
+                sequence='3'
+        />
+    </data>
+</odoo>

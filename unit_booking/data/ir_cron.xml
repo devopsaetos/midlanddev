@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record forcecreate="True" id="ir_cron_booking_allotment_invoices" model="ir.cron">
+            <field name="name">Booking Allotment Installment Invoice</field>
+            <field name="model_id" ref="model_unit_booking_allotment"/>
+            <field name="state">code</field>
+            <field name="code">model.allotment_installment_invoices()</field>
+            <field name="priority">0</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

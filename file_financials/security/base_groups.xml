@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="plot_merger_id" model="ir.module.category">
+            <field name="name">Plot Merger</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="plot_merger_manager_group_id" model="res.groups">
+            <field name="name">Plot Merger Manager</field>
+        </record>
+    </data>
+</odoo>

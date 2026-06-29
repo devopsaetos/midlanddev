@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.open_file_qr_view_form1" model="ir.ui.view">
+            <field name="name">unit_booking open_file_qr_view_form</field>
+            <field name="model">open.file.qr.reading</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="unit_selection_option" invisible="1"/>
+                                <field name="is_search_done" invisible="1"/>
+                                <field name="file_adding_option" invisible="not allotment_id"/>
+                                <field name="platter_id" options="{'no_create': True, 'no_open': True}" invisible="file_adding_option != 'platter'"/>
+                                <field name="batch_id" options="{'no_create': True, 'no_open': True}" readonly="1"/>
+<!--                                <field name="batch_id" options="{'no_create': True, 'no_open': True}" readonly="1" invisible="not platter_id" readonly="file_adding_option == 'platter'"/>-->
+
+                                <field name="units_booking_id" widget="m2o_int" string="File"
+                                       options="{'no_create': True}"
+                                       invisible="unit_selection_option == 'range'"/>
+
+                                <field name="unit_booking_starting_id"
+                                       string="Starting No."
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="unit_selection_option == 'scanning'" readonly="is_search_done" required="unit_selection_option == 'range'"/>
+
+                                <field name="no_of_units" string="Quantity" required="0"
+                                       invisible="unit_selection_option == 'scanning'" readonly="is_search_done"/>
+
+                            </group>
+                            <group>
+                                <field name="unit_booking_ending_id"
+                                       string="Ending No."
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="unit_selection_option == 'scanning'" readonly="not unit_booking_starting_id or is_search_done" required="unit_selection_option == 'range'"/>
+
+                                <field name="allotment_id" invisible="1"/>
+
+                                <field name="issuance_id" invisible="1"/>
+
+                                <field name="unit_booking_cancellation_id" invisible="1"/>
+                            </group>
+                        </group>
+                        <group invisible="unit_selection_option == 'scanning'">
+                            <group name="left_panel">
+                            </group>
+
+                            <group class="oe_subtotal_footer oe_right">
+                                <button string="Search" name="range_data" type="object"
+                                        class="btn-primary"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Unit Details">
+                                <field name="open_file_qr_line_ids">
+                                    <list create="false">
+                                        <field name="units_booking_id" options="{'no_open': True}"
+                                               readonly="1" force_save="1" string="File"/>
+                                        <field name="society_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                        <field name="phase_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                        <field name="sector_id" string="Block" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                        <field name="category_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                        <field name="unit_category_type_id" readonly="1" force_save="1"
+                                               options="{'no_open': True}"
+                                               string="Product"/>
+                                        <field name="batch_id" readonly="1" force_save="1" options="{'no_open': True}"/>
+                                        <field name="open_file_qr_id" invisible="1"/>
+                                    </list>
+                                    <form name="open_file_qr" string="Open File">
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="units_booking_id"
+                                                           options="{'no_open': True}"
+                                                           readonly="1" force_save="1"
+                                                           string="File"/>
+                                                    <field name="society_id"
+                                                           options="{'no_open': True}"
+                                                           readonly="1" force_save="1"/>
+                                                    <field name="phase_id"
+                                                           options="{'no_open': True}"
+                                                           readonly="1" force_save="1"/>
+                                                    <field name="sector_id"
+                                                           options="{'no_open': True}"
+                                                           string="Block" readonly="1" force_save="1"/>
+                                                </group>
+                                                <group>
+                                                    <field name="category_id"
+                                                           options="{'no_open': True}"
+                                                           readonly="1" force_save="1"/>
+                                                    <field name="unit_category_type_id"
+                                                           options="{'no_open': True}"
+                                                           readonly="1" force_save="1"
+                                                           string="Product"/>
+                                                    <field name="batch_id" options="{'no_open': True}"
+                                                           readonly="1" force_save="1"/>
+                                                    <field name="open_file_qr_id" invisible="1"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                        <footer>
+                                            <button string="Discard" class="btn-default" special="cancel"/>
+                                        </footer>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="proceed_to_qr" string="Done" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="allotment.print_queue_action" model="ir.actions.act_window">
+            <field name="name">Print Queue</field>
+            <field name="res_model">print.queue</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('state','=','draft')]</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="unit_booking.booking_issuance_view_form" model="ir.ui.view">
+        <field name="name">unit_booking booking_issuance_view_form</field>
+        <field name="model">unit.booking.issuance</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button class='btn btn-primary' name="approve_issuance" type="object" string="Approve"
+                            invisible="state != 'draft'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                                name="open_file_issuance_scanning"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Scanning"
+                                icon="fa-folder-open-o"
+                                invisible="state != 'draft'"
+                                groups="unit_booking.group_can_do_scanning"
+                        >
+                        </button>
+                    </div>
+                    <div class="oe_title" readonly="1">
+                        <h1>
+                            <field name="name"/>
+                            <field name="from_allotment_to_issuance" invisible="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="issue_to_subagent"
+                                   string="Issue to Sub-Dealer ?" widget="boolean_toggle"/>
+
+                            <field name="partner_id" string="Agent"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','main_agent')]"
+                                   readonly="1" force_save="1"/>
+
+                            <field name="partner_subagent_id" string="Sub Agent"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','sub_agent'),('unit_booking_agent_id','=',partner_id)]"
+                                   invisible="not issue_to_subagent" readonly="state != 'draft'" required="issue_to_subagent"/>
+                        </group>
+                        <group>
+                            <field name="unit_selection_option"
+                                   string="Selection By"
+                                   readonly="state != 'draft'" required="1"/>
+
+                            <field name="unit_batch_id"
+                                   options="{'no_create': True, 'no_open': True}" readonly="1"/>
+
+                            <field name="unit_booking_allotment_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="1" force_save="1"/>
+                            <field name="no_of_units"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Booking Files">
+                            <field name="unit_booking_issuance_line_ids" readonly="1">
+                                <list editable="bottom">
+                                    <field name="units_booking_id" string="File"
+                                           force_save="1" widget="m2o_int"/>
+                                    <field name="society_id"/>
+                                    <field name="phase_id"/>
+                                    <field name="sector_id" string="Block"/>
+                                    <field name="category_id"/>
+                                    <field name="unit_category_type_id" string="Product"/>
+                                    <field name="batch_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="unit_booking.booking_issuance_view_tree" model="ir.ui.view">
+        <field name="name">unit_booking booking_issuance_view_tree</field>
+        <field name="model">unit.booking.issuance</field>
+        <field name="arch" type="xml">
+            <list delete="false">
+                <field name="name"/>
+                <field name="issue_to_subagent" string="Issue to Sub-Dealer?" widget="boolean_toggle"/>
+                <field name="state"/>
+                <field name="partner_id" string="Agent"/>
+                <field name="partner_subagent_id" string="Sub Agent"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="unit_booking.action_booking_issuance">
+        <field name="name">Issuance</field>
+        <field name="res_model">unit.booking.issuance</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{
+            'current_view': 'realestate'
+            }
+        </field>
+    </record>
+
+<!--    <menuitem-->
+<!--            id="unit_booking.booking_issuance_menu"-->
+<!--            name="Issuance"-->
+<!--            parent="unit_booking.deal_management_root"-->
+<!--            action="unit_booking.action_booking_issuance"-->
+<!--            sequence='3'-->
+<!--    />-->
+</odoo>

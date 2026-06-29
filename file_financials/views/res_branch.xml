@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_branch_form_view_extension" model="ir.ui.view">
+        <field name="name">res_branch_form_view_extension</field>
+        <field name="model">res.branch</field>
+        <field name="priority" eval="52"/>
+        <field name="inherit_id" ref="branch.view_res_branch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="currency_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="foreign_currency" readonly="1" force_save="1" invisible="1"/>
+                <field name="rate_type"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

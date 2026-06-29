@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="allotment_request_form" model="ir.ui.view">
+            <field name="name">allotment allotment_request_form</field>
+            <field name="model">allotment.request</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <header>
+                        <button name="action_preview" type="object" string="Review"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="date"/>
+                                <field name="file_id"/>
+                            </group>
+                            <group>
+                                <field name="membership_id"/>
+                                <field name="membership_name"/>
+                            </group>
+                            <group>
+                                <field name="society_id"/>
+                                <field name="phase_id"/>
+                                <field name="category_id"/>
+                                <field name="unit_category_type_id"/>
+                            </group>
+                            <group>
+                                <field name="sector_id" options="{'no_create':True}"/>
+                                <field name="street_id" options="{'no_create':True}"/>
+                                <field name="inventory_id" options="{'no_create':True}"/>
+                                <field name="size_id"/>
+                                <field name="unit_number"/>
+                                <field name="batch_id" invisible="1"/>
+                            </group>
+
+                        </group>
+                        <group>
+                            <group>
+                                <field name="approved_responsibe_id" invisible="not approved_responsibe_id"/>
+                                <field name="issued_responsibe_id" invisible="not approved_responsibe_id"/>
+                                <field name="printed_responsibe_id" invisible="not printed_responsibe_id"/>
+                                <field name="canceled_responsibe_id" invisible="not canceled_responsibe_id"/>
+                            </group>
+                            <group>
+                                <field name="approved_date" invisible="not approved_date"/>
+                                <field name="issued_date" invisible="not issued_date"/>
+                                <field name="printed_date" invisible="not printed_date"/>
+                                <field name="canceled_date" invisible="not canceled_date"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="allotment_request_tree" model="ir.ui.view">
+            <field name="name">allotment allotment_request_tree</field>
+            <field name="model">allotment.request</field>
+            <field name="arch" type="xml">
+                <list create="false" edit="0">
+                    <field name="file_id"/>
+                    <field name="membership_id"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="category_id"/>
+                    <field name="unit_category_type_id"/>
+                    <field name="sector_id"/>
+                    <field name="street_id"/>
+                    <field name="inventory_id"/>
+                    <field name="size_id"/>
+                    <field name="unit_number"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="allotment.action_allotment_request">
+            <field name="name">Allotment Request</field>
+            <field name="res_model">allotment.request</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="allotment_request"
+                name="Allotment Request"
+                action="allotment.action_allotment_request"
+                parent="real_estate.menu_inventory_root"
+                sequence="5"
+        />
+
+    </data>
+</odoo>

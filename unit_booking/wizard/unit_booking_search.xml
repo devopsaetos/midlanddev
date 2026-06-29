@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="unit_booking.unit_booking_search_view_form" model="ir.ui.view">
+            <field name="name">unit_booking unit_booking_search_view_form</field>
+            <field name="model">unit.booking.search</field>
+            <field name="arch" type="xml">
+                <form create="false">
+                    <sheet>
+                        <group string="Unit Details">
+                            <group>
+                                <field name="transaction_type" required="1"/>
+                                <field name="batch_id" readonly="0" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="prefix_id"
+                                       domain="[('batch_id','=',batch_id)]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="agent_id" readonly="0"
+                                       domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','main_agent')]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sub_agent_id" readonly="0"
+                                       domain="[('is_unit_booking_agent','=',True),('unit_booking_agent_type','=','sub_agent')]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="prefix" invisible="1"/>
+
+                                <field name="unit_booking_allotment_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       invisible="transaction_type != 'swap'"/>
+
+                                <field name="unit_booking_starting_id" string="Starting No."
+                                       required="0"
+                                       options="{'no_create': True, 'no_open': True}"/>
+
+                                <field name="unit_booking_ending_id" string="Ending No."
+                                       required="0"
+                                       readonly="not unit_booking_starting_id"
+                                       options="{'no_create': True, 'no_open': True}"/>
+
+                                <field name="invoice_generated_for"
+                                       invisible="transaction_type != 'open_file'" required="transaction_type == 'open_file'"/>
+
+                            </group>
+                        </group>
+                        <group>
+                            <group name="left_panel">
+                            </group>
+
+                            <group class="oe_subtotal_footer oe_right">
+                                <button string="Search" name="search_related_records" type="object" class="btn-primary"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Unit Detail">
+                                <field name="search_line_ids">
+                                    <list editable="bottom">
+                                        <field name="is_checked" string="Select"/>
+
+                                        <field name="units_booking_id" string="File"
+                                               force_save="1" readonly="1"/>
+
+                                        <field name="society_id" force_save="1" readonly="1"/>
+
+                                        <field name="phase_id" force_save="1" readonly="1"/>
+
+                                        <field name="sector_id" string="Block" force_save="1" readonly="1"/>
+
+                                        <field name="category_id" force_save="1" readonly="1"/>
+
+                                        <field name="unit_category_type_id" force_save="1" readonly="1" string="Product"/>
+
+                                        <field name="batch_id" force_save="1" readonly="1"/>
+
+                                        <field name="processing_fee"
+                                               required="parent.transaction_type == 'open_file'"
+                                               readonly="0"/>
+
+                                        <field name="reset_installment_plan"
+                                               required="parent.transaction_type == 'open_file'"
+                                        />
+
+                                        <field name="new_units_booking_id"
+                                               required="parent.transaction_type == 'swap'"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               string="New File"
+                                               domain="[('state','=','assignment'),('batch_id','=',parent.batch_id)]"
+                                        />
+
+                                        <field name="search_id" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button string="Create" name="create_issuance_req" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="unit_booking.action_unit_booking_search">
+            <field name="name">Search</field>
+            <field name="res_model">unit.booking.search</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        <menuitem
+                id="unit_booking.unit_booking_Search_menu"
+                name="Search"
+                parent="unit_booking.process_management_root"
+                action="unit_booking.action_unit_booking_search"
+                sequence='1'
+        />
+    </data>
+</odoo>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Form View ─────────────────────────────────────────────────────── -->
+    <record id="midland_invoice_view_form" model="ir.ui.view">
+        <field name="name">midland.invoice.form</field>
+        <field name="model">midland.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Customer Invoice">
+                <header>
+                    <button name="action_post" string="Post" type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_register_payment" string="Register Payment" type="object"
+                            class="oe_highlight"
+                            invisible="state != 'posted' or payment_state == 'paid'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state == 'cancelled'"
+                            confirm="Are you sure you want to cancel this invoice?"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancelled'"/>
+                    <button name="action_view_jv" string="View Journal Entry" type="object"
+                            invisible="not jv_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,posted,cancelled"/>
+                    <field name="entry_mode" invisible="1"/>
+                    <widget name="web_ribbon" title="Entry Created" bg_color="bg-success"
+                            invisible="not entry_mode or state == 'draft'"/>
+                    <widget name="web_ribbon" title="No Entry (Payment Only)" bg_color="bg-warning"
+                            invisible="entry_mode or state == 'draft'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Customer Info">
+                            <field name="member_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="delivery_address_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="ref"
+                                   readonly="state != 'draft'"/>
+                            <field name="is_maintenance_batch"
+                                   readonly="state != 'draft'"/>
+                            <field name="payment_no"
+                                   readonly="state != 'draft'"/>
+                            <field name="property_invoice_type"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Invoice Details">
+                            <field name="invoice_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="branch_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="payment_term_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="investor_file_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="company_id"
+                                   readonly="state != 'draft'" groups="base.group_multi_company"/>
+                            <field name="currency_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="move_type"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Invoice Lines -->
+                        <page string="Invoice Lines" name="invoice_lines">
+                            <field name="invoice_line_ids"
+                                   readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="account_id"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="tax_ids" widget="many2many_tags"/>
+                                    <field name="price_subtotal" sum="Subtotal"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="amount_untaxed"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_tax"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <div class="oe_subtotal_footer_separator oe_inline">
+                                    <label for="amount_total"/>
+                                </div>
+                                <field name="amount_total" nolabel="1"
+                                       class="oe_subtotal_footer_separator"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_residual"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="amount_paid"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="payment_state" widget="badge"
+                                       decoration-success="payment_state == 'paid'"
+                                       decoration-warning="payment_state == 'partial'"
+                                       decoration-info="payment_state == 'not_paid'"/>
+                            </group>
+                        </page>
+
+                        <!-- Source Links -->
+                        <page string="Source Records" name="source_records">
+                            <group>
+                                <group>
+                                    <field name="file_ids"
+                                           readonly="state != 'draft'"/>
+                                    <field name="investment_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="installment_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="units_booking_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="crm_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="token_id"
+                                           readonly="state != 'draft'"/>
+                                </group>
+                                <group>
+                                    <field name="unit_swap_request_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="transfer_application_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="merger_application_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="open_file_issuance_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="booking_allotment_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="dealer_renewal_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="dealer_cancellation_id"
+                                           readonly="state != 'draft'"/>
+                                    <field name="buy_back_id"
+                                           readonly="state != 'draft'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Journal Entry -->
+                        <page string="Journal Entry" name="journal_entry"
+                              invisible="not jv_id">
+                            <group>
+                                <field name="jv_id" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── List View ─────────────────────────────────────────────────────── -->
+    <record id="midland_invoice_view_list" model="ir.ui.view">
+        <field name="name">midland.invoice.list</field>
+        <field name="model">midland.invoice</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'"
+                  decoration-muted="state == 'cancelled'"
+                  decoration-success="state == 'posted'">
+                <field name="name"/>
+                <field name="invoice_date"/>
+                <field name="member_id"/>
+                <field name="property_invoice_type"/>
+                <field name="investor_file_id"/>
+
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_total" sum="Total"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="amount_residual" sum="Amount Due"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="payment_state" widget="badge"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-info="payment_state == 'not_paid'"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'posted'"
+                       decoration-danger="state == 'cancelled'"/>
+                <field name="entry_mode" widget="boolean" string="Entry" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Search View ───────────────────────────────────────────────────── -->
+<!--    <record id="midland_invoice_view_search" model="ir.ui.view">-->
+<!--        <field name="name">midland.invoice.search</field>-->
+<!--        <field name="model">midland.invoice</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <search>-->
+<!--                <field name="name" string="Invoice Number"/>-->
+<!--                <field name="member_id" string="Customer"/>-->
+<!--                <field name="investor_file_id"/>-->
+<!--                <field name="property_invoice_type"/>-->
+<!--                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>-->
+<!--                <filter string="Posted" name="posted" domain="[('state','=','posted')]"/>-->
+<!--                <filter string="Cancelled" name="cancelled" domain="[('state','=','cancelled')]"/>-->
+<!--                <group expand="0" string="Group By">-->
+<!--                    <filter string="Customer" name="group_member" context="{'group_by': 'member_id'}"/>-->
+<!--                    <filter string="Invoice Type" name="group_type" context="{'group_by': 'property_invoice_type'}"/>-->
+<!--                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>-->
+<!--                    <filter string="Journal" name="group_journal" context="{'group_by': 'journal_id'}"/>-->
+<!--                </group>-->
+<!--            </search>-->
+<!--        </field>-->
+<!--    </record>-->
+
+    <!-- ── Action ────────────────────────────────────────────────────────── -->
+    <record id="action_midland_invoice" model="ir.actions.act_window">
+        <field name="name">Customer Invoices</field>
+        <field name="res_model">midland.invoice</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'default_move_type': 'out_invoice'}</field>
+    </record>
+
+</odoo>

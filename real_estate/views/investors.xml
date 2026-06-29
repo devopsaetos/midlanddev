@@ -482,6 +482,7 @@
             />
         </record>
 
+        <!--
         <menuitem
                 id="real_estate.investors"
                 name="Investor"
@@ -489,6 +490,7 @@
                 action="real_estate.action_investors"
                 sequence='1'
         />
+        -->
         <!--        Record Rule for Multi Company-->
         <record id="real_estate.investor_rule" model="ir.rule">
             <field name="name">Investor multi-company</field>

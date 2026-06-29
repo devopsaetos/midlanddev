@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.account_invoice_ext_form">
+            <field name="name">file_financials.account_invoice_ext_form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="before">
+                    <field name="investor_file_id" readonly="1" force_save="1"/>
+                </xpath>
+                <xpath expr="//field[@name='invoice_user_id']" position="after">
+                    <field name="investment_id" readonly="1" force_save="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

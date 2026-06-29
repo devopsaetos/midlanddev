@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="allotment.file_allotment_application_form_view" model="ir.ui.view">
+            <field name="name">allotment file_allotment_application_form_view</field>
+            <field name="model">file.allotment.application</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button type="object" name="draft" invisible="state != 'approved'" string="Reset to Draft" class="oe_highlight"/>
+                        <button type="object" name="approve" invisible="state != 'draft'" string="Approve" class="oe_highlight"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box">
+                            <button
+                                    name="open_documents"
+                                    type="object"
+                                    string="Documents"
+                                    class="oe_stat_button"
+                                    icon="fa-folder-open"
+                            />
+                            <button
+                                    name="open_taxes"
+                                    type="object"
+                                    string="Taxes"
+                                    class="oe_stat_button"
+                                    icon="fa-percent"
+                            />
+                        </div>
+                        <div class="oe_title oe_state_size">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="file_id"/>
+                                <field name="by_pass_documents" invisible="1"/>
+                            </group>
+                        </group>
+                        <group string="Member Details">
+                            <group>
+                                <field name="membership_id" readonly="1" force_save="1"
+                                       context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
+                                <field name="company_type" string="Member Type"/>
+                                <field name="member_name" readonly="1"
+                                       invisible="company_type != 'person'"/>
+                                <field name="member_cnic" readonly="1"
+                                       invisible="company_type != 'person'"/>
+                            </group>
+                            <group string="Details" colspan="4"
+                                   invisible="company_type != 'aop'">
+                                <field name="cnic_line_ids">
+                                    <list editable="bottom">
+                                        <field name="member_name"/>
+                                        <field name="cnic" widget="mask"
+                                               data-inputmask="'mask': '99999-9999999-9'"/>
+                                        <field name="cnic_expiry_date"/>
+                                        <field name="cnic_front"/>
+                                        <field name="cnic_back"/>
+                                        <field name="phone"/>
+                                        <field name="tax_status"/>
+                                        <field name="address"/>
+                                        <field name="name"/>
+                                        <field name="father_spouse_cnic"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </group>
+                        <group string="Property Details">
+                            <group>
+                                <field name="society_id"/>
+                                <field name="phase_id"/>
+                                <field name="sector_id"/>
+                                <field name="street_id"/>
+                                <field name="inventory_id" string="Unit"/>
+                                <field name="unit_number" string="Plot No."/>
+                            </group>
+                            <group>
+                                <field name="tracking_id" readonly="1"/>
+                                <field name="category_id"/>
+                                <field name="unit_category_type_id" string="Product"/>
+                                <field name="size_id"/>
+                                <field name="unit_class_id" string="Type"/>
+                            </group>
+                        </group>
+                        <group string="File Details" name="file_details">
+                            <group>
+                                <field name="booking_date"/>
+                                <field name="starting_date"/>
+                                <field name="payment_states"/>
+                                <field name="interval_id"/>
+                            </group>
+                            <group>
+                                <field name="net_sale_amount"/>
+                                <field name="ttl_sale_amount"/>
+                                <field name="initial_payment"/>
+                                <field name="plan_description"/>
+                                <field name="deal_price" required="1" readonly="1"/>
+                            </group>
+                        </group>
+                        <group name="payment_history" string="Payment History">
+                            <group>
+                                <field name="sale_amount"/>
+                                <field name="factor_amount"/>
+                                <field name="discount_type"/>
+                                <field name="discount_amount"/>
+                                <field name="balance_amount"/>
+                            </group>
+                            <group>
+                                <field name="total_installment"/>
+                                <field name="installments_paid" readonly="1"/>
+                                <field name="total_installments_paid" readonly="1"/>
+                                <field name="total_installments_due" readonly="1"/>
+                                <field name="installments_due" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="allotment.file_allotment_application_tree_view" model="ir.ui.view">
+            <field name="name">allotment file_allotment_application_tree_view</field>
+            <field name="model">file.allotment.application</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="file_id"/>
+                    <field name="membership_id"/>
+                    <field name="phase_id"/>
+                    <field name="sector_id"/>
+                    <field name="category_id"/>
+                    <field name="size_id"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="allotment.action_file_allotment_application">
+            <field name="name">Allotment Application</field>
+            <field name="res_model">file.allotment.application</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="real_estate.menu_file_allotment_application"
+                name="Allotment Application"
+                action="allotment.action_file_allotment_application"
+                parent="real_estate.menu_transfer"
+                sequence="3"
+        />
+
+        <record id="file_allotment_application_sequence" model="ir.sequence">
+            <field name="name">file_allotment_application Sequence</field>
+            <field name="code">file.allotment.application.sequence</field>
+            <field name="prefix">ALT-FR-</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Required Taxes Form View -->
+        <record model="ir.ui.view" id="allotment.required_taxes_form">
+            <field name="name">allotment required_taxes_form</field>
+            <field name="model">required.taxes</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group string="Member">
+                            <group>
+                                <field name="membership_id" readonly="1" required="1" force_save="1" string="Member"/>
+                            </group>
+                            <group>
+                                <field name="allotment_total_tax" readonly="1" force_save="1"/>
+                                <field name="allotment_application_id" readonly="1" force_save="1"/>
+                            </group>
+                        </group>
+                        <group string="Tax Details">
+                            <field name="allotment_required_tax_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="rate"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Other Charges">
+                            <group>
+                                <field name="charges_partner_id" readonly="0" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="total_charges" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Details">
+                            <field name="other_charges_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Required Documents View -->
+        <record model="ir.ui.view" id="allotment.required_documents_form">
+            <field name="name">allotment required_documents_form</field>
+            <field name="model">required.documents</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="allotment_application_id" readonly="1" force_save="1"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page string="Requirements" autofocus="autofocus">
+                                <field name="required_documents_line_ids">
+                                    <list editable="bottom">
+                                        <field name="name" readonly="0" force_save="1"/>
+                                        <field name="attachment" widget="binary"/>
+                                        <field name="rule" readonly="1" column_invisible="1"/>
+                                        <field name="party" readonly="1" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

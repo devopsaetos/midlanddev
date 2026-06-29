@@ -304,7 +304,7 @@ class PlotMergerApplication(models.Model):
                                                 })]
                                         new_invoice = self.env['account.move'].create({
                                             'partner_id': line.file_id.membership_id.partner_id.id,
-                                            'type': 'out_invoice',
+                                            'move_type': 'out_invoice',
                                             'journal_id': self.env.company.account_journal_id.id,
                                             # 'property_invoice_type': 'installment',
                                             'property_invoice_type': installment.installment_type if installment.installment_type else 'installment',
@@ -333,7 +333,7 @@ class PlotMergerApplication(models.Model):
                         'file_ids': line.file_id.id,
                         'journal_id': self.env.company.account_journal_id.id,
                         'ref': f"{self.name} - {line.file_id.name}",
-                        'type': 'out_refund',
+                        'move_type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
                             'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                             'name': 'Adjustment Amount From Source File',
@@ -354,7 +354,7 @@ class PlotMergerApplication(models.Model):
                         'file_ids': line.file_id.id,
                         'journal_id': self.env.company.account_journal_id.id,
                         'ref': f"{self.name} - {line.file_id.name}",
-                        'type': 'out_refund',
+                        'move_type': 'out_refund',
                         'invoice_line_ids': [(0, 0, {
                             'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                             'name': 'Adjustment Amount From Source File',
@@ -519,7 +519,7 @@ class PlotMergerApplication(models.Model):
 
                                         new_invoice = self.env['account.move'].create({
                                             'partner_id': line.file_id.membership_id.partner_id.id,
-                                            'type': 'out_invoice',
+                                            'move_type': 'out_invoice',
                                             'journal_id': self.env.company.account_journal_id.id,
                                             # 'property_invoice_type': 'installment',
                                             'property_invoice_type': installment.installment_type if installment.installment_type else 'installment',
@@ -560,7 +560,7 @@ class PlotMergerApplication(models.Model):
                             # 'file_ids': line.file_id.id,
                             'journal_id': self.env.company.account_journal_id.id,
                             'ref': f"{self.name} - Merged Files",
-                            'type': 'out_refund',
+                            'move_type': 'out_refund',
                             'invoice_line_ids': [(0, 0, {
                                 'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                                 'name': 'Adjustment Amount From Source File',
@@ -581,7 +581,7 @@ class PlotMergerApplication(models.Model):
                             'journal_id': self.env.company.account_journal_id.id,
                             # 'file_ids': line.file_id.id,
                             'ref': f"{self.name} - Merged Files",
-                            'type': 'out_refund',
+                            'move_type': 'out_refund',
                             'invoice_line_ids': [(0, 0, {
                                 'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                                 # 'account_id': self.membership_id.property_account_receivable_id.id,
@@ -604,7 +604,7 @@ class PlotMergerApplication(models.Model):
                             'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
                             'journal_id': self.env.company.account_journal_id.id,
                             'ref': f"{self.name} - Merged Files",
-                            'type': 'out_refund',
+                            'move_type': 'out_refund',
                             'invoice_line_ids': [(0, 0, {
                                 'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                                 'name': 'Adjustment Amount From Source File',
@@ -625,7 +625,7 @@ class PlotMergerApplication(models.Model):
                             'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
                             'journal_id': self.env.company.account_journal_id.id,
                             'ref': f"{self.name} - Merged Files",
-                            'type': 'out_refund',
+                            'move_type': 'out_refund',
                             'invoice_line_ids': [(0, 0, {
                                 'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                                 # 'account_id': self.membership_id.property_account_receivable_id.id,
@@ -646,7 +646,7 @@ class PlotMergerApplication(models.Model):
                     # 'file_ids': line.file_id.id,
                     'journal_id': self.env.company.account_journal_id.id,
                     'ref': f"{self.name} - Merged Files",
-                    'type': 'out_refund',
+                    'move_type': 'out_refund',
                     'invoice_line_ids': [(0, 0, {
                         'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                         'name': 'Adjustment Amount From Source File',
@@ -665,7 +665,7 @@ class PlotMergerApplication(models.Model):
                     'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
                     'journal_id': self.env.company.account_journal_id.id,
                     'ref': f"{self.name} - Merged Files",
-                    'type': 'out_refund',
+                    'move_type': 'out_refund',
                     'invoice_line_ids': [(0, 0, {
                         'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
                         'name': 'Adjustment Amount From Source File',

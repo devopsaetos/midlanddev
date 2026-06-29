@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="unit_booking.dealer_rebate_form">
+            <field name="name">unit_booking dealer_rebate_form</field>
+            <field name="model">dealer.rebate</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form duplicate="false">
+                    <header>
+                        <button name="set_to_active" type="object" string="Active" class="oe_highlight"
+                                invisible="state == 'active'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <field name="name" invisible="0"/>
+                        </div>
+                        <group>
+                            <field name="policy_name"
+                                   placeholder="Policy"
+                                   required="1"
+                                   readonly="state == 'active'"/>
+                            <group>
+                                <field name="effective_from" required="1"
+                                       readonly="state == 'active'"/>
+                            </group>
+                            <group>
+                                <field name="effective_to" readonly="state == 'active'"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="rebate_lines" string="Rebate Details">
+                                <field name="rebate_line_ids" readonly="state == 'active'">
+                                    <list editable="bottom">
+                                        <field name="sector_id" string="Block"/>
+                                        <field name="category_id"/>
+                                        <field name="settlement_option"/>
+                                        <field name="calculation_basis"/>
+                                        <field name="rate_calculation"/>
+                                        <field name="total_rebate"/>
+                                        <field name="rebate_at_deal"/>
+                                        <field name="rebate_at_sale"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="other_info" string="Other Info">
+                                <group name="company_detail" string="Company Info">
+                                    <group>
+                                        <field name="company_id"/>
+                                    </group>
+                                    <group>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.rebate_tree">
+            <field name="name">unit_booking rebate_tree</field>
+            <field name="model">dealer.rebate</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="effective_from"/>
+                    <field name="effective_to"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.rebate_search">
+            <field name="name">unit_booking rebate_search</field>
+            <field name="model">dealer.rebate</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="effective_from"/>
+                    <field name="effective_to"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="unit_booking.action_rebate">
+            <field name="name">Rebate Policy</field>
+            <field name="res_model">dealer.rebate</field>
+
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click On Create To Add Dealer Rebate Policy
+                </p>
+            </field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="unit_booking.menu_rebate_policy"
+                name="Rebate Policy"
+                parent="unit_booking.agent_menu_root"
+                action="unit_booking.action_rebate"
+                sequence='2'
+        />
+    </data>
+</odoo>

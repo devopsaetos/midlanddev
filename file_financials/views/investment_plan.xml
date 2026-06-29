@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="investment_form_view_ext_for_plan_lines">
+        <field name="name">investment_form_view_ext_for_plan_lines</field>
+        <field name="model">investment</field>
+        <field name="inherit_id" ref="real_estate.investment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/notebook/page[3]/field[@name='investment_plan_ids']/list/field[@name='payment_status']" position="after">
+                <field name="net_receivable" readonly="1" force_save="1" sum="Total"/>
+                <field name="net_payment" readonly="1" force_save="1" sum="Total"/>
+                <field name="rebate_adjustment" readonly="1" force_save="1" sum="Total"/>
+                <field name="marketing_share" readonly="1" force_save="1" sum="Total"/>
+                <field name="dealer_share" readonly="1" force_save="1" sum="Total"/>
+                <field name="rebate_amount" readonly="1" force_save="1" sum="Total"/>
+                <field name="rebate_given" readonly="1" force_save="1" sum="Total"/>
+                <field name="dealer_rebate_given" readonly="1" force_save="1" sum="Total"/>
+                <field name="marketing_rebate_given" readonly="1" force_save="1" sum="Total"/>
+                <field name="move_ids" readonly="1" force_save="1" string="Entry #" widget="many2many_tags"/>
+            </xpath>
+        </field>
+        </record>
+        <record id="file_financials.investment_plan_form_view" model="ir.ui.view">
+            <field name="name">file_financials.investment_plan_form_view</field>
+            <field name="model">investment.plan</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list create="false">
+                    <field name="investment_id" invisible="0" readonly="1" force_save="1"/>
+                    <field name="installment_name" invisible="0" readonly="1" force_save="1"/>
+                    <field name="installment_type" invisible="1" readonly="1" force_save="1"/>
+                    <field name="invoice" invisible="1" readonly="1" force_save="1"/>
+                    <field name="date" invisible="0" readonly="1" force_save="1"/>
+                    <field name="amount" invisible="0" readonly="1" force_save="1" string="Amount"/>
+                    <field name="amount_paid" invisible="0" readonly="1" force_save="1" string="Amount Paid"/>
+                    <field name="residual" invisible="0" readonly="1" force_save="1" string="Remaining Amount"/>
+                    <field name="installment_number" invisible="1" readonly="1" force_save="1"/>
+                    <field name="invoice_created" invisible="1" readonly="1" force_save="1"/>
+                    <field name="invoice_id" invisible="1" readonly="1" force_save="1"/>
+                    <field name="payment_date" invisible="0" readonly="1" force_save="1" string="Payment date"/>
+                    <field name="state" invisible="0" readonly="1" force_save="1" string="Invoice Status"/>
+                    <field name="payment_status" invisible="0" readonly="1" force_save="1" string="Status"/>
+                    <field name="property_invoice_type" invisible="1" readonly="1" force_save="1"/>
+                    <field name="file_adjusted_amount" invisible="1" readonly="1" force_save="1"/>
+                    <field name="adjustment_amount" invisible="1" readonly="1" force_save="1"/>
+                    <field name="balance_amount" invisible="1" readonly="1" force_save="1"/>
+                    <field name="double_check_paid_amount" invisible="1" readonly="1" force_save="1"/>
+                    <field name="company_id" invisible="0" readonly="1" force_save="1"/>
+
+                </list>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="file_financials.action_investment_plan">
+            <field name="name">Investment Plan</field>
+            <field name="res_model">investment.plan</field>
+            <field name="view_mode">list</field>
+        </record>
+<!--        <menuitem-->
+<!--                id="file_financials.investment_plan_menu_item"-->
+<!--                name="Investment Plan"-->
+<!--                parent="real_estate.menu_fms"-->
+<!--                action="file_financials.action_investment_plan"-->
+<!--                sequence='4'/>-->
+        <!--    Record Rule for Multi Company-->
+        <record id="file_financials.investment_plan_rule" model="ir.rule">
+            <field name="name">Investment Plan multi-company</field>
+            <field name="model_id" ref="model_investment_plan"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+    </data>
+</odoo>

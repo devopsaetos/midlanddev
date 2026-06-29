@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<!--        <record model="ir.ui.view" id="file_financials.allotment_file_form_view_ext">-->
+<!--        <field name="name">file_financials.allotment_file_form_view_ext</field>-->
+<!--        <field name="model">file</field>-->
+<!--        <field name="inherit_id" ref="allotment.file_correspandence_history"/>-->
+<!--        <field name="arch" type="xml">-->
+        <record model="ir.ui.view" id="real_estate_file_form_view_ext">
+            <field name="name">real_estate_file_form_view_ext</field>
+            <field name="model">file</field>
+            <field name="inherit_id" ref="real_estate.file_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form[@name='file_management']" position="inside">
+                    <style>
+                        .o_form_view .oe_button_box .btn.oe_stat_button {
+                        color: #4c4c4c;
+                        height: 44px;
+                        padding: 0 6px 0 0 !important;
+                        text-align: left;
+                        white-space: nowrap;
+                        background-color: transparent;
+                        opacity: 0.8;
+                        border-radius: 0px;
+                        margin-bottom: 0;
+                        width: 20% !important;
+                        }
+                    </style>
+                </xpath>
+                <xpath expr="//button[@name='open_installment_wizard']" position="before">
+                    <field name="confirmation_invoice_created" invisible="1"/>
+                    <button
+                            name="create_confirmation_invoice"
+                            type="object"
+                            string="Generate Confirmation Invoice"
+                            icon="fa-pencil-square-o"
+                            invisible="file_status != 'lock' or confirmation_invoice_created"
+                            class="oe_stat_button"/>
+                </xpath>
+                <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='payment_date']" position="before">
+                    <field name="payment_journal_id" force_save="1" readonly="1" string="Payment Mode"/>
+                </xpath>
+                <xpath expr="//field[@name='installment_tax_ids']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='balance_amount']" position="after">
+                    <field name="currency_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="foreign_currency" readonly="1" force_save="1" invisible="1"/>
+                    <field name="rate_type" required="foreign_currency"/>
+                    <field name="rate" required="rate_type == 'user'"/>
+                    <field name="total_amount_pkr" readonly="1" force_save="1"/>
+                </xpath>
+                <xpath expr="//field[@name='investor_id']" position="after">
+                    <field name="issuance_request_id" options="{'no_create': True}" readonly="1" force_save="1"/>
+                    <field name="issued_to_sub_dealer" force_save="1" readonly="1"/>
+                    <field name="sub_investor_id" force_save="1" readonly="1"/>
+                    <field name="development_charges_included" force_save="1" required="1"/>
+                </xpath>
+                <xpath expr="//field[@name='ttl_sale_amount']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                </xpath>
+                <xpath expr="//field[@name='allotment_detail_ids']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='type']" position="attributes">
+                    <attribute name="invisible">0</attribute>
+                </xpath>
+                <xpath expr="//field[@name='allotment_detail_ids']/list/field[@name='print_by']" position="after">
+                    <field name="printing_request_id" options="{'no_create': True}" readonly="1" force_save="1" string="Print Request No."/>
+                </xpath>
+                <xpath expr="//field[@name='investor_id']" position="before">
+                    <field name="total_paid_amount" force_save="1" readonly="1"/>
+                    <field name="payment_completion_percentage" force_save="1" readonly="1"/>
+                    <field name="payment_completion_date" force_save="1" readonly="1"/>
+                </xpath>
+                <xpath expr="//field[@name='overall_status']" position="after">
+                    <field name="e_signature_link" force_save="1" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='notes']" position="before">
+                    <field name="with_note" force_save="1" invisible="type == 'investor'"/>
+                </xpath>
+                <xpath expr="/form/sheet/notebook/page[3]" position="inside">
+                    <group name="issuance_history" string="Issuance History" invisible="not issued_to_sub_dealer">
+                        <field name="issuance_history_ids" nolabel="1" force_save="1" readonly="1">
+                            <list>
+                                <field name="create_date" readonly="1" force_save="1"/>
+                                <field name="investor_file_id" readonly="1" force_save="1" invisible="1"/>
+                                <field name="issuance_date" readonly="1" force_save="1"/>
+                                <field name="issuance_type" readonly="1" force_save="1"/>
+                                <field name="request_platform" readonly="1" force_save="1"/>
+                                <field name="request_id" readonly="1" force_save="1"/>
+                            </list>
+                            <form>
+                                <sheet>
+                                    <group>
+                                        <group>
+                                            <field name="issuance_date" readonly="1" force_save="1"/>
+                                            <field name="issuance_type" readonly="1" force_save="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="request_platform" readonly="1" force_save="1"/>
+                                            <field name="request_id" readonly="1" force_save="1"/>
+                                        </group>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="real_estate.action_file">
+            <field name="name">File Management</field>
+            <field name="res_model">file</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">
+                [
+                ('project_type', '=', 'housing_society')
+                ]
+            </field>
+            <field name="context">{'default_from_member': 'False', 'default_project_type':'housing_society', 'current_view': 'realestate'}</field>
+        </record>
+    </data>
+</odoo>

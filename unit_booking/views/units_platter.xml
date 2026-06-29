@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<record id="unit_booking.units_platter_form_view" model="ir.ui.view">
+            <field name="name">Units Platter Form View</field>
+            <field name="model">units.platter</field>
+            <field name="arch" type="xml">
+                <form create="false" delete="false">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button class='btn btn-primary'
+                                name="active_platter"
+                                type="object"
+                                string="Active"
+                                invisible="state != 'draft'"
+                        />
+                        <button class='btn btn-primary'
+                                name="close_platter"
+                                type="object"
+                                string="Close"
+                                invisible="state != 'active'"
+                        />
+                        <button class='btn btn-primary'
+                                name="cancel_platter"
+                                type="object"
+                                string="Cancel"
+                                invisible="state in ['closed','cancel']"
+                        />
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button
+                                    name="open_files_addition"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    string="Scanning"
+                                    icon="fa-folder-open-o"
+                                    invisible="state != 'draft'"
+                                    groups="unit_booking.group_can_do_scanning"
+                            >
+                            </button>
+                        </div>
+<!--                        <div class="oe_title" readonly="1">-->
+<!--                            <h1>-->
+<!--                                <field name="project_type" invisible="1"/>-->
+<!--                            </h1>-->
+<!--                        </div>-->
+                        <group string="Platter Details">
+                            <group>
+                                <field name="name"/>
+                                <field name="code" readonly="1"/>
+                                <field name="unit_batch_id"
+                                       required="1"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="company_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="unit_selection_option" string="Selection By"
+                                       readonly="state != 'draft'" required="1"/>
+                                <field name="platter_size" readonly="state != 'draft'"/>
+                                <field name="total_files" readonly="1"/>
+                                <field name="available_files" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Files">
+                                <field name="platter_line_ids"
+                                       readonly="state != 'draft'">
+                                    <list editable="bottom">
+                                        <field name="units_booking_id" options="{'no_open': True}"
+                                               force_save="1" readonly="1" string="File"/>
+                                        <field name="society_id" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="phase_id" force_save="1" readonly="1" options="{'no_open': True}"/>
+                                        <field name="sector_id" string="Block" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="category_id" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="unit_category_type_id" string="Product" force_save="1" readonly="1"
+                                               options="{'no_open': True}"/>
+                                        <field name="price" force_save="1" readonly="1" options="{'no_open': True}"/>
+                                        <field name="batch_id" force_save="1" readonly="1" options="{'no_open': True}"/>
+                                        <field name="state"/>
+                                    </list>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="units_booking_id" options="{'no_open': True}"
+                                                           force_save="1" readonly="1" string="File"/>
+                                                    <field name="society_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="phase_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="sector_id" string="Block" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                </group>
+                                                <group>
+                                                    <field name="category_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="unit_category_type_id" string="Product" force_save="1"
+                                                           readonly="1" options="{'no_open': True}"/>
+                                                    <field name="price" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="batch_id" force_save="1" readonly="1"
+                                                           options="{'no_open': True}"/>
+                                                    <field name="state"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                        <footer>
+                                            <button string="Discard" class="btn-default" special="cancel"/>
+                                        </footer>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="unit_booking.units_platter_tree_view" model="ir.ui.view">
+            <field name="name">unit_booking units_platter_tree_view</field>
+            <field name="model">units.platter</field>
+            <field name="arch" type="xml">
+                <list delete="false">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="total_files"/>
+                    <field name="available_files"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="unit_booking.units_platter_search_view">
+            <field name="name">units_platter_search_view</field>
+            <field name="model">units.platter</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="unit_booking.action_units_platter">
+            <field name="name">Platter</field>
+            <field name="res_model">units.platter</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{
+                'search_default_group_by_batch_id': 1,
+                'current_view': 'realestate',
+                'default_project_type':'housing_society'}
+            </field>
+<!--            <field name="domain">[('project_type','=','housing_society')]</field>-->
+        </record>
+
+        <menuitem
+                id="unit_booking.units_platter_menu_item"
+                name="Platter"
+                parent="unit_booking.deal_management_root"
+                action="unit_booking.action_units_platter"
+                sequence='4'
+        />
+        <!--        Record Rules for Multi Company-->
+        <!--        Record Rule-->
+        <record id="unit_booking.platter_rule" model="ir.rule">
+            <field name="name">Platter multi-company</field>
+            <field name="model_id" ref="model_units_platter"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+        <record id="units_platter_sequence" model="ir.sequence">
+            <field name="name">Units Platter Sequence</field>
+            <field name="code">units.platter.sequence</field>
+            <field name="prefix">PLT/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

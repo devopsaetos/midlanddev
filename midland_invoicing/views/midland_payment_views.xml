@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Form View ─────────────────────────────────────────────────────── -->
+    <record id="midland_payment_view_form" model="ir.ui.view">
+        <field name="name">midland.payment.form</field>
+        <field name="model">midland.payment</field>
+        <field name="arch" type="xml">
+            <form string="Payment">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                            confirm="Confirm this payment and create a journal entry?"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state not in ('draft',)"
+                            confirm="Are you sure you want to cancel this payment?"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'cancelled'"/>
+                    <button name="action_fix_reconciliation" string="Fix Reconciliation" type="object"
+                            invisible="state != 'confirmed'"
+                            title="Re-run reconciliation if installment plan amounts are not updating"/>
+                    <button name="action_view_jv" string="View Journal Entry" type="object"
+                            invisible="not jv_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <!-- Left column -->
+                        <group string="Payment Information">
+                            <field name="file_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="payment_nature"
+                                   readonly="state != 'draft'"/>
+                            <field name="investment_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="is_sub_dealer_payment"
+                                   readonly="state != 'draft'"/>
+                            <field name="member_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="partner_id"
+                                   readonly="state != 'draft'" groups="base.group_no_one"/>
+                            <field name="journal_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="mode_of_payments"
+                                   readonly="state != 'draft'"/>
+                            <field name="currency_id"
+                                   readonly="state != 'draft'" groups="base.group_multi_currency"/>
+                            <field name="payment_amount"
+                                   readonly="state != 'draft'"/>
+                            <field name="wht_amount"
+                                   readonly="state != 'draft'"/>
+                            <field name="net_payment" readonly="1"/>
+                        </group>
+
+                        <!-- Right column -->
+                        <group string="Additional Details">
+                            <field name="date"
+                                   readonly="state != 'draft'"/>
+                            <field name="branch_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="payment_amount_calculation"
+                                   readonly="state != 'draft'"/>
+                            <field name="allow_wo_lps"
+                                   readonly="state != 'draft'"/>
+                            <field name="waive_lps"
+                                   readonly="state != 'draft'"/>
+                            <field name="override_wht"
+                                   readonly="state != 'draft'"/>
+                            <field name="wht"
+                                   readonly="state != 'draft'"
+                                   invisible="not override_wht"/>
+                            <field name="remarks"
+                                   readonly="state != 'draft'"/>
+                            <field name="recovery_reference"
+                                   readonly="state != 'draft'"/>
+                            <field name="company_id"
+                                   readonly="state != 'draft'" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Invoices tab -->
+                        <page string="Invoices" name="invoices">
+                            <field name="invoice_line_ids"
+                                   readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="invoice_id"
+                                           domain="[('state','=','posted'),('payment_state','!=','paid')]"/>
+                                    <field name="number" readonly="1"/>
+                                    <field name="invoice_date" readonly="1"/>
+                                    <field name="due_date"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="total" readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="amount_due" readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="payment_amount"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="payment_amount_paid" readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- Internal Notes tab -->
+                        <page string="Internal Notes" name="notes">
+                            <field name="internal_notes"
+                                   readonly="state != 'draft'"
+                                   placeholder="Internal notes..."/>
+                        </page>
+
+                        <!-- Journal Entry tab -->
+                        <page string="Journal Entry" name="journal_entry"
+                              invisible="not jv_id">
+                            <group>
+                                <field name="jv_id" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── List View ─────────────────────────────────────────────────────── -->
+    <record id="midland_payment_view_list" model="ir.ui.view">
+        <field name="name">midland.payment.list</field>
+        <field name="model">midland.payment</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'"
+                  decoration-muted="state == 'cancelled'"
+                  decoration-success="state == 'confirmed'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="member_id"/>
+                <field name="file_id"/>
+                <field name="payment_nature"/>
+                <field name="journal_id"/>
+                <field name="mode_of_payments"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="payment_amount" sum="Total"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="net_payment" sum="Net Total"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'confirmed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Action ────────────────────────────────────────────────────────── -->
+    <record id="action_midland_payment" model="ir.actions.act_window">
+        <field name="name">Payments</field>
+        <field name="res_model">midland.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+</odoo>
