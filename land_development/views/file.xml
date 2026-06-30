@@ -35,7 +35,7 @@
                                     string="Invoices : "
                                     icon="fa-list">
 
-                                <field name="no_of_invoices"/>
+                                <field name="no_of_invoices" readonly="file_status != 'draft'"/>
                             </button>
                             <button
                                     name="generate_invoice"
@@ -64,9 +64,9 @@
                             <group>
                                 <div class="oe_title oe_state_size w-100">
                                     <field name="project_type" invisible="1"/>
-                                    <field name="pricing_policy" invisible="0"/>
+                                    <field name="pricing_policy" invisible="0" readonly="file_status != 'draft'"/>
                                     <h1 class="w-100">
-                                        <field name="name" class="w-100"/>
+                                        <field name="name" class="w-100" readonly="file_status != 'draft'"/>
                                     </h1>
                                     <field name="state" readonly='1'/>
                                     <field name="from_open_file" invisible='1'/>
@@ -78,7 +78,7 @@
                             <group>
                                 <div>
                                     <field name="qr_code" widget='image' class="oe_avatar" nolable="1"
-                                           style="margin-right:38px;"/>
+                                           style="margin-right:38px;" readonly="file_status != 'draft'"/>
                                 </div>
                             </group>
                         </group>
@@ -103,7 +103,7 @@
                                        options="{'no_create': True, 'no_open': True}"
                                        readonly="file_status != 'draft'"/>
                                 <field name="crm_id" string="CRM Ref" readonly="1"/>
-                                <field name="file_ownership_type" string="Ownership Type" required="1"/>
+                                <field name="file_ownership_type" string="Ownership Type" required="1" readonly="file_status != 'draft'"/>
                                 <!--                                <field name="token_id" string="Token Ref" readonly="1"/>-->
 
                                 <field name="qr_code" widget='image' class="oe_avatar" invisible="1"/>
@@ -119,7 +119,7 @@
                                                                 ('is_society','=',1),
                                                                 ('project_type','in',[project_type, False])
                                                                ]"
-                                       readonly="file_status != 'draft' or token_id != False"
+                                       readonly="file_status != 'draft'"
                                 />
                                 <field name="phase_id"
                                        options="{'no_create': True, 'no_open': True}"
@@ -129,19 +129,19 @@
                                                                 ('is_society','!=',1),
                                                                 ('project_type','in',[project_type, False])
                                                                ]"
-                                       readonly="file_status != 'draft' or token_id != False"
+                                       readonly="file_status != 'draft'"
                                 />
                                 <field name="sector_id"
                                        options="{'no_create': True, 'no_open': True}"
                                        string="Floor"
                                        domain="[('project_type','in',[project_type, False])]"
                                        required="1"
-                                       readonly="file_status != 'draft' or token_id != False"
+                                       readonly="file_status != 'draft'"
                                 />
                                 <field name="inventory_id" string="Unit "
                                        domain="[('project_type','in',[project_type, False])]"
                                        options="{'no_create': True, 'no_open': True}"
-                                       readonly="file_status != 'draft' or token_id != False"/>
+                                       readonly="file_status != 'draft'"/>
                                 <field name="unit_number" string="Unit No."
                                        readonly="file_status != 'draft'"/>
                                 <field name="notes" readonly="file_status != 'draft'"/>
@@ -149,21 +149,21 @@
                             <group>
                                 <field name="category_id" options="{'no_create': True}" required='1'
                                        domain="[('project_type','in',[project_type, False])]"
-                                       readonly="file_status != 'draft' or token_id != False"/>
+                                       readonly="file_status != 'draft'"/>
                                 <field name="unit_category_type_id" required="1" string="Product"
                                        options="{'no_create': True, 'no_open': True}"
                                        domain="[('project_type','in',[project_type, False])]"
-                                       readonly="file_status != 'draft' or token_id != False"/>
+                                       readonly="file_status != 'draft'"/>
                                 <field name="size_id" options="{'no_create': True, 'no_open': True}"
                                        string="Dimensions"
                                        domain="[('project_type','in',[project_type, False])]"
-                                       readonly="file_status != 'draft' or token_id != False"/>
+                                       readonly="file_status != 'draft'"/>
                                 <field name="standard_area"
-                                       readonly="file_status != 'draft' or inventory_id != False"
+                                       readonly="file_status != 'draft'"
                                        string="Area(sq-ft)"/>
                                 <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}"
                                        domain="[('project_type','in',[project_type, False])]"
-                                       readonly="file_status != 'draft' or token_id != False"/>
+                                       readonly="file_status != 'draft'"/>
                                 <field name="add_custom_value"
                                        invisible="payment_states != 'draft'" readonly="file_status != 'draft'"/>
                                 <field name="price_list_id"
@@ -178,9 +178,9 @@
                                 <br/>
                                 <br/>
                                 <br/>
-                                <field name="is_downpayment"/>
-                                <field name="is_preference"/>
-                                <field name="is_balloting"/> -->
+                                <field name="is_downpayment" readonly="file_status != 'draft'"/>
+                                <field name="is_preference" readonly="file_status != 'draft'"/>
+                                <field name="is_balloting" readonly="file_status != 'draft'"/> -->
                             </group>
                         </group>
                         <group>
@@ -244,7 +244,7 @@
                                             <group name="installment_plan" string="Installment Plan">
                                                 <field name="token_generated" invisible="1"/>
                                                 <field name="create_manually" widget="boolean_toggle"
-                                                       readonly="token_generated == True or token_id != False"/>
+                                                       readonly="file_status != 'draft' or (token_generated == True or token_id != False)"/>
                                                 <field name="plan_type"
                                                        readonly="file_status != 'draft' or token_id != False or payment_type == 'lump_sum'"/>
                                                 <field name="include_installment" invisible="1"/>

@@ -243,17 +243,21 @@ class FileExtension(models.Model):
     def _balloon_payment(self):
         # for recs in self:
         if self.predefine_plan_id:
-            # for setting the starting date of installment plan after confirmation
-            # if self.env.ref('real_estate.confirmation_amount_product').id in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-            #     if self.predefine_plan_id.confirmation_period_type == 'days':
-            #         datee = self.booking_date + relativedelta(days=+self.predefine_plan_id.confirmation_amount_period)
-            #         self.starting_date = datee.replace(day=1) + relativedelta(months=+1)
-            #         # self.starting_date = self.booking_date + relativedelta(days=+self.predefine_plan_id.confirmation_amount_period + 1)
-            #     if self.predefine_plan_id.confirmation_period_type == 'months':
-            #         self.starting_date = self.booking_date + relativedelta(months=+self.predefine_plan_id.confirmation_amount_period + 1)
-            #     if self.predefine_plan_id.confirmation_period_type == 'years':
-            #         self.starting_date = self.booking_date + relativedelta(years=+self.predefine_plan_id.confirmation_amount_period + 1)
-            self.starting_date = self.investor_file.starting_date
+            # Auto-calculate starting_date after confirmation period when plan has confirmation
+            conf_product_id = self.env.ref('real_estate.confirmation_amount_product').id
+            plan_product_ids = self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+            if conf_product_id in plan_product_ids and self.booking_date:
+                period_type = self.predefine_plan_id.confirmation_period_type
+                period = self.predefine_plan_id.confirmation_amount_period
+                if period_type == 'days':
+                    confirmation_date = self.booking_date + relativedelta(days=+period)
+                    self.starting_date = confirmation_date + relativedelta(months=+1)
+                elif period_type == 'months':
+                    self.starting_date = self.booking_date + relativedelta(months=+(period + 1))
+                elif period_type == 'years':
+                    self.starting_date = self.booking_date + relativedelta(years=+period, months=+1)
+            elif self.investor_file:
+                self.starting_date = self.investor_file.starting_date
             for pre_plan in self.predefine_plan_id.predefine_plan_line_ids:
 
                 if self.env.ref('real_estate.downpayment_product').id == pre_plan.product_id.id:
@@ -363,6 +367,8 @@ class FileExtension(models.Model):
             start_balloon_payment = False
             installment_count = 1
             balloon_interval = self.balloon_payment_interval
+            # when start_from is 0, first balloon fires at the first interval
+            balloon_start = self.balloon_payment_start or self.balloon_payment_interval
             """
             these variable should be true if include in installment check is true from predefine plan
             if it true then it will create two lines of installment with same date
@@ -474,8 +480,8 @@ class FileExtension(models.Model):
             while i <= total_dates:
                 # for rec in dates:
                 # first balloon payment
-                if self.balloon_payment_start and not start_balloon_payment:
-                    if installment_number == self.balloon_payment_start:
+                if self.balloon_payment_frequency and not start_balloon_payment:
+                    if installment_number == balloon_start:
                         if balance:
                             amount = self.balloon_payment if balance > installment_amount else balance
                         else:
@@ -496,7 +502,7 @@ class FileExtension(models.Model):
                         if self.predefine_plan_id.treat_balloon_as == 'installment':
                             installment_count += 1
                         interval = interval + 1
-                        balloon_interval += self.balloon_payment_start
+                        balloon_interval += balloon_start
                         start_balloon_payment = True
                         installment_number = installment_number + 1
                         if is_balloon_included:

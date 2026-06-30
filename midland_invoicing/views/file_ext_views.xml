@@ -43,6 +43,48 @@
         </field>
     </record>
 
+    <!-- Show Invoice Type, Invoice Status, Ref columns in real_estate Installment Plan tab -->
+    <record id="file_installment_plan_cols_re" model="ir.ui.view">
+        <field name="name">file.installment.plan.cols.re</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="real_estate.file_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='property_invoice_type']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='state']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='invoice_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Show Invoice Type, Invoice Status, Ref columns in land_development Installment Plan tab -->
+    <record id="file_installment_plan_cols_ld" model="ir.ui.view">
+        <field name="name">file.installment.plan.cols.ld</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="land_development.file_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='property_invoice_type']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='state']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//field[@name='installment_plan_ids']/list/field[@name='invoice_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Inherit building file form: same smart button + Generate Invoices button -->
     <record id="building_file_form_midland_invoice_ext" model="ir.ui.view">
         <field name="name">building.file.form.midland.invoice.ext</field>

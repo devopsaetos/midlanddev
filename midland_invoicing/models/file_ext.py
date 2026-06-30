@@ -110,6 +110,10 @@ class FileExt(models.Model):
                     'price_unit': plan.amount,
                 })],
             })
+            plan.write({
+                'invoice_created': True,
+                'invoice_id': inv.jv_id.id if inv.jv_id else False,
+            })
             if plan.installment_type == 'down' and rec.payment_states == 'draft':
                 rec.payment_states = 'open'
 

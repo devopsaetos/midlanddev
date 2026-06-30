@@ -688,6 +688,8 @@ class File(models.Model):
             start_balloon_payment = False
             installment_count = 1
             balloon_interval = self.balloon_payment_interval
+            # when start_from is 0, first balloon fires at the first interval
+            balloon_start = self.balloon_payment_start or self.balloon_payment_interval
 
             if self.predefine_plan_id:
                 for rec in self.predefine_plan_id.predefine_plan_line_ids:
@@ -790,8 +792,8 @@ class File(models.Model):
 
             for rec in dates:
                 # first balloon payment
-                if self.balloon_payment_start and not start_balloon_payment:
-                    if installment_number == self.balloon_payment_start:
+                if self.balloon_payment_frequency and not start_balloon_payment:
+                    if installment_number == balloon_start:
                         if balance:
                             amount = self.balloon_payment if balance > installment_amount else balance
                         else:
@@ -810,7 +812,7 @@ class File(models.Model):
                         if self.predefine_plan_id.treat_balloon_as == 'installment':
                             installment_count += 1
                         interval = interval + 1
-                        balloon_interval += self.balloon_payment_start
+                        balloon_interval += balloon_start
                         start_balloon_payment = True
                         installment_number = installment_number + 1
                         continue

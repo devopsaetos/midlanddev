@@ -15,7 +15,7 @@
                                     type="object"
                                     class="oe_stat_button"
                                     icon="fa-pencil-square-o">
-                                <field name="no_of_invoices" string="Invoices" widget="statinfo"/>
+                                <field name="no_of_invoices" string="Invoices" widget="statinfo" readonly="id"/>
                             </button>
                             <button
                                     name="open_realestate_files"
@@ -23,7 +23,7 @@
                                     class="oe_stat_button"
                                     icon="fa-home"
                             >
-                                <field name="no_of_realestate_files" string="Real Estate" widget="statinfo"/>
+                                <field name="no_of_realestate_files" string="Real Estate" widget="statinfo" readonly="id"/>
                             </button>
                             <button
                                     name="open_project_files"
@@ -31,7 +31,7 @@
                                     class="oe_stat_button"
                                     icon="fa-building-o"
                             >
-                                <field name="no_of_project_files" string="Building" widget="statinfo"/>
+                                <field name="no_of_project_files" string="Building" widget="statinfo" readonly="id"/>
                             </button>
                             <button
                                     name="toggle_active"
@@ -40,8 +40,7 @@
                                 <field
                                         name="active"
                                         widget="boolean_button"
-                                        options='{"terminology": "archive"}'
-                                />
+                                        options='{"terminology": "archive"}' readonly="id"/>
                             </button>
                         </div>
 
@@ -49,11 +48,10 @@
                                 name="image_1920"
                                 widget='image'
                                 class="oe_avatar"
-                                style="width:120px; height:120px"
-                        />
+                                style="width:120px; height:120px" readonly="id"/>
                         <div class="oe_title">
                             <h1>
-                                <field name="name" required="1" default_focus="1" placeholder="Name"/>
+                                <field name="name" required="1" default_focus="1" placeholder="Name" readonly="id"/>
                             </h1>
                             <field name="project_type" invisible="1"/>
                             <field name="token_generated" invisible="1"/>
@@ -61,22 +59,22 @@
 
                         <group>
                             <group>
-                                <field name="ref"/>
+                                <field name="ref" readonly="id"/>
                                 <field name="company_type" string="Member Type"
-                                       readonly="token_generated == True"/>
-                                <field name="assigned_user_ids" string="Assigned Users"/>
-                                <field name="user_id" string="Prop. Manage. Executive"/>
+                                       readonly="id or (token_generated == True)"/>
+                                <field name="assigned_user_ids" string="Assigned Users" readonly="id"/>
+                                <field name="user_id" string="Prop. Manage. Executive" readonly="id"/>
                                 <field name="crm_id" string="CRM Ref" readonly="1"/>
                                 <field name="token_id" string="Token" readonly="1"/>
                                 <field name="tracking_id" invisible="1"/>
                             </group>
                             <group>
-                                <field name='source_ids' options='{"no_open": True, "no_create": True}'/>
+                                <field name='source_ids' options='{"no_open": True, "no_create": True}' readonly="id"/>
                                 <field name='cnic' string="CNIC"
-                                       invisible="company_type != 'person'"/>
+                                       invisible="company_type != 'person'" readonly="id"/>
                                 <field name='relation_name' string="Father/Spouse"
                                        invisible="company_type != 'person'"
-                                       required="company_type == 'person'"/>
+                                       required="company_type == 'person'" readonly="id"/>
                             </group>
                         </group>
 
@@ -90,50 +88,50 @@
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Street..." class="o_address_street"
-                                                   required='1'/>
-                                            <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                                   required='1' readonly="id"/>
+                                            <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="id"/>
                                             <field name="city_id" placeholder="City" class="o_address_city"
-                                                   options='{"no_open": True}'/>
+                                                   options='{"no_open": True}' readonly="id"/>
                                             <field name="state_id" string="Province" class="o_address_state"
                                                    placeholder="State" options='{"no_open": True}'
-                                                   context="{'country_id': country_id, 'zip': zip}"/>
-                                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                                   context="{'country_id': country_id, 'zip': zip}" readonly="id"/>
+                                            <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="id"/>
                                             <field name="country_id" placeholder="Country" class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   required='1'/>
+                                                   required='1' readonly="id"/>
                                         </div>
                                     </group>
                                     <group name='corespondence_address' string="Correspondence Details">
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="corespondence_street" placeholder="Street..."
-                                                   class="o_address_street" force_save="1"/>
+                                                   class="o_address_street" force_save="1" readonly="id"/>
                                             <field name="corespondence_street2" placeholder="Street 2..."
-                                                   class="o_address_street" force_save="1"/>
+                                                   class="o_address_street" force_save="1" readonly="id"/>
                                             <field name="corespondence_city_id" options='{"no_open": True}'
-                                                   placeholder="City" class="o_address_city" force_save="1"/>
+                                                   placeholder="City" class="o_address_city" force_save="1" readonly="id"/>
                                             <field name="corespondence_state_id" string="Province"
                                                    class="o_address_state" placeholder="State"
                                                    options='{"no_open": True}'
                                                    context="{'country_id': country_id, 'zip': zip}"
-                                                   force_save="1"/>
+                                                   force_save="1" readonly="id"/>
                                             <field name="corespondence_zip" placeholder="ZIP"
-                                                   class="o_address_zip" force_save="1"/>
+                                                   class="o_address_zip" force_save="1" readonly="id"/>
                                             <field name="corespondence_country_id" placeholder="Country"
                                                    class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   force_save="1"/>
+                                                   force_save="1" readonly="id"/>
                                         </div>
-                                        <field name="is_same"/>
+                                        <field name="is_same" readonly="id"/>
                                     </group>
                                 </group>
                                 <group>
                                     <group name='Company_info' string="Company Information">
-                                        <field name="tax_status"/>
-                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0"/>
-                                        <field name="email"/>
-                                        <field name="phone"/>
-                                        <field name="mobile"/>
+                                        <field name="tax_status" readonly="id"/>
+                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0" readonly="id"/>
+                                        <field name="email" readonly="id"/>
+                                        <field name="phone" readonly="id"/>
+                                        <field name="mobile" readonly="id"/>
                                     </group>
                                 </group>
                             </page>
@@ -146,46 +144,46 @@
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Street..." class="o_address_street"
-                                                   required='1'/>
-                                            <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                                   required='1' readonly="id"/>
+                                            <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="id"/>
                                             <field name="city_id" placeholder="City" class="o_address_city"
-                                                   required='1' options='{"no_open": True}'/>
+                                                   required='1' options='{"no_open": True}' readonly="id"/>
                                             <field name="state_id" string="Province" class="o_address_state"
                                                    placeholder="State" options='{"no_open": True}'
-                                                   context="{'country_id': country_id, 'zip': zip}"/>
-                                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                                   context="{'country_id': country_id, 'zip': zip}" readonly="id"/>
+                                            <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="id"/>
                                             <field name="country_id" placeholder="Country" class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   required='1'/>
+                                                   required='1' readonly="id"/>
                                         </div>
                                     </group>
                                     <group name='corespondence_address' string="Correspondence Details">
-                                        <field name="is_same"/>
+                                        <field name="is_same" readonly="id"/>
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="corespondence_street" placeholder="Street..."
-                                                   class="o_address_street"/>
+                                                   class="o_address_street" readonly="id"/>
                                             <field name="corespondence_street2" placeholder="Street 2..."
-                                                   class="o_address_street"/>
+                                                   class="o_address_street" readonly="id"/>
                                             <field name="corespondence_city_id" options='{"no_open": True}'
-                                                   placeholder="City" class="o_address_city"/>
+                                                   placeholder="City" class="o_address_city" readonly="id"/>
                                             <field name="corespondence_state_id" string="Province"
                                                    class="o_address_state" placeholder="State"
                                                    options='{"no_open": True}'
-                                                   context="{'country_id': country_id, 'zip': zip}"/>
-                                            <field name="corespondence_zip" placeholder="ZIP" class="o_address_zip"/>
+                                                   context="{'country_id': country_id, 'zip': zip}" readonly="id"/>
+                                            <field name="corespondence_zip" placeholder="ZIP" class="o_address_zip" readonly="id"/>
                                             <field name="corespondence_country_id" placeholder="Country"
                                                    class="o_address_country"
-                                                   options='{"no_open": True, "no_create": True}'/>
+                                                   options='{"no_open": True, "no_create": True}' readonly="id"/>
                                         </div>
                                     </group>
                                 </group>
                                 <group>
                                     <group name='aop_info' string="AOP Information">
-                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0"/>
-                                        <field name="email"/>
-                                        <field name="phone"/>
-                                        <field name="mobile"/>
+                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0" readonly="id"/>
+                                        <field name="email" readonly="id"/>
+                                        <field name="phone" readonly="id"/>
+                                        <field name="mobile" readonly="id"/>
                                     </group>
                                 </group>
                             </page>
@@ -195,26 +193,26 @@
                                 <group>
                                     <group name='general_info' string="General Info">
                                         <field name="gender" invisible="1"/>
-                                        <field name='dob'/>
-                                        <field name="tax_status"/>
+                                        <field name='dob' readonly="id"/>
+                                        <field name="tax_status" readonly="id"/>
                                     </group>
                                     <group name='contact_info' string="Contact Info">
                                         <label for="email" string="Email"/>
                                         <div>
                                             <field name="email" widget="email"
-                                                   context="{'gravatar_image': True}"/>
+                                                   context="{'gravatar_image': True}" readonly="id"/>
                                         </div>
                                         <field widget="mask"
                                                name="mobile"
                                                required="company_type == 'person'"
-                                               placeholder='+92-300-8765432'/>
+                                               placeholder='+92-300-8765432' readonly="id"/>
                                         <field widget="mask"
                                                name="secondary_phone"
-                                               placeholder='+92-300-8765432'/>
+                                               placeholder='+92-300-8765432' readonly="id"/>
                                         <field widget="mask"
                                                data-inputmask="'mask': '+99-9999999'"
                                                name="phone"
-                                               placeholder='+42-2429871'/>
+                                               placeholder='+42-2429871' readonly="id"/>
                                     </group>
                                 </group>
                                 <group>
@@ -222,21 +220,21 @@
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Street..."
-                                                   class="o_address_street" required='1'/>
+                                                   class="o_address_street" required='1' readonly="id"/>
                                             <field name="street2" placeholder="Street 2..."
-                                                   class="o_address_street"/>
+                                                   class="o_address_street" readonly="id"/>
                                             <field name="city_id" placeholder="City"
                                                    class="o_address_city" required='1'
-                                                   options='{"no_open": True}'/>
+                                                   options='{"no_open": True}' readonly="id"/>
                                             <field name="state_id" string="Province"
                                                    class="o_address_state" placeholder="State"
                                                    options='{"no_open": True}'
-                                                   context="{'country_id': country_id, 'zip': zip}"/>
-                                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                                   context="{'country_id': country_id, 'zip': zip}" readonly="id"/>
+                                            <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="id"/>
                                             <field name="country_id" placeholder="Country"
                                                    class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   required='1'/>
+                                                   required='1' readonly="id"/>
                                         </div>
                                     </group>
                                     <group name='corespondence_details' string="Correspondence Address">
@@ -244,79 +242,79 @@
                                         <div class="o_address_format">
                                             <field name="corespondence_street" placeholder="Street..."
                                                    class="o_address_street"
-                                                   readonly="is_same == True" force_save="1"/>
+                                                   readonly="id or (is_same == True)" force_save="1"/>
                                             <field name="corespondence_street2" placeholder="Street 2..."
                                                    class="o_address_street"
-                                                   readonly="is_same == True" force_save="1"/>
+                                                   readonly="id or (is_same == True)" force_save="1"/>
                                             <field name="corespondence_city_id" options='{"no_open": True}'
                                                    placeholder="City" class="o_address_city"
-                                                   readonly="is_same == True" force_save="1"/>
+                                                   readonly="id or (is_same == True)" force_save="1"/>
                                             <field name="corespondence_state_id" string="Province"
                                                    class="o_address_state" placeholder="State"
                                                    options='{"no_open": True}'
                                                    context="{'country_id': country_id, 'zip': zip}"
-                                                   readonly="is_same == True" force_save="1"/>
+                                                   readonly="id or (is_same == True)" force_save="1"/>
                                             <field name="corespondence_zip" placeholder="ZIP"
                                                    class="o_address_zip"
-                                                   readonly="is_same == True" force_save="1"/>
+                                                   readonly="id or (is_same == True)" force_save="1"/>
                                             <field name="corespondence_country_id" placeholder="Country"
                                                    class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   readonly="is_same == True" force_save="1"/>
+                                                   readonly="id or (is_same == True)" force_save="1"/>
                                         </div>
-                                        <field name="is_same"/>
+                                        <field name="is_same" readonly="id"/>
                                     </group>
                                 </group>
                                 <group name="id_info">
                                     <group string="Identification Info">
-                                        <field name='identification_type'/>
+                                        <field name='identification_type' readonly="id"/>
                                         <field name='relation_name' string="Mother/Father"
                                                invisible="identification_type != 'parent_cnic'"
-                                               required="identification_type == 'parent_cnic'"/>
+                                               required="identification_type == 'parent_cnic'" readonly="id"/>
                                         <field widget="mask"
                                                data-inputmask="'mask': '99999-9999999-9'"
                                                name='cnic'
                                                required="identification_type in ('cnic', 'parent_cnic') and company_type == 'person'"
-                                               invisible="identification_type != 'cnic'"/>
+                                               invisible="identification_type != 'cnic'" readonly="id"/>
                                         <field name='cnic_expiry_date'
-                                               invisible="identification_type not in ('cnic', 'parent_cnic')"/>
+                                               invisible="identification_type not in ('cnic', 'parent_cnic')" readonly="id"/>
                                         <field name='passport'
-                                               invisible="identification_type != 'passport'"/>
+                                               invisible="identification_type != 'passport'" readonly="id"/>
                                         <field name='passport_expiry_date'
-                                               invisible="identification_type != 'passport'"/>
+                                               invisible="identification_type != 'passport'" readonly="id"/>
                                         <field name='passport_front'
                                                required="identification_type == 'passport'"
                                                invisible="identification_type != 'passport'"
                                                widget='image'
-                                               style="width:100px; height:100px"/>
+                                               style="width:100px; height:100px" readonly="id"/>
                                         <field name='form_b'
-                                               invisible="identification_type != 'form_b'"/>
+                                               invisible="identification_type != 'form_b'" readonly="id"/>
                                         <field name='form_b_front'
                                                required="identification_type == 'form_b'"
                                                invisible="identification_type != 'form_b'"
                                                widget='image'
-                                               style="width:100px; height:100px"/>
+                                               style="width:100px; height:100px" readonly="id"/>
                                     </group>
                                     <group string="Next Of Kin">
-                                        <field name="kin_name" required="company_type == 'person'"/>
+                                        <field name="kin_name" required="company_type == 'person'" readonly="id"/>
                                         <field name="kin_mobile" widget="mask"
                                                data-inputmask="'mask': '+99-999-9999999'"
-                                               placeholder="+92-300-2132132"/>
-                                        <field name="kin_cnic"/>
+                                               placeholder="+92-300-2132132" readonly="id"/>
+                                        <field name="kin_cnic" readonly="id"/>
                                         <field name="kin_member_relation"
-                                               required="company_type == 'person'"/>
+                                               required="company_type == 'person'" readonly="id"/>
                                         <field name="other_relation"
                                                invisible="kin_member_relation != 'other'"
-                                               required="kin_member_relation == 'other'"/>
+                                               required="kin_member_relation == 'other'" readonly="id"/>
                                     </group>
                                     <group invisible="identification_type not in ('cnic', 'parent_cnic')">
                                         <field name='cnic_front' widget='image'
-                                               style="width:100px; height:100px"/>
+                                               style="width:100px; height:100px" readonly="id"/>
                                         <button name="scan_image"
                                                 context="{'target_field': 'cnic_front'}"
                                                 type="object" string="Scan CNIC Front"/>
                                         <field name='cnic_back' widget='image'
-                                               style="width:100px; height:100px"/>
+                                               style="width:100px; height:100px" readonly="id"/>
                                         <button name="scan_image"
                                                 context="{'target_field': 'cnic_back'}"
                                                 type="object" string="Scan CNIC Back"/>
@@ -328,19 +326,19 @@
                                 <group name='professional_info' string="Professional Info"
                                        autofocus="autofocus">
                                     <group>
-                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0"/>
+                                        <field name="vat" string="NTN" placeholder="e.g. 7929261-0" readonly="id"/>
                                         <field name="function" string='Profession'
-                                               placeholder="e.g. Businessman"/>
+                                               placeholder="e.g. Businessman" readonly="id"/>
                                         <field name="category_id" widget="many2many_tags"
                                                options="{'color_field': 'color', 'no_create_edit': True}"
-                                               placeholder="Tags..."/>
+                                               placeholder="Tags..." readonly="id"/>
                                     </group>
                                 </group>
                             </page>
 
                             <page name='next_of_kin' invisible="company_type == 'company'"
                                   string="Next of Kin">
-                                <field name="kin_line_ids">
+                                <field name="kin_line_ids" readonly="id">
                                     <list editable="bottom">
                                         <field name="name"/>
                                         <field name="mobile" widget="mask"
