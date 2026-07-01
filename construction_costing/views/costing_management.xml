@@ -97,6 +97,7 @@
                                     <field name="description"/>
                                     <field name="reference"/>
                                     <field name="over_head_value" widget="monetary" sum="Overhead Value"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                 </list>
                             </field>
                         </page>

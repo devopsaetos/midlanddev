@@ -39,17 +39,21 @@ class TaskCostSheet(models.Model):
         'task.cost.overhead', 'overhead_task_cost_sheet_id', string='Overhead Job Cost Lines',
     )
 
-    total_material_cost = fields.Float(
+    total_material_cost = fields.Monetary(
         compute='_compute_total_material_cost', string='Total Material Cost', store=True,
+        currency_field='currency_id',
     )
-    total_labour_cost = fields.Float(
+    total_labour_cost = fields.Monetary(
         compute='_compute_total_labour_cost', string='Total Labour Cost', store=True,
+        currency_field='currency_id',
     )
-    total_overhead_cost = fields.Float(
+    total_overhead_cost = fields.Monetary(
         compute='_compute_total_overhead_cost', string='Total Overhead Cost', store=True,
+        currency_field='currency_id',
     )
-    total_cost = fields.Float(
+    total_cost = fields.Monetary(
         compute='_compute_total_cost', string='Total Cost', store=True,
+        currency_field='currency_id',
     )
 
     task_cost_description = fields.Text(string='Job Cost Description')
@@ -90,7 +94,7 @@ class TaskCostSheet(models.Model):
             'type': 'ir.actions.act_window',
             'view_mode': 'list,form',
             'res_model': 'purchase.order.line',
-            'domain': [('job_cost_sheet_id', '=', self.id)],
+            'domain': [('task_cost_sheet_id', '=', self.id)],
         }
 
     def invoice_line_button(self):
@@ -100,7 +104,7 @@ class TaskCostSheet(models.Model):
             'type': 'ir.actions.act_window',
             'view_mode': 'list,form',
             'res_model': 'account.move.line',
-            'domain': [('job_cost_sheet_id', '=', self.id)],
+            'domain': [('task_cost_sheet_id', '=', self.id)],
         }
 
     def action_confirm(self):
@@ -182,7 +186,9 @@ class TaskCostLine(models.Model):
     uom_id = fields.Many2one('uom.uom', string='UoM')
     unit_price = fields.Float(string='Cost/Unit Price', default=1.0)
     actual_purchase_qty = fields.Float(string='Actual Purchased Quantity', default=0.0)
-    subtotal = fields.Float(compute='_compute_subtotal', string='Sub Total', store=True)
+    subtotal = fields.Monetary(
+        compute='_compute_subtotal', string='Sub Total', store=True, currency_field='currency_id',
+    )
     currency_id = fields.Many2one(
         'res.currency', compute='_compute_currency_id', string='Currency', store=True,
     )
@@ -236,7 +242,10 @@ class TaskCostOverHead(models.Model):
     quantity = fields.Float(string='Quantity', default=1.0)
     uom_id = fields.Many2one('uom.uom', string='UoM')
     unit_price = fields.Float(string='Cost/Unit Price', default=1.0)
-    subtotal = fields.Float(string='Sub Total')
+    subtotal = fields.Monetary(string='Sub Total', currency_field='currency_id')
+    currency_id = fields.Many2one(
+        'res.currency', compute='_compute_currency_id', string='Currency', store=True,
+    )
     job_type = fields.Selection([
         ('material', 'Material'),
         ('labour', 'Labour'),
@@ -244,5 +253,11 @@ class TaskCostOverHead(models.Model):
     ], string='Job Cost Type')
     hours = fields.Float(string='Hours', default=0.0)
     actual_timesheet_hours = fields.Float(string='Actual Timesheet Hours', default=0.0)
-    over_head_value = fields.Float(string='Overhead Value')
+    over_head_value = fields.Monetary(string='Overhead Value', currency_field='currency_id')
     total_over_head_value = fields.Float(string='Total Overhead')
+
+    @api.depends('overhead_task_cost_sheet_id.company_id')
+    def _compute_currency_id(self):
+        for line in self:
+            company = line.overhead_task_cost_sheet_id.company_id or self.env.company
+            line.currency_id = company.currency_id

@@ -692,7 +692,12 @@ class InvestmentExt(models.Model):
                     possession_interval = 0
                     add_balloon_interval = 0
                     primary_interval = 0
-                    start_balloon_payment = False
+                    # When no explicit "Start From" is configured on the Balloon Payment
+                    # plan line (start_from=0, the default), the recurring balloon check
+                    # below must be active from the first installment - otherwise it never
+                    # fires (0 is falsy) and every balloon slot silently becomes a regular
+                    # installment instead.
+                    start_balloon_payment = not self.balloon_payment_start
                     installment_count = 1
                     balloon_interval = self.balloon_payment_interval
                     balance = self.balance_amount - self.balloting_amount
