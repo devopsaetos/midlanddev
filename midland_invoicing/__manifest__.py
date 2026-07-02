@@ -11,6 +11,7 @@
         'data/ir_sequence.xml',
         'data/ir_cron.xml',
         'data/post_migration.xml',
+        'report/midland_payment_report.xml',
         'views/res_config_settings_views.xml',
         'views/midland_invoice_views.xml',
         'views/midland_payment_views.xml',

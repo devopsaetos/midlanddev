@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_midland_membership_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="file">
+                <!--  =======================================================  -->
+                <!--  PAGE 1 : MEMBERSHIP FORM                                  -->
+                <!--  =======================================================  -->
+                <div class="page"
+                     style="font-family: Arial, sans-serif; font-size:11px; padding:10mm 12mm; color:#222;">
+                    <!--  TOP HEADER ROW: Logo center, OFFICE COPY + photo right  -->
+                    <table style="width:100%; margin-bottom:6px;">
+                        <tr>
+                            <td style="width:25%; vertical-align:top;">
+                                <!--  left spacer  -->
+                            </td>
+                            <td style="width:50%; text-align:center; vertical-align:top;">
+                                <div style="margin-top: 3px;">
+                                    <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
+                                        MEMBERSHIP FORM
+                                    </span>
+                                </div>
+                                <div style="color:#40a4d5; font-weight:bold; font-size:11px; margin-top:3px;">
+                                    File No:
+                                    <span t-field="file.tracking_id"/>
+                                </div>
+                                <div style="margin-top:5px;">
+                                    <strong style="font-size:10px;">Verify Me</strong>
+                                    <br/>
+                                    <t t-if="file.qr_code">
+                                        <img t-att-src="image_data_uri(file.qr_code)" style="height:70px; width:70px;"/>
+                                    </t>
+                                </div>
+                            </td>
+                            <td style="width:25%; text-align:right; vertical-align:bottom;">
+                                <div style="font-weight:bold; font-size:11px; margin-bottom:4px;">OFFICE COPY</div>
+                                <t t-if="file.membership_id.image_1920">
+                                    <img t-att-src="image_data_uri(file.membership_id.image_1920)"
+                                         style="height:70px; width:70px; object-fit:cover; border:1px solid #ccc; display:inline-block; max-width:100%;"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                    <!--  Date + Committee  -->
+                    <div style="margin-top:8px; margin-bottom:4px;">
+                        <span>
+                            Date:
+                            <span t-field="file.booking_date" t-options="{'widget': 'date'}"/>
+                        </span>
+                        <br/>
+                        <span>The Management Committee,</span>
+                        <br/>
+                        <span t-field="file.society_id.name"/>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <p style="margin:4px 0;">Dear Sir/Madam,</p>
+                        <p style="margin:4px 0;">I Undertake to be bound by all such conditions, obligations and
+                            responsibilities as printed overleaf in this respect, made there under.
+                        </p>
+                    </div>
+                    <!--  OWNER DETAILS  -->
+                    <!-- STEP 5: No vertical borders, only bottom separator -->
+                    <div style="background-color:#40a4d5; color:white; font-weight:bold; font-size:12px; padding:6px 10px; letter-spacing:.3px; margin-bottom:0;">
+                        OWNER DETAILS
+                    </div>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px; font-size:11px;">
+                        <tr>
+                            <td style="width:15%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <strong>Name:</strong>
+                            </td>
+                            <td style="width:35%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <span t-field="file.membership_id.name"/>
+                            </td>
+                            <td style="width:15%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <strong>Father/Spouse:</strong>
+                            </td>
+                            <td style="width:35%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <span t-field="file.membership_id.relation_id"/>
+                                <span t-esc="' '"/>
+                                <span t-field="file.membership_id.relation_name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <strong>CNIC:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <span t-field="file.membership_id.cnic"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <strong>Mobile:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <span t-field="file.membership_id.mobile"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <strong>Address:</strong>
+                            </td>
+                            <td colspan="3"
+                                style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
+                                <span t-esc="', '.join(filter(None, [
+                                    file.membership_id.street,
+                                    file.membership_id.street2,
+                                    file.membership_id.city,
+                                    file.membership_id.state_id.name if file.membership_id.state_id else '',
+                                    file.membership_id.zip,
+                                    file.membership_id.country_id.name if file.membership_id.country_id else ''
+                                ]))"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <!--  NEXT OF KIN  -->
+                    <!-- STEP 4: Blue header, zebra striping, borderless cells -->
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+                        <thead>
+                            <tr>
+                                <th style="background-color:#40a4d5; color:white; font-weight:bold; font-size:12px; padding:7px; border:none; text-align:left;">
+                                    NEXT OF KIN
+                                </th>
+                                <th style="background-color:#40a4d5; border:none; padding:7px;"></th>
+                                <th style="background-color:#40a4d5; border:none; padding:7px;"></th>
+                                <th style="background-color:#40a4d5; border:none; padding:7px;"></th>
+                            </tr>
+                            <tr style="background-color:#40a4d5; color:white; font-size:12px;">
+                                <th style="padding:7px; text-align:left; border:none;">Name</th>
+                                <th style="padding:7px; text-align:left; border:none;">Relation</th>
+                                <th style="padding:7px; text-align:left; border:none;">CNIC</th>
+                                <th style="padding:7px; text-align:left; border:none;">Mobile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="kin_lines" t-value="get_kin_lines(file)"/>
+                            <tr t-foreach="kin_lines" t-as="kin"
+                                t-att-style="'background:' + ('#f7fbfd' if kin_index % 2 == 0 else '#ffffff') + '; font-size:11px;'">
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="kin.name"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-esc="get_relation_label(kin)"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="kin.cnic"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="kin.mobile"/>
+                                </td>
+                            </tr>
+                            <tr t-if="not kin_lines" style="font-size:11px;">
+                                <td colspan="4" style="padding:7px; border:none;">No next of kin on record</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!--  UNIT DETAILS  -->
+                    <!-- STEP 6: No vertical borders -->
+                    <div style="background-color:#40a4d5; color:white; font-weight:bold; font-size:12px; padding:6px 10px; letter-spacing:.3px; margin-bottom:0;">
+                        UNIT DETAILS
+                    </div>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px; font-size:11px;">
+                        <tr>
+                            <td style="width:15%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>File No:</strong>
+                            </td>
+                            <td style="width:35%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.tracking_id"/>
+                            </td>
+                            <td style="width:15%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Category:</strong>
+                            </td>
+                            <td style="width:35%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.category_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Society:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.society_id.name"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Product:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.unit_category_type_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Phase:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.phase_id.name"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Size:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-esc="(file.size_id.name or '').replace('×', 'x').replace('Ã—', 'x')"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Sector:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.sector_id.name"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Total Area (SQFT):</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.standard_area"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Plot No:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.unit_number"/>
+                            </td>
+                            <td style="border:none; padding:6px 8px;"/>
+                            <td style="border:none; padding:6px 8px;"/>
+                        </tr>
+                    </table>
+                    <!--  CONTRACT DETAIL  -->
+                    <!-- STEP 7: No vertical borders -->
+                    <div style="background-color:#40a4d5; color:white; font-weight:bold; font-size:12px; padding:6px 10px; letter-spacing:.3px; margin-bottom:0;">
+                        CONTRACT DETAIL
+                    </div>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px; font-size:11px;">
+                        <tr>
+                            <td style="width:20%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Plan Type:</strong>
+                            </td>
+                            <td style="width:30%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.plan_type"/>
+                            </td>
+                            <td style="width:20%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Sale Price:</strong>
+                            </td>
+                            <td style="width:30%; background:#ffffff; padding:6px 8px; text-align:right; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.ttl_sale_amount"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Payment Type:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.payment_type"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Less Discount:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.discount_amount"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>No of Installments:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.total_installment"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Down Payment:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.initial_payment"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Payment Interval:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.interval_id.name"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Balance Amount</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>
+                                    <span t-field="file.balance_amount"/>
+                                </strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Start Date:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.starting_date" t-options="{'widget': 'date'}"/>
+                            </td>
+                            <td style="border:none; padding:6px 8px;"/>
+                            <td style="border:none; padding:6px 8px;"/>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Mode Of Payment</strong>
+                            </td>
+                            <td colspan="3"
+                                style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;"/>
+                        </tr>
+                    </table>
+                    <!--  NOTE  (kept exactly as-is) -->
+                    <div style="font-size:11px; border-top:1px solid #ccc; padding-top:6px; margin-top:4px;">
+                        <strong>Note:</strong>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <!--  SIGNATURES  (page 1 only, above the repeating footer)  -->
+                    <!--  Removed the full-width top line above this row  -->
+                    <table style="width:100%; margin-top:25px;">
+                        <tr>
+                            <td style="width:33%; text-align:center; padding-top:8px;">
+                                <span t-field="file.user_id.name"/>
+                                <br/>
+                                <span style="color:#40a4d5; font-size:10px;">Booking Officer</span>
+                            </td>
+                            <td style="width:33%; text-align:center; padding-top:8px;">
+                                <br/>
+                                <span style="color:#40a4d5; font-size:10px;">Approved By</span>
+                            </td>
+                            <td style="width:33%; text-align:center; padding-top:8px; border-top:1px solid #999;">
+                                <br/>
+                                <span style="color:#40a4d5; font-size:10px;">Signature Of Applicant</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="page-break-before: always;"/>
+                <!--  =======================================================  -->
+                <!--  PAGE 2 : INSTALLMENT PLAN                                 -->
+                <!--  =======================================================  -->
+                <div class="page"
+                     style="font-family: Arial, sans-serif; font-size:11px; padding:10mm 12mm; color:#222;">
+                    <!--  TOP HEADER ROW  -->
+                    <table style="width:100%; margin-bottom:6px;">
+                        <tr>
+                            <td style="width:25%; vertical-align:top;">
+                                <!--  left spacer  -->
+                            </td>
+                            <td style="width:50%; text-align:center; vertical-align:top;">
+                                <div style="margin-top: 3px;">
+                                    <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
+                                        INSTALLMENT PLAN
+                                    </span>
+                                </div>
+                                <div style="color:#40a4d5; font-weight:bold; font-size:11px; margin-top:3px;">
+                                    File No:
+                                    <span t-field="file.tracking_id"/>
+                                </div>
+                                <div style="margin-top:5px;">
+                                    <strong style="font-size:10px;">Verify Me</strong>
+                                    <br/>
+                                    <t t-if="file.qr_code">
+                                        <img t-att-src="image_data_uri(file.qr_code)" style="height:70px; width:70px;"/>
+                                    </t>
+                                </div>
+                            </td>
+                            <td style="width:25%; text-align:right; vertical-align:bottom;">
+                                <div style="font-weight:bold; font-size:11px; margin-bottom:4px;">OFFICE COPY</div>
+                                <t t-if="file.membership_id.image_1920">
+                                    <img t-att-src="image_data_uri(file.membership_id.image_1920)"
+                                         style="height:70px; width:70px; object-fit:cover; border:1px solid #ccc; display:inline-block; max-width:100%;"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                    <!--  FILE DETAILS  -->
+                    <div style="background-color:#40a4d5; color:white; font-weight:bold; font-size:12px; padding:6px 10px; letter-spacing:.3px; margin-bottom:0;">
+                        FILE DETAILS
+                    </div>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:10px;font-size:11px;">
+                        <tr>
+                            <td style="width:12%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Name:</strong>
+                            </td>
+                            <td style="width:38%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.membership_id.name"/>
+                            </td>
+                            <td style="width:12%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Category:</strong>
+                            </td>
+                            <td style="width:38%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.category_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>File No:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.tracking_id"/>
+                            </td>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Product:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-field="file.unit_category_type_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="border:none; padding:6px 8px;"/>
+                            <td style="border:none; padding:6px 8px;"/>
+                            <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <strong>Size:</strong>
+                            </td>
+                            <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <span t-esc="(file.size_id.name or '').replace('×', 'x').replace('Ã—', 'x')"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <!--  INSTALLMENT TABLE  -->
+                    <!-- STEP 8: borderless headers, zebra rows, soft separators -->
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px;">
+                        <thead>
+                            <tr style="background-color:#40a4d5; color:white; font-size:12px;">
+                                <th style="padding:8px 6px; border:none; text-align:center;">Sr#</th>
+                                <th style="padding:8px 6px; border:none; text-align:left;">Payment Type</th>
+                                <th style="padding:8px 6px; border:none; text-align:center;">Due Date</th>
+                                <th style="padding:8px 6px; border:none; text-align:center;">Payment Date</th>
+                                <th style="padding:8px 6px; border:none; text-align:left;">Document No.</th>
+                                <th style="padding:8px 6px; border:none; text-align:right;">Amount</th>
+                                <th style="padding:8px 6px; border:none; text-align:right; background-color:#2e8bb5;">
+                                    Received Amount
+                                </th>
+                                <th style="padding:8px 6px; border:none; text-align:right;">Amount Due</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="file.installment_plan_ids.sorted(lambda l: (l.date or '0000-00-00', l.installment_number))"
+                                t-as="line"
+                                t-att-style="'background:' + ('#f7fbfd' if line_index % 2 == 0 else '#ffffff') + '; font-size:11px;'">
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <span t-esc="line_index + 1"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="line.installment_name"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <span t-field="line.date" t-options="{'widget': 'date'}"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <span t-field="line.payment_date" t-options="{'widget': 'date'}"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="line.invoice"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <span t-field="line.amount"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <span t-field="line.amount_paid"/>
+                                </td>
+                                <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <span t-field="line.residual"/>
+                                </td>
+                            </tr>
+                            <tr t-if="not file.installment_plan_ids">
+                                <td colspan="8" style="padding:7px; border:none;">No installment plan created</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!--  =======================================================  -->
+                <!--  CUSTOM FOOTER : repeats on EVERY page of the PDF          -->
+                <!--  Printed By (left) | Page X/Y (center) | Date (right)      -->
+                <!--  =======================================================  -->
+                <div class="footer" style="font-family: Arial, sans-serif;">
+                    <div style="padding-top:4px; font-size:9px; color:#666;">
+                        <table style="width:100%; border:none; border-collapse:collapse;">
+                            <tr>
+                                <td style="width:34%; text-align:left; border:none;">
+                                    Printed By:
+                                    <span t-field="file.write_uid.name"/>
+                                </td>
+                                <td style="width:32%; text-align:center; border:none;">
+                                    <span class="page"/>/<span class="topage"/>
+                                </td>
+                                <td style="width:34%; text-align:right; border:none;">
+                                    <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%m/%d/%Y')"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

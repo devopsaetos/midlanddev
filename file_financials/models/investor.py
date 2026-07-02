@@ -67,6 +67,26 @@ class ResInvestor(models.Model):
         ('company', 'Company'),
     ], default='person', string="Company Type")
 
+    # Primary address
+    street = fields.Char(tracking=True)
+    street2 = fields.Char()
+    city_id = fields.Many2one('city', string='City')
+    state_id = fields.Many2one('res.country.state', string='State', ondelete='restrict',
+                                domain="[('country_id', '=?', country_id)]", tracking=True)
+    zip = fields.Char(tracking=True)
+    country_id = fields.Many2one('res.country', string='Country', ondelete='restrict', tracking=True)
+
+    # Correspondence address
+    is_same = fields.Boolean('Same Address')
+    corespondence_street = fields.Char()
+    corespondence_street2 = fields.Char()
+    corespondence_city_id = fields.Many2one('city')
+    corespondence_zip = fields.Char(store=True, related='corespondence_city_id.zip')
+    corespondence_state_id = fields.Many2one('res.country.state', string='State ', store=True, ondelete='restrict',
+                                              related='corespondence_city_id.state_id')
+    corespondence_country_id = fields.Many2one('res.country', string='Country ', store=True, ondelete='restrict',
+                                                related='corespondence_state_id.country_id')
+
     # Identification
     identification_type = fields.Selection([
         ('cnic', 'CNIC'),
@@ -172,6 +192,21 @@ class ResInvestor(models.Model):
                 if rec.partner_id:
                     rec.partner_id.sudo().write({'name': vals['name']})
         return res
+
+    @api.onchange('city_id')
+    def _onchange_city_id(self):
+        self.state_id = self.city_id.state_id.id
+        self.zip = self.city_id.zip
+        self.country_id = self.state_id.country_id.id
+
+    @api.onchange('is_same')
+    def _onchange_is_same(self):
+        if self.is_same:
+            self.corespondence_street, self.corespondence_street2, self.corespondence_city_id = \
+                self.street, self.street2, self.city_id.id
+        else:
+            self.corespondence_street = self.corespondence_street2 = False
+            self.corespondence_city_id = False
 
     def _add_kin_as_representative(self):
         if self.kin_name and self.kin_mobile:

@@ -22,6 +22,8 @@
                             title="Re-run reconciliation if installment plan amounts are not updating"/>
                     <button name="action_view_jv" string="View Journal Entry" type="object"
                             invisible="not jv_id"/>
+                    <button name="%(action_report_midland_payment)d" string="Print Receipt" type="action"
+                            class="oe_highlight"/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,confirmed,cancelled"/>
                 </header>

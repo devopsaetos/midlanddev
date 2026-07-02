@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_midland_payment" model="report.paperformat">
+        <field name="name">Midland Payment Receipt</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         REPORT ACTION
+    ═══════════════════════════════════════════════════════════ -->
+    <record id="action_report_midland_payment" model="ir.actions.report">
+        <field name="name">Payment Receipt</field>
+        <field name="model">midland.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">midland_invoicing.report_midland_payment_document</field>
+        <field name="report_file">midland_invoicing.report_midland_payment_document</field>
+        <field name="binding_model_id" ref="model_midland_payment"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Payment Receipt - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="paperformat_midland_payment"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         REUSABLE BLOCK — ek copy ka pura design
+    ═══════════════════════════════════════════════════════════ -->
+    <template id="report_midland_payment_copy">
+        <div class="page" style="font-size:11px; font-family: Arial, sans-serif; margin-top:0;">
+
+            <table style="width:auto; margin:0 auto; border-collapse:collapse;" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="background:#40a4d5; padding:8px 40px; text-align:center;">
+                        <h2 style="color:white; margin:0; padding:0; letter-spacing:2px; font-size:35px;">PAYMENT
+                            RECEIPT
+                        </h2>
+                    </td>
+                </tr>
+            </table>
+            <p style="text-align:center; letter-spacing:5px; margin:6px 0 14px 0; padding:0; font-weight:bold; font-size:25px; color:#40a4d5;">
+                <span t-esc="copy_label"/>
+            </p>
+
+            <table style="width:100%; margin-bottom:15px;">
+                <tr>
+                    <td style="width:50%; vertical-align:top;">
+                        <table>
+                            <tr>
+                                <td style="width:160px; font-weight:bold; padding:2px 0; white-space:nowrap;">Customer
+                                    Name:
+                                </td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.member_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:160px; font-weight:bold; padding:2px 0; white-space:nowrap;">Payment
+                                    Journal:
+                                </td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.journal_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:160px; font-weight:bold; padding:2px 0; white-space:nowrap;">Memo:</td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.remarks"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td style="width:50%; vertical-align:top;">
+                        <table style="margin-left:auto;">
+                            <tr>
+                                <td style="width:100px; font-weight:bold; padding:2px 0; white-space:nowrap;">Receipt
+                                    #:
+                                </td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:100px; font-weight:bold; padding:2px 0; white-space:nowrap;">Date:</td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.date"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <table style="width:100%; border-collapse:collapse;" border="1">
+                <thead>
+                    <tr style="background:#40a4d5; color:white; font-weight:normal;">
+                        <th style="padding:5px; font-weight:normal;">File No.</th>
+                        <th style="padding:5px; font-weight:normal;">Category</th>
+                        <th style="padding:5px; font-weight:normal;">Product</th>
+                        <th style="padding:5px; font-weight:normal;">Unit Number</th>
+                        <th style="padding:5px; font-weight:normal;">Due Date</th>
+                        <th style="padding:5px; font-weight:normal;">Payment Type</th>
+                        <th style="padding:5px; font-weight:normal;">LPS</th>
+                        <th style="padding:5px; font-weight:normal;">Total</th>
+                        <th style="padding:5px; font-weight:normal;">Paid</th>
+                        <th style="padding:5px; font-weight:normal;">Discount</th>
+                        <th style="padding:5px; font-weight:normal;">Due (Advance)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.invoice_line_ids" t-as="line">
+                        <td style="padding:5px;">
+                            <span t-field="o.file_id.name"/>
+                        </td>
+                        <td style="padding:5px;">
+                            <span t-field="o.file_id.category_id.name"/>
+                        </td>
+                        <td style="padding:5px;">
+                            <span t-field="o.file_id.unit_category_type_id.name"/>
+                        </td>
+                        <td style="padding:5px;">
+                            <span t-field="o.file_id.unit_number"/>
+                        </td>
+                        <td style="padding:5px; text-align:center;">
+                            <span t-field="line.due_date"/>
+                        </td>
+                        <td style="padding:5px; text-align:center;">
+                            <span t-field="o.file_id.payment_type"/>
+                        </td>
+                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
+                        <td style="padding:5px; text-align:right;">Rs.
+                            <t t-esc="'{:,.2f}'.format(line.total)"/>
+                        </td>
+                        <td style="padding:5px; text-align:right;">Rs.
+                            <t t-esc="'{:,.2f}'.format(line.payment_amount_paid)"/>
+                        </td>
+                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
+                        <td style="padding:5px; text-align:right;">Rs.
+                            <t t-esc="'{:,.2f}'.format(line.amount_due)"/>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="font-weight:bold;">
+                        <td colspan="6" style="padding:5px;">Total</td>
+                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
+                        <td style="padding:5px; text-align:right;">Rs.
+                            <t t-esc="'{:,.2f}'.format(sum(line.total for line in o.invoice_line_ids))"/>
+                        </td>
+                        <td style="padding:5px; text-align:right;">Rs.
+                            <t t-esc="'{:,.2f}'.format(sum(line.payment_amount_paid for line in o.invoice_line_ids))"/>
+                        </td>
+                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
+                        <td style="padding:5px; text-align:right;">Rs.
+                            <t t-esc="'{:,.2f}'.format(sum(line.amount_due for line in o.invoice_line_ids))"/>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <p style="margin-top:10px; font-weight:bold; font-size:16px;">
+                <strong>Amount In Words:</strong>
+                <span t-esc="o.currency_id.amount_to_text(sum(line.payment_amount_paid for line in o.invoice_line_ids))"/>
+            </p>
+
+            <table style="width:100%; margin-top:110px;">
+                <tr>
+                    <td style="width:33%; text-align:center;">
+                        <span t-field="o.create_uid.name" style="color:#40a4d5;"/>
+                        <br/>
+                        <div style="width:120px; margin:0 auto; border-top:1px solid #40a4d5; padding-top:3px; color:#40a4d5;">
+                            Receipt By
+                        </div>
+                    </td>
+                    <td style="width:33%;"></td>
+                    <td style="width:33%; text-align:center;">
+                        <br/>
+                        <div style="width:120px; margin:0 auto; border-top:1px solid #40a4d5; padding-top:3px; color:#40a4d5;">
+                            Customer Signature
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <table style="width:100%; margin-top:70px;">
+                <tr>
+                    <td style="width:50%; font-size:20px; color:#40a4d5;">
+                        Printed By:
+                        <span t-esc="env.user.name"/>
+                        On
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </td>
+                    <td style="width:50%; text-align:right; font-size:20px; color:#40a4d5;">
+                        <strong>
+                            <span t-field="o.branch_id.name"/>
+                        </strong>
+                        <br/>
+                        <span t-field="o.branch_id.street"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <!-- ══════════════════════════════════════════════════════════
+         MAIN DOCUMENT — 2 copies (Office + Customer)
+    ═══════════════════════════════════════════════════════════ -->
+    <template id="report_midland_payment_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+
+                <t t-call="midland_invoicing.report_midland_payment_copy">
+                    <t t-set="copy_label">OFFICE COPY</t>
+                </t>
+
+                <div style="page-break-before: always;"/>
+
+                <t t-call="midland_invoicing.report_midland_payment_copy">
+                    <t t-set="copy_label">CUSTOMER COPY</t>
+                </t>
+
+            </t>
+        </t>
+    </template>
+
+</odoo>
