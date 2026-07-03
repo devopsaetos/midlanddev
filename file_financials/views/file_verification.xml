@@ -311,7 +311,7 @@
                                                 </div>
                                                 <div class="col-sm-9">
                                                     <p class="text-muted mb-0">
-                                                        <span t-esc="file.investor_id.name"/>
+                                                        <span t-esc="file.investor_id.display_name"/>
                                                     </p>
                                                 </div>
                                             </div>

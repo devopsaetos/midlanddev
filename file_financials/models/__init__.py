@@ -2,11 +2,9 @@
 
 from . import res_config_setting
 # from . import payment_plan
-from . import investor
 from . import sub_dealer_inventory_management
 from . import file
 from . import plot_inventory
-from . import investment_category
 from . import investment
 from . import investment_lines
 from . import predefine_plan

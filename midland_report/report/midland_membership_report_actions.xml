@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
     <record id="paperformat_midland_membership" model="report.paperformat">
         <field name="name">Midland Membership Form</field>
         <field name="default" eval="False"/>

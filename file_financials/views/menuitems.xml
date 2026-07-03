@@ -38,6 +38,13 @@
             sequence='3'
     />
     <menuitem
+            id="file_financials.investor_menu_item"
+            name="Investors"
+            parent="file_financials.investment_main_menu"
+            action="real_estate.action_investor_registration"
+            sequence='1'
+    />
+    <menuitem
             name="Rebate"
             id="file_financials.rebate_menu_item"
             parent="file_financials.investment_main_menu"

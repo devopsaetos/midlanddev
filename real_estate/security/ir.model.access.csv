@@ -106,3 +106,8 @@ access_installment_invoice_wizard,access_installment_invoice_wizard,model_instal
 access_file_search,access_file_search,model_file_search,group_rsms_user,1,1,1,1
 access_return_line,access_return_line,model_return_line,group_rsms_user,1,1,1,1
 access_return_line_kin,access_return_line_kin,model_return_line_kin,group_rsms_user,1,1,1,1
+access_res_investor,res.investor,model_res_investor,base.group_user,1,1,1,1
+access_investment_category,investment.category,model_investment_category,base.group_user,1,1,1,1
+access_amenity_amenity,amenity.amenity,model_amenity_amenity,base.group_user,1,1,1,1
+access_refund_policy,refund.policy,model_refund_policy,base.group_user,1,1,1,1
+access_registration_security_line,registration.security.line,model_registration_security_line,base.group_user,1,1,1,1

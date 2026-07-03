@@ -85,15 +85,15 @@
                                         <!--                                         attrs="{'column_invisible':[('parent.status','!=','submitted')]}"-->
                                         <field name="street_id" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="nop"/>
-                                        <field name="category_id" domain="[('project_type', '=', 'housing_society')]"
+                                        <field name="category_id" domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="unit_category_type_id" string="Product"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
-                                        <field name="size_id" domain="[('project_type', '=', 'housing_society')]"
+                                        <field name="size_id" domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="unit_class_id" string="Type"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                     </list>
                                 </field>

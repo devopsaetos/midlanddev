@@ -67,7 +67,6 @@
                     <group name="investment_details" string="Investment Details">
                         <group>
                             <field name="partner_id" string="Investor Name"
-                                   domain="[('is_investor', '=', True),('project_type', '=', 'housing_society')]"
                                    options="{'no_create': True, 'no_open': True}"
                                    readonly="state in 'payment'"/>
                             <field name="options" string="Investment Option" required="1"

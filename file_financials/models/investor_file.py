@@ -1364,7 +1364,7 @@ class InstallmentPlanExt(models.Model):
                 marketing_rebate = 0
                 total_rebate = 0
                 if rec.move_ids:
-                    dealer_rebate = sum(x.amount_total for x in rec.move_ids.filtered(lambda move: move.partner_id.id == rec.investor_file_id.investor_id.id))
+                    dealer_rebate = sum(x.amount_total for x in rec.move_ids.filtered(lambda move: move.partner_id.id == rec.investor_file_id.investor_id.partner_id.id))
                     marketing_rebate = sum(x.amount_total for x in rec.move_ids.filtered(lambda move: move.partner_id.id ==
                                                                                                       rec.investor_file_id.investor_id.marketing_company_id.id))
                     total_rebate = dealer_rebate + marketing_rebate

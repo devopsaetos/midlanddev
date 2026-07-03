@@ -12,8 +12,6 @@ class InvestmentExt(models.Model):
     _inherit = 'investment'
     _description = 'Investment'
 
-    partner_id = fields.Many2one('res.investor', string='Investor', required=True, tracking=True)
-
     files_created = fields.Boolean(default=False)
     marketing_company_id = fields.Many2one('res.partner', tracking=True)
     # rebate portion
@@ -69,6 +67,22 @@ class InvestmentExt(models.Model):
         selection=[('yes', 'Yes'), ('no', 'no')],
         default="yes",
         tracking=True)
+
+    def reserve_inventory(self):
+        # real_estate's base reserve_inventory() sets line.partner_id = self.partner_id.id,
+        # assuming both are res.member. Here partner_id is res.investor (Dealer), so that
+        # assignment is a cross-model id mismatch (plot.inventory.partner_id expects res.member,
+        # the plot's owner). investment_id already links the plot to the Dealer via
+        # investment_id.partner_id, so we replicate the method without that bad assignment.
+        for rec in self:
+            if rec.inventory_ids:
+                for line in rec.inventory_ids:
+                    if line:
+                        line.state = 'investor'
+                        line.investment_id = rec.id
+            elif not rec.investment_line_ids:
+                raise ValidationError(_('Please add inventory details.'))
+        self.state = 'reserved'
 
     def set_net_payment_data(self):
         # confirmation_lines = self.env['investment.plan'].search([('installment_name', '=', 'Confirmation'), ('investment_id', '=', rec.id), ('company_id.id', '=', 5)])
@@ -443,7 +457,7 @@ class InvestmentExt(models.Model):
                 invoice_type = 'out_refund'
 
             rebate_invoice = self.env['account.move'].create({
-                'partner_id': self.partner_id.id,
+                'partner_id': self.partner_id.partner_id.id,
                 # 'branch_id': self.env.branch.id,
                 'type': invoice_type,
                 'investment_id': self.id,
@@ -513,7 +527,7 @@ class InvestmentExt(models.Model):
                 date = fields.Date.today()
                 invoice_type = 'out_refund'
                 rebate_invoice = self.env['account.move'].create({
-                    'partner_id': self.partner_id.id,
+                    'partner_id': self.partner_id.partner_id.id,
                     'company_id': self.company_id.id,
                     # 'branch_id': self.env.branch.id,
                     'type': invoice_type,
@@ -547,7 +561,7 @@ class InvestmentExt(models.Model):
             })]
             invoice = self.env['account.move'].create({
 
-                'partner_id': self.partner_id.id,
+                'partner_id': self.partner_id.partner_id.id,
                 # 'branch_id': self.env.branch.id,
                 'move_type': 'out_invoice',
                 'investment_id': self.id,
@@ -567,7 +581,7 @@ class InvestmentExt(models.Model):
                         # 'payment_method_id': self.inbound_payment_method.id,
                         'payment_type': 'inbound',
                         'partner_type': 'customer',
-                        'partner_id': self.partner_id.id,
+                        'partner_id': self.partner_id.partner_id.id,
                         'amount': self.down_payment,
                         'journal_id': self.journal_id.id,
                         'company_id': self.env.company.id,
@@ -610,7 +624,6 @@ class InvestmentExt(models.Model):
                         if line:
                             line.state = 'investor'
                             line.investment_id = self.id
-                            line.partner_id = self.partner_id.id
                             # line.deal_price = line.deal_price
                 if rec.reservation_type != 'unit' and not rec.investment_line_ids:
                     raise ValidationError('Please add inventory details.')
@@ -1348,3 +1361,10 @@ class LaunchType(models.Model):
     _description = 'Launch Type'
 
     name = fields.Char('Name', required=True)
+
+
+class InvestmentPaymentExt(models.TransientModel):
+    _inherit = 'investment.payment'
+
+    # investment.partner_id now points to res.investor (Dealer), not res.member.
+    partner_id = fields.Many2one('res.investor', string="Investor", related='investment_id.partner_id', store=True)

@@ -33,7 +33,7 @@ class AccountPaymentExt(models.Model):
         if self.file_id:
             self.category_id = self.file_id.category_id.id
             return {'domain': {
-                'advance_payment_id': [('is_advance_payment', '=', True), ('partner_id', '=', self.file_id.investor_id.id), ('amount_residual', '>', 0)]
+                'advance_payment_id': [('is_advance_payment', '=', True), ('partner_id', '=', self.file_id.investor_id.partner_id.id), ('amount_residual', '>', 0)]
             }
             }
 
@@ -704,7 +704,7 @@ class AccountPaymentExt(models.Model):
             description = 'Confirmation Adjustment of File - ' + self.file_id.name
             invoice = self.env['account.move'].search([('ref', '=', description), ('move_type', '=', 'out_invoice'), ('property_invoice_type', '=', 'others'),
                                                        ('company_id', '=', self.env.company.id),
-                                                       ('partner_id', '=', self.file_id.investor_id.id), ('state', '!=', 'cancelled')])
+                                                       ('partner_id', '=', self.file_id.investor_id.partner_id.id), ('state', '!=', 'cancelled')])
             if not invoice:
                 invoice_line = [{
                     'name': description,
@@ -925,7 +925,7 @@ class AccountPaymentExt(models.Model):
             'ref': description,
             'user_id': self.env.user.id,
             'company_id': self.env.company.id,
-            'partner_id': self.file_id.investor_id.id,
+            'partner_id': self.file_id.investor_id.partner_id.id,
             'journal_id': self.env['account.journal'].search([('type', '=', 'sale')], limit=1).id,
             'property_invoice_type': 'others',
             'invoice_date': fields.Date.today(),
@@ -978,7 +978,7 @@ class AccountPaymentExt(models.Model):
                 invoices = self.env['account.move'].search(
                     [('ref', '=', description), ('move_type', '=', 'out_invoice'), ('property_invoice_type', '=', 'others'),
                      ('company_id', '=', self.env.company.id),
-                     ('partner_id', '=', rec.file_id.investor_id.id), ('state', 'not in', ['draft', 'cancel'])])
+                     ('partner_id', '=', rec.file_id.investor_id.partner_id.id), ('state', 'not in', ['draft', 'cancel'])])
                 if invoices:
                     for invoice in invoices:
                         # Unapplying Advance

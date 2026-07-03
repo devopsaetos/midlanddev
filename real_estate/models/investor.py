@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import psycopg2
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -7,9 +9,9 @@ class ResInvestor(models.Model):
     _name = 'res.investor'
     _description = "Investor"
     _inherit = ['mail.thread', 'mail.activity.mixin', 'portal.mixin']
-    _rec_name = 'name'
+    _rec_name = 'investor_id'
 
-    name = fields.Char(string="Investor Name", required=True, tracking=True)
+    investor_id = fields.Char(string="Investor Name", required=True, tracking=True)
 
     # Hidden partner bridge for accounting (invoices/payments need res.partner)
     partner_id = fields.Many2one(
@@ -157,7 +159,7 @@ class ResInvestor(models.Model):
         for rec in self:
             if not rec.partner_id:
                 partner = self.env['res.partner'].sudo().create({
-                    'name': rec.name or 'Investor',
+                    'name': rec.investor_id or 'Investor',
                     'company_type': 'person',
                     'email': rec.email or False,
                     'phone': rec.phone or rec.mobile or False,
@@ -165,8 +167,8 @@ class ResInvestor(models.Model):
                 rec.partner_id = partner.id
             else:
                 vals = {}
-                if rec.name:
-                    vals['name'] = rec.name
+                if rec.investor_id:
+                    vals['name'] = rec.investor_id
                 if vals:
                     rec.partner_id.sudo().write(vals)
 
@@ -187,11 +189,26 @@ class ResInvestor(models.Model):
                 if rec.ref and rec.ref != _('New'):
                     raise UserError(_('Investor Code cannot be changed once it is assigned.'))
         res = super().write(vals)
-        if 'name' in vals:
+        if 'investor_id' in vals:
             for rec in self:
                 if rec.partner_id:
-                    rec.partner_id.sudo().write({'name': vals['name']})
+                    rec.partner_id.sudo().write({'name': vals['investor_id']})
         return res
+
+    def unlink(self):
+        """Investors still referenced by other records (e.g. Investment.partner_id)
+        can't be deleted due to FK constraints. Archive those instead of failing
+        the whole operation with a raw DB error."""
+        to_archive = self.browse()
+        for investor in self:
+            try:
+                with self.env.cr.savepoint():
+                    super(ResInvestor, investor).unlink()
+            except psycopg2.Error:
+                to_archive |= investor
+        if to_archive:
+            to_archive.write({'active': False})
+        return True
 
     @api.onchange('city_id')
     def _onchange_city_id(self):

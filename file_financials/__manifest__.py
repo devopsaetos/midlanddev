@@ -12,7 +12,7 @@
     'author': "Siddiq Chauhdry",
     'website': "https://www.siddiqchauhdry.com",
     'category': 'Real Estate',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.3',
 
     'depends': [
         'crm',
@@ -26,7 +26,6 @@
         'views/res_company.xml',
         'views/res_config_setting.xml',
         'views/menuitems.xml',
-        'views/investor.xml',
         'views/predefine_plan.xml',
         'views/account_move_ext.xml',
         'views/account_payment.xml',

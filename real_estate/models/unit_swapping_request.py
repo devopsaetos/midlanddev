@@ -205,7 +205,7 @@ class UnitSwappingRequest(models.Model):
 
     # Investment Fields
     investment_id = fields.Many2one('investment')
-    investor_id = fields.Many2one('res.member', domain=[('is_investor', '=', True)], readonly=False, related='investment_id.partner_id', store=True)
+    investor_id = fields.Many2one('res.investor', readonly=False, related='investment_id.partner_id', store=True)
     unit_swapping_request_lines = fields.One2many('unit.swapping.request.lines', 'unit_swapping_request_id')
     cancel_all_units = fields.Boolean()
     from_app = fields.Boolean()

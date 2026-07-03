@@ -130,19 +130,30 @@ class PriceListLine(models.Model):
     _name = 'price.list.line'
     _description = "Price List Line"
 
-    size_id = fields.Many2one('unit.size', store=True, related='unit_inventory_id.size_id', readonly=False)
-    category_id = fields.Many2one('plot.category', required=True, store=True, related='unit_inventory_id.category_id', readonly=False)
-    unit_class_id = fields.Many2one('unit.class', store=True, related='unit_inventory_id.unit_class_id', readonly=False)
-    unit_category_type_id = fields.Many2one('unit.category.type',
-                                            required=True, store=True, related='unit_inventory_id.unit_category_type_id', readonly=False)
+    size_id = fields.Many2one('unit.size')
+    category_id = fields.Many2one('plot.category', required=True)
+    unit_class_id = fields.Many2one('unit.class')
+    unit_category_type_id = fields.Many2one('unit.category.type', required=True)
     unit_inventory_id = fields.Many2one('plot.inventory')
     area = fields.Integer(string='Area')
     starting_date = fields.Date('Start Date')
     end_date = fields.Date('End Date')
-    sector_id = fields.Many2one('sector', store=True, related='unit_inventory_id.sector_id', readonly=False)
+    sector_id = fields.Many2one('sector')
     price = fields.Float()
     line_id = fields.Many2one('price.list')
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('unit_inventory_id'):
+                inv = self.env['plot.inventory'].browse(vals['unit_inventory_id'])
+                vals.setdefault('category_id', inv.category_id.id)
+                vals.setdefault('unit_category_type_id', inv.unit_category_type_id.id)
+                vals.setdefault('size_id', inv.size_id.id)
+                vals.setdefault('unit_class_id', inv.unit_class_id.id)
+                vals.setdefault('sector_id', inv.sector_id.id)
+                vals.setdefault('area', inv.standard_area)
+        return super().create(vals_list)
 
     @api.onchange('sector_id')
     def _domain_sector_id(self):
@@ -155,14 +166,16 @@ class PriceListLine(models.Model):
     @api.constrains('unit_inventory_id', 'starting_date', 'end_date')
     def _check_double(self):
         for rec in self:
-            if rec.end_date > rec.line_id.end_date:
-                raise ValidationError(_("You can not exceed ending date of price list."))
+            # Lines created directly under a Plot Inventory (via unit_inventory_id) have no
+            # parent price.list, so there is no line_id to bound the dates against.
+            if rec.line_id:
+                if rec.end_date and rec.line_id.end_date and rec.end_date > rec.line_id.end_date:
+                    raise ValidationError(_("You can not exceed ending date of price list."))
 
-            if rec.starting_date < rec.line_id.starting_date:
-                raise ValidationError(_("You can not fix starting date, less then the starting date of the price list."))
+                if rec.starting_date and rec.line_id.starting_date and rec.starting_date < rec.line_id.starting_date:
+                    raise ValidationError(_("You can not fix starting date, less then the starting date of the price list."))
 
-
-            if rec.starting_date > rec.end_date:
+            if rec.starting_date and rec.end_date and rec.starting_date > rec.end_date:
                 raise ValidationError(_("End Date must come after Start Date."))
 
             record = []
@@ -217,6 +230,11 @@ class PriceListLine(models.Model):
     def _unit_inventory_id(self):
         if self.unit_inventory_id:
             self.area = self.unit_inventory_id.standard_area
+            self.category_id = self.unit_inventory_id.category_id
+            self.unit_category_type_id = self.unit_inventory_id.unit_category_type_id
+            self.size_id = self.unit_inventory_id.size_id
+            self.unit_class_id = self.unit_inventory_id.unit_class_id
+            self.sector_id = self.unit_inventory_id.sector_id
         else:
             self.area = 0
         return {

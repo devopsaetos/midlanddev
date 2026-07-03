@@ -52,6 +52,8 @@ from . import propose_plan
 from . import predefine_plan
 from . import land_details
 from . import token_money
+from . import investment_category
+from . import investor
 from . import investment
 from . import legal_dispute
 from . import bulk_file_cancellation

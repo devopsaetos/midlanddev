@@ -54,7 +54,7 @@ class Investment(models.Model):
     phase_id = fields.Many2one('society', 'Phase', required=True, tracking=True)
     sector_id = fields.Many2one('sector', 'Sector', tracking=True)
     category_id = fields.Many2one('plot.category', 'Category', tracking=True)
-    partner_id = fields.Many2one('res.member', string='Investor', required=True, tracking=True)
+    partner_id = fields.Many2one('res.investor', string='Investor', required=True, tracking=True)
     booking_date = fields.Date('Booking date', required=True, tracking=True)
     start_date = fields.Date('Start date', required=True, tracking=True)
     total_amount = fields.Float('Total amount', compute='compute_deal_price', store=True, readonly=True,
@@ -995,7 +995,7 @@ class Investment(models.Model):
         for record in self:
             name = record.sequence_no
             if record.sequence_no and record.sequence_no != 'New':
-                name = "%s / %s" % (record.sequence_no, record.partner_id.name)
+                name = "%s / %s" % (record.sequence_no, record.partner_id.investor_id)
             result.append((record.id, name))
         return result
 
@@ -1081,7 +1081,7 @@ class Investment(models.Model):
                           'total_deal_amount': inv.total_amount,
                           'paid_amount': sum(inv.investment_plan_ids.mapped('amount_paid')),
                           'due_amount': sum(inv.investment_plan_ids.mapped('residual')),
-                          'investor_name': inv.partner_id.name,
+                          'investor_name': inv.partner_id.investor_id,
                           'investor_id': inv.partner_id.id,
                           'sector_id': inv.sector_id.id,
                           'sector_name': inv.sector_id.name,
@@ -1380,7 +1380,7 @@ class Investment(models.Model):
                         'request_state': req.state,
                         'investment_name': req.investment_id.name,
                         'investment_id': req.investment_id.id,
-                        'investor_name': req.investor_id.name,
+                        'investor_name': req.investor_id.display_name,
                         'investor_id': req.investor_id.id,
                         'inventory_details': inventory_details,
                         }
@@ -1415,7 +1415,7 @@ class Investment(models.Model):
                               'total_deal_amount': inv.total_amount,
                               'paid_amount': sum(inv.investment_plan_ids.mapped('amount_paid')),
                               'due_amount': sum(inv.investment_plan_ids.mapped('residual')),
-                              'investor_name': inv.partner_id.name,
+                              'investor_name': inv.partner_id.investor_id,
                               'investor_id': inv.partner_id.id,
                               'sector_id': inv.sector_id.id,
                               'sector_name': inv.sector_id.name,
@@ -1714,7 +1714,7 @@ class InvestmentPayment(models.TransientModel):
     _description = "Investment Payment"
 
     investment_id = fields.Many2one('investment', string="Investment No.", required=True)
-    partner_id = fields.Many2one('res.member', string="Investor", related='investment_id.partner_id', store=True)
+    partner_id = fields.Many2one('res.investor', string="Investor", related='investment_id.partner_id', store=True)
     date = fields.Date(required=True)
     total_amount = fields.Float(related='investment_id.total_amount')
     payment_amount = fields.Float(required=True)

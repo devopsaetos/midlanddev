@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import psycopg2
 from odoo import models, fields, api, _
 from odoo.exceptions import AccessError, UserError, ValidationError
 from lxml import etree as ET
@@ -965,10 +966,23 @@ class ResMember(models.Model):
             raise UserError(_("You are not allowed to delete record"))
         if not is_user2:
             raise UserError(_("You are not allowed to delete record"))
-        partners = self.mapped('partner_id')
-        res = super(ResMember, self).unlink()
-        partners.sudo().write({'active': False})
-        return res
+
+        to_archive = self.browse()
+        to_delete = self.browse()
+        for member in self:
+            try:
+                with self.env.cr.savepoint():
+                    super(ResMember, member).unlink()
+            except psycopg2.Error:
+                # e.g. still referenced by Plot Inventory, Investment, etc.
+                to_archive |= member
+            else:
+                to_delete |= member
+
+        if to_archive:
+            to_archive.write({'active': False})
+        (to_archive | to_delete).mapped('partner_id').sudo().write({'active': False})
+        return True
 
     @api.model
     def _from_login_partner(self):

@@ -253,7 +253,7 @@ class File(models.Model):
 
     # Investor Fields
     investment_adjustment = fields.Boolean()
-    investor_id = fields.Many2one('res.member', string='Investor No', domain="[('is_investor', '=', 1)]")
+    investor_id = fields.Many2one('res.investor', string='Investor No')
     investment_id = fields.Many2one('investment', string='Investment No')
     investor_file = fields.Many2one('investor.file', string='Investor File')
 

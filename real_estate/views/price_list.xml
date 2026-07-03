@@ -40,16 +40,16 @@
                                                groups="real_estate.group_user_base_pricing"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="category_id" string="Category"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="unit_category_type_id" string="Product"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="size_id" string="Size"
                                                options="{'no_create': True, 'no_open': True}"
-                                               domain="[('project_type', '=', 'housing_society')]"/>
+                                               domain="[('project_type', 'in', ['housing_society', False])]"/>
                                         <field name="unit_class_id" string="Type"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="sector_id"
                                                domain="[('project_type','=','housing_society')]"
@@ -65,10 +65,10 @@
                                 <field name="price_list_line_generic">
                                     <list editable="bottom">
                                         <field name="category_id" string="Category"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="unit_category_type_id" string="Product"
-                                               domain="[('project_type', '=', 'housing_society')]"
+                                               domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>
                                         <field name="sector_id"
                                                domain="[('project_type','=','housing_society')]"

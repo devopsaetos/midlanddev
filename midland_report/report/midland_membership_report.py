@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import api, models
+
+
 class MidlandMembershipReport(models.AbstractModel):
     """
     Report parser for the combined Membership Form + Installment Plan PDF.

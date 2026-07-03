@@ -44,9 +44,9 @@ class InvestorFile(models.Model):
         ('installments', 'Installment'),
         ('lump_sum', 'Lump Sum')
     ], string='Payment Type')
-    investor_id = fields.Many2one('res.member', string='Investor No', domain="[('is_investor', '=', 1)]")
+    investor_id = fields.Many2one('res.investor', string='Investor No')
     investment_id = fields.Many2one('investment', string='Investment No')
-    investor_name = fields.Char(string='Name', store=True, related='investor_id.name')
+    investor_name = fields.Char(string='Name', store=True, related='investor_id.display_name')
     user_id = fields.Many2one('res.users', "Sale Person")
     society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]", store=True, readonly=False)
     phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]", store=True, readonly=False)

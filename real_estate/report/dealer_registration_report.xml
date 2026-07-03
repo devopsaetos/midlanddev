@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="paperformat_dealer_registration" model="report.paperformat">
+            <field name="name">Dealer Registration Paperformat</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">15</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">7</field>
+            <field name="margin_right">7</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">5</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="action_report_dealer_registration" model="ir.actions.report">
+            <field name="name">Dealer Registration Form</field>
+            <field name="model">res.investor</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">real_estate.report_dealer_registration_document</field>
+            <field name="report_file">real_estate.report_dealer_registration_document</field>
+            <field name="print_report_name">'Dealer Registration Form - %s' % (object.investor_id)</field>
+            <field name="binding_model_id" ref="model_res_investor"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="paperformat_dealer_registration"/>
+        </record>
+
+        <template id="report_dealer_registration_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+
+                            <div class="text-center" style="margin-bottom:5px;">
+                                <h2 style="display:inline-block;
+                                           background-color:#40a4d5;
+                                           color:white;
+                                           padding:10px 20px;
+                                           margin:0;
+                                          letter-spacing:3px;">
+                                    DEALER REGISTRATION FORM
+                                </h2>
+                            </div>
+                            <div class="text-center" style="letter-spacing:4px; color:#40a4d5; margin-bottom:20px;font-size:18px;">
+                                <span t-if="doc.investment_category" t-esc="doc.investment_category.name.upper()"/>
+                            </div>
+
+                            <hr/>
+
+                            <h4 style="color:#40a4d5;">Business Details</h4>
+                            <div class="row">
+                                <div class="col-6">
+                                    <table style="width:100%;">
+                                        <tr>
+                                            <td style="width:150px;">
+                                                <strong>Agency Name:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.investor_id"/>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <strong>Investor Type:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.investor_type"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-6">
+                                    <table style="width:100%;">
+                                        <tr>
+                                            <td style="width:150px;">
+                                                <strong>Registration No.:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.ref"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <h4 style="color:#40a4d5;">Owner Details</h4>
+                            <table class="table table-bordered" style="margin-bottom:20px;">
+                                <thead style="background-color:#40a4d5; color:white;">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Spouse / Father</th>
+                                        <th>Phone #</th>
+                                        <th>CNIC #</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td t-esc="doc.owner_name or doc.investor_id"/>
+                                        <td t-esc="doc.relation_name"/>
+                                        <td t-esc="doc.mobile or doc.phone"/>
+                                        <td t-esc="doc.cnic"/>
+                                        <td t-esc="doc.email"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <hr/>
+
+                            <h4 style="color:#8c8c8c;">Authorized Person</h4>
+                            <table class="table table-bordered" style="margin-bottom:20px;">
+                                <thead style="background-color:#40a4d5; color:white;">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Mobile #</th>
+                                        <th>CNIC #</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="doc.authorised_representative_ids" t-as="rep">
+                                        <td t-esc="rep.name"/>
+                                        <td t-esc="rep.mobile"/>
+                                        <td t-esc="rep.cnic"/>
+                                    </tr>
+                                    <tr t-if="not doc.authorised_representative_ids">
+                                        <td colspan="3" class="text-center text-muted">No authorized person added</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4 style="color:#40a4d5;">Documents Provided Details</h4>
+                            <table style="width:100%; margin-bottom:20px;">
+                                <tr>
+                                    <td style="width:50%; padding:5px 0;">
+                                        <strong>CNIC:</strong>
+                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
+                                    </td>
+                                    <td style="width:50%; padding:5px 0;">
+                                        <strong>Letter Head:</strong>
+                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:5px 0;">
+                                        <strong>Authorized Person:</strong>
+                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
+                                    </td>
+                                    <td style="padding:5px 0;">
+                                        <strong>Visiting Card:</strong>
+                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>
