@@ -3,7 +3,7 @@
     <data>
 
         <record id="paperformat_dealer_registration" model="report.paperformat">
-            <field name="name">Dealer Registration Paperformat</field>
+            <field name="name">Dealer Registration</field>
             <field name="default" eval="False"/>
             <field name="format">A4</field>
             <field name="page_height">0</field>
@@ -33,132 +33,172 @@
         <template id="report_dealer_registration_document">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="doc">
-                    <t t-call="web.external_layout">
+                    <t t-call="web.basic_layout">
+                        <div class="footer">
+                            <div class="row" style="font-size:11px; color:#191970; border-top:1px solid #ddd; padding-top:6px; margin:0;">
+                                <div class="col-6">
+                                    Printed By: <span t-esc="env.user.name"/>
+                                </div>
+                                <div class="col-6 text-end">
+                                    Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                </div>
+                            </div>
+                        </div>
                         <div class="page">
+
+<!--                            <div class="text-center" t-if="env.company.logo" style="margin-bottom:8px;">-->
+<!--                                <img t-att-src="image_data_uri(env.company.logo)" style="max-height:35px;"/>-->
+<!--                            </div>-->
 
                             <div class="text-center" style="margin-bottom:5px;">
                                 <h2 style="display:inline-block;
                                            background-color:#40a4d5;
                                            color:white;
-                                           padding:10px 20px;
+                                           padding:10px 40px;
                                            margin:0;
-                                          letter-spacing:3px;">
+                                           letter-spacing:3px;">
                                     DEALER REGISTRATION FORM
                                 </h2>
                             </div>
-                            <div class="text-center" style="letter-spacing:4px; color:#40a4d5; margin-bottom:20px;font-size:18px;">
-                                <span t-if="doc.investment_category" t-esc="doc.investment_category.name.upper()"/>
+                            <div class="text-center" style="letter-spacing:6px; color:#8c8c8c; margin-bottom:15px; font-size:13px;">
+                                <span t-if="doc.investment_category" t-esc="(doc.investment_category.name or '').upper() + ' CATEGORY'"/>
                             </div>
 
-                            <hr/>
+                            <hr style="border-top:2px solid #40a4d5;"/>
 
-                            <h4 style="color:#40a4d5;">Business Details</h4>
+                            <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Business Details</div>
                             <div class="row">
                                 <div class="col-6">
-                                    <table style="width:100%;">
-                                        <tr>
-                                            <td style="width:150px;">
-                                                <strong>Agency Name:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-field="doc.investor_id"/>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>
-                                                <strong>Investor Type:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-field="doc.investor_type"/>
-                                            </td>
-                                        </tr>
-                                    </table>
+                                    <div class="row">
+                                        <div class="col-5"><strong>Agency Name:</strong></div>
+                                        <div class="col-7" t-field="doc.investor_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-5"><strong>Investor Type:</strong></div>
+                                        <div class="col-7" t-field="doc.investor_type"/>
+                                    </div>
                                 </div>
                                 <div class="col-6">
-                                    <table style="width:100%;">
-                                        <tr>
-                                            <td style="width:150px;">
-                                                <strong>Registration No.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-field="doc.ref"/>
-                                            </td>
-                                        </tr>
-                                    </table>
+                                    <div class="row">
+                                        <div class="col-6"><strong>Registration No.:</strong></div>
+                                        <div class="col-6" t-field="doc.ref"/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6"><strong>Registration Date:</strong></div>
+                                        <div class="col-6" t-esc="doc.create_date and doc.create_date.strftime('%d/%m/%Y')"/>
+                                    </div>
+                                    <!-- res.investor has no dedicated NTN field; for individuals the CNIC doubles as the NTN. -->
+                                    <div class="row">
+                                        <div class="col-6"><strong>NTN #:</strong></div>
+                                        <div class="col-6" t-field="doc.ntn"/>
+                                    </div>
                                 </div>
                             </div>
 
                             <hr/>
 
-                            <h4 style="color:#40a4d5;">Owner Details</h4>
-                            <table class="table table-bordered" style="margin-bottom:20px;">
-                                <thead style="background-color:#40a4d5; color:white;">
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Spouse / Father</th>
-                                        <th>Phone #</th>
-                                        <th>CNIC #</th>
-                                        <th>Email</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td t-esc="doc.owner_name or doc.investor_id"/>
-                                        <td t-esc="doc.relation_name"/>
-                                        <td t-esc="doc.mobile or doc.phone"/>
-                                        <td t-esc="doc.cnic"/>
-                                        <td t-esc="doc.email"/>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Owner Details</div>
+                            <div class="row" style="background-color:#40a4d5; color:white; padding:6px 0; margin:0 0 4px 0;">
+                                <div class="col-3">Name</div>
+                                <div class="col-3">Spouse / Father</div>
+                                <div class="col-2">Phone #</div>
+                                <div class="col-2">CNIC #</div>
+                                <div class="col-2">Email</div>
+                            </div>
+                            <div class="row" style="padding:6px 0; border-bottom:1px solid #ddd;">
+                                <div class="col-3" t-esc="doc.owner_name or doc.investor_id"/>
+                                <div class="col-3" t-esc="doc.relation_name"/>
+                                <div class="col-2" t-esc="doc.mobile or doc.phone"/>
+                                <div class="col-2" t-esc="doc.cnic"/>
+                                <div class="col-2" t-esc="doc.email"/>
+                            </div>
 
                             <hr/>
 
-                            <h4 style="color:#8c8c8c;">Authorized Person</h4>
-                            <table class="table table-bordered" style="margin-bottom:20px;">
-                                <thead style="background-color:#40a4d5; color:white;">
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Mobile #</th>
-                                        <th>CNIC #</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr t-foreach="doc.authorised_representative_ids" t-as="rep">
-                                        <td t-esc="rep.name"/>
-                                        <td t-esc="rep.mobile"/>
-                                        <td t-esc="rep.cnic"/>
-                                    </tr>
-                                    <tr t-if="not doc.authorised_representative_ids">
-                                        <td colspan="3" class="text-center text-muted">No authorized person added</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Office Details</div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="row">
+                                        <div class="col-4"><strong>Office Address:</strong></div>
+                                        <div class="col-8">
+                                            <div t-esc="doc.street"/>
+                                            <div t-esc="doc.city_id.name"/>
+                                            <div t-esc="', '.join(filter(None, [doc.state_id.name, doc.country_id.name]))"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="row">
+                                        <div class="col-4"><strong>Email:</strong></div>
+                                        <div class="col-8" t-esc="doc.email"/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4"><strong>Mobile:</strong></div>
+                                        <div class="col-8" t-esc="doc.mobile"/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4"><strong>Phone:</strong></div>
+                                        <div class="col-8" t-esc="doc.phone"/>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <h4 style="color:#40a4d5;">Documents Provided Details</h4>
-                            <table style="width:100%; margin-bottom:20px;">
-                                <tr>
-                                    <td style="width:50%; padding:5px 0;">
-                                        <strong>CNIC:</strong>
-                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
-                                    </td>
-                                    <td style="width:50%; padding:5px 0;">
-                                        <strong>Letter Head:</strong>
-                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:5px 0;">
-                                        <strong>Authorized Person:</strong>
-                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
-                                    </td>
-                                    <td style="padding:5px 0;">
-                                        <strong>Visiting Card:</strong>
-                                        <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"></span>
-                                    </td>
-                                </tr>
-                            </table>
+                            <hr/>
+
+                            <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Authorized Person</div>
+                            <div class="row" style="background-color:#40a4d5; color:white; padding:6px 0; margin:0 0 4px 0;">
+                                <div class="col-6">Name</div>
+                                <div class="col-3">Mobile #</div>
+                                <div class="col-3">CNIC #</div>
+                            </div>
+                            <div t-foreach="doc.authorised_representative_ids" t-as="rep"
+                                 class="row" style="padding:6px 0; border-bottom:1px solid #ddd;">
+                                <div class="col-6" t-esc="rep.name"/>
+                                <div class="col-3" t-esc="rep.mobile"/>
+                                <div class="col-3" t-esc="rep.cnic"/>
+                            </div>
+                            <div t-if="not doc.authorised_representative_ids"
+                                 class="row" style="padding:6px 0; border-bottom:1px solid #ddd;">
+                                <div class="col-12 text-center text-muted">No authorized person added</div>
+                            </div>
+
+                            <hr/>
+
+                            <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Documents Provided Details</div>
+                            <div class="row" style="margin-bottom:10px;">
+                                <div class="col-6">
+                                    <strong>CNIC:</strong>
+                                    <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Letter Head:</strong>
+                                    <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Authorized Person:</strong>
+                                    <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"/>
+                                </div>
+                                <div class="col-6">
+                                    <strong>Visiting Card:</strong>
+                                    <span style="border:1px solid #000; display:inline-block; width:12px; height:12px; margin-left:25px; vertical-align:middle;"/>
+                                </div>
+                            </div>
+                            <br/>
+                            <br/>
+                            <br/>
+
+                            <div class="row" style="margin-top:70px;">
+                                <div class="col-6 text-center">
+                                    <div style="border-top:1px solid #000; width:80%; margin:0 auto;"/>
+                                    <div style="color:#8c8c8c; margin-top:5px;">Signature of Applicant(s)</div>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <div style="border-top:1px solid #000; width:80%; margin:0 auto;"/>
+                                    <div style="color:#8c8c8c; margin-top:5px;">Thumb Impression(s)</div>
+                                </div>
+                            </div>
 
                         </div>
                     </t>
