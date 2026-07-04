@@ -129,6 +129,29 @@ class InvestmentExt(models.Model):
                     'final_value': lines.final_value,
                     'investment_id': self.id,
                 }) for lines in self.platter_id.platter_line_ids]
+            elif self.reservation_type == 'unit':
+                self.inventory_ids = self._pick_platter_inventory()
+                self.down_payment = sum(self.platter_id.platter_line_ids.mapped('booking_value'))
+
+    def _pick_platter_inventory(self):
+        """Auto-select available plot.inventory matching each platter line's
+        criteria and quantity (no_of_units), for reservation_type == 'unit'."""
+        self.ensure_one()
+        PlotInventory = self.env['plot.inventory']
+        picked = PlotInventory
+        for line in self.platter_id.platter_line_ids:
+            if line.inventory_id:
+                line_units = line.inventory_id if line.inventory_id.state == 'avalible_for_sale' else PlotInventory
+            else:
+                domain = [('state', '=', 'avalible_for_sale'), ('id', 'not in', picked.ids)]
+                for field_name in ('sector_id', 'street_id', 'category_id', 'unit_category_type_id', 'size_id', 'unit_class_id'):
+                    value = line[field_name]
+                    if value:
+                        domain.append((field_name, '=', value.id))
+                line_units = PlotInventory.search(domain, limit=line.no_of_units or 1)
+            line_units.investor_unit_price = line.investor_price
+            picked |= line_units
+        return picked
 
     def rebate_invoices(self):
         if self.rebate_on_allotment_ids:

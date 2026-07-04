@@ -249,12 +249,14 @@ class Investment(models.Model):
 
     @api.onchange('society_id', 'phase_id', 'sector_id')
     def _phase_domain(self):
+        inventory_domain = [('phase_id', '=', self.phase_id.id), ('state', '=', 'avalible_for_sale')]
+        if self.sector_id:
+            inventory_domain.append(('sector_id', '=', self.sector_id.id))
         return {
             'domain': {
                 'phase_id': [('is_society', '!=', True), ('society_id', '=', self.society_id.id)],
                 'sector_id': [('phase_id', '=', self.phase_id.id)],
-                'inventory_ids': [('phase_id', '=', self.phase_id.id),
-                                  ('state', '=', 'avalible_for_sale')]
+                'inventory_ids': inventory_domain
             }
         }
 

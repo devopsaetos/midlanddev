@@ -26,7 +26,9 @@
             </xpath>
             <xpath expr="//field[@name='plan_type']" position="before">
                 <field name="launch_type_id"/>
-                <field name="platter_id"/>
+                <field name="platter_id"
+                       domain="[('society_id','=',society_id),('phase_id','=',phase_id)]"
+                       options="{'no_create': True, 'no_open': True}"/>
                 <field name="multiple_plans"/>
             </xpath>
             <xpath expr="//field[@name='sector_id']" position="before">

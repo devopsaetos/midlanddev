@@ -132,6 +132,7 @@
                 <list string="Plot Inventory" create="false" edit="false" name="plot_inventory" delete="false">
                     <field name="serial_number"/>
                     <field name="name"/>
+                    <field name="project_type"/>
                     <field name="society_id"/>
                     <field name="phase_id"/>
                     <field name="sector_id"/>

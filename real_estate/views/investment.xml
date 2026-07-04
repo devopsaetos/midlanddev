@@ -189,7 +189,8 @@
                             </field>
                         </page>
                         <page string="Inventory" invisible="reservation_type != 'unit'">
-                            <field name="inventory_ids" readonly="state in ('reserved', 'payment')">
+                            <field name="inventory_ids" readonly="state in ('reserved', 'payment')"
+                                   domain="[('phase_id','=',phase_id),('sector_id','=',sector_id),('state','=','avalible_for_sale')]">
                                 <list editable="bottom">
                                     <field name="sector_id" readonly="1"
                                            domain="[('project_type','=','housing_society')]"

@@ -87,7 +87,6 @@
                                         <div class="col-6"><strong>Registration Date:</strong></div>
                                         <div class="col-6" t-esc="doc.create_date and doc.create_date.strftime('%d/%m/%Y')"/>
                                     </div>
-                                    <!-- res.investor has no dedicated NTN field; for individuals the CNIC doubles as the NTN. -->
                                     <div class="row">
                                         <div class="col-6"><strong>NTN #:</strong></div>
                                         <div class="col-6" t-field="doc.ntn"/>
