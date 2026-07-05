@@ -58,7 +58,7 @@
             name="Settings"
             id="real_estate.menu_settings"
             parent="real_estate.menu_root"
-            sequence='10'
+            sequence='15'
             groups='base.group_system'
     />
 

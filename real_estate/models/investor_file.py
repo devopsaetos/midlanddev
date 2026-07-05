@@ -169,14 +169,6 @@ class InvestorFile(models.Model):
             'investment_adjustment': False,
             'tracking_id': self.name,
             'membership_id': self.transferee_partner_id.id,
-            'allow_correspondence': self.transferee_partner_id.allow_correspondence,
-            'correspondence_type_ids': self.transferee_partner_id.correspondence_type_ids.ids,
-            'corespondence_street': self.transferee_partner_id.corespondence_street,
-            'corespondence_street2': self.transferee_partner_id.corespondence_street2,
-            'corespondence_zip': self.transferee_partner_id.corespondence_zip,
-            'corespondence_city_id': self.transferee_partner_id.corespondence_city_id.id,
-            'corespondence_state_id': self.transferee_partner_id.corespondence_state_id.id,
-            'corespondence_country_id': self.transferee_partner_id.corespondence_country_id.id,
             'correspondence_address': correspondence_address,
             'membership_name': self.transferee_partner_id.name,
             'booking_date': self.booking_date,
@@ -195,7 +187,6 @@ class InvestorFile(models.Model):
             'size_id': self.size_id.id,
             'unit_class_id': self.unit_class_id.id,
             'inventory_id': self.inventory_id.id,
-            'unit_number': self.unit_number,
             'payment_type': 'installments' if self.investment_id.options == 'down' else 'lump_sum',
             'plan_type': self.plan_type,
             'interval_id': self.interval_id.id,
@@ -212,27 +203,8 @@ class InvestorFile(models.Model):
             'balloting_amount': self.balloting_amount,
         })
 
-        # Agent Auto Assignment Code
-        def return_min_val(rules):
-            min_x = len(rules[0].file_ids)
-            for rule in rules:
-                if len(rule.file_ids) < min_x:
-                    min_x = len(rule.file_ids)
-            rulee = rules.filtered(lambda x: len(x.file_ids) == min_x)
-            if rulee:
-                return rulee
-            else:
-                return rules[0]
-
-        if file:
-            agent_rules = self.env['assignment.rule.line'].search(
-                [('category_ids', 'in', file.category_id.id), ('sector_ids', 'in', file.sector_id.id)],
-                order='file_ids desc')
-            if agent_rules:
-                agent_rule = return_min_val(agent_rules)
-                file.agent_id = agent_rule.user_id.id
-                agent_rule.file_ids = [(4, file.id)]
-        # Agent Auto Assignment Code Ends Here
+        # Agent Auto Assignment Code removed: referenced 'assignment.rule.line' and file.agent_id,
+        # neither of which exist anywhere in this module set — dead/never-finished feature.
         self.investment_id.amount_paid = self.investment_id.amount_paid - self.investment_id.investor_unit_price
         file.investment_adjustment = True
         # Creating down payment on file which is already paid by investor

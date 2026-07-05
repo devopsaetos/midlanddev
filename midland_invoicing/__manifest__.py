@@ -5,7 +5,7 @@
     'category': 'Real Estate',
     'author': 'Midland',
     'license': 'OEEL-1',
-    'depends': ['file_financials', 'account'],
+    'depends': ['file_financials', 'land_development', 'account'],
     'data': [
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
@@ -16,6 +16,7 @@
         'views/midland_invoice_views.xml',
         'views/midland_payment_views.xml',
         'views/file_ext_views.xml',
+        'views/investment_ext_views.xml',
         'views/menuitems.xml',
     ],
     'application': True,

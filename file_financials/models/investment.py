@@ -263,7 +263,6 @@ class InvestmentExt(models.Model):
                     'size_id': inv.size_id.id,
                     'unit_class_id': inv.unit_class_id.id,
                     'inventory_id': inv.id,
-                    'unit_number': inv.name,
                     # 'payment_type': 'installments' if self.options == 'down' else 'lump_sum',
                     'plan_type': self.plan_type,
                     'predefine_plan_id': self.predefine_plan_id.id if self.predefine_plan_id else None,
@@ -575,52 +574,47 @@ class InvestmentExt(models.Model):
             raise ValidationError(_('Create Installment Plan first.'))
         if self.total_amount:
             _inv_ref = self.env.ref('real_estate.investment')
-            _inv_product = _inv_ref.product_id if _inv_ref._name == 'product.realestate' else _inv_ref
-            prod = [(0, 0, {
-                'product_id': _inv_product.id,
-                'name': _inv_ref.name,
-                'account_id': _inv_product.property_account_income_id.id,
-                'price_unit': self.down_payment if self.options == 'down' else self.total_amount
-            })]
-            invoice = self.env['account.move'].create({
-
+            first_plan = self.investment_plan_ids.filtered(lambda l: l.installment_number == 1)
+            inv = self.env['midland.invoice'].create({
                 'partner_id': self.partner_id.partner_id.id,
-                # 'branch_id': self.env.branch.id,
-                'move_type': 'out_invoice',
-                'investment_id': self.id,
                 'invoice_date': self.booking_date,
-                'journal_id': self.env.company.account_journal_id.id,
-                'invoice_line_ids': prod,
                 'property_invoice_type': 'investment',
+                'investment_id': self.id,
+                'investment_installment_id': first_plan.id if first_plan else False,
+                'invoice_line_ids': [(0, 0, {
+                    'product_id': _inv_ref.id,
+                    'name': _inv_ref.name,
+                    'account_id': _inv_ref.property_account_income_id.id,
+                    'quantity': 1.0,
+                    'price_unit': self.down_payment if self.options == 'down' else self.total_amount,
+                })],
             })
-            invoice.action_post()
-
-            payment_type = self.env.company.payment_type
-            if payment_type:
-                if payment_type == 'osp':
-                    Payment = self.env['account.payment'].with_context(default_invoice_ids=[(4, invoice.id, False)])
-                    payment = Payment.create({
-                        'payment_date': fields.Date.today(),
-                        # 'payment_method_id': self.inbound_payment_method.id,
-                        'payment_type': 'inbound',
-                        'partner_type': 'customer',
-                        'partner_id': self.partner_id.partner_id.id,
-                        'amount': self.down_payment,
-                        'journal_id': self.journal_id.id,
-                        'company_id': self.env.company.id,
-                        # 'branch_id': self.env.branch.id,
-                        'currency_id': self.env.company.currency_id.id,
-                        'payment_difference_handling': 'reconcile',
-                        'communication': invoice.name,
-                    })
-                    payment.action_post()
+            inv.action_post()
 
             for rec in self.investment_plan_ids:
                 if rec.installment_number == 1 and rec.invoice_created != True:
                     rec.write({
                         'invoice_created': True,
-                        'invoice_id': invoice.id,
+                        'invoice_id': inv.jv_id.id if inv.jv_id else False,
                     })
+
+            payment_type = self.env.company.payment_type
+            if payment_type:
+                if payment_type == 'osp':
+                    payment = self.env['midland.payment'].create({
+                        'partner_id': self.partner_id.partner_id.id,
+                        'investment_id': self.id,
+                        'payment_amount': self.down_payment,
+                        'currency_id': self.env.company.currency_id.id,
+                        'journal_id': self.journal_id.id or self.env.company.account_journal_id.id,
+                        'company_id': self.env.company.id,
+                        'remarks': inv.name,
+                        'invoice_line_ids': [(0, 0, {
+                            'invoice_id': inv.id,
+                            'payment_amount': self.down_payment,
+                        })],
+                    })
+                    payment.action_confirm()
 
             self.amount_received = True
             for rec in self:

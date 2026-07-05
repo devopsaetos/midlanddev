@@ -90,6 +90,7 @@ class MidlandInvoice(models.Model):
     # ── Source record links ───────────────────────────────────────────────────
     investor_file_id = fields.Many2one('investor.file', string='Investor File')
     investment_id = fields.Many2one('investment', string='Investment')
+    investment_installment_id = fields.Many2one('investment.plan', string='Investment Installment')
     file_ids = fields.Many2one('file', string='File')
     installment_id = fields.Many2one('installment.plan', string='Installment No.')
     units_booking_id = fields.Many2one('units.booking', string='Units Booking')

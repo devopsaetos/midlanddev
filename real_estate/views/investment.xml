@@ -12,7 +12,7 @@
                             invisible="state != 'reserved'"/>
                     <button class='btn btn-primary' name="reserve_inventory" type="object" string="Reserve"
                             style="margin-left:10px" invisible="state != 'draft'"/>
-<!--                     invisible="(state != 'draft' or reservation_type == 'bulk')"-->
+                    <!--                     invisible="(state != 'draft' or reservation_type == 'bulk')"-->
                     <button class='btn btn-primary' name="create_open_file" type="object" string="Create Open File"
                             invisible="(files_created == True or state != 'payment')"
                             style="margin-left:10px"/>
@@ -84,12 +84,37 @@
                             </div>
                         </group>
                     </group>
+                    <group name="property_info" string="Property Info">
+                        <group>
+                            <field name="company_id" force_save="1" readonly="1"/>
+                            <field name="society_id"
+                                   domain="[('project_type','=','housing_society'),('is_society','=',True)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                            <field name="phase_id"
+                                   domain="[('project_type','=','housing_society'),('is_society','!=',True)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                        </group>
+                        <group>
+                            <field name="sector_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                            <field name="category_id"
+                                   domain="[('project_type','=','housing_society')]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   readonly="state in ('reserved', 'payment')"/>
+                        </group>
+                    </group>
+
                     <group name="installment_details" string="Installment Details">
                         <group>
                             <field name="plan_type" readonly="state != 'draft'" required="1"/>
                             <field name="predefine_plan_id" string="Plan Name"
                                    options="{'no_create': True, 'no_open': True}"
-                                   invisible="(plan_type != 'predefine' or plan_type == False)" required="plan_type == 'predefine'" readonly="state != 'draft'"/>
+                                   invisible="(plan_type != 'predefine' or plan_type == False)"
+                                   required="plan_type == 'predefine'" readonly="state != 'draft'"/>
                             <field name="interval_id" options="{'no_create': True, 'no_open': True}"
                                    readonly="state != 'draft'"/>
                             <field name="total_installment" required="1"
@@ -125,35 +150,14 @@
                                        options="{'no_create': True, 'no_open': True}"
                                        invisible="payment_date != False" readonly="state != 'draft'"
                                 />
-                                <span class="o_form_label mx-3 oe_edit_only" invisible="(payment_term_id != False or payment_date != False)" readonly="state != 'draft'">or
+                                <span class="o_form_label mx-3 oe_edit_only"
+                                      invisible="(payment_term_id != False or payment_date != False)"
+                                      readonly="state != 'draft'">or
                                 </span>
                                 <field name="payment_date" force_save="1"
                                        placeholder="Date"
                                        invisible="payment_term_id != False" readonly="state != 'draft'"/>
                             </div>
-                        </group>
-                    </group>
-                    <group name="property_info" string="Property Info">
-                        <group>
-                            <field name="company_id" force_save="1" readonly="1"/>
-                            <field name="society_id"
-                                   domain="[('project_type','=','housing_society'),('is_society','=',True)]"
-                                   options="{'no_create': True, 'no_open': True}"
-                                   readonly="state in ('reserved', 'payment')"/>
-                            <field name="phase_id"
-                                   domain="[('project_type','=','housing_society'),('is_society','!=',True)]"
-                                   options="{'no_create': True, 'no_open': True}"
-                                   readonly="state in ('reserved', 'payment')"/>
-                        </group>
-                        <group>
-                            <field name="sector_id"
-                                   domain="[('project_type','=','housing_society')]"
-                                   options="{'no_create': True, 'no_open': True}"
-                                   readonly="state in ('reserved', 'payment')"/>
-                            <field name="category_id"
-                                   domain="[('project_type','=','housing_society')]"
-                                   options="{'no_create': True, 'no_open': True}"
-                                   readonly="state in ('reserved', 'payment')"/>
                         </group>
                     </group>
                     <notebook>
@@ -359,16 +363,16 @@
         </field>
     </record>
 
-<!--    <record id="real_estate.investment_view_search" model="ir.ui.view">-->
-<!--        <field name="name">real_estate investment_view_search</field>-->
-<!--        <field name="model">investment</field>-->
-<!--        <field name="arch" type="xml">-->
-<!--            <search>-->
-<!--                <field name="sequence_no" string="Investment"/>-->
-<!--                <field name="partner_id"/>-->
-<!--            </search>-->
-<!--        </field>-->
-<!--    </record>-->
+    <!--    <record id="real_estate.investment_view_search" model="ir.ui.view">-->
+    <!--        <field name="name">real_estate investment_view_search</field>-->
+    <!--        <field name="model">investment</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <search>-->
+    <!--                <field name="sequence_no" string="Investment"/>-->
+    <!--                <field name="partner_id"/>-->
+    <!--            </search>-->
+    <!--        </field>-->
+    <!--    </record>-->
 
     <record model="ir.actions.act_window" id="real_estate.action_investment">
         <field name="name">Investment</field>
