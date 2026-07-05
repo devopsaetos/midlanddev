@@ -322,7 +322,7 @@ class InvestorFileExt(models.Model):
         if self.reset_installment_plan == 'yes':
             self.plan_type = 'custom'
             self.predefine_plan_id = False
-            self.payment_interval = False
+            self.interval_id = False
             self.balloting_amount = 0
             self.primary_amount = 0
             self.confirmation_amount = 0
@@ -460,9 +460,9 @@ class InvestorFileExt(models.Model):
                                 # 'investor_payment': True,
                                 'installment_number': 1,
                                 'amount': self.initial_payment,
-                                'amount_paid': 0,
-                                'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else self.initial_payment,
-                                'payment_status': 'not_paid',
+                                'amount_paid': self.initial_payment,
+                                'residual': 0,
+                                'payment_status': 'paid',
                                 'investor_file_id': self.id
                             })
                             # self.installment_plan_ids.create({
@@ -944,14 +944,6 @@ class InvestorFileExt(models.Model):
             'tracking_id': self.name,
             'development_charges_included': self.development_charges_included,
             'membership_id': self.transferee_partner_id.id,
-            'allow_correspondence': self.transferee_partner_id.allow_correspondence,
-            'correspondence_type_ids': self.transferee_partner_id.correspondence_type_ids.ids,
-            'corespondence_street': self.transferee_partner_id.corespondence_street,
-            'corespondence_street2': self.transferee_partner_id.corespondence_street2,
-            'corespondence_zip': self.transferee_partner_id.corespondence_zip,
-            'corespondence_city_id': self.transferee_partner_id.corespondence_city_id.id,
-            'corespondence_state_id': self.transferee_partner_id.corespondence_state_id.id,
-            'corespondence_country_id': self.transferee_partner_id.corespondence_country_id.id,
             'correspondence_address': correspondence_address,
             'membership_name': self.transferee_partner_id.name,
             # 'booking_date': self.booking_date,
@@ -971,7 +963,6 @@ class InvestorFileExt(models.Model):
             'size_id': self.size_id.id,
             'unit_class_id': self.unit_class_id.id,
             'inventory_id': self.inventory_id.id,
-            'unit_number': self.unit_number,
             # 'payment_type': 'installments' if self.investment_id.options == 'down' else 'lump_sum',
             'payment_type': self.payment_type,
             'plan_type': self.plan_type,
@@ -1000,30 +991,8 @@ class InvestorFileExt(models.Model):
             for line in self.issuance_history_ids:
                 line.file_id = file.id
 
-        # Agent Auto Assignment Code
-        def return_min_val(rules):
-            min_x = len(rules[0].file_ids)
-            for rule in rules:
-                if len(rule.file_ids) < min_x:
-                    min_x = len(rule.file_ids)
-            rulee = rules.filtered(lambda x: len(x.file_ids) == min_x)
-            if rulee:
-                return rulee
-            else:
-                return rules[0]
-
-        if file:
-            agent_rules = self.env['assignment.rule.line'].search(
-                [('category_ids', 'in', file.category_id.id), ('sector_ids', 'in', file.sector_id.id)],
-                order='file_ids desc')
-            # agent_rules = self.env['assignment.rule.line'].search(
-            #     [('category_ids', 'in', file.category_id.id), ('sector_ids', 'in', file.sector_id.id), ('investor_ids', 'in', file.investor_id.id)],
-            #     order='file_ids desc')
-            if agent_rules:
-                agent_rule = return_min_val(agent_rules)
-                file.agent_id = agent_rule.user_id.id
-                agent_rule.file_ids = [(4, file.id)]
-        # Agent Auto Assignment Code Ends Here
+        # Agent Auto Assignment Code removed: referenced 'assignment.rule.line' and file.agent_id,
+        # neither of which exist anywhere in this module set — dead/never-finished feature.
         self.investment_id.amount_paid = self.investment_id.amount_paid - self.investment_id.investor_unit_price
         file.investment_adjustment = True
         # Creating down payment on file which is already paid by investor
@@ -1271,13 +1240,9 @@ class InvestorFileExt(models.Model):
             booking_lines = rec.installment_plan_ids.filtered(lambda l: l.installment_type == 'down')
             if booking_lines:
                 for booking_line in booking_lines:
-                    booking_line.payment_status = 'not_paid'
                     booking_line.net_payment = 0
-                    booking_line.amount_paid = booking_line.dealer_share
                     booking_line.rebate_adjustment = booking_line.dealer_share
-                    booking_line.residual = booking_line.amount - booking_line.amount_paid
                     booking_line.compute_net_receivable()
-                    booking_line._invoice_id_data()
 
     def open_file_status_update_query(self):
         open_files = self.env['investor.file'].search([('issuance_request_created', '=', True), ('state', '!=', 'cancel')])

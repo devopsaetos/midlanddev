@@ -359,6 +359,8 @@ class MidlandPayment(models.Model):
                 inv.write({'amount_paid': new_paid, 'payment_state': 'partial'})
             if inv.installment_id:
                 self._update_installment(inv.installment_id, line.payment_amount)
+            if inv.investment_installment_id:
+                self._update_investment_installment(inv.investment_installment_id, line.payment_amount)
             line.payment_amount_paid = line.payment_amount
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -380,9 +382,20 @@ class MidlandPayment(models.Model):
                 inv.write({'amount_paid': new_paid, 'payment_state': 'partial'})
             if inv.installment_id:
                 self._update_installment(inv.installment_id, payment_amount)
+            if inv.investment_installment_id:
+                self._update_investment_installment(inv.investment_installment_id, payment_amount)
 
     def _update_installment(self, install, payment_amount):
         plan_total = (install.amount or 0.0) + (install.tax_amount or 0.0)
+        new_plan_paid = (install.amount_paid or 0.0) + payment_amount
+        remaining = plan_total - new_plan_paid
+        if remaining <= 0:
+            install.write({'payment_status': 'paid', 'amount_paid': plan_total, 'residual': 0.0})
+        else:
+            install.write({'payment_status': 'in_payment', 'amount_paid': new_plan_paid, 'residual': remaining})
+
+    def _update_investment_installment(self, install, payment_amount):
+        plan_total = install.amount or 0.0
         new_plan_paid = (install.amount_paid or 0.0) + payment_amount
         remaining = plan_total - new_plan_paid
         if remaining <= 0:

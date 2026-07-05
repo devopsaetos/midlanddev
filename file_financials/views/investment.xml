@@ -104,10 +104,10 @@
                 <attribute name="string">Plan Start Date</attribute>
             </xpath>
             <xpath expr="//field[@name='reservation_type']" position="after">
-                <field name="show_in_portal"/>
-                <field name="allow_old_prices"/>
-                <field name="allow_request_print"/>
-                <field name="allow_not_paid_requests"/>
+                <field name="show_in_portal" invisible="1"/>
+                <field name="allow_old_prices" invisible="1"/>
+                <field name="allow_request_print" invisible="1"/>
+                <field name="allow_not_paid_requests" invisible="1"/>
                 <field name="development_charges_included" force_save="1" required="1"/>
             </xpath>
             <xpath expr="//field[@name='booking_date']" position="after">

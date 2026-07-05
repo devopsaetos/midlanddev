@@ -109,7 +109,7 @@
       name="Settings"
       id="land_development.menu_settings_root"
       parent="land_development.menu_root"
-      sequence='10'
+      sequence='15'
       groups='base.group_system'
     />
 
@@ -117,6 +117,7 @@
         <field name="name">Settings</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
+        <field name="view_id" ref="real_estate.res_config_settings_view_form"/>
         <field name="target">current</field>
     </record>
 

@@ -11,5 +11,15 @@
             <field name="nextcall">2026-06-30 00:00:00</field>
             <field name="priority">5</field>
         </record>
+        <record forcecreate="True" id="cron_generate_due_investment_installment_invoices" model="ir.cron">
+            <field name="name">Midland: Auto-Generate Due Investment Installment Invoices</field>
+            <field name="model_id" ref="model_midland_invoice"/>
+            <field name="state">code</field>
+            <field name="code">env['investment']._cron_generate_due_investment_installment_invoices()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="nextcall">2026-06-30 00:00:00</field>
+            <field name="priority">5</field>
+        </record>
     </data>
 </odoo>
