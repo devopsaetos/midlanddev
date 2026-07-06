@@ -3,21 +3,21 @@
 
     <!-- Main Menu item -->
     <menuitem
-            name="Investments"
+            name="Realtor"
             id="file_financials.investment_main_menu"
-            web_icon="file_financials,static/description/icon.png"
+            web_icon="file_financials,static/description/icon12.png"
             sequence='1'
     />
     <!-- Sub-Menu Menu item -->
 
     <menuitem
-            name="Investments Management"
+            name="Realtor Management"
             id="file_financials.investment_management_menu_item"
             parent="file_financials.investment_main_menu"
             sequence='2'
     />
     <menuitem
-            name="Investments"
+            name="Realtor"
             id="file_financials.investments_menu_item"
             parent="file_financials.investment_management_menu_item"
             action="real_estate.action_investment"

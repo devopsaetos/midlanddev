@@ -47,6 +47,17 @@ class FileExt(models.Model):
             return self.env['product.realestate']
         return prod
 
+    # ── Helper: resolve a product's Revenue Account for this file's own company ──
+    # property_account_income_id is company_dependent, and the product is shared
+    # across every company — always read it through the file's own company
+    # (society_id.company_id), never the ambient env.company (wrong under cron).
+    def _resolve_income_account(self, product):
+        self.ensure_one()
+        if not product:
+            return self.env['account.account']
+        company = self.society_id.company_id or self.env.company
+        return product.with_company(company).property_account_income_id
+
     # ── Override: confirmation invoice → midland.invoice ─────────────────────
     def create_confirmation_invoice(self):
         for rec in self:
@@ -70,7 +81,7 @@ class FileExt(models.Model):
                 'invoice_line_ids': [(0, 0, {
                     'product_id': pp.id,
                     'name': pp.name or 'Confirmation Amount',
-                    'account_id': pp.property_account_income_id.id,
+                    'account_id': rec._resolve_income_account(pp).id,
                     'quantity': 1.0,
                     'price_unit': rec.confirmation_amount,
                 })],
@@ -105,7 +116,7 @@ class FileExt(models.Model):
                 'invoice_line_ids': [(0, 0, {
                     'product_id': pp.id if pp else False,
                     'name': pp.name if pp else (plan.installment_name or 'Installment'),
-                    'account_id': pp.property_account_income_id.id if pp and pp.property_account_income_id else False,
+                    'account_id': rec._resolve_income_account(pp).id,
                     'quantity': 1.0,
                     'price_unit': plan.amount,
                 })],
@@ -164,7 +175,7 @@ class FileExt(models.Model):
                     'invoice_line_ids': [(0, 0, {
                         'product_id': pp.id if pp else False,
                         'name': pp.name if pp else (plan.installment_name or plan.installment_type or 'Installment'),
-                        'account_id': pp.property_account_income_id.id if pp and pp.property_account_income_id else False,
+                        'account_id': file_rec._resolve_income_account(pp).id,
                         'quantity': 1.0,
                         'price_unit': plan.amount,
                     })],

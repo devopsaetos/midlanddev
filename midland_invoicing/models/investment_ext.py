@@ -27,6 +27,17 @@ class InvestmentExt(models.Model):
             return self.env['product.realestate']
         return prod
 
+    # ── Helper: resolve a product's Revenue Account for this investment's own company ──
+    # property_account_income_id is company_dependent, and the product is shared
+    # across every company — always read it through the investment's own company,
+    # never the ambient env.company (wrong under cron).
+    def _resolve_income_account(self, product):
+        self.ensure_one()
+        if not product:
+            return self.env['account.account']
+        company = self.company_id or self.env.company
+        return product.with_company(company).property_account_income_id
+
     # ── New: create first un-invoiced installment (cron handles the rest) ──────
     def action_generate_installment_invoices(self):
         for rec in self:
@@ -52,7 +63,7 @@ class InvestmentExt(models.Model):
                 'invoice_line_ids': [(0, 0, {
                     'product_id': pp.id if pp else False,
                     'name': pp.name if pp else (plan.installment_name or 'Installment'),
-                    'account_id': pp.property_account_income_id.id if pp and pp.property_account_income_id else False,
+                    'account_id': rec._resolve_income_account(pp).id,
                     'quantity': 1.0,
                     'price_unit': plan.amount,
                 })],
@@ -106,7 +117,7 @@ class InvestmentExt(models.Model):
                     'invoice_line_ids': [(0, 0, {
                         'product_id': pp.id if pp else False,
                         'name': pp.name if pp else (plan.installment_name or plan.installment_type or 'Installment'),
-                        'account_id': pp.property_account_income_id.id if pp and pp.property_account_income_id else False,
+                        'account_id': investment_rec._resolve_income_account(pp).id,
                         'quantity': 1.0,
                         'price_unit': plan.amount,
                     })],
