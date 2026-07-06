@@ -24,5 +24,49 @@
                 ]
             </field>
         </record>
+        <record id="file_financials.investment_platter_rule" model="ir.rule">
+            <field name="name">Investment Platter multi-company</field>
+            <field name="model_id" ref="model_investment_platter"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+        <record id="file_financials.investment_rebate_request_rule" model="ir.rule">
+            <field name="name">Investment Rebate Request multi-company</field>
+            <field name="model_id" ref="model_investment_rebate_request"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+        <record id="file_financials.print_documents_rule" model="ir.rule">
+            <field name="name">Print Documents multi-company</field>
+            <field name="model_id" ref="model_print_documents"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+        <record id="file_financials.subdealer_inventory_management_rule" model="ir.rule">
+            <field name="name">Subdealer Inventory Management multi-company</field>
+            <field name="model_id" ref="model_subdealer_inventory_management"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
     </data>
 </odoo>

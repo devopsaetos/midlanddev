@@ -8,6 +8,7 @@
     'depends': ['file_financials', 'land_development', 'account'],
     'data': [
         'security/ir.model.access.csv',
+        'security/multi_company_rules.xml',
         'data/ir_sequence.xml',
         'data/ir_cron.xml',
         'data/post_migration.xml',
