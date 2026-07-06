@@ -12,6 +12,7 @@ class ResInvestor(models.Model):
     _rec_name = 'investor_id'
 
     investor_id = fields.Char(string="Investor Name", required=True, tracking=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company, tracking=True)
 
     # Hidden partner bridge for accounting (invoices/payments need res.partner)
     partner_id = fields.Many2one(

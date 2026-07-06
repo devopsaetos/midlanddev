@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="unit_booking.dealer_rebate_rule" model="ir.rule">
+            <field name="name">Dealer Rebate multi-company</field>
+            <field name="model_id" ref="model_dealer_rebate"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.dealer_asset_allocation_rule" model="ir.rule">
+            <field name="name">Dealer Asset Allocation multi-company</field>
+            <field name="model_id" ref="model_dealer_asset_allocation"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.buy_back_rule" model="ir.rule">
+            <field name="name">Buy Back multi-company</field>
+            <field name="model_id" ref="model_buy_back"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.open_file_assignment_rule" model="ir.rule">
+            <field name="name">Open File Assignment multi-company</field>
+            <field name="model_id" ref="model_open_file_assignment"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('batch_id.society_id.company_id','=',False),
+                ('batch_id.society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.unit_booking_issuance_rule" model="ir.rule">
+            <field name="name">Unit Booking Issuance multi-company</field>
+            <field name="model_id" ref="model_unit_booking_issuance"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('unit_batch_id.society_id.company_id','=',False),
+                ('unit_batch_id.society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.unit_booking_swap_request_rule" model="ir.rule">
+            <field name="name">Unit Booking Swap Request multi-company</field>
+            <field name="model_id" ref="model_unit_booking_swap_request"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('batch_id.society_id.company_id','=',False),
+                ('batch_id.society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="unit_booking.open_file_duplicate_rule" model="ir.rule">
+            <field name="name">Open File Duplicate multi-company</field>
+            <field name="model_id" ref="model_open_file_duplicate"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+    </data>
+</odoo>

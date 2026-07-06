@@ -27,7 +27,7 @@
     'data': [
         'security/rsms_security.xml',
         'security/ir.model.access.csv',
-        # 'security/multi_company_rules.xml',
+        'security/multi_company_rules.xml',
         'data/ir_sequence_data.xml',
         'data/product_data.xml',
         'data/automate_action.xml',

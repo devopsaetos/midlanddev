@@ -17,6 +17,7 @@
     'data': [
         'security/ir.model.access.csv',
         'security/groups.xml',
+        'security/multi_company_rules.xml',
         'data/ir_sequence_data.xml',
         'data/product_data.xml',
         'data/ir_cron.xml',
