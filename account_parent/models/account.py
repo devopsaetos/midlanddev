@@ -83,11 +83,9 @@ class AccountAccount(models.Model):
 			initial_cre = 0.0
 			context = dict(self._context)
 			context.update({'account_ids': sub_accounts})
-			tables, where_clause, where_params = self.env['account.move.line'].with_context(context)._query_get()
-			query1 = 'SELECT account_move_line.debit,account_move_line.credit,account_move_line.date,'\
-					 'account_move_line.company_id FROM ' + tables + 'WHERE' + where_clause
-			self.env.cr.execute(query1, tuple(where_params))
-			for deb, cre, date, company_id in self.env.cr.fetchall():
+			lines = self.env['account.move.line'].with_context(context)._query_get()
+			for line in lines:
+				deb, cre, date, company_id = line.debit, line.credit, line.date, line.company_id.id
 				if company_id not in company_dict:
 					company_dict[company_id] = self.env['res.company'].browse(company_id)
 				if target_currency:
@@ -104,11 +102,9 @@ class AccountAccount(models.Model):
 			account.debit = debit
 			if context.get('show_initial_balance'):
 				context.update({'initial_bal': True})
-				tables, where_clause, where_params = self.env['account.move.line'].with_context(context)._query_get()
-				query2 = 'SELECT account_move_line.debit,account_move_line.credit,account_move_line.date,' \
-						 'account_move_line.company_id FROM ' + tables + 'WHERE' + where_clause
-				self.env.cr.execute(query2, tuple(where_params))
-				for deb, cre, date, company_id in self.env.cr.fetchall():
+				lines = self.env['account.move.line'].with_context(context)._query_get()
+				for line in lines:
+					deb, cre, date, company_id = line.debit, line.credit, line.date, line.company_id.id
 					if company_id not in company_dict:
 						company_dict[company_id] = self.env['res.company'].browse(company_id)
 					if target_currency:
@@ -246,19 +242,12 @@ class AccountMoveLine(models.Model):
 		if context.get('partner_categories'):
 			domain += [('partner_id.category_id', 'in', context['partner_categories'].ids)]
 
-		where_clause = ""
-		where_clause_params = []
-		tables = ''
 		if domain:
 			domain.append(('display_type', 'not in', ('line_section', 'line_note')))
 			domain.append(('parent_state', '!=', 'cancel'))
-
-			query = self._where_calc(domain)
-
-			# Wrap the query with 'company_id IN (...)' to avoid bypassing company access rights.
-			self._apply_ir_rules(query)
-
-			tables, where_clause, where_clause_params = query.get_sql()
-		return tables, where_clause, where_clause_params
+			# search() applies ir.rule security natively, replacing the old manual
+			# _where_calc()/_apply_ir_rules() SQL-building (both removed from the ORM).
+			return self.search(domain)
+		return self.browse()
 
 

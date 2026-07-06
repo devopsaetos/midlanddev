@@ -89,12 +89,8 @@ class OpenAccountChart(models.TransientModel):
 			sub_accounts = self.env['account.account'].with_context({'show_parent_account': True}).search([
 				('id', 'child_of', account_ids)])
 			context.update({'account_ids': sub_accounts})
-			tables, where_clause, where_params = self.env['account.move.line'].with_context(context)._query_get()
-			query = 'SELECT "account_move_line".id FROM ' + tables + 'WHERE' + where_clause 
-			self.env.cr.execute(query, tuple(where_params))
-			ids = (x[0] for x in self.env.cr.fetchall())
-			list_ids = list(ids)
-			domain.append(('id', 'in', list_ids))
+			lines = self.env['account.move.line'].with_context(context)._query_get()
+			domain.append(('id', 'in', lines.ids))
 		return domain, context
 
 	def account_chart_open_window(self):
@@ -183,7 +179,7 @@ class OpenAccountChart(models.TransientModel):
 	@api.model
 	def get_accounts(self, line_id, context):
 		return self.env['account.account'].sudo().with_context(context).search([
-			('company_id', '=', context.get('company_id', False)), ('parent_id', '=', line_id)])
+			('company_ids', 'in', context.get('company_id', False)), ('parent_id', '=', line_id)])
 	
 	def line_data(self, level, parent_id, wiz_id=False, account=False):
 		return {
@@ -200,14 +196,14 @@ class OpenAccountChart(models.TransientModel):
 			'ac_type': self._selection_to_str('account_type', account),
 			'type': account.account_type,
 			'currency': self._m2o_to_str(account.currency_id),
-			'company': self._m2o_to_str(account.company_id),
-			'debit': self._float_html_formating(account.debit, account.company_id),
-			'credit': self._float_html_formating(account.credit, account.company_id),
-			'balance': self._float_html_formating(account.balance, account.company_id),
-			'company_obj':account.company_id,
+			'company': self._m2o_to_str(self.company_id),
+			'debit': self._float_html_formating(account.debit, self.company_id),
+			'credit': self._float_html_formating(account.credit, self.company_id),
+			'balance': self._float_html_formating(account.balance, self.company_id),
+			'company_obj':self.company_id,
 			'show_initial_balance': self._context.get('show_initial_balance',False),
-			'initial_balance': self._float_html_formating(account.initial_balance, account.company_id),
-			'ending_balance': self._float_html_formating(account.initial_balance + account.balance, account.company_id),
+			'initial_balance': self._float_html_formating(account.initial_balance, self.company_id),
+			'ending_balance': self._float_html_formating(account.initial_balance + account.balance, self.company_id),
 			'db' : account.debit,
 			'cr' : account.credit,
 			'bal' : account.balance,
@@ -289,7 +285,7 @@ class OpenAccountChart(models.TransientModel):
 
 	@api.model
 	def get_at_accounts(self, at_data, context):
-		account_domain = [('company_id', '=', context.get('company_id', False))]
+		account_domain = [('company_ids', 'in', context.get('company_id', False))]
 		if not at_data['atype']:
 			account_domain += [('internal_group', 'in', at_data['internal_group'])]
 		else:
