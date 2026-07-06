@@ -172,11 +172,7 @@ class AccountJournal(models.Model):
 			account_code_prefix = company.cash_account_code_prefix or company.bank_account_code_prefix or ''
 		parent_id = self.env['account.account'].with_context({'show_parent_account': True}).search([
 			('code', '=', account_code_prefix),
-<<<<<<< HEAD
-			('company_id', '=', company.id),
-=======
 			('company_ids', 'in', company.id),
->>>>>>> staging
 			('account_type', '=', 'view')], limit=1)
 		if parent_id:
 			res.update({'parent_id': parent_id.id})
@@ -253,5 +249,6 @@ class AccountMoveLine(models.Model):
 			# _where_calc()/_apply_ir_rules() SQL-building (both removed from the ORM).
 			return self.search(domain)
 		return self.browse()
+
 
 
