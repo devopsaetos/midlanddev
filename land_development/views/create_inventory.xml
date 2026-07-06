@@ -9,9 +9,9 @@
             <field name="arch" type="xml">
                 <list name='create_inventory_tree' string="Create Inventory">
                     <field name="name"/>
-                    <field name="society_id"/>
-                    <field name="phase_id"/>
-                    <field name="sector_id"/>
+                    <field name="society_id" string="Project"/>
+                    <field name="phase_id" string="Building"/>
+                    <field name="sector_id" string="Floor"/>
                     <field name="status"/>
                     <field name="total_inventory" invisible="1"/>
                 </list>

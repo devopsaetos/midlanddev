@@ -17,6 +17,7 @@
 
     'depends': ['real_estate'],
     'data': [
+        'security/ir.model.access.csv',
         'data/ir_sequence.xml',
         'views/actions.xml',
         'views/menuitems.xml',
@@ -55,6 +56,7 @@
         'views/unit_swapping_request.xml',
         'views/file_charges_schedule.xml',
         'views/installment_invoice_wizard.xml',
+        'wizard/unit_import_wizard.xml',
         # 'views/templates.xml',
         # 'views/crm_lead_ext.xml'
     ],
