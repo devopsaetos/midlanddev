@@ -5,7 +5,7 @@ import io
 from openpyxl import load_workbook
 
 from odoo import models, fields, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class UnitImportWizard(models.TransientModel):
@@ -85,8 +85,12 @@ class UnitImportWizard(models.TransientModel):
                     errors.append(_("Row %s: unknown Possession Status '%s'") % (index, possession_value))
 
             if vals:
-                unit.write(vals)
-                updated += 1
+                try:
+                    with self.env.cr.savepoint():
+                        unit.write(vals)
+                    updated += 1
+                except ValidationError as e:
+                    errors.append(_("Row %s: %s") % (index, e.args[0] if e.args else str(e)))
 
         message = _("%s unit(s) updated.") % updated
         if errors:
