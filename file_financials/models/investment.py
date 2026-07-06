@@ -584,7 +584,10 @@ class InvestmentExt(models.Model):
                 'invoice_line_ids': [(0, 0, {
                     'product_id': _inv_ref.id,
                     'name': _inv_ref.name,
-                    'account_id': _inv_ref.property_account_income_id.id,
+                    # property_account_income_id is company_dependent and this product is
+                    # shared across every company — always resolve it through this
+                    # investment's own company, never the ambient env.company.
+                    'account_id': _inv_ref.with_company(self.company_id or self.env.company).property_account_income_id.id,
                     'quantity': 1.0,
                     'price_unit': self.down_payment if self.options == 'down' else self.total_amount,
                 })],

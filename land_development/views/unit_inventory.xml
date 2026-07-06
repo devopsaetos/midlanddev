@@ -6,7 +6,7 @@
             <field name="name">land_development plot_inventory_form</field>
             <field name="model">plot.inventory</field>
             <field name="arch" type="xml">
-                <form string="Unit Inventory" create="false">
+                <form string="Unit Inventory" create="true">
                     <sheet>
                         <div class="oe_title">
                             <h1>
@@ -41,7 +41,7 @@
                                 <field name="standard_area" string="Total Area (sft)"/>
                                 <field name="actual_area"/>
                                 <field name="possession_status"/>
-                                <field name="investment_id" string="Investment No." invisible="1"/>
+                                <field name="investment_id" string="Realtor No." invisible="1"/>
                                 <field name="partner_id" string="Investor" invisible="1"/>
                                 <field name="deal_price" invisible="1"/>
                             </group>
@@ -74,7 +74,7 @@
             <field name="name">land_development plot_inventory_tree</field>
             <field name="model">plot.inventory</field>
             <field name="arch" type="xml">
-                <list string="Unit Inventory" create="false" edit="false">
+                <list string="Unit Inventory" create="True" edit="True">
                     <field name="serial_number"/>
                     <field name="name" string="Unit Number"/>
                     <field name="society_id" string="Project"/>

@@ -127,27 +127,27 @@
         </record>
 
         <record id="real_estate.investment" model="product.realestate">
-            <field name="name">Investment Payment</field>
+            <field name="name">Realtor Payment</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Investment payment of files</field>
+            <field name="description">Realtor payment of files</field>
         </record>
 
         <record id="real_estate.investment_installment" model="product.realestate">
-            <field name="name">Investment Installment</field>
+            <field name="name">Realtor Installment</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Investment installment of files</field>
+            <field name="description">Realtor Installment of Files</field>
         </record>
 
         <record id="real_estate.investment_adjustment" model="product.realestate">
-            <field name="name">Investment Adjustment</field>
+            <field name="name">Realtor Adjustment</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Investment Adjustments</field>
+            <field name="description">Realtor Adjustments</field>
         </record>
 
         <record id="real_estate.file_transfer" model="product.realestate">

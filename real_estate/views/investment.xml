@@ -64,12 +64,12 @@
                             <field name="sequence_no"/>
                         </h1>
                     </div>
-                    <group name="investment_details" string="Investment Details">
+                    <group name="investment_details" string="Realtor Details">
                         <group>
                             <field name="partner_id" string="Investor Name"
                                    options="{'no_create': True, 'no_open': True}"
                                    readonly="state in 'payment'"/>
-                            <field name="options" string="Investment Option" required="1"
+                            <field name="options" string="Realtor Option" required="1"
                                    readonly="state in 'payment'"/>
                             <field name="reservation_type" required="1"
                                    readonly="state in 'payment'"/>
@@ -273,7 +273,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Investment History">
+                        <page string="Realtor History">
                             <field name="investment_history_ids" readonly="1">
                                 <list editable="bottom">
                                     <field name="installment_number" string="Sr. No"/>
@@ -375,12 +375,12 @@
     <!--    </record>-->
 
     <record model="ir.actions.act_window" id="real_estate.action_investment">
-        <field name="name">Investment</field>
+        <field name="name">Realtor</field>
         <field name="res_model">investment</field>
 
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
-                Click create to add Investment data.
+                Click create to add Realtor data.
             </p>
         </field>
         <field name="domain">

@@ -19,9 +19,25 @@ class ProductRealestate(models.Model):
     property_account_income_id = fields.Many2one(
         'account.account',
         string='Revenue Account',
+        company_dependent=True,
         domain="[('account_type', 'not in', ['asset_receivable', 'liability_payable'])]",
-        help='Income/Revenue account used when crediting this product in journal entries.',
+        help='Income/Revenue account used when crediting this product in journal entries. '
+             'Set per-company — this product is shared across all companies, but each '
+             'company has its own chart of accounts.',
     )
+
+    def _sync_income_account_to_shadow(self):
+        """Propagate this product's per-company Revenue Account to its shadow
+        product.product, for every company where a value is actually set."""
+        for rec in self:
+            if not rec.product_id:
+                continue
+            for company in self.env['res.company'].sudo().search([]):
+                account = rec.with_company(company).property_account_income_id
+                if account:
+                    rec.product_id.with_company(company).sudo().write({
+                        'property_account_income_id': account.id,
+                    })
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -38,11 +54,7 @@ class ProductRealestate(models.Model):
                     'purchase_ok': False,
                 })
                 rec.product_id = shadow
-            # Sync revenue account to shadow product
-            if rec.property_account_income_id and rec.product_id:
-                rec.product_id.sudo().write({
-                    'property_account_income_id': rec.property_account_income_id.id,
-                })
+        records._sync_income_account_to_shadow()
         return records
 
     def unlink(self):
@@ -82,9 +94,5 @@ class ProductRealestate(models.Model):
                     rec.product_id.sudo().write(shadow_vals)
         # Sync revenue account to shadow product whenever it changes
         if 'property_account_income_id' in vals:
-            for rec in self:
-                if rec.product_id:
-                    rec.product_id.sudo().write({
-                        'property_account_income_id': vals['property_account_income_id'],
-                    })
+            self._sync_income_account_to_shadow()
         return res

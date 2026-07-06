@@ -202,7 +202,7 @@
                 <list name='file_management' string="File Management">
                     <field name="name"/>
                     <field name="investor_name"/>
-                    <field name="investment_id" string="Investment No."/>
+                    <field name="investment_id" string="Realtor No."/>
                     <field name="booking_date"/>
                     <field name="inventory_id"/>
                     <field name="sector_id"/>

@@ -71,7 +71,7 @@
                                 <field name="actual_area"/>
 <!--                                <field name="street"/>-->
                                 <field name="possession_status"/>
-                                <field name="investment_id" string="Investment No." invisible="0"/>
+                                <field name="investment_id" string="Realtor No." invisible="0"/>
                                 <field name="partner_id" string="Investor" invisible="0"/>
                                 <field name="deal_price" invisible="0"/>
                                 <field name="investor_unit_price" invisible="0"/>
@@ -129,7 +129,7 @@
             <field name="model">plot.inventory</field>
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <list string="Plot Inventory" create="false" edit="false" name="plot_inventory" delete="false">
+                <list string="Plot Inventory" create="true" edit="true" name="plot_inventory" delete="true">
                     <field name="serial_number"/>
                     <field name="name"/>
                     <field name="project_type"/>

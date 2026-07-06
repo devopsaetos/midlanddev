@@ -221,7 +221,7 @@
                                        readonly="is_transferee_partner == True"/>
                             </group>
                         </group>
-                        <group name="investment_details" string="Investment Details"
+                        <group name="investment_details" string="Realtor Details"
                                invisible="applicable_on != 'investment'">
                             <group>
                                 <field name="investment_id" readonly="1"/>
