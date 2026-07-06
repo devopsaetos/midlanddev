@@ -37,7 +37,10 @@ class UnitImportWizard(models.TransientModel):
         updated = 0
         errors = []
         for index, row in enumerate(rows, start=2):
-            serial_number = row[0]
+            def cell(col):
+                return row[col] if col < len(row) else None
+
+            serial_number = cell(0)
             if not serial_number:
                 continue
             serial_number = str(serial_number).strip()
@@ -52,12 +55,12 @@ class UnitImportWizard(models.TransientModel):
 
             vals = {}
 
-            unit_number = row[1]
+            unit_number = cell(1)
             if unit_number is not None and str(unit_number).strip():
                 vals['name'] = str(unit_number).strip()
 
             for col, field_name in ((9, 'net_area'), (10, 'balcony_area'), (11, 'standard_area'), (12, 'actual_area')):
-                value = row[col]
+                value = cell(col)
                 if value is None or value == '':
                     continue
                 try:
@@ -65,7 +68,7 @@ class UnitImportWizard(models.TransientModel):
                 except (TypeError, ValueError):
                     errors.append(_("Row %s: invalid number for column '%s'") % (index, field_name))
 
-            state_value = row[13]
+            state_value = cell(13)
             if state_value:
                 key = state_map.get(str(state_value).strip().lower())
                 if key:
@@ -73,7 +76,7 @@ class UnitImportWizard(models.TransientModel):
                 else:
                     errors.append(_("Row %s: unknown State '%s'") % (index, state_value))
 
-            possession_value = row[14]
+            possession_value = cell(14)
             if possession_value:
                 key = possession_map.get(str(possession_value).strip().lower())
                 if key:
