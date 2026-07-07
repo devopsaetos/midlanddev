@@ -491,17 +491,5 @@
                 sequence='1'
         />
         -->
-        <!--        Record Rule for Multi Company-->
-        <record id="real_estate.investor_rule" model="ir.rule">
-            <field name="name">Investor multi-company</field>
-            <field name="model_id" ref="model_res_member"/>
-            <field name="domain_force">
-                [
-                '|',
-                ('company_id','=',False),
-                ('company_id','in',company_ids)
-                ]
-            </field>
-        </record>
 
 </odoo>

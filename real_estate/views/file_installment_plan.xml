@@ -48,17 +48,5 @@
                 action="real_estate.action_file_installment_plan11"
                 sequence='3'
         />
-        <!--    Record Rule for Multi Company-->
-        <record id="real_estate.installment_plan_rule" model="ir.rule">
-            <field name="name">installment_plan multi-company</field>
-            <field name="model_id" ref="model_installment_plan"/>
-            <field name="domain_force">
-                [
-                '|',
-                ('company_id','=',False),
-                ('company_id','in',company_ids)
-                ]
-            </field>
-        </record>
 
 </odoo>
