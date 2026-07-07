@@ -1,11 +1,4 @@
 <odoo>
-        <record id="real_estate.member_rule" model="ir.rule">
-            <field name="name">Member multi-company</field>
-            <field name="model_id" ref="real_estate.model_res_member"/>
-            <field name="domain_force">['|',('member_company_id','in',company_ids),('member_company_id','=',False)]
-            </field>
-        </record>
-
         <record id="real_estate.file_rule" model="ir.rule">
             <field name="name">File multi-company</field>
             <field name="model_id" ref="model_file"/>
@@ -137,18 +130,6 @@
                 '|',
                 ('society_id.company_id','=',False),
                 ('society_id.company_id','in',company_ids)
-                ]
-            </field>
-        </record>
-
-        <record id="real_estate.investor_rule" model="ir.rule">
-            <field name="name">Investor multi-company</field>
-            <field name="model_id" ref="model_res_investor"/>
-            <field name="domain_force">
-                [
-                '|',
-                ('company_id','=',False),
-                ('company_id','in',company_ids)
                 ]
             </field>
         </record>

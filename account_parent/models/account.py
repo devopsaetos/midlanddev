@@ -71,8 +71,8 @@ class AccountAccount(models.Model):
 	def compute_values(self):
 		company_dict = {}
 		target_currency = False
-		if self._context.get('target_currency_id', False):
-			target_currency = self.env['res.currency'].browse(self._context['target_currency_id'])
+		if self.env.context.get('target_currency_id', False):
+			target_currency = self.env['res.currency'].browse(self.env.context['target_currency_id'])
 		for account in self:
 			sub_accounts = self.with_context({'show_parent_account':True}).search([('id', 'child_of', [account.id])])
 			balance = 0.0
@@ -81,7 +81,7 @@ class AccountAccount(models.Model):
 			initial_balance = 0.0
 			initial_deb = 0.0
 			initial_cre = 0.0
-			context = dict(self._context)
+			context = dict(self.env.context)
 			context.update({'account_ids': sub_accounts})
 			lines = self.env['account.move.line'].with_context(context)._query_get()
 			for line in lines:
@@ -136,7 +136,7 @@ class AccountAccount(models.Model):
 
 	@api.model
 	def _search(self, domain, offset=0, limit=None, order=None, **kwargs):
-		context = self._context or {}
+		context = self.env.context or {}
 		# updated to search the code too
 		new_domain = []
 		if domain:
@@ -186,7 +186,7 @@ class AccountMoveLine(models.Model):
 	def _query_get(self, domain=None):
 		self.check_access_rights('read')
 
-		context = dict(self._context or {})
+		context = dict(self.env.context or {})
 		domain = domain or []
 		if not isinstance(domain, (list, tuple)):
 			domain = ast.literal_eval(domain)

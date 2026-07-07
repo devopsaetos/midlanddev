@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
 class ProductRealestate(models.Model):
@@ -33,11 +34,60 @@ class ProductRealestate(models.Model):
             if not rec.product_id:
                 continue
             for company in self.env['res.company'].sudo().search([]):
-                account = rec.with_company(company).property_account_income_id
+                account = rec.sudo().with_company(company).property_account_income_id
                 if account:
                     rec.product_id.with_company(company).sudo().write({
                         'property_account_income_id': account.id,
                     })
+
+    def action_copy_revenue_account_to_all_companies(self):
+        """Take the Revenue Account set for the currently active company and,
+        for every other company where it's not already set, apply the
+        same-named account from that company's own chart of accounts.
+        Companies with no matching account name are reported so they can be
+        set up manually."""
+        if not self:
+            raise UserError(_("Please select at least one product."))
+
+        Account = self.env['account.account']
+        companies = self.env['res.company'].sudo().search([])
+        updated = 0
+        skipped = []
+
+        for rec in self:
+            source_account = rec.property_account_income_id
+            if not source_account:
+                skipped.append(_("%s: no Revenue Account set for the current company") % rec.name)
+                continue
+            source_name = source_account.name
+
+            for company in companies:
+                if company == self.env.company:
+                    continue
+                if rec.sudo().with_company(company).property_account_income_id:
+                    continue
+                match = Account.sudo().with_company(company).search([('name', '=', source_name)], limit=1)
+                if match:
+                    rec.sudo().with_company(company).write({'property_account_income_id': match.id})
+                    updated += 1
+                else:
+                    skipped.append(_("%s: no account named '%s' found in company '%s'") % (
+                        rec.name, source_name, company.name))
+
+        message = _("%s company/product combination(s) updated.") % updated
+        if skipped:
+            message += "\n\n" + _("Skipped:") + "\n" + "\n".join(skipped)
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Copy Revenue Account to All Companies"),
+                'message': message,
+                'sticky': bool(skipped),
+                'type': 'warning' if skipped else 'success',
+            },
+        }
 
     @api.model_create_multi
     def create(self, vals_list):
