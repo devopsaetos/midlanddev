@@ -20,7 +20,7 @@
             name="Realtor"
             id="file_financials.investments_menu_item"
             parent="file_financials.investment_management_menu_item"
-            action="real_estate.action_investment"
+            action="file_financials.action_investment"
             sequence='1'
     />
     <menuitem

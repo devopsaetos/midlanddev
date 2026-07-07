@@ -284,8 +284,7 @@ class File(models.Model):
 
     installment_due_count = fields.Integer(string="Installment Due Count", compute='count_due_installments', store=True)
 
-    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True,
-                            tracking=True)
+    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True)
     merger_ref = fields.Char()
     secret_token = fields.Char(string="Secret Token", required=True, copy=False, readonly=True, default=lambda self: _('New'), tracking=True)
 

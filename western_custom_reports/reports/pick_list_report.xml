@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="picking_list_report">
+            <t t-call="web.html_container">
+                <t t-call="web.basic_layout">
+                    <div class="page">
+
+                        <style type="text/css">
+                            .page { font-family: Arial, Helvetica, sans-serif; font-size: 9.5pt; color: #1a1a1a;
+                            line-height: 1.4; }
+
+                            /* ---- Company header ---- */
+                            .hdr-wrap { width: 100%; margin-bottom: 8px; overflow: hidden; }
+                            .hdr-left { float: left; width: 55%; }
+                            .hdr-right { float: right; width: 40%; text-align: right; }
+                            .co-name { font-weight: bold; font-size: 12pt; line-height: 1.3; margin-bottom: 4px; }
+                            .co-info { font-size: 8.5pt; line-height: 1.5; color: #333; }
+                            .co-info a { color: #0066cc; text-decoration: underline; }
+
+                            /* ---- Doc title ---- */
+                            .doc-title-wrap { text-align:center; margin: 2px 0 12px 0; }
+                            .doc-title { font-size: 16pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; }
+                            .doc-title-rule { width:100%; height:2px; background:#1a1a1a; margin-top:6px; }
+
+                            /* ---- Unified frame ---- */
+                            .picking-block { margin-bottom: 22px; }
+                            .frame { border:1px solid #b9b9b9; border-radius:3px; overflow:hidden; }
+
+                            .frame-strip { background:#ffffff; padding:8px 14px; overflow:hidden; border-bottom:1px solid #b9b9b9; }
+                            .frame-strip .f-left { float:left; font-weight:bold; font-size:10pt; }
+                            .frame-strip .f-right { float:right; font-size:9pt; text-align:right; }
+                            .status-pill { display:inline-block; padding:1px 10px; border-radius:10px; background:#4682B4; color:#fff; font-weight:bold; font-size:8pt; margin-left:8px; }
+
+                            .section-title { background:#4682B4; color:#fff; font-weight:bold; font-size:9.5pt; padding:6px 14px; }
+
+                            .info-grid { font-size:9pt; line-height:2; overflow:hidden; padding:10px 14px 14px 14px; background:#ffffff; }
+                            .info-grid .col { width:50%; float:left; }
+                            .info-grid .lbl { width:120px; color:#555; display:inline-block; }
+
+                            .section-gap { height:14px; background:#ffffff; }
+
+                            table.prod-table { width:100%; border-collapse:collapse; font-size:8.5pt; background:#ffffff; }
+                            table.prod-table th { background:#dfe9f2; color:#1a1a1a; font-weight:bold; padding:6px 8px; border:1px solid #b9b9b9; text-align:center; }
+                            table.prod-table td { padding:5px 8px; border:1px solid #b9b9b9; }
+                            table.prod-table tr { page-break-inside: avoid; }
+
+                            /* ---- Per-transfer qty breakdown inside merged product row ---- */
+                            .transfer-line { display:block; white-space:nowrap; padding:1px 0; }
+                            .transfer-line .t-qty { color:#555; font-size:8pt; }
+                        </style>
+
+                        <!-- ===================== COMPANY HEADER (once for whole report) ===================== -->
+                        <t t-set="company" t-value="docs[0].company_id if docs else env.company"/>
+                        <div class="hdr-wrap">
+                            <div class="hdr-left">
+                                <span class="co-name">
+                                    <t t-esc="company.name or 'Company Name'"/>
+                                </span>
+                                <div class="co-info">
+                                    <t t-if="company.street">
+                                        <t t-esc="company.street"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="company.street2">
+                                        <t t-esc="company.street2"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="company.city">
+                                        <t t-esc="company.city"/>
+                                    </t>
+                                    <t t-if="company.state_id">,
+                                        <t t-esc="company.state_id.name"/>
+                                    </t>
+                                    <t t-if="company.zip">
+                                        <t t-esc="company.zip"/>
+                                    </t>
+                                    <br/>
+                                    <t t-if="company.country_id">
+                                        <t t-esc="company.country_id.name"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="company.email">
+                                        <a t-att-href="'mailto:' + company.email" t-esc="company.email"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="company.website">
+                                        <a t-att-href="company.website" t-esc="company.website"/>
+                                        <br/>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="hdr-right">
+                                <t t-if="company.logo">
+                                    <img t-att-src="image_data_uri(company.logo)"
+                                         style="max-height:100px; max-width:200px; width:auto; height:auto;"/>
+                                </t>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+
+                        <!-- ===================== DOCUMENT TITLE (once) ===================== -->
+                        <div class="doc-title-wrap">
+                            <span class="doc-title">Batch Pick List</span>
+                            <div class="doc-title-rule"></div>
+                        </div>
+
+                        <!-- ===================== AGGREGATED VALUES ACROSS ALL TRANSFERS (computed once) ===================== -->
+                        <t t-set="transfer_refs" t-value="', '.join(docs.mapped('name'))"/>
+                        <t t-set="unique_states" t-value="list(set(docs.mapped('state')))"/>
+                        <t t-set="unique_sources" t-value="list(set(docs.mapped('location_id.display_name')))"/>
+                        <t t-set="unique_dests" t-value="list(set(docs.mapped('location_dest_id.display_name')))"/>
+                        <t t-set="unique_partners" t-value="list(set(docs.filtered(lambda p: p.partner_id).mapped('partner_id.name')))"/>
+                        <t t-set="unique_users" t-value="list(set(docs.filtered(lambda p: p.user_id).mapped('user_id.name')))"/>
+                        <t t-set="unique_dates" t-value="list(set([context_timestamp(d.scheduled_date).strftime('%d/%m/%Y') for d in docs if d.scheduled_date]))"/>
+                        <t t-set="unique_batches" t-value="list(set(docs.filtered(lambda p: p.batch_id).mapped('batch_id.name')))"/>
+
+                        <!-- ===================== ONE COMBINED BLOCK FOR ALL TRANSFERS ===================== -->
+                        <div class="picking-block">
+                            <div class="frame">
+
+                                <!-- Transfer No(s) / Status strip (date moved into Transfer summary below) -->
+                                <div class="frame-strip">
+                                    <span class="f-left">
+                                        Batch / Wave :
+                                        <t t-esc="', '.join(unique_batches) if unique_batches else 'N/A'"/>
+                                    </span>
+                                    <!-- <span class="f-right">
+                                        Date : <t t-esc="', '.join(unique_dates) if unique_dates else 'N/A'"/>
+                                    </span> -->
+                                    <div style="clear:both;"></div>
+                                </div>
+
+                                <!-- Transfer summary (aggregated across all transfers) -->
+                                <div class="section-title">Transfer summary</div>
+                                <div class="info-grid">
+                                    <div class="col">
+                                        <div><span class="lbl">Source location</span><t t-esc="', '.join(unique_sources) if unique_sources else 'N/A'"/></div>
+                                        <div><span class="lbl">Destination</span><t t-esc="', '.join(unique_dests) if unique_dests else 'N/A'"/></div>
+                                        <div><span class="lbl">Responsible</span><t t-esc="', '.join(unique_users) if unique_users else 'N/A'"/></div>
+                                    </div>
+                                    <div class="col">
+                                        <div>
+                                            <span class="lbl">Status</span>
+                                            <t t-if="len(unique_states) == 1">
+                                                <t t-esc="dict(docs[0]._fields['state']._description_selection(docs[0].env)).get(unique_states[0], unique_states[0])"/>
+                                            </t>
+                                            <t t-else="">Mixed</t>
+                                        </div>
+                                        <div><span class="lbl">Scheduled Date</span><t t-esc="', '.join(unique_dates) if unique_dates else 'N/A'"/></div>
+                                    </div>
+                                    <div style="clear:both;"></div>
+                                </div>
+
+                                <!-- Product details (all transfers merged into one table, grouped by product) -->
+                                <div class="section-gap"></div>
+                                <div class="section-title">Product details</div>
+                                <table class="prod-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:4%;">No</th>
+                                            <th style="width:9%;">Item code</th>
+                                            <th style="text-align:left;">Product</th>
+                                            <!-- <th style="width:14%;">Transfer / Qty</th> -->
+                                            <th style="width:16%;">Barcode</th>
+                                            <th style="width:7%;">Picked Qty</th>
+                                            <th style="width:7%;">UoM</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!--
+                                            Collect all stock.move lines from every transfer into one flat list,
+                                            then group them by product so that a product repeated across several
+                                            transfers (e.g. FBM/PICK/00089, FBM/PICK/00090) becomes a SINGLE row
+                                            with the individual transfer/qty breakdown listed inside the row and
+                                            the combined quantity shown under "Total Qty".
+                                        -->
+                                        <t t-set="all_moves" t-value="[m for o in docs for m in o.move_ids]"/>
+                                        <!-- Unique products in first-seen order (dict preserves insertion order) -->
+                                        <t t-set="unique_products" t-value="list({m.product_id.id: m.product_id for m in all_moves}.values())"/>
+                                        <t t-set="line_no" t-value="0"/>
+                                        <t t-foreach="unique_products" t-as="product">
+                                            <t t-set="product_moves" t-value="[m for m in all_moves if m.product_id.id == product.id]"/>
+                                            <t t-set="line_no" t-value="line_no + 1"/>
+                                            <t t-set="row_bg" t-value="'#f7fafc' if line_no % 2 == 0 else '#ffffff'"/>
+                                            <t t-set="total_qty" t-value="sum(mv.product_uom_qty for mv in product_moves)"/>
+                                            <tr>
+                                                <td t-att-style="'text-align:center; background:' + row_bg">
+                                                    <t t-esc="line_no"/>
+                                                </td>
+                                                <td t-att-style="'text-align:center; background:' + row_bg">
+                                                    <t t-esc="product.default_code or ''"/>
+                                                </td>
+                                                <td t-att-style="'text-align:left; background:' + row_bg">
+                                                    <t t-esc="product.name"/>
+                                                </td>
+                                                <!--
+                                                <td t-att-style="'text-align:left; background:' + row_bg">
+                                                    <t t-foreach="product_moves" t-as="mv">
+                                                        <span class="transfer-line">
+                                                            <t t-esc="mv.picking_id.name"/>
+                                                            <span class="t-qty"> (<t t-esc="'%.2f' % mv.product_uom_qty"/>)</span>
+                                                        </span>
+                                                    </t>
+                                                </td>
+                                                -->
+                                                <td t-att-style="'text-align:center; background:' + row_bg">
+                                                    <t t-set="bc_value"
+                                                       t-value="product.barcode or product.default_code"/>
+                                                    <!-- Show product barcode only if product is NOT serial-number tracked -->
+                                                    <!--
+                                                        FIX: Previously this used the HTTP endpoint
+                                                        /report/barcode/?type=...&value=...
+                                                        which requires wkhtmltopdf to make a live network
+                                                        round-trip back to the Odoo server while rendering
+                                                        the PDF. In many setups (docker, enterprise, wrong
+                                                        web.base.url, no session/auth on that internal call)
+                                                        this request fails silently and the <img> renders
+                                                        as an empty box.
+
+                                                        Fix: generate the barcode image directly in Python
+                                                        via ir.actions.report.barcode() and embed it as a
+                                                        base64 data URI with image_data_uri(). This avoids
+                                                        the network round-trip entirely.
+                                                    -->
+                                                    <t t-if="product.tracking != 'serial' and bc_value">
+                                                        <img t-att-src="env['ir.actions.report'].get_barcode_data_uri('Code128', bc_value, width=300, height=50, humanreadable=1)"
+                                                             style="max-height:30px; max-width:150px;"/>
+                                                    </t>
+                                                    <t t-elif="product.tracking == 'serial'">
+                                                        <span style="font-style:italic; color:#888;">Serial tracked</span>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span style="font-style:italic; color:#888;">No barcode</span>
+                                                    </t>
+                                                </td>
+                                                <td t-att-style="'text-align:center; background:' + row_bg">
+                                                    <t t-esc="'%.2f' % total_qty"/>
+                                                </td>
+                                                <td t-att-style="'text-align:center; background:' + row_bg">
+                                                    <t t-esc="product_moves[0].product_uom.name"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                            <!-- /.frame -->
+                        </div>
+                        <!-- /.picking-block -->
+
+                        <!-- ===================== PAGE FOOTER (once, not per record) ===================== -->
+                        <div class="footer"
+                             style="width:100%; border-top:1px solid #ccc; padding-top:5px; margin-top:20px; font-size:10pt; color:#555;">
+                            <div style="float:left;">
+                                Printed By:
+                                <t t-esc="env.user.name"/>
+                                |
+                                Print Date:
+                                <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                            </div>
+                            <div style="float:right; font-style:italic;">
+                                Page
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                            <div style="clear:both;"></div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_picking_list_report" model="report.paperformat">
+            <field name="name">Picking List Paper Format</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="page_height">297</field>
+            <field name="page_width">210</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="picking_list_report_action" model="ir.actions.report">
+            <field name="name">Picking List</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">western_custom_reports.picking_list_report</field>
+            <field name="report_file">western_custom_reports.picking_list_report</field>
+            <field name="paperformat_id" ref="western_custom_reports.paperformat_picking_list_report"/>
+            <field name="print_report_name">'Picking List - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

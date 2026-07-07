@@ -18,14 +18,12 @@
         sequence='1'
     />
 
-    <!--
     <menuitem
       name="Portfolio Management"
       id="land_development.menu_investment_parent"
       parent="land_development.menu_root"
       sequence='2'
     />
-    -->
 
     <menuitem 
         name="Processes" 

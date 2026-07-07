@@ -79,7 +79,7 @@ class AccountPayment(models.Model):
     amount_to_adjust = fields.Float("Amount to adjust")
     discount_amount = fields.Monetary("Discount Amount")
     inv_line_add = fields.Boolean()
-    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True, tracking=True)
+    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True)
     internal_notes = fields.Text('Internal Notes')
 
     qr_hashid = fields.Char(string="Hash", readonly=True, copy=False)

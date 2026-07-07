@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="packing_labels_report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.basic_layout">
+                        <div class="page">
+
+                            <style type="text/css">
+                                .label-box {
+                                    width: 48%;
+                                    float: left;
+                                    margin: 1%;
+                                    border: 2px solid #000;
+                                    padding: 10px;
+                                    box-sizing: border-box;
+                                    min-height: 130mm;
+                                    page-break-inside: avoid;
+                                }
+                                .label-header {
+                                    text-align: center;
+                                    border-bottom: 2px solid #4682B4;
+                                    padding-bottom: 5px;
+                                    margin-bottom: 5px;
+                                }
+                                .company-name {
+                                    font-size: 14pt;
+                                    font-weight: bold;
+                                    color: #4682B4;
+                                }
+                                .label-title {
+                                    font-size: 16pt;
+                                    font-weight: bold;
+                                    margin-top: 3px;
+                                }
+                                .label-field {
+                                    font-size: 10pt;
+                                    margin: 5px 0;
+                                }
+                                .label-field strong {
+                                    display: inline-block;
+                                    width: 80px;
+                                    color: #555;
+                                }
+                                .product-name {
+                                    font-size: 11pt;
+                                    font-weight: bold;
+                                    margin: 5px 0;
+                                    padding: 5px;
+                                    background: #f5f9fd;
+                                    border: 1px solid #ddd;
+                                }
+                                .barcode-section {
+                                    text-align: center;
+                                    margin-top: 10px;
+                                    padding-top: 10px;
+                                    border-top: 1px dashed #999;
+                                }
+                            </style>
+
+                            <!-- Generate labels for each unique product -->
+                            <t t-set="seen_products" t-value="[]"/>
+                            <t t-foreach="o.move_ids" t-as="move">
+                                <t t-if="move.product_id.id not in seen_products">
+                                    <t t-set="seen_products" t-value="seen_products + [move.product_id.id]"/>
+                                    <t t-set="total_qty" t-value="sum(m.quantity for m in o.move_ids if m.product_id.id == move.product_id.id)"/>
+                                    
+                                    <div class="label-box">
+                                        <div class="label-header">
+                                            <div class="company-name">
+                                                <t t-esc="o.company_id.name or 'Company'"/>
+                                            </div>
+                                            <div class="label-title">PACKING LABEL</div>
+                                        </div>
+                                        
+                                        <div class="label-field">
+                                            <strong>Transfer:</strong>
+                                            <t t-esc="o.name"/>
+                                        </div>
+                                        
+                                        <div class="label-field">
+                                            <strong>Date:</strong>
+                                            <t t-esc="o.scheduled_date.strftime('%d/%m/%Y') if o.scheduled_date else 'N/A'"/>
+                                        </div>
+                                        
+                                        <div class="label-field">
+                                            <strong>SKU:</strong>
+                                            <t t-esc="move.product_id.default_code or 'N/A'"/>
+                                        </div>
+                                        
+                                        <div class="product-name">
+                                            <t t-esc="move.product_id.name"/>
+                                        </div>
+                                        
+                                        <div class="label-field">
+                                            <strong>Quantity:</strong>
+                                            <span style="font-size: 14pt; font-weight: bold; color: #4682B4;">
+                                                <t t-esc="'%.2f' % total_qty"/>
+                                                <t t-esc="move.product_uom.name"/>
+                                            </span>
+                                        </div>
+                                        
+                                        <t t-if="o.partner_id">
+                                            <div class="label-field">
+                                                <strong>Customer:</strong>
+                                                <t t-esc="o.partner_id.name"/>
+                                            </div>
+                                        </t>
+                                        
+                                        <div class="barcode-section">
+                                            <t t-if="move.product_id.barcode">
+                                                <div style="font-size:12pt; font-weight:bold;">
+                                                    Barcode: <t t-esc="move.product_id.barcode"/>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Clear float after every 2 labels -->
+                                    <t t-if="(seen_products.index(move.product_id.id) + 1) % 2 == 0">
+                                        <div style="clear:both;"></div>
+                                    </t>
+                                </t>
+                            </t>
+                            
+                            <!-- Clear any remaining floats -->
+                            <div style="clear:both;"></div>
+
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_packing_labels" model="report.paperformat">
+            <field name="name">Packing Labels Paper Format</field>
+            <field name="default" eval="False"/>
+            <field name="format">custom</field>
+            <field name="page_height">297</field>
+            <field name="page_width">210</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">5</field>
+            <field name="margin_bottom">5</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="packing_labels_report_action" model="ir.actions.report">
+            <field name="name">Packing Labels</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">western_custom_reports.packing_labels_report</field>
+            <field name="report_file">western_custom_reports.packing_labels_report</field>
+            <field name="paperformat_id" ref="western_custom_reports.paperformat_packing_labels"/>
+            <field name="print_report_name">'Packing Labels - %s' % (object.name)</field>
+            <field name="binding_model_id" eval="False"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

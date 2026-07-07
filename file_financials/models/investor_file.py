@@ -72,7 +72,7 @@ class InvestorFileExt(models.Model):
     rebate_invoice_ids = fields.Many2many('account.move', tracking=True, string="Rebate Invoices")
     rebate_invoices_created = fields.Boolean(default=False, tracking=True)
 
-    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, tracking=True, store=True)
+    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True)
     file_id = fields.Many2one('file', string="File #")  # When File is Created, It's ID will be passed in this field for cross-referencing
     state = fields.Selection([
         ('open', 'Open'),
