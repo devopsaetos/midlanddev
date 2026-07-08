@@ -23,14 +23,9 @@
                     />
                 </xpath>
                 <xpath expr="//field[@name='investment_id']" position="before">
-<!--                    <field name="payment_nature" invisible="1"/>-->
-<!--                    <field name="advance_payment_id" invisible="1"/>-->
-                    <field name="category_id"
-                           invisible="not is_advance_payment" readonly="state != 'draft'" required="is_advance_payment"
-                           options="{'no_create': True, 'no_edit': True, 'no_open': True}" domain="[('project_type', '=', 'housing_society')]"/>
-                    <field name="payment_nature" invisible="is_advance_payment or payment_type != 'inbound'" required="1" widget="radio"/>
-                    <field name="advance_payment_id" invisible="payment_nature != 'on_account'" required="payment_nature == 'on_account'" options="{'no_create': True}" />
-
+                    <field name="payment_nature" invisible="1"/>
+                    <field name="advance_payment_id" invisible="1"/>
+                    <field name="category_id" invisible="1"/>
                 </xpath>
 <!--                <xpath expr="//field[@name='communication']" position="before">-->
 <!--                    <field name="invoice_creation_quantity"-->

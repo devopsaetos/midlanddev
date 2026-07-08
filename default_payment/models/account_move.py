@@ -6,9 +6,37 @@ from odoo.tools import float_is_zero
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    def _compute_name(self):
-        # domain="[('supplier_rank','>', 0)]"
-        # domain="[('customer_rank','>', 0)]"
+    # Backport: a Studio customization on the base account.move.form view (id 721 in this
+    # database, not tracked in any addon file) references these. They must live in a module
+    # that loads before default_payment's own inheriting view of that same base view gets
+    # validated — moving them any later (e.g. real_estate, which depends on default_payment)
+    # causes "action_delete_duplicates is not a valid action" during module upgrade, because
+    # Odoo validates default_payment's merged view before real_estate's Python classes load.
+    is_draft_duplicated_ref_ids = fields.Boolean(compute='_compute_is_draft_duplicated_ref_ids')
+    is_exact_move_duplicate = fields.Boolean(compute='_compute_is_exact_move_duplicate')
+
+    @api.depends('duplicated_ref_ids')
+    def _compute_is_draft_duplicated_ref_ids(self):
+        for move in self:
+            move.is_draft_duplicated_ref_ids = any(
+                m.state == 'draft' for m in move.duplicated_ref_ids
+            )
+
+    @api.depends('duplicated_ref_ids')
+    def _compute_is_exact_move_duplicate(self):
+        for move in self:
+            move.is_exact_move_duplicate = False
+
+    def action_delete_duplicates(self):
+        for move in self:
+            move.duplicated_ref_ids.unlink()
+
+    def _get_partner_id_domain(self):
+        # Was previously named _compute_name, which collides with account.move's own
+        # _compute_name (the method that computes the sequence-based invoice/bill number,
+        # since name = fields.Char(compute='_compute_name', ...) on the base model). That
+        # collision silently replaced the real sequence-numbering logic system-wide, leaving
+        # every posted invoice/bill's name blank. Renamed; this is only ever a domain helper.
         domain = False
         if self.env.context.get('default_type', 'entry') in ('out_invoice', 'out_refund', 'out_receipt'):
             domain = [('customer_rank','>', 0)]
@@ -19,7 +47,7 @@ class AccountMove(models.Model):
 
     # payment_state selection_add removed — it is a computed stored field in Odoo 14+ and cannot be extended this way
     partner_id = fields.Many2one('res.partner', readonly=True, tracking=True,
-                                 domain=lambda l:l._compute_name(),
+                                 domain=lambda l:l._get_partner_id_domain(),
                                  string='Partner', change_default=True)
 
     advance_payment_ids = fields.Many2many(

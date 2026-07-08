@@ -17,12 +17,8 @@
                     <field name="allow_bank_finance" invisible="1"/>
                     <field name="finance_by" invisible="allow_bank_finance != True" readonly="state != 'draft'"/>
 <!--                    Visible on payment form-->
-                    <field name="file_id" invisible="(payment_type != 'inbound' or is_advance_payment == True)" required="advance_against == 'file' and is_advance_payment == True and payment_type == 'inbound'" options="{'no_create': True}"/>
-                    <field name="investment_id" invisible="(payment_type != 'inbound' or is_advance_payment == True)" required="advance_against == 'investment' and is_advance_payment == True and payment_type == 'inbound'" options="{'no_create': True}"/>
-<!--                    Visible on Advance Payment form-->
-                    <field name="advance_against" invisible="(payment_type != 'inbound' or is_advance_payment != True)" required="payment_type == 'inbound' and is_advance_payment == True" readonly="state != 'draft'"/>
-                    <field name="file_id" invisible="((payment_type != 'inbound' or is_advance_payment != True) or advance_against != 'file')" required="advance_against == 'file'" options="{'no_create': True}"/>
-                    <field name="investment_id" invisible="(is_advance_payment != True or advance_against != 'investment')" required="advance_against == 'investment'" options="{'no_create': True}"/>
+                    <field name="file_id" invisible="payment_type != 'inbound'" options="{'no_create': True}"/>
+                    <field name="investment_id" invisible="payment_type != 'inbound'" options="{'no_create': True}"/>
                 </xpath>
                 <!-- Commented out: communication field doesn't exist in Odoo 19 base account.payment view
                 <xpath expr="//field[@name='communication']" position="attributes">

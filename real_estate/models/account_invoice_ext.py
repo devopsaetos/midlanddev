@@ -37,25 +37,9 @@ class AccountInvoiceExt(models.Model):
     unit_swap_request_id = fields.Many2one('unit.swapping.request')
     merger_application_id = fields.Many2one('plot.merger.application', readonly=True)
 
-    # Backport: enterprise account module omits these; the DB view still references them.
-    is_draft_duplicated_ref_ids = fields.Boolean(compute='_compute_is_draft_duplicated_ref_ids')
-    is_exact_move_duplicate = fields.Boolean(compute='_compute_is_exact_move_duplicate')
-
-    @api.depends('duplicated_ref_ids')
-    def _compute_is_draft_duplicated_ref_ids(self):
-        for move in self:
-            move.is_draft_duplicated_ref_ids = any(
-                m.state == 'draft' for m in move.duplicated_ref_ids
-            )
-
-    @api.depends('duplicated_ref_ids')
-    def _compute_is_exact_move_duplicate(self):
-        for move in self:
-            move.is_exact_move_duplicate = False
-
-    def action_delete_duplicates(self):
-        for move in self:
-            move.duplicated_ref_ids.unlink()
+    # is_draft_duplicated_ref_ids / is_exact_move_duplicate / action_delete_duplicates
+    # moved to default_payment/models/account_move.py — that module loads before this one
+    # and needs them available when its own inheriting view of account.move.form validates.
 
     def _invoice_status(self):
         for rec in self:

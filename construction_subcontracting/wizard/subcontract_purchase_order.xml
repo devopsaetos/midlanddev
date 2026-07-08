@@ -9,13 +9,14 @@
                 <field name="line_ids">
                     <list string="Subcontract Lines" create="false" editable="bottom">
                         <field name="check"/>
-                        <field name="product_id" readonly="1"/>
-                        <field name="name" readonly="1"/>
-                        <field name="available_qty" readonly="1"/>
-                        <field name="given_qty" readonly="1"/>
-                        <field name="uom_id" readonly="1"/>
-                        <field name="rate" readonly="1"/>
-                        <field name="value" readonly="1"/>
+                        <field name="product_id" readonly="1" force_save="1"/>
+                        <field name="name" readonly="1" force_save="1"/>
+                        <field name="task_subcontract_line_id" invisible="1" force_save="1"/>
+                        <field name="available_qty" readonly="1" force_save="1"/>
+                        <field name="given_qty" readonly="1" force_save="1"/>
+                        <field name="uom_id" readonly="1" force_save="1"/>
+                        <field name="rate" readonly="1" force_save="1"/>
+                        <field name="value" readonly="1" force_save="1"/>
                         <field name="qty"/>
                     </list>
                 </field>

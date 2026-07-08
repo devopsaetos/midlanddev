@@ -12,9 +12,12 @@ from odoo import tools
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
+    # Was previously named _compute_name, which collides with account.payment's own
+    # _compute_name (name = fields.Char(string="Number", compute='_compute_name', ...) on the
+    # base model) — silently replacing the real payment-numbering logic system-wide, leaving
+    # every posted payment's "Number" blank. Renamed; this is only ever a domain helper.
     @tools.ormcache('self.env.context.get("default_partner_type")', 'self.env.company.id')
-    def _compute_name(self):
-        # updated
+    def _get_partner_id_domain(self):
         domain = False
         default_partner_type = self.env.context.get('default_partner_type')
         if default_partner_type == 'supplier':
@@ -26,7 +29,7 @@ class AccountPayment(models.Model):
         return []
 
     partner_id = fields.Many2one('res.partner', string='Partner', tracking=True,
-                                 domain=lambda l: l._compute_name())
+                                 domain=lambda l: l._get_partner_id_domain())
 
     # invoice_ids already exists on account.payment in Odoo 19 with relation='account_move__account_payment'
     # We override it here to keep readonly=False and add our domain, keeping the same relation table
@@ -231,7 +234,7 @@ class AccountPayment(models.Model):
     def _onchange_partner_id(self):
         for record in self:
             record.check_partner()
-            domain = super(AccountPayment, record)._onchange_partner_id()
+            domain = {'domain': {}}
             constraints = [('id', '=', False)]
             if record._context.get('active_model', False) != 'account.move':
                 record.multi_invoice_ids = False
@@ -244,7 +247,7 @@ class AccountPayment(models.Model):
                             ('active', '=', True),
                             ('payment_id', '=', False),
                             ('invoice_payment_state', '!=', 'paid'),
-                            ('move_type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
+                            ('type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
                         ]).ids
                         constraints = [('id', 'in', move_ids)]
                     else:
@@ -257,7 +260,7 @@ class AccountPayment(models.Model):
                             ('active', '=', True),
                             ('payment_id', '=', False),
                             ('invoice_payment_state', '!=', 'paid'),
-                            ('move_type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
+                            ('type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
                         ])
 
                         copied_moves = new_move_ids.browse([])
@@ -287,7 +290,7 @@ class AccountPayment(models.Model):
                 ('active', '=', True),
                 ('payment_id', '=', False),
                 ('invoice_payment_state', '!=', 'paid'),
-                ('move_type', 'in', ['out_invoice'] if rec.payment_type == 'inbound' else ['in_invoice'])
+                ('type', 'in', ['out_invoice'] if rec.payment_type == 'inbound' else ['in_invoice'])
             ])
 
             return return_value
