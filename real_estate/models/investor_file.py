@@ -277,7 +277,7 @@ class InvestorFile(models.Model):
             'view_type': 'form',
             'view_mode': 'form',
             'res_model': 'res.member',
-            'view_id': self.env.ref('real_estate.view_member_form').id,
+            'view_id': self.env.ref('real_estate.view_partner_form').id,
             'type': 'ir.actions.act_window',
             'context': {'default_name': self.transferee_name,
                         'default_relation_name': self.transferee_relation_name,

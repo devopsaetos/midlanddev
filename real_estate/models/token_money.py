@@ -316,7 +316,7 @@ class TokenMoney(models.Model):
                 'view_type': 'form',
                 'res_id': self.env['res.member'].search([('token_id','=',self.id)], limit=1).id,
                 'view_id': self.env.ref(
-                    "real_estate.view_member_form").id if self.project_type == 'housing_society' else self.env.ref(
+                    "real_estate.view_partner_form").id if self.project_type == 'housing_society' else self.env.ref(
                     'land_development.view_partner_form').id,
                 'target': 'self'
             }
@@ -357,7 +357,7 @@ class TokenMoney(models.Model):
                 'view_type': 'form',
                 'res_id': self.partner_id.id,
                 'view_id': self.env.ref(
-                    "real_estate.view_member_form").id if self.project_type == 'housing_society' else self.env.ref(
+                    "real_estate.view_partner_form").id if self.project_type == 'housing_society' else self.env.ref(
                     'land_development.view_partner_form').id,
                 'target': 'self'
             }
