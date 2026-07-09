@@ -40,7 +40,6 @@
         'views/unit_booking_cancellation.xml',
         'views/open_file_issuance_request.xml',
         'views/res_config_setting.xml',
-        'views/account_payment_ext.xml',
         'views/dealer_rebate.xml',
         'views/asset_allocation.xml',
         'views/account_asset_asset_ext.xml',

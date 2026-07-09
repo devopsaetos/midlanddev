@@ -86,6 +86,18 @@ class TaskCostSheet(models.Model):
             if existing:
                 raise UserError(_('You cannot create more than one Cost Sheet for the same task.'))
             self.name = '%s - Cost Sheet' % self.task_id.name
+            if not self.material_task_cost_line_ids:
+                budget_lines = self.env['project.budget.material.line'].search([
+                    ('task_id', '=', self.task_id.id),
+                ])
+                self.material_task_cost_line_ids = [(0, 0, {
+                    'product_id': line.product_id.id,
+                    'description': line.name or line.product_id.name,
+                    'quantity': line.quantity,
+                    'uom_id': line.uom_id.id,
+                    'unit_price': line.rate,
+                    'job_type': 'material',
+                }) for line in budget_lines]
 
     def purchase_order_line_button(self):
         self.ensure_one()
@@ -126,19 +138,15 @@ class TaskCostSheet(models.Model):
         for rec in self:
             rec.total_labour_cost = sum(rec.bills_line_ids.mapped('subtotal'))
 
-    @api.depends(
-        'material_task_cost_line_ids.subtotal',
-        'bills_line_ids.subtotal',
-        'project_id.rate',
-    )
+    @api.depends('overhead_task_cost_line_ids.over_head_value')
     def _compute_total_overhead_cost(self):
+        # Sum the Overhead tab's own lines directly (same pattern as material/labour
+        # totals), instead of re-deriving from project_id.rate. That re-derivation ignored
+        # whatever the user actually entered in the Overhead tab (manually added lines, or
+        # lines whose value was edited after _onchange_calc_overhead generated them), and
+        # showed 0.00 whenever project_id.rate was unset even though real overhead lines existed.
         for rec in self:
-            rate = rec.project_id.rate or 0.0
-            all_subtotals = (
-                rec.material_task_cost_line_ids.mapped('subtotal')
-                + rec.bills_line_ids.mapped('subtotal')
-            )
-            rec.total_overhead_cost = sum(s * (rate / 100) for s in all_subtotals)
+            rec.total_overhead_cost = sum(rec.overhead_task_cost_line_ids.mapped('over_head_value'))
 
     @api.depends('total_material_cost', 'total_labour_cost', 'total_overhead_cost')
     def _compute_total_cost(self):

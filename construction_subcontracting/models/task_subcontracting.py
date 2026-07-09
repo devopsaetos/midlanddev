@@ -47,6 +47,37 @@ class TaskSubContract(models.Model):
     def _onchange_project_id(self):
         return {'domain': {'task_id': [('project_id', '=', self.project_id.id)]}}
 
+    @api.onchange('task_id')
+    def _onchange_task_id(self):
+        if self.task_id and not self.purchase_line_ids:
+            cost_sheet = self.env['task.cost.sheet'].search([
+                ('task_id', '=', self.task_id.id),
+                ('task_subcontract_id', '=', False),
+            ], limit=1)
+            if cost_sheet:
+                self.purchase_line_ids = [(0, 0, {
+                    'product_id': line.product_id.id,
+                    'name': line.description or line.product_id.name,
+                    'uom_id': line.uom_id.id,
+                    'qty': line.quantity,
+                    'rate': line.unit_price,
+                }) for line in cost_sheet.material_task_cost_line_ids]
+            else:
+                # No standalone Cost Sheet exists yet for this task (this Sub Contract's
+                # own companion Cost Sheet only gets created after save, and gets synced
+                # separately via TaskCostSheetSubcontractExt.write) — fall back to the
+                # Project Budget's planned material lines for this task, if any.
+                budget_lines = self.env['project.budget.material.line'].search([
+                    ('task_id', '=', self.task_id.id),
+                ])
+                self.purchase_line_ids = [(0, 0, {
+                    'product_id': line.product_id.id,
+                    'name': line.name or line.product_id.name,
+                    'uom_id': line.uom_id.id,
+                    'qty': line.quantity,
+                    'rate': line.rate,
+                }) for line in budget_lines]
+
     def _compute_cost_sheet_count(self):
         data = self.env['task.cost.sheet']._read_group(
             [('task_subcontract_id', 'in', self.ids)], ['task_subcontract_id'], ['__count'],
@@ -156,3 +187,45 @@ class TaskCostSheetSubcontractExt(models.Model):
     _inherit = 'task.cost.sheet'
 
     task_subcontract_id = fields.Many2one('task.subcontract', string='Subcontract')
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'material_task_cost_line_ids' in vals:
+            for rec in self.filtered('task_subcontract_id'):
+                rec._sync_subcontract_purchase_lines()
+        return res
+
+    def _sync_subcontract_purchase_lines(self):
+        self.ensure_one()
+        subcontract = self.task_subcontract_id
+        existing_by_product = {
+            line.product_id.id: line for line in subcontract.purchase_line_ids
+        }
+        seen_product_ids = set()
+        for cs_line in self.material_task_cost_line_ids:
+            seen_product_ids.add(cs_line.product_id.id)
+            match = existing_by_product.get(cs_line.product_id.id)
+            if match:
+                # Never touch a line that already has a PO qty against it — overwriting
+                # qty/rate here would silently desync it from the real purchase order.
+                if not match.order_qty:
+                    match.write({
+                        'name': cs_line.description or cs_line.product_id.name,
+                        'uom_id': cs_line.uom_id.id,
+                        'qty': cs_line.quantity,
+                        'rate': cs_line.unit_price,
+                    })
+            else:
+                self.env['subtract.plan.products'].create({
+                    'subcontract_id': subcontract.id,
+                    'product_id': cs_line.product_id.id,
+                    'name': cs_line.description or cs_line.product_id.name,
+                    'uom_id': cs_line.uom_id.id,
+                    'qty': cs_line.quantity,
+                    'rate': cs_line.unit_price,
+                })
+        # Drop lines whose product was removed from the cost sheet — but only if
+        # nothing has been ordered against them yet.
+        for product_id, line in existing_by_product.items():
+            if product_id not in seen_product_ids and not line.order_qty:
+                line.unlink()

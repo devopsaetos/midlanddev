@@ -26,7 +26,6 @@ class SubcontractPOWizard(models.TransientModel):
             'product_id': l.product_id.id,
             'name': l.name,
             'uom_id': l.uom_id.id,
-            'available_qty': l.order_qty if l.order_qty else l.qty,
             'given_qty': l.qty,
             'rate': l.rate,
             'qty': l.qty,
@@ -49,9 +48,9 @@ class SubcontractPOWizard(models.TransientModel):
             'product_qty': l.qty,
             'price_unit': l.rate,
             'date_planned': fields.Datetime.now(),
-            'product_uom': l.uom_id.id,
+            'product_uom_id': l.uom_id.id,
             'task_subcontract_id': subcontract.id,
-            'subcontract_line_id': l.task_subcontract_line_id,
+            'subcontract_line_id': l.task_subcontract_line_id.id,
         }) for l in lines_to_order]
 
         purchase = self.env['purchase.order'].create({
@@ -85,10 +84,22 @@ class SubcontractPOWizardLine(models.TransientModel):
     uom_id = fields.Many2one('uom.uom', string='UoM', readonly=True)
     qty = fields.Float(string='Quantity', default=1.0)
     given_qty = fields.Float(string='Given Qty', readonly=True)
-    available_qty = fields.Integer(string='Available Qty', readonly=True)
+    # Computed straight from the source line rather than copied once at wizard-open time:
+    # a plain copied value can end up stale/lost across the wizard's save round-trip
+    # (client only round-trips fields it considers dirty for the row), which was letting
+    # this field read back as 0 and made the "quantity cannot exceed available" constraint
+    # below fire incorrectly. Deriving it fresh from task_subcontract_line_id every time
+    # removes that whole class of bug.
+    available_qty = fields.Float(string='Available Qty', compute='_compute_available_qty', store=True)
     rate = fields.Float(string='Rate', readonly=True)
     value = fields.Float(string='Value', readonly=True)
-    task_subcontract_line_id = fields.Integer(string='Subcontract Line Id')
+    task_subcontract_line_id = fields.Many2one('subtract.plan.products', string='Subcontract Line')
+
+    @api.depends('task_subcontract_line_id', 'task_subcontract_line_id.order_qty', 'task_subcontract_line_id.qty')
+    def _compute_available_qty(self):
+        for rec in self:
+            line = rec.task_subcontract_line_id
+            rec.available_qty = (line.order_qty if line.order_qty else line.qty) if line else 0.0
 
     @api.constrains('qty')
     def _check_qty(self):

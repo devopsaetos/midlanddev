@@ -329,16 +329,13 @@ class AccountPaymentExt(models.Model):
 						}))
 
 					if advance_payment_move_lines:
-						name = adv_pay.journal_id.with_context(
-							ir_sequence_date=record.date).sequence_id.next_by_id()
 						move = self.env['account.move'].with_context(skip_validation=True).create({
-							'name': name,
 							'date': record.date,
 							'company_id': adv_pay.company_id.id,
 							'journal_id': adv_pay.journal_id.id,
 							'line_ids': advance_payment_move_lines,
 						})
-						move.post()
+						move.action_post()
 
 						invoice_payment_move_lines = move.line_ids.filtered(
 							lambda r: not r.reconciled and r.account_id.account_type in ('liability_payable', 'asset_receivable'))

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Purchase Order form mein custom print button add karo -->
+    <record id="view_purchase_order_form_custom_print" model="ir.ui.view">
+        <field name="name">purchase.order.form.custom.print</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button
+                    name="%(western_custom_reports.action_report_purchase_custom)d"
+                    string="Custom PO PDF"
+                    type="action"
+                    class="oe_stat_button"
+                    icon="fa-print"
+                    groups="purchase.group_purchase_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

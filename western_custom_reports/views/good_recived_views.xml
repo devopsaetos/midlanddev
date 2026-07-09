@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_stock_picking_form_custom_reports" model="ir.ui.view">
+            <field name="name">stock.picking.form.custom.reports</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="priority">99</field>
+            <field name="arch" type="xml">
+                <button name="button_validate" position="after">
+                    <!-- ✅ Only on RECEIPT (incoming) forms -->
+                    <button name="open_goods_received_report"
+                            string="Print Receipt Note"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="picking_type_code != 'incoming' or state != 'done'"/>
+
+                    <!-- ✅ Only on DELIVERY (outgoing) forms -->
+                    <button name="action_print_delivery_note"
+                            string="Print Delivery Note"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="picking_type_code != 'outgoing' or state != 'done'"/>
+
+                    <!-- ✅ Pick List - Available for all types in ready/assigned state -->
+                    <button name="action_print_pick_list"
+                            string="Print Pick List"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="state not in ['assigned', 'confirmed']"/>
+
+                    <!-- ✅ Packing Labels - Available for outgoing when done -->
+                    <button name="action_print_packing_labels"
+                            string="Print Packing Labels"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="picking_type_code != 'outgoing' or state != 'done'"/>
+
+                    <!-- ✅ Returns Report - Only for returns -->
+                    <button name="action_print_returns_report"
+                            string="Print Returns Report"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="state != 'done'"/>
+                </button>
+            </field>
+        </record>
+    </data>
+</odoo>

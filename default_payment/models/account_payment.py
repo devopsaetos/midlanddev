@@ -12,9 +12,12 @@ from odoo import tools
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
+    # Was previously named _compute_name, which collides with account.payment's own
+    # _compute_name (name = fields.Char(string="Number", compute='_compute_name', ...) on the
+    # base model) — silently replacing the real payment-numbering logic system-wide, leaving
+    # every posted payment's "Number" blank. Renamed; this is only ever a domain helper.
     @tools.ormcache('self.env.context.get("default_partner_type")', 'self.env.company.id')
-    def _compute_name(self):
-        # updated
+    def _get_partner_id_domain(self):
         domain = False
         default_partner_type = self.env.context.get('default_partner_type')
         if default_partner_type == 'supplier':
@@ -26,7 +29,7 @@ class AccountPayment(models.Model):
         return []
 
     partner_id = fields.Many2one('res.partner', string='Partner', tracking=True,
-                                 domain=lambda l: l._compute_name())
+                                 domain=lambda l: l._get_partner_id_domain())
 
     # invoice_ids already exists on account.payment in Odoo 19 with relation='account_move__account_payment'
     # We override it here to keep readonly=False and add our domain, keeping the same relation table
@@ -77,9 +80,13 @@ class AccountPayment(models.Model):
         help="Remaining amount to apply.")
 
     amount_to_adjust = fields.Float("Amount to adjust")
+    projected_residual = fields.Monetary(
+        string='Remaining After Adjustment',
+        compute='_compute_projected_residual',
+        currency_field='currency_id')
     discount_amount = fields.Monetary("Discount Amount")
     inv_line_add = fields.Boolean()
-    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True, tracking=True)
+    qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True)
     internal_notes = fields.Text('Internal Notes')
 
     qr_hashid = fields.Char(string="Hash", readonly=True, copy=False)
@@ -165,24 +172,60 @@ class AccountPayment(models.Model):
                     and rec.is_advance_payment and rec.advance_payment_account_id):
                 rec.destination_account_id = rec.advance_payment_account_id.id
 
-    @api.depends('amount', 'invoice_ids', 'move_id.line_ids.reconciled')
+    # Base account.payment only sets outstanding_account_id from the payment method line's own
+    # payment_account_id (normally blank in a full Accounting install, which relies on the
+    # account.payment.register wizard instead). Every payment in this codebase is created
+    # directly via account.payment.create() (never through that wizard), so without this
+    # fallback _generate_journal_entry()'s `p.outstanding_account_id` check never passes and
+    # payments never get a journal entry at all (move_id stays empty, amount_residual on the
+    # linked invoice/bill never moves even though it shows as "in payment"). Applies to every
+    # payment category, not just advance payments — this was the same bug wearing different
+    # symptoms (Apply Advance Payments not working, and separately, Vendor Bills/Customer
+    # Invoices staying "in payment" with their full amount still due after being paid).
+    # Uses the journal's own default account for the bank/liquidity side — this is always
+    # configured on any working bank/cash journal, unlike company.transfer_account_id or a
+    # chart-template outstanding account (_get_outstanding_account), which are unset on most
+    # companies in this database. destination_account_id (above) already provides the
+    # advance-holding side for advance payments specifically, so the two must stay different
+    # accounts in that case; for regular payments destination_account_id is the partner's own
+    # receivable/payable account, which is likewise always distinct from the journal's account.
+    @api.depends('payment_category', 'advance_payment_account_id', 'journal_id')
+    def _compute_outstanding_account_id(self):
+        super(AccountPayment, self)._compute_outstanding_account_id()
+        for rec in self:
+            if not rec.outstanding_account_id and rec.journal_id.default_account_id:
+                rec.outstanding_account_id = rec.journal_id.default_account_id
+
+    @api.depends('amount', 'invoice_ids', 'move_id.line_ids.amount_residual')
     def _compute_residual(self):
+        # Uses account.move.line's own amount_residual (Odoo core), which nets out
+        # reconciliation against ALL matched counterpart lines regardless of which move
+        # they live on. The Apply Advance Payment wizard books its adjustment entry on a
+        # separate account.move (reconciled against this payment's advance-account line),
+        # so summing only payment.move_id's own debit/credit (as before) ignored those
+        # adjustments entirely and kept showing the full original amount as available.
         for payment in self:
-            total_advance_payment = 0.0
-            total_deduct = 0.0
+            total = 0.0
             if payment.is_advance_payment:
                 payment_type = payment.payment_type
                 payment_account = payment.advance_payment_account_id
                 move_lines = payment.move_id.line_ids.filtered(lambda l: l.account_id == payment_account)
                 if payment_type == 'outbound':
-                    total_advance_payment = move_lines.filtered(lambda l: l.debit).debit
-                    total_deduct = sum(move_lines.filtered(lambda l: l.credit).mapped('credit'))
+                    total = sum(move_lines.filtered(lambda l: l.debit).mapped('amount_residual'))
                 elif payment_type == 'inbound':
-                    total_advance_payment = sum(move_lines.filtered(lambda l: l.credit).mapped('credit'))
-                    total_deduct = sum(move_lines.filtered(lambda l: l.debit).mapped('debit'))
+                    total = -sum(move_lines.filtered(lambda l: l.credit).mapped('amount_residual'))
                 else:
                     raise ValidationError(_('Advance payment did not allow Internal Transfer.'))
-            payment.amount_residual = total_advance_payment - total_deduct
+            payment.amount_residual = total
+
+    @api.depends('amount_residual', 'amount_to_adjust')
+    def _compute_projected_residual(self):
+        # Live preview only (not stored): what amount_residual would become after the
+        # currently-staged amount_to_adjust (set in the Apply Advance Payment wizard) is
+        # actually applied. Kept separate from amount_residual so existing validations that
+        # compare amount_to_adjust against the true amount_residual are unaffected.
+        for payment in self:
+            payment.projected_residual = payment.amount_residual - payment.amount_to_adjust
 
     @api.onchange('journal_id', 'payment_type')
     def _onchange_journal_payment_type(self):
@@ -231,7 +274,7 @@ class AccountPayment(models.Model):
     def _onchange_partner_id(self):
         for record in self:
             record.check_partner()
-            domain = super(AccountPayment, record)._onchange_partner_id()
+            domain = {'domain': {}}
             constraints = [('id', '=', False)]
             if record._context.get('active_model', False) != 'account.move':
                 record.multi_invoice_ids = False
@@ -244,7 +287,7 @@ class AccountPayment(models.Model):
                             ('active', '=', True),
                             ('payment_id', '=', False),
                             ('invoice_payment_state', '!=', 'paid'),
-                            ('move_type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
+                            ('type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
                         ]).ids
                         constraints = [('id', 'in', move_ids)]
                     else:
@@ -257,7 +300,7 @@ class AccountPayment(models.Model):
                             ('active', '=', True),
                             ('payment_id', '=', False),
                             ('invoice_payment_state', '!=', 'paid'),
-                            ('move_type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
+                            ('type', 'in', ['out_invoice'] if record.payment_type == 'inbound' else ['in_invoice'])
                         ])
 
                         copied_moves = new_move_ids.browse([])
@@ -287,7 +330,7 @@ class AccountPayment(models.Model):
                 ('active', '=', True),
                 ('payment_id', '=', False),
                 ('invoice_payment_state', '!=', 'paid'),
-                ('move_type', 'in', ['out_invoice'] if rec.payment_type == 'inbound' else ['in_invoice'])
+                ('type', 'in', ['out_invoice'] if rec.payment_type == 'inbound' else ['in_invoice'])
             ])
 
             return return_value

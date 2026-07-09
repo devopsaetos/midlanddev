@@ -24,6 +24,49 @@
                        options="{'no_create': True, 'no_open': True}"
                        readonly="state in 'payment'"/>
             </xpath>
+            <xpath expr="//field[@name='project_type']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="required">1</attribute>
+                <attribute name="widget">radio</attribute>
+                <attribute name="options">{'horizontal': true}</attribute>
+                <attribute name="readonly">state != 'draft'</attribute>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='society_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',project_type),('is_society','=',True)]</attribute>
+                <attribute name="invisible">project_type == 'skyscraper'</attribute>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='society_id']" position="after">
+                <field name="society_id" string="Project"
+                       domain="[('project_type','=',project_type),('is_society','=',True)]"
+                       options="{'no_create': True, 'no_open': True}"
+                       readonly="state in ('reserved', 'payment')"
+                       invisible="project_type != 'skyscraper'"/>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='phase_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',project_type),('is_society','!=',True)]</attribute>
+                <attribute name="invisible">project_type == 'skyscraper'</attribute>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='phase_id']" position="after">
+                <field name="phase_id" string="Building"
+                       domain="[('project_type','=',project_type),('is_society','!=',True)]"
+                       options="{'no_create': True, 'no_open': True}"
+                       readonly="state in ('reserved', 'payment')"
+                       invisible="project_type != 'skyscraper'"/>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='sector_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',project_type)]</attribute>
+                <attribute name="invisible">project_type == 'skyscraper'</attribute>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='sector_id']" position="after">
+                <field name="sector_id" string="Floor"
+                       domain="[('project_type','=',project_type)]"
+                       options="{'no_create': True, 'no_open': True}"
+                       readonly="state in ('reserved', 'payment')"
+                       invisible="project_type != 'skyscraper'"/>
+            </xpath>
+            <xpath expr="//group[@name='property_info']/group/field[@name='category_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',project_type)]</attribute>
+            </xpath>
             <xpath expr="//field[@name='plan_type']" position="before">
                 <field name="launch_type_id"/>
                 <field name="platter_id"
@@ -122,6 +165,43 @@
             <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
                    position="attributes">
                 <attribute name="required">0</attribute>
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+                <attribute name="invisible">parent.project_type == 'skyscraper'</attribute>
+            </xpath>
+            <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
+                   position="after">
+                <field name="sector_id" string="Floor"
+                       domain="[('project_type','=',parent.project_type)]"
+                       options="{'no_create': True, 'no_open': True}"
+                       invisible="parent.project_type != 'skyscraper'"/>
+            </xpath>
+            <xpath expr="//field[@name='investment_line_ids']/list/field[@name='category_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='investment_line_ids']/list/field[@name='unit_category_type_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='investment_line_ids']/list/field[@name='size_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='inventory_ids']/list/field[@name='sector_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+                <attribute name="invisible">parent.project_type == 'skyscraper'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='inventory_ids']/list/field[@name='sector_id']" position="after">
+                <field name="sector_id" string="Floor" readonly="1"
+                       domain="[('project_type','=',parent.project_type)]"
+                       options="{'no_create': True, 'no_open': True}"
+                       invisible="parent.project_type != 'skyscraper'"/>
+            </xpath>
+            <xpath expr="//field[@name='inventory_ids']/list/field[@name='category_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='inventory_ids']/list/field[@name='unit_category_type_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='inventory_ids']/list/field[@name='size_id']" position="attributes">
+                <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
             </xpath>
             <xpath expr="//button[@name='generate_invoice_for_plan']" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -153,6 +233,19 @@
             -->
         </field>
     </record>
+
+    <record model="ir.actions.act_window" id="file_financials.action_investment">
+        <field name="name">Realtor</field>
+        <field name="res_model">investment</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click create to add Realtor data.
+            </p>
+        </field>
+        <field name="context">{'current_view': 'realestate'}</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <record model="ir.actions.act_window" id="file_financials.action_launch_type">
         <field name="name">Launch Type</field>
         <field name="res_model">launch.type</field>

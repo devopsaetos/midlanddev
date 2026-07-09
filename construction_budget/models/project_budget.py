@@ -60,30 +60,31 @@ class ProjectBudget(models.Model):
 
     @api.onchange('budget_from_task')
     def _onchange_budget_from_task(self):
+        # Pulls from task.cost.sheet (actual costed material/labour/overhead per task),
+        # not the separate task.budget model — task.budget is a distinct, disconnected
+        # budgeting concept that in practice never gets created/approved, so this always
+        # produced empty rows. Cost Sheet is the record that's actually kept up to date.
         if self.budget_from_task == 'yes':
-            approved_budgets = self.env['task.budget'].search([
+            cost_sheets = self.env['task.cost.sheet'].search([
                 ('project_id', '=', self.project_id.id),
-                ('state', '=', 'approved'),
             ])
             materials = []
             tasks = []
-            for tb in approved_budgets:
-                for line in tb.material_ids:
+            for cs in cost_sheets:
+                for line in cs.material_task_cost_line_ids:
                     materials.append((0, 0, {
-                        'task_id': tb.task_id.id,
-                        'category_id': line.category_id.id,
-                        'uom_id': line.uom_id.id,
+                        'task_id': cs.task_id.id,
                         'product_id': line.product_id.id,
-                        'number': line.number,
-                        'length': line.length,
-                        'width': line.width,
-                        'height': line.height,
-                        'quantity': line.quantity,
-                        'rate': line.rate,
+                        'uom_id': line.uom_id.id,
+                        'number': line.quantity,
+                        'rate': line.unit_price,
                     }))
                 tasks.append((0, 0, {
-                    'task_id': tb.task_id.id,
-                    'total_value': sum(tb.material_ids.mapped('value')),
+                    'task_id': cs.task_id.id,
+                    'material_value': cs.total_material_cost,
+                    'service_value': cs.total_labour_cost,
+                    'ovherhead_value': cs.total_overhead_cost,
+                    'total_value': cs.total_cost,
                 }))
             self.material_ids = materials
             self.task_ids = tasks
@@ -115,18 +116,30 @@ class ProjectBudgetTasks(models.Model):
     ovherhead_value = fields.Float(string='Overhead')  # keep original spelling — avoids DB column rename
     total_value = fields.Float(string='Total')
 
+    @api.onchange('task_id')
+    def _onchange_task_id(self):
+        if self.task_id:
+            cost_sheet = self.env['task.cost.sheet'].search(
+                [('task_id', '=', self.task_id.id)], limit=1,
+            )
+            if cost_sheet:
+                self.material_value = cost_sheet.total_material_cost
+                self.service_value = cost_sheet.total_labour_cost
+                self.ovherhead_value = cost_sheet.total_overhead_cost
+                self.total_value = cost_sheet.total_cost
+
     def detail_task_budgeting(self):
         self.ensure_one()
-        task_budget = self.env['task.budget'].search(
+        cost_sheet = self.env['task.cost.sheet'].search(
             [('task_id', '=', self.task_id.id)], limit=1,
         )
         return {
-            'name': _('Task Budget'),
+            'name': _('Task Cost Sheet'),
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
-            'res_model': 'task.budget',
+            'res_model': 'task.cost.sheet',
             'target': 'new',
-            'res_id': task_budget.id,
+            'res_id': cost_sheet.id,
             'context': {'default_task_id': self.task_id.id},
         }
 

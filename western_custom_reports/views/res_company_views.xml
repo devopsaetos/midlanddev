@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_company_bank_fields_inherit" model="ir.ui.view">
+            <field name="name">res.company.bank.fields.inherit</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='social_media']" position="after">
+                    <group string="Bank Details">
+                        <group>
+                            <field name="bank_name"/>
+                            <field name="bank_routing"/>
+                            <field name="bank_swift"/>
+                            <field name="bank_acc_number"/>
+                            <field name="bank_beneficiary"/>
+                            <field name="bank_address1"/>
+                            <field name="bank_address2"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

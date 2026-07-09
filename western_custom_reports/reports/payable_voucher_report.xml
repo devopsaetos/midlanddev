@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_payable_voucher" model="report.paperformat">
+        <field name="name">Payable Voucher Custom A4</field>
+        <field name="format">A4</field>
+        <field name="default" eval="False"/>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_payable_voucher" model="ir.actions.report">
+        <field name="name">Payable Voucher</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">western_custom_reports.payable_voucher_pdf</field>
+        <field name="report_file">western_custom_reports.payable_voucher</field>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Payable_Voucher_' + (object.name or 'Payment').replace('/', '_')</field>
+        <field name="paperformat_id" ref="western_custom_reports.paperformat_payable_voucher"/>
+        <field name="domain">[]</field>
+    </record>
+
+    <template id="payable_voucher_pdf">
+        <t t-call="web.html_container">
+            <style>
+                .header { display: none !important; }
+                .footer { display: none !important; }
+                #wkhtmltopdf_sep { display: none !important; }
+            </style>
+            <t t-foreach="docs" t-as="o">
+                <div style="font-family:Arial,Helvetica,sans-serif; font-size:10pt; color:#000; padding:15px 25px;">
+
+                    <!-- HEADER: Logo | Title | Address -->
+                    <table style="width:100%; margin-bottom:25px; border-collapse:collapse;">
+                        <tr>
+                            <td style="width:20%; vertical-align:middle;">
+                                <t t-if="o.company_id.logo">
+                                    <img t-att-src="image_data_uri(o.company_id.logo)"
+                                         style="max-height:75px; max-width:130px;"/>
+                                </t>
+                            </td>
+                            <td style="width:50%; vertical-align:bottom; text-align:center;">
+                                <div style="background:#1a5276; color:white; font-size:20pt; font-weight:bold; padding:12px 0; letter-spacing:1px;">
+                                    PAYMENT VOUCHER
+                                </div>
+                            </td>
+                            <td style="width:30%; vertical-align:middle; text-align:right; font-size:9pt; line-height:1.7;">
+                                <b>
+                                    <t t-if="o.company_id.street"><t t-esc="o.company_id.street"/><br/></t>
+                                    <t t-if="o.company_id.street2"><t t-esc="o.company_id.street2"/><br/></t>
+                                    <t t-if="o.company_id.city"><t t-esc="o.company_id.city"/></t>
+                                    <t t-if="o.company_id.state_id">, <t t-esc="o.company_id.state_id.name"/></t>
+                                    <t t-if="o.company_id.zip"> <t t-esc="o.company_id.zip"/></t>
+                                    <br/>
+                                    <t t-if="o.company_id.country_id"><t t-esc="o.company_id.country_id.name"/><br/></t>
+                                    <t t-if="o.company_id.phone"><t t-esc="o.company_id.phone"/></t>
+                                </b>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- INFO GRID -->
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:25px; font-size:10pt;">
+                        <tr>
+                            <td style="border:1px solid #aaa; padding:7px 10px; width:16%; background:#f5f5f5;"><b>Voucher No.:</b></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px; width:34%;"><t t-esc="o.name or ''"/></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px; width:16%; background:#f5f5f5;"><b>Payment Date:</b></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px; width:34%;"><t t-esc="o.date.strftime('%d-%m-%Y') if o.date else ''"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #aaa; padding:7px 10px; background:#f5f5f5;"><b>Partner Name:</b></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px;"><t t-esc="o.partner_id.name or ''"/></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px; background:#f5f5f5;"><b>Pay Method:</b></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px;"><t t-esc="o.payment_method_line_id.name or ''"/></td>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #aaa; padding:7px 10px; background:#f5f5f5;"><b>Memo:</b></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px;"><t t-esc="o.memo or ''"/></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px; background:#f5f5f5;"><b>Amount:</b></td>
+                            <td style="border:1px solid #aaa; padding:7px 10px;"><t t-esc="'{:,.2f}'.format(o.amount)"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- JOURNAL LINES TABLE -->
+                    <table style="width:100%; border-collapse:collapse; font-size:9.5pt; margin-bottom:35px;">
+                        <thead>
+                            <tr style="background:#1a5276; color:white;">
+                                <th style="border:1px solid #1a5276; padding:8px 10px; text-align:left; width:22%;">Account</th>
+                                <th style="border:1px solid #1a5276; padding:8px 10px; text-align:left;">Label</th>
+                                <th style="border:1px solid #1a5276; padding:8px 10px; text-align:right; width:13%;">Debit</th>
+                                <th style="border:1px solid #1a5276; padding:8px 10px; text-align:right; width:13%;">Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.move_id.line_ids" t-as="line">
+                                <tr>
+                                    <td style="border:1px solid #ccc; padding:7px 10px;"><t t-esc="line.account_id.name or ''"/></td>
+                                    <td style="border:1px solid #ccc; padding:7px 10px;"><t t-esc="line.name or ''"/></td>
+                                    <td style="border:1px solid #ccc; padding:7px 10px; text-align:right;"><t t-esc="'{:,.2f} Rs.'.format(line.debit)"/></td>
+                                    <td style="border:1px solid #ccc; padding:7px 10px; text-align:right;"><t t-esc="'{:,.2f} Rs.'.format(line.credit)"/></td>
+                                </tr>
+                            </t>
+                            <tr style="background:#1a5276; color:white; font-weight:bold;">
+                                <td colspan="2" style="border:1px solid #1a5276; padding:8px 10px; text-align:center;">Total</td>
+                                <td style="border:1px solid #1a5276; padding:8px 10px; text-align:right;">
+                                    <t t-esc="'{:,.2f}'.format(sum(l.debit for l in o.move_id.line_ids))"/>
+                                </td>
+                                <td style="border:1px solid #1a5276; padding:8px 10px; text-align:right;">
+                                    <t t-esc="'{:,.2f}'.format(sum(l.credit for l in o.move_id.line_ids))"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- SIGNATURES -->
+                    <table style="width:100%; margin-top:60px; font-size:10pt;">
+                        <tr>
+                            <td style="width:30%; text-align:center; border-top:1px solid #000; padding-top:8px;">
+                                Prepared By
+                            </td>
+                            <td style="width:40%;"></td>
+                            <td style="width:30%; text-align:center; border-top:1px solid #000; padding-top:8px;">
+                                Approved By
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

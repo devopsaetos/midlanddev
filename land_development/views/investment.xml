@@ -357,7 +357,6 @@
             />
         </record>
 
-    <!--
     <menuitem
             id="land_development.investment_menu"
             name="Investment"
@@ -365,7 +364,6 @@
             sequence="2"
             parent="land_development.menu_investment_parent"
     />
-    -->
 
 
 </odoo>

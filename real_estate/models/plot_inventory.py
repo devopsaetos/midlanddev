@@ -162,8 +162,9 @@ class PlotInventory(models.Model):
                 raise ValidationError(_('Plot Inventory Is Already Present'))
 
     def unlink(self):
-        if self.state != 'avalible_for_sale':
-            raise ValidationError("You are not allowed to delete record in %s state." % self.state)
+        for rec in self:
+            if rec.state != 'avalible_for_sale':
+                raise ValidationError("You are not allowed to delete record in %s state." % rec.state)
         return super(PlotInventory, self).unlink()
 
     @api.model

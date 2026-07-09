@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="goods_received_header">
+            <div class="header">
+                <div style="overflow:hidden; margin-bottom:12px; font-family:Arial,Helvetica,sans-serif;">
+                    <div style="float:left; width:70%;">
+                        <div style="font-weight:bold; font-size:11pt; margin-bottom:4px; color:#1a1a1a;">
+                            <t t-esc="res_company.name or ''"/>
+                        </div>
+                        <div style="font-size:8.5pt; color:#333; line-height:1.5;">
+                            <t t-if="res_company.street">
+                                <t t-esc="res_company.street"/>
+                                <br/>
+                            </t>
+                            <t t-if="res_company.street2">
+                                <t t-esc="res_company.street2"/>
+                                <br/>
+                            </t>
+                            <t t-if="res_company.city">
+                                <t t-esc="res_company.city"/>
+                            </t>
+                            <t t-if="res_company.state_id">,
+                                <t t-esc="res_company.state_id.name"/>
+                            </t>
+                            <t t-if="res_company.zip">
+                                <t t-esc="res_company.zip"/>
+                            </t>
+                            <br/>
+                            <t t-if="res_company.country_id">
+                                <t t-esc="res_company.country_id.name"/>
+                                <br/>
+                            </t>
+                            <t t-if="res_company.email">
+                                <t t-esc="res_company.email"/>
+                                <br/>
+                            </t>
+                            <t t-if="res_company.website">
+                                <t t-esc="res_company.website"/>
+                                <br/>
+                            </t>
+                            <t t-if="res_company.phone">
+                                <t t-esc="res_company.phone"/>
+                                <br/>
+                            </t>
+                        </div>
+                    </div>
+                    <div style="float:right; width:120px; text-align:right;">
+                        <t t-if="res_company.logo">
+                            <img t-att-src="image_data_uri(res_company.logo)"
+                                 style="max-height:80px; max-width:120px;"/>
+                        </t>
+                    </div>
+                    <div style="clear:both;"></div>
+                </div>
+            </div>
+        </template>
+
+        <template id="goods_received_footer">
+            <div class="footer"
+                 style="width:100%; border-top:1px solid #ccc; padding-top:5px; margin-top:10px; font-size:9pt; color:#555; font-family:Arial,Helvetica,sans-serif;">
+                <div style="float:left;">
+                    Printed By:
+                    <t t-esc="request.env.user.name"/>
+                    &amp;nbsp;|&amp;nbsp;
+                    Print Date:
+                    <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                </div>
+                <div style="float:right; font-style:italic;">
+                    Page
+                    <span class="page"/>
+                    of
+                    <span class="topage"/>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        </template>
+
+        <template id="good_received_report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.basic_layout">
+                        <div class="page">
+
+                            <style type="text/css">
+                                .page { font-family: Arial, Helvetica, sans-serif; font-size: 9.5pt; color: #1a1a1a; line-height: 1.4; }
+                                .hdr-wrap { width: 100%; margin-bottom: 12px; overflow: hidden; }
+                                .hdr-left { float: left; width: 50%; }
+                                .hdr-right { float: right; width: 48%; text-align: right; }
+                                .co-name { font-weight: bold; font-size: 11pt; line-height: 1.3; margin-bottom: 4px; }
+                                .co-info { font-size: 8.5pt; line-height: 1.5; color: #333; }
+                                .co-info a { color: #0066cc; text-decoration: underline; }
+                            </style>
+
+                            <!-- ===================== HEADER ===================== -->
+                            <div class="hdr-wrap">
+                                <div class="hdr-left">
+                                    <span class="co-name">
+                                        <t t-esc="o.company_id.name or 'Company Name'"/>
+                                    </span>
+                                    <div class="co-info">
+                                        <t t-if="o.company_id.street">
+                                            <t t-esc="o.company_id.street"/><br/>
+                                        </t>
+                                        <t t-if="o.company_id.street2">
+                                            <t t-esc="o.company_id.street2"/><br/>
+                                        </t>
+                                        <t t-if="o.company_id.city">
+                                            <t t-esc="o.company_id.city"/>
+                                        </t>
+                                        <t t-if="o.company_id.state_id">,
+                                            <t t-esc="o.company_id.state_id.name"/>
+                                        </t>
+                                        <t t-if="o.company_id.zip">
+                                            <t t-esc="o.company_id.zip"/>
+                                        </t>
+                                        <br/>
+                                        <t t-if="o.company_id.country_id">
+                                            <t t-esc="o.company_id.country_id.name"/><br/>
+                                        </t>
+                                        <t t-if="o.company_id.email">
+                                            <a t-att-href="'mailto:' + o.company_id.email" t-esc="o.company_id.email"/><br/>
+                                        </t>
+                                        <t t-if="o.company_id.website">
+                                            <a t-att-href="o.company_id.website" t-esc="o.company_id.website"/><br/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="hdr-right">
+                                    <t t-if="o.company_id.logo">
+                                        <img t-att-src="image_data_uri(o.company_id.logo)"
+                                             style="max-height:120px; max-width:220px; width:auto; height:auto;"/>
+                                    </t>
+                                </div>
+                                <div style="clear:both;"></div>
+                            </div>
+
+                            <!-- Transaction Strip -->
+                            <div style="margin-bottom:12px; border-bottom:2px solid #000; padding-bottom:6px; overflow:hidden;">
+                                <div style="float:left; width:30%; font-weight:bold; font-size:9.5pt;">
+                                    Transaction No :
+                                    <t t-esc="o.name"/>
+                                </div>
+                                <div style="float:left; width:40%; text-align:center; font-size:18pt; font-weight:bold; color:#1a1a1a;">
+                                    Item Received Note
+                                </div>
+                                <div style="float:right; width:28%; text-align:right; font-weight:bold; font-size:9.5pt;">
+                                    Date :
+                                    <t t-esc="o.scheduled_date.strftime('%d/%m/%Y') if o.scheduled_date else 'N/A'"/>
+                                </div>
+                                <div style="clear:both;"></div>
+                            </div>
+
+                            <!-- Addresses -->
+                            <t t-set="partner"
+                               t-value="o.partner_id or (o.move_ids and o.move_ids[0].partner_id) or False"/>
+                            <t t-set="vendor_address" t-value="o.picking_type_id.code=='incoming' and partner"/>
+
+                            <div style="overflow:hidden; margin-bottom:14px;">
+                                <div style="width:48%; float:left;">
+                                    <div style="background-color:#4682B4; color:#fff; font-weight:bold; font-size:9.5pt; padding:6px 12px; border-radius:3px 3px 0 0;">
+                                        Vendor Details
+                                    </div>
+                                    <div style="padding:8px 12px; background:#fff; border:1px solid #ddd; border-top:none; border-radius:0 0 3px 3px; font-size:8.5pt; line-height:1.8;">
+                                        <t t-if="vendor_address">
+                                            <div>
+                                                <span style="width:70px; color:#555; display:inline-block; font-weight:500;">Name</span>
+                                                <t t-esc="partner.commercial_partner_id.name or ''"/>
+                                            </div>
+                                            <div>
+                                                <span style="width:70px; color:#555; display:inline-block; font-weight:500;">Address</span>
+                                                <t t-esc="partner.commercial_partner_id.street or ''"/>
+                                            </div>
+                                            <div>
+                                                <span style="width:70px; color:#555; display:inline-block; font-weight:500;">City</span>
+                                                <t t-esc="partner.commercial_partner_id.city or ''"/>
+                                                <t t-if="partner.commercial_partner_id.zip"> -
+                                                    <t t-esc="partner.commercial_partner_id.zip"/>
+                                                </t>
+                                            </div>
+                                            <div>
+                                                <span style="width:70px; color:#555; display:inline-block; font-weight:500;">Country</span>
+                                                <t t-esc="partner.commercial_partner_id.country_id.name or ''"/>
+                                            </div>
+                                            <div>
+                                                <span style="width:70px; color:#555; display:inline-block; font-weight:500;">Phone</span>
+                                                <t t-esc="partner.commercial_partner_id.phone or ''"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div style="width:4%; float:left;">&#160;</div>
+                                <div style="width:48%; float:left;">
+                                    <div style="background-color:#4682B4; color:#fff; font-weight:bold; font-size:9.5pt; padding:6px 12px; border-radius:3px 3px 0 0;">
+                                        Receipt Details
+                                    </div>
+                                    <div style="padding:8px 12px; background:#fff; border:1px solid #ddd; border-top:none; border-radius:0 0 3px 3px; font-size:8.5pt; line-height:1.8;">
+                                        <div>
+                                            <span style="width:90px; color:#555; display:inline-block; font-weight:500;">GRN No.</span>
+                                            <t t-esc="o.name"/>
+                                        </div>
+                                        <div>
+                                            <span style="width:90px; color:#555; display:inline-block; font-weight:500;">PO No.</span>
+                                            <t t-esc="o.origin or ''"/>
+                                        </div>
+                                        <div>
+                                            <span style="width:90px; color:#555; display:inline-block; font-weight:500;">Scheduled</span>
+                                            <t t-esc="o.scheduled_date.strftime('%d/%m/%Y') if o.scheduled_date else ''"/>
+                                        </div>
+                                        <div>
+                                            <span style="width:90px; color:#555; display:inline-block; font-weight:500;">Due Date</span>
+                                            <t t-esc="o.date_done.strftime('%d/%m/%Y') if o.date_done else ''"/>
+                                        </div>
+                                        <div>
+                                            <span style="width:90px; color:#555; display:inline-block; font-weight:500;">Warehouse</span>
+                                            <t t-esc="o.picking_type_id.warehouse_id.name or ''"/>
+                                        </div>
+                                        <div>
+                                            <span style="width:90px; color:#555; display:inline-block; font-weight:500;">Operation</span>
+                                            <t t-esc="o.picking_type_id.name or ''"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="clear:both;"></div>
+                            </div>
+
+                            <!-- Products Table - grouped by product to avoid serial expansion -->
+                            <!--
+                                NOTE: This table intentionally has NO lot/serial column -
+                                serials are shown only in the dedicated grid table below,
+                                same pattern as delivery_note_report.
+                            -->
+                            <table style="width:100%; border-collapse:collapse; margin-bottom:12px; font-size:8.5pt;">
+                                <thead>
+                                    <tr>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:4%;">
+                                            No
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:12%;">
+                                            Item Code
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:left;">
+                                            Product
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:7%;">
+                                            UoM
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:9%;">
+                                            Ordered
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:9%;">
+                                            Delivered
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:9%;">
+                                            Returned
+                                        </th>
+                                        <th style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; width:10%;">
+                                            Remarks
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="seen_product_ids" t-value="[]"/>
+                                    <t t-set="sr_no" t-value="0"/>
+                                    <t t-set="total_ordered" t-value="0.0"/>
+                                    <t t-set="total_delivered" t-value="0.0"/>
+
+                                    <t t-foreach="o.move_ids" t-as="line">
+                                        <t t-if="line.product_id.id not in seen_product_ids">
+                                            <t t-set="seen_product_ids" t-value="seen_product_ids + [line.product_id.id]"/>
+                                            <t t-set="prod_ordered"
+                                               t-value="sum(m.product_uom_qty for m in o.move_ids if m.product_id.id == line.product_id.id)"/>
+                                            <t t-set="prod_delivered"
+                                               t-value="sum(m.quantity for m in o.move_ids if m.product_id.id == line.product_id.id)"/>
+                                            <t t-set="sr_no" t-value="sr_no + 1"/>
+                                            <t t-set="total_ordered" t-value="total_ordered + prod_ordered"/>
+                                            <t t-set="total_delivered" t-value="total_delivered + prod_delivered"/>
+                                            <t t-set="row_bg" t-value="'#f5f9fd' if sr_no % 2 == 0 else '#ffffff'"/>
+                                            <tr>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
+                                                    <t t-esc="sr_no"/>
+                                                </td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
+                                                    <t t-esc="line.product_id.default_code or ''"/>
+                                                </td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:left; background:' + row_bg">
+                                                    <t t-esc="line.product_id.name"/>
+                                                </td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
+                                                    <t t-esc="line.product_uom.name"/>
+                                                </td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
+                                                    <t t-esc="'%.2f' % prod_ordered"/>
+                                                </td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
+                                                    <t t-esc="'%.2f' % prod_delivered"/>
+                                                </td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg"></td>
+                                                <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg"></td>
+                                            </tr>
+                                        </t>
+                                    </t>
+
+                                    <!-- Totals row -->
+                                    <tr>
+                                        <td colspan="4"
+                                            style="padding:6px 8px; border:1px solid #000; text-align:right; font-weight:bold; border-top:2px solid #000; background:#fff;">
+                                            Total Qty
+                                        </td>
+                                        <td style="padding:6px 8px; border:1px solid #000; text-align:center; font-weight:bold; border-top:2px solid #000; background:#fff;">
+                                            <t t-esc="'%.2f' % total_ordered"/>
+                                        </td>
+                                        <td style="padding:6px 8px; border:1px solid #000; text-align:center; font-weight:bold; border-top:2px solid #000; background:#fff;">
+                                            <t t-esc="'%.2f' % total_delivered"/>
+                                        </td>
+                                        <td style="padding:6px 8px; border:1px solid #000; border-top:2px solid #000; background:#fff;"></td>
+                                        <td style="padding:6px 8px; border:1px solid #000; border-top:2px solid #000; background:#fff;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Lot / Serial Numbers - grouped per item, quantity-wise grid -->
+                            <!--
+                                CLIENT CHANGE REQUEST (same pattern as delivery_note_report):
+                                1) Serial numbers generated quantity-wise for each item
+                                   -> handled naturally: Odoo creates one move_line per
+                                      serial-tracked unit, so the count of serials listed
+                                      per product equals its received quantity.
+                                2) A table form is used for Lot/Serial Numbers ONLY -
+                                   the main Products table above carries no lot/serial
+                                   column at all.
+                                3) Format includes SKU, Description and Lot/Serial Number -
+                                   shown as one header band per item (SKU + Description)
+                                   followed by a multi-column grid of that item's serial
+                                   numbers, instead of repeating SKU/Description on every
+                                   single serial row.
+
+                                NUM_LOT_COLS controls how many serial numbers are printed
+                                per row inside each item's grid (set to 4 to match the
+                                provided example - change this single number if a
+                                different column count is needed).
+                            -->
+                            <t t-set="all_lot_lines" t-value="o.move_ids.mapped('move_line_ids').filtered(lambda ml: ml.lot_id)"/>
+                            <t t-if="all_lot_lines">
+                                <t t-set="num_lot_cols" t-value="4"/>
+                                <t t-set="lot_products" t-value="all_lot_lines.mapped('product_id')"/>
+
+                                <div style="margin-bottom:12px;">
+                                    <div style="background-color:#4682B4; color:#fff; font-weight:bold; font-size:9.5pt; padding:6px 12px; border-radius:3px 3px 0 0;">
+                                        Lot / Serial Numbers
+                                    </div>
+
+                                    <t t-foreach="lot_products" t-as="lot_prod">
+                                        <!-- All serial numbers belonging to this product on this picking -->
+                                        <t t-set="prod_serials"
+                                           t-value="[ml.lot_id.name for ml in all_lot_lines if ml.product_id.id == lot_prod.id]"/>
+
+                                        <!-- Chunk the serial list into rows of num_lot_cols -->
+                                        <t t-set="serial_rows"
+                                           t-value="[prod_serials[i:i + num_lot_cols] for i in range(0, len(prod_serials), num_lot_cols)]"/>
+
+                                        <!-- Total quantity moved for this product (used in row 2) -->
+                                        <t t-set="prod_total_qty"
+                                           t-value="sum(m.quantity for m in o.move_ids if m.product_id.id == lot_prod.id)"/>
+
+                                        <table style="width:100%; border-collapse:collapse; font-size:8.5pt; margin-bottom:6px;">
+                                            <!-- Row 1: SKU + Description only -->
+                                            <tr>
+                                                <td colspan="2"
+                                                    style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000;">
+                                                    SKU :
+                                                    <t t-esc="lot_prod.default_code or ''"/>
+                                                </td>
+                                                <td t-att-colspan="num_lot_cols - 1"
+                                                    style="background-color:#4682B4; color:#fff; font-weight:bold; padding:6px 8px; border:1px solid #000;">
+                                                    Description :
+                                                    <t t-esc="lot_prod.name"/>
+                                                </td>
+                                            </tr>
+                                            <!-- Row 2: Lot/Serial Number sub-headers + Total Qty for this product -->
+                                            <tr>
+                                                <t t-foreach="range(num_lot_cols)" t-as="col_idx">
+                                                    <td style="background-color:#dce8f5; color:#1a1a1a; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center;">
+                                                        Lot/Serial Number
+                                                    </td>
+                                                </t>
+                                                <td t-att-rowspan="len(serial_rows) + 1"
+                                                    style="background-color:#dce8f5; color:#1a1a1a; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; vertical-align:middle;">
+                                                    Total Qty
+                                                    <br/>
+                                                    <t t-esc="'%.2f' % prod_total_qty"/>
+                                                </td>
+                                            </tr>
+                                            <!-- Serial number grid, quantity-wise -->
+                                            <t t-foreach="serial_rows" t-as="srow">
+                                                <tr>
+                                                    <t t-foreach="srow" t-as="serial_val">
+                                                        <td style="padding:6px 8px; border:1px solid #000; text-align:center;">
+                                                            <t t-esc="serial_val"/>
+                                                        </td>
+                                                    </t>
+                                                    <!-- Pad the last row so the grid stays rectangular -->
+                                                    <t t-if="len(srow) &lt; num_lot_cols">
+                                                        <t t-foreach="range(num_lot_cols - len(srow))" t-as="pad_idx">
+                                                            <td style="padding:6px 8px; border:1px solid #000;">&#160;</td>
+                                                        </t>
+                                                    </t>
+                                                </tr>
+                                            </t>
+                                        </table>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <!-- ===================== PAGE FOOTER ===================== -->
+                            <div class="footer"
+                                 style="width:100%; border-top:1px solid #ccc; padding-top:5px; margin-top:20px; font-size:10pt; color:#555;">
+                                <div style="float:left;">
+                                    Printed By: <t t-esc="env.user.name"/> | 
+                                    Print Date: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                </div>
+                                <div style="float:right; font-style:italic;">
+                                    Page <span class="page"/> of <span class="topage"/>
+                                </div>
+                                <div style="clear:both;"></div>
+                            </div>
+
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_good_received_report" model="report.paperformat">
+            <field name="name">Customized Paper Format</field>
+            <field name="default" eval="True"/>
+            <field name="format">custom</field>
+            <field name="page_height">297</field>
+            <field name="page_width">210</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="good_received_report_action" model="ir.actions.report">
+            <field name="name">Goods Received Note</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">western_custom_reports.good_received_report</field>
+            <field name="report_file">western_custom_reports.good_received_report</field>
+            <field name="paperformat_id" ref="western_custom_reports.paperformat_good_received_report"/>
+            <field name="print_report_name">'Goods Received - %s - %s' % (object.partner_id.name or '', object.name)</field>
+            <field name="binding_model_id" eval="False"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

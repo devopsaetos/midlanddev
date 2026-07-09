@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="stock_picking_batch_form_view" model="ir.ui.view">
+            <field name="name">stock.picking.batch.form.inherit</field>
+            <field name="model">stock.picking.batch</field>
+            <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_form"/>
+            <field name="arch" type="xml">
+                <header>
+                    <button name="action_print_batch_transfer_report"
+                            string="Batch Pick List Report"
+                            type="object"
+                            class="oe_stat_button"/>
+                </header>
+            </field>
+        </record>
+    </data>
+</odoo>

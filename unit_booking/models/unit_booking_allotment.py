@@ -1154,7 +1154,7 @@ class BookingAllotmentPlan(models.Model):
             if rec.invoice_created:
                 date = rec.env['account.payment'].search([
                     # ('id', 'in', rec.invoice_id.payment_ids.ids),
-                    ('state', '=', 'posted'),
+                    ('state', '=', 'paid'),
                     ('invoice_ids.name', '=', rec.invoice_id.name)
                 ], limit=1, order='id desc')
 

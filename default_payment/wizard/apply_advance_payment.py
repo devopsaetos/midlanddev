@@ -79,6 +79,18 @@ class ApplyAdvancePayments(models.TransientModel):
     def _onchange_company(self):
         self.journal_id = self.company_id.advance_payment_journal_id.id
 
+    @api.onchange('advance_payment_ids')
+    def _onchange_advance_payment_ids(self):
+        remaining = self.invoice_residual
+        for payment in self.advance_payment_ids:
+            if payment.amount_to_adjust:
+                remaining -= payment.amount_to_adjust
+        for payment in self.advance_payment_ids:
+            if not payment.amount_to_adjust and remaining > 0:
+                amount = min(remaining, payment.amount_residual)
+                payment.amount_to_adjust = amount
+                remaining -= amount
+
     @api.model
     def default_get(self, fields):
         rec = super(ApplyAdvancePayments, self).default_get(fields)
@@ -118,6 +130,17 @@ class ApplyAdvancePayments(models.TransientModel):
 
     def apply_advance_payment(self):
         for record in self:
+            if not record.advance_payment_ids:
+                raise ValidationError(_('Please select at least one Advance Payment to apply.'))
+
+            if record.adjust_amount_total <= 0:
+                raise ValidationError(_(
+                    'Please enter an amount in the "Amount to Adjust" column for at least '
+                    'one advance payment before applying.'))
+
+            if not record.journal_id:
+                raise ValidationError(_('Please select an Application Journal.'))
+
             if (record.advance_payment_total > record.invoice_residual
                     and len(record.advance_payment_ids) > 1):
                 error = ('Multiple application of advance payments that '
@@ -258,10 +281,7 @@ class ApplyAdvancePayments(models.TransientModel):
                 }))
 
             if advance_payment_move_lines:
-                name = record.journal_id.with_context(
-                    ir_sequence_date=record.date).sequence_id.next_by_id()
                 move = self.env['account.move'].with_context(skip_validation=True).create({
-                    'name': name,
                     'date': record.date,
                     'company_id': record.company_id.id,
                     'journal_id': record.journal_id.id,

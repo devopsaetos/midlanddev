@@ -789,7 +789,7 @@ class ResMember(models.Model):
             'country_id': self.country_id.id,
             'vat': self.vat,
             'ref': self.ref,
-            'company_id': self.company_id.id,
+            'company_id': False,
             'customer_rank': 1,
             'active': self.active,
         }
@@ -800,7 +800,7 @@ class ResMember(models.Model):
 
     _SHADOW_SYNC_FIELDS = {
         'name', 'email', 'phone', 'street', 'street2',
-        'city', 'zip', 'state_id', 'country_id', 'company_id',
+        'city', 'zip', 'state_id', 'country_id',
         'vat', 'ref', 'company_type', 'active',
     }
 
