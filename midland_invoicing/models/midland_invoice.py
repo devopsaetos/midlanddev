@@ -190,6 +190,13 @@ class MidlandInvoice(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code('midland.invoice') or _('New')
         return super().create(vals_list)
 
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get('payment_state') == 'paid':
+            for rec in self.filtered('transfer_application_id'):
+                rec.transfer_application_id.payment_received = True
+        return res
+
     # ── Actions ───────────────────────────────────────────────────────────────
 
     def action_post(self):

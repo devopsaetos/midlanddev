@@ -315,14 +315,14 @@
                             </page>
                         </notebook>
                         <notebook>
-                            <page string="Payments" invisible="1">
+                            <page string="Payments">
                                 <field name="stages" invisible="1"/>
 
                                 <button name="create_invoice" type="object" string="Create Invoice" class="oe_highlight"
                                         invisible="stages == 'invoiced'"/>
 
                                 <button name="print_invoice" type="object" string="Print Invoice" class="oe_highlight"
-                                        invisible="state != 'draft'"/>
+                                        invisible="no_of_invoices == 0"/>
                                 <field name="file_payment_ids">
                                     <list editable="bottom">
                                         <field name="product_id"/>

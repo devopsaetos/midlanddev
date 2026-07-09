@@ -233,36 +233,35 @@ class TransferApplication(models.Model):
             raise ValidationError(_('Please select "Payment Made BY" field'))
 
         if self.payment_by == "transferor":
-            partner_id = self.membership_id.partner_id
+            member = self.membership_id
         elif self.payment_by == "tranferee":
-            partner_id = self.transferee_partner_id.partner_id
+            member = self.transferee_partner_id
 
-        if self.file_payment_ids:
-            prod = [(0, 0, {
-                'product_id': rec.product_id.id,
-                'name': rec.product_id.name,
-                'account_id': rec.product_id.property_account_income_id.id,
-                'price_unit': rec.value if rec.payment_type == 'fix' else
-                [self.file_id.net_sale_amount * rec.value / 100][0]
-            }) for rec in self.file_payment_ids]
-
-            invoice = self.env['account.move'].create({
-                'transfer_application_id': self.id,
-                # 'file_ids': self.file_id.id,
-                'partner_id': partner_id.id,
-                'account_id': self.membership_id.partner_id.property_account_receivable_id.id,
-                'property_invoice_type': 'transfer_application',
-                'move_type': 'out_invoice',
-                'invoice_date': fields.Date.today(),
-                'company_id': self.env.company.id,
-                'invoice_line_ids': prod
-            })
-            invoice.file_ids = self.file_id.id
-            invoice.action_post()
-
-            self.stages = 'invoiced'
-        else:
+        if not self.file_payment_ids:
             raise ValidationError(_('Please add fees entry first'))
+
+        lines = [(0, 0, {
+            'product_id': rec.product_id.id,
+            'name': rec.product_id.name,
+            'account_id': rec.product_id.property_account_income_id.id,
+            'quantity': 1.0,
+            'price_unit': rec.value if rec.payment_type == 'fix' else
+            self.file_id.net_sale_amount * rec.value / 100,
+        }) for rec in self.file_payment_ids]
+
+        invoice = self.env['midland.invoice'].create({
+            'transfer_application_id': self.id,
+            'file_ids': self.file_id.id,
+            'member_id': member.id,
+            'property_invoice_type': 'transfer_application',
+            'move_type': 'out_invoice',
+            'invoice_date': fields.Date.today(),
+            'company_id': self.env.company.id,
+            'invoice_line_ids': lines,
+        })
+        invoice.action_post()
+
+        self.stages = 'invoiced'
 
     def create_tax_invoices(self):
         taxes = self.env['required.taxes'].search([('transfer_req_id', '=', self.t_request_id.id)])
@@ -449,7 +448,7 @@ class TransferApplication(models.Model):
             'name': _('Member Invoices'),
             'view_type': 'form',
             'view_mode': 'list,form',
-            'res_model': 'account.move',
+            'res_model': 'midland.invoice',
             'view_id': False,
             'type': 'ir.actions.act_window',
             'domain': domain,
@@ -459,7 +458,7 @@ class TransferApplication(models.Model):
         }
 
     def _compute_no_of_invoices(self):
-        self.no_of_invoices = len(self.env['account.move'].search([('transfer_application_id', '=', self.id)]).mapped('id'))
+        self.no_of_invoices = self.env['midland.invoice'].search_count([('transfer_application_id', '=', self.id)])
         # self.no_of_invoices = 0
         # if self.payment_by == 'transferor':
         #     domain = [('file_ids', '=', self.file_id.id), ('partner_id', '=', self.membership_id.id),('transfer_application_id', '=', self.id)]
@@ -471,8 +470,20 @@ class TransferApplication(models.Model):
         #         self.env['account.move'].search(domain).mapped('id'))
 
     def print_invoice(self):
-        return self.env['account.move'].search([('name', '=', self.t_request_id.name), (
-        'property_invoice_type', '=', 'transfer_application')]).invoice_print()
+        # midland.invoice doesn't have a PDF report yet — open the invoice record
+        # instead of crashing on a report action that doesn't exist for this model.
+        invoice = self.env['midland.invoice'].search([
+            ('transfer_application_id', '=', self.id),
+        ], limit=1, order='id desc')
+        if not invoice:
+            raise ValidationError(_('No invoice found for this transfer application.'))
+        return {
+            'name': _('Transfer Fee Invoice'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'midland.invoice',
+            'view_mode': 'form',
+            'res_id': invoice.id,
+        }
 
     def file_transfer(self):
         docs = self.env['required.documents'].search([('transfer_req_id', '=', self.t_request_id.id)])
