@@ -202,7 +202,7 @@
                         </group>
                         <group>
                             <group>
-                                <field name="payment_by" invisible="1"
+                                <field name="payment_by"
                                        readonly="state == 'transfered'"/>
                             </group>
                         </group>
