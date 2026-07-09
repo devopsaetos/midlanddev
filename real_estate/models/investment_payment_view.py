@@ -30,7 +30,7 @@ class InvestmentPaymentView(models.Model):
                     multi.invoice_id as move_id
                     from 
                     investment i
-                    inner join account_payment pay on i.id =pay.investment_id and pay.state = 'posted'
+                    inner join account_payment pay on i.id =pay.investment_id and pay.state = 'paid'
                     left join multi_invoice_payment multi on pay.id = multi.payment_id
                     
                )''' % (self._table,)

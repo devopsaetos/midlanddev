@@ -17,8 +17,8 @@
                     <field name="allow_bank_finance" invisible="1"/>
                     <field name="finance_by" invisible="allow_bank_finance != True" readonly="state != 'draft'"/>
 <!--                    Visible on payment form-->
-                    <field name="file_id" invisible="payment_type != 'inbound'" options="{'no_create': True}"/>
-                    <field name="investment_id" invisible="payment_type != 'inbound'" options="{'no_create': True}"/>
+                    <field name="file_id" invisible="payment_type != 'inbound' or payment_category == 'advance_payment'" options="{'no_create': True}"/>
+                    <field name="investment_id" invisible="payment_type != 'inbound' or payment_category == 'advance_payment'" options="{'no_create': True}"/>
                 </xpath>
                 <!-- Commented out: communication field doesn't exist in Odoo 19 base account.payment view
                 <xpath expr="//field[@name='communication']" position="attributes">

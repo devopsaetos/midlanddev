@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_multi_invoice_payment,multi.invoice.payment,model_multi_invoice_payment,,1,1,1,1
+access_apply_advance_payment,apply.advance.payment,model_apply_advance_payment,,1,1,1,1

@@ -14,7 +14,15 @@
                     <field name="crm_id" invisible="1"/>
                     <field name="token_partner" invisible="1"/>
                </xpath>
+               <!-- reload_on_attachment forces the chatter to re-render its AttachmentView
+                    tab on every attachment change. On a new/unsaved move (no id yet) that
+                    re-render passes threadId=record.resId=undefined, which AttachmentView's
+                    props validation rejects, crashing the form with an uncaught OwlError.
+                    Dropping the attribute avoids the premature re-render entirely. -->
+               <xpath expr="//chatter" position="attributes">
+                    <attribute name="reload_on_attachment">False</attribute>
+               </xpath>
             </field>
         </record>
-        
+
 </odoo>

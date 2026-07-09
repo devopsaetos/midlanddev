@@ -1847,14 +1847,14 @@ class File(models.Model):
         date = self.env.ref('real_estate.ir_cron_advance_adjustment').till_date or fields.Date.today()
         # files = self.env['account.payment'].search([('file_id', '!=', False), ('is_advance_payment', '=', True), ('state', '=', 'posted')]).mapped('file_id')
         files = self.env['account.payment'].search(
-            [('file_id', '!=', False), ('is_advance_payment', '=', True), ('state', '=', 'posted'),
+            [('file_id', '!=', False), ('is_advance_payment', '=', True), ('state', '=', 'paid'),
              ('amount_residual', '>', 0)]).mapped('file_id')
         print("TOTAL FILES: ", len(files))
         if not files:
             print("No advance found against file with residual amount > 0.")  # Adding this to see in logs on server
         for rec in files:
             advance_payments = self.env['account.payment'].search(
-                [('file_id', '=', rec.id), ('is_advance_payment', '=', True), ('state', '=', 'posted'),
+                [('file_id', '=', rec.id), ('is_advance_payment', '=', True), ('state', '=', 'paid'),
                  ('amount_residual', '>', 0)], order='id asc')
             print("ADVANCE PAYMENT: ", advance_payments.ids)
             for advance_payment in advance_payments:
@@ -2056,16 +2056,13 @@ class File(models.Model):
                             }))
 
                         if advance_payment_move_lines:
-                            name = advance_payment.journal_id.with_context(
-                                ir_sequence_date=record.date).sequence_id.next_by_id()
                             move = self.env['account.move'].with_context(skip_validation=True).create({
-                                'name': name,
                                 'date': record.date,
                                 'company_id': advance_payment.company_id.id,
                                 'journal_id': advance_payment.journal_id.id,
                                 'line_ids': advance_payment_move_lines,
                             })
-                            move.post()
+                            move.action_post()
 
                             invoice_payment_move_lines = move.line_ids.filtered(
                                 lambda r: not r.reconciled and r.account_id.account_type in ('liability_payable', 'asset_receivable'))
@@ -2440,7 +2437,7 @@ class FilePaymentHistory(models.Model):
         for rec in self:
             date = rec.env['account.payment'].search([
                 # ('id', 'in', rec.invoice_id.payment_ids.ids),
-                ('state', '=', 'posted'),
+                ('state', '=', 'paid'),
                 # ('invoice_ids.id', '=', rec.invoice_id.id)
             ], limit=1, order='id desc')
 

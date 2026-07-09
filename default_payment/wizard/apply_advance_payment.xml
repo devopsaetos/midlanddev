@@ -85,8 +85,12 @@
                                 <field name="advance_payment_ids"
                                        domain="[('company_id', '=', company_id), ('is_advance_payment', '=', True),
                                                 ('partner_id', '=', partner_id), ('partner_type', '=', partner_type),
-                                                ('amount_residual', '!=', 0.0), ('state', '=', 'posted'),
-                                                ('reconciled_invoice_ids', '=', False)]">
+                                                ('amount_residual', '!=', 0.0), ('state', '=', 'paid')]"
+                                       context="{'default_payment_category': 'advance_payment',
+                                                 'default_partner_id': partner_id,
+                                                 'default_partner_type': partner_type,
+                                                 'default_company_id': company_id,
+                                                 'default_currency_id': currency_id}">
                                     <list string="Advance Payments" editable="bottom">
                                         <field name="date" invisible="1"/>
                                         <field name="name"/>
@@ -94,7 +98,8 @@
                                         <field name="payment_method_line_id" invisible="1"/>
                                         <field name="company_id" invisible="1"/>
                                         <field name="amount_to_adjust" sum="Amount"/>
-                                        <field name="amount_residual" sum="Balance"/>
+                                        <field name="projected_residual" string="Remaining Amount" sum="Balance"/>
+                                        <field name="amount_residual" invisible="1"/>
                                         <field name="amount" sum="Amount"/>
                                         <field name="reconciled_invoices_count" invisible="1"/>
                                         <field name="state" invisible="1"/>

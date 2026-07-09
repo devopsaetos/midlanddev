@@ -12,13 +12,14 @@
 <!--                </xpath>-->
                 <xpath expr="//field[@name='partner_id']" position="before">
                     <field name="is_sub_investor_payment"
+                           invisible="payment_category == 'advance_payment'"
                            readonly="state != 'draft'"
                     />
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="before">
                     <field name="sub_investor_id"
                            domain="[('investor_type', '=', 'sub_dealer'), ('main_investor_id', '=', partner_id)]"
-                           invisible="not is_sub_investor_payment" readonly="state != 'draft'" required="is_sub_investor_payment"
+                           invisible="not is_sub_investor_payment or payment_category == 'advance_payment'" readonly="state != 'draft'" required="is_sub_investor_payment and payment_category != 'advance_payment'"
                            options="{'no_create': True, 'no_edit': True, 'no_open': True}"
                     />
                 </xpath>

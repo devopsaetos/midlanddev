@@ -20,7 +20,7 @@ class FileConfirmationAdjustmentWizard(models.TransientModel):
             if rec.file_id:
                 rec.confirmation_residual = rec.file_id.installment_plan_ids.filtered(lambda l: l.installment_name == 'Confirmation').residual if rec.file_id.installment_plan_ids else 0.00
                 return {'domain': {
-                    'advance_payment_id': [('is_advance_payment', '=', True), ('partner_id', '=', rec.file_id.investor_id.partner_id.id), ('amount_residual', '>', 0), ('state', '=', 'posted')]
+                    'advance_payment_id': [('is_advance_payment', '=', True), ('partner_id', '=', rec.file_id.investor_id.partner_id.id), ('amount_residual', '>', 0), ('state', '=', 'paid')]
                 }
                 }
 

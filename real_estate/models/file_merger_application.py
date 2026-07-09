@@ -157,7 +157,7 @@ class PlotMergerApplication(models.Model):
             move = self.env['account.move'].create(move_vals)
             # if move:
             #     move.file_ids = line.file_id.id
-            move.post()
+            move.action_post()
             journal_entry_ids.append(move.id)
         self.journal_entry_id = [(6, 0, journal_entry_ids)]
         self.credit_note_created = True

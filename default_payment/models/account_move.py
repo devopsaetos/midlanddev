@@ -140,7 +140,7 @@ class AccountMove(models.Model):
                 ('is_advance_payment', '=', True),
                 ('partner_id', '=', invoice.partner_id.id),
                 ('amount_residual', '!=', 0.0),
-                ('state', '=', 'posted'),
+                ('state', '=', 'paid'),
             ]
             if self.env['account.payment'].search(advance_payment_args):
                 invoice.has_advance_payment = True
