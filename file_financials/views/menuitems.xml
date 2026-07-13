@@ -17,7 +17,7 @@
             sequence='2'
     />
     <menuitem
-            name="Realtor"
+            name="Deal"
             id="file_financials.investments_menu_item"
             parent="file_financials.investment_management_menu_item"
             action="file_financials.action_investment"

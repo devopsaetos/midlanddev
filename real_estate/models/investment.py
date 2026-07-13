@@ -1462,6 +1462,7 @@ class InvestmentLine(models.Model):
     category_id = fields.Many2one('plot.category', 'Category', store=True, related="inventory_id.category_id",
                                   readonly=False)
     inventory_id = fields.Many2one('plot.inventory')
+    token_id = fields.Many2one('token.money', string='Token', store=True, related='inventory_id.token_id', readonly=True)
     no_of_units = fields.Integer('No. of Units', default=1)
     list_price = fields.Float(store=True, compute='_sale_amount')
     price_list_id = fields.Many2one('price.list', compute='_price_list', store=True, readonly=False)

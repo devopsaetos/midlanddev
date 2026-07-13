@@ -22,38 +22,31 @@
                         <button
                                 class="oe_stat_button"
                                 name="issued_files"
-                                widget="statinfo"
                                 type="object" icon="fa-file-text-o"
-                                string="Issued Files : "
                                 invisible="files_created != True">
-                            <field name="no_of_issued_files"/>
+                            <field name="no_of_issued_files" widget="statinfo" string="Issued Files"/>
                         </button>
                         <button
                                 class="oe_stat_button"
                                 name="investor_inventory"
-                                widget="statinfo"
                                 type="object" icon="fa-list-ul"
-                                string="Inventory : "
                                 invisible="(amount_received != True or reservation_type == 'bulk')">
-                            <field name="no_of_units"/>
+                            <field name="no_of_units" widget="statinfo" string="Inventory"/>
                         </button>
                         <button
                                 class="oe_stat_button"
                                 name="investor_files"
-                                widget="statinfo"
                                 type="object" icon="fa-file-text-o"
-                                string="Files : "
                                 invisible="files_created != True">
-                            <field name="no_of_files"/>
+                            <field name="no_of_files" widget="statinfo" string="Files"/>
                         </button>
                         <button
                                 name="open_invoices"
                                 type="object"
                                 class="oe_stat_button"
-                                string="Invoices :  "
                                 icon="fa-pencil-square-o"
                                 invisible="no_of_invoices == 0">
-                            <field name="no_of_invoices" invisible="no_of_invoices == 0"/>
+                            <field name="no_of_invoices" widget="statinfo" string="Invoices" invisible="no_of_invoices == 0"/>
                         </button>
                     </div>
                     <div class="oe_title" readonly="1">
@@ -188,6 +181,7 @@
                                     <field name="price_list_id" force_save="1" invisible="1"/>
                                     <field name="investor_price" force_save="1"/>
                                     <field name="deal_price"/>
+                                    <field name="token_id" string="Token" readonly="1"/>
                                     <field name="reservation_type" force_save="1" invisible="1"/>
                                 </list>
                             </field>
@@ -215,6 +209,7 @@
                                     <field name="list_price"/>
                                     <field name="investor_unit_price" force_save="1"/>
                                     <field name="deal_price" readonly="0"/>
+                                    <field name="token_id" string="Token" readonly="1"/>
                                     <field name="state" string="File Status" readonly="1"/>
                                 </list>
                             </field>
