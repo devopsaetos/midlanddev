@@ -1,111 +1,251 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <template id="transfer_application_letter">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
-                    <t t-call="web.external_layout">
-                        <div class="container">
-                            <style>
-                                p {
-                                font-family: "Times New Roman", Times, serif;
-                                font-size: 16px;
-                                color: black;
-                                }
-                            </style>
-                            <p class="text-right">
-                                Date:
-                                <span style="text-decoration: underline;" t-field="o.file_id.booking_date"/>
-                            </p>
-                            <br/>
-                            <p>
-                                To: The Chief Executive
-                                <t t-esc="res_company.name"/>
-                            </p>
-                            <br/>
+    <template id="ta_customized_header">
+        <div class="header">
+            <div>
+                <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"
+                     style="max-height:60px; max-width:200px;"/>
+            </div>
+            <div style="border-top:1px solid #000; opacity:1; margin-top:4px; margin-bottom:4px;"/>
+            <div>
+                <span t-field="o.env.company.name"/>
+            </div>
+        </div>
+    </template>
 
-                            <p>
-                                Subject:
-                            </p>
-                            <br/>
-                            <strong>
-                                <p style="margin-left:75px;">
-                                    Transfer of Plot/House/Shop #
-                                    <span style="text-decoration: underline;" t-field="o.inventory_id"/>
-                                    Block #
-                                    <span style="text-decoration: underline;" t-field="o.sector_id"/>
-                                </p>
-                            </strong>
-                            <br/>
+    <template id="ta_customized_footer">
+        <div class="footer">
+            <div class="text-center" style="border-top:1px solid #000; margin-top:40px; padding-top:4px;">
+                Phone:
+                <span t-field="o.env.company.phone"/>
+                Email:
+                <span t-field="o.env.company.email"/>
+                Web:
+                <span t-field="o.env.company.website"/>
+            </div>
+            <div class="text-center">
+                Page:
+                <span class="page"/>
+                /
+                <span class="topage"/>
+            </div>
+        </div>
+    </template>
 
-                            <p>
-                                Sir,
-                            </p>
-                            <br/>
+    <template id="transfer_application_letter">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="real_estate.ta_customized_header"/>
+                <t t-call="real_estate.ta_customized_footer"/>
+                <t t-call="web.external_layout">
+                    <div class="container">
+                        <style>
+                            p, li {
+                            font-family: "Times New Roman", Times, serif;
+                            font-size: 16px;
+                            color: black;
+                            }
+                        </style>
 
-                            <p style="margin-left: 20px;">
-                                I / We are the owner of Plot No.
-                                <span style="text-decoration: underline;"
-                                      t-field="o.unit_number"/>
-                                Block No.
-                                <span style="text-decoration: underline;" t-field="o.phase_id"/>
-                                Sector
-                                <span style="text-decoration: underline;" t-field="o.sector_id"/>
-                                Category
-                                <span style="text-decoration: underline;" t-field="o.category_id"/>
-
-                                Tracking ID No.
-                                <span style="text-decoration: underline;" t-field="o.tracking_id"/>
-                                have sold it to Mr./Mrs./Mst.
-                                <span style="text-decoration: underline;" t-field="o.membership_id.name"/>
-                                S/o,D/o,W/o
-                                <span style="text-decoration: underline;" t-field="o.membership_id.relation_name"/>
-                                CNIC No.
-                                <span style="text-decoration: underline;" t-field="o.membership_id.cnic"/>
-                                <br/>
-                            </p>
-                            <p style="margin-left: 20px;">
-                                Please issue transfer set and process it for transfer as requested
-                            </p>
-
-                            <div class="row">
-                                <div class="col-xs-5 col-xs-offset-7">
-                                    <p style="margin-top: 100px;">
-                                        Thanking You
-                                    </p>
-                                </div>
+                        <div class="row" style="text-align:center;">
+                            <div class="col-12">
+                                <h4 style="color:#283075; font-family:Octarine; font-style: oblique;">
+                                    <b>TRANSFER APPLICATION</b>
+                                </h4>
                             </div>
-                            <br/>
-                            <div class="row">
-                                <div class="col-xs-5 col-xs-offset-7">
-                                    <p>
-                                        Mr./Mrs./Mst.
-                                        <span style="text-decoration: underline;" t-field="o.membership_id.name"/>
-                                        <br/>
-                                        CNIC No.
-                                        <span style="text-decoration: underline;" t-field="o.membership_id.cnic"/>
-                                        <br/>
-                                        Contact No.
-                                        <span style="text-decoration: underline;" t-field="o.membership_id.mobile"/>
-                                        <br/>
-                                    </p>
-                                </div>
-                            </div>
-
                         </div>
 
-                    </t>
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-5">
+                                <p>To,</p>
+                            </div>
+                            <div class="col-5 col-offset-2">
+                                <p>
+                                    Date:
+                                    <span style="text-decoration: underline;" t-field="o.transfer_date"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-left:20px;">
+                            <div class="col-7">
+                                <p>
+                                    <span style="text-decoration: underline;" t-field="o.transferee_partner_id.name"/>
+                                    <br/>
+                                    S/o, D/o, W/o
+                                    <span style="text-decoration: underline;"
+                                          t-field="o.transferee_partner_id.relation_name"/>
+                                    <br/>
+                                    <span style="text-decoration: underline;" t-field="o.transferee_partner_id.street"/>
+                                    <br/>
+                                    <t t-if="o.transferee_partner_id.street2">
+                                        <span style="text-decoration: underline;"
+                                              t-field="o.transferee_partner_id.street2"/>
+                                        <br/>
+                                    </t>
+                                    <span style="text-decoration: underline;" t-field="o.transferee_partner_id.city"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top:30px;">
+                            <div class="col-12">
+                                <p>
+                                    <strong>
+                                        SUBJECT: TRANSFER OF
+                                        Tracking ID No.
+                                        <span t-field="o.tracking_id"/>
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <p>Dear Sir/Madam,</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <p>
+                                    <ol type="1">
+                                        <li>
+                                            The Management of
+                                            <span t-field="res_company.name"/>
+                                            is pleased to certify that
+                                            <b>Plot No.</b>
+                                            <b>
+                                                <span style="text-decoration: underline;" t-field="o.unit_number"/>
+                                            </b>
+                                            ,
+                                            <b>Block No.</b>
+                                            <b>
+                                                <span style="text-decoration: underline;" t-field="o.street_id"/>
+                                            </b>
+                                            ,
+                                            <b>Sector</b>
+                                            <b>
+                                                <span style="text-decoration: underline;" t-field="o.sector_id"/>
+                                            </b>
+                                            ,
+                                            measuring approximately
+                                            <span style="text-decoration: underline;" t-field="o.size_id"/>
+                                            Marla,
+                                            <b>originally booked on</b>
+                                            <b>
+                                                <span style="text-decoration: underline;" t-field="o.booking_date"/>
+                                            </b>
+                                            ,
+                                            <b>Tracking ID No.</b>
+                                            <b>
+                                                <span style="text-decoration: underline;" t-field="o.tracking_id"/>
+                                            </b>
+                                            has been transferred in your name. Necessary amendments in our
+                                            record have been made accordingly.
+                                        </li>
+                                        <li>
+                                            Liability for the payment of any dues regarding cost of land and
+                                            development shall henceforth be payable by the transferee.
+                                        </li>
+                                        <li>
+                                            You shall forthwith be governed by the provisions of the Rules and
+                                            Regulations framed by the management of
+                                            <span t-field="res_company.name"/>.
+                                        </li>
+                                        <li>
+                                            Please always refer to your
+                                            <b>Tracking ID No.</b>
+                                            <span t-field="o.name"/>
+                                            in your future correspondence with
+                                            <span t-field="res_company.name"/>.
+                                        </li>
+                                    </ol>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top:50px;">
+                            <div class="col-4 col-offset-8">
+                                <p>
+                                    <strong>
+                                        CHIEF EXECUTIVE OFFICER
+                                        <br/>
+                                        <span t-field="res_company.name"/>
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col-5">
+                                <p>
+                                    <strong>
+                                        Copy to Seller:
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-7">
+                                <p>
+                                    <span style="text-decoration: underline;" t-field="o.membership_id.name"/>
+                                    <br/>
+                                    S/o, D/o, W/o
+                                    <span style="text-decoration: underline;" t-field="o.membership_id.relation_name"/>
+                                    <br/>
+                                    <span style="text-decoration: underline;" t-field="o.membership_id.street"/>
+                                    <br/>
+                                    <t t-if="o.membership_id.street2">
+                                        <span style="text-decoration: underline;" t-field="o.membership_id.street2"/>
+                                        <br/>
+                                    </t>
+                                    <span style="text-decoration: underline;" t-field="o.membership_id.city"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <p>
+                                    In view of this change of ownership/transfer of Tracking ID No.
+                                    <span t-field="o.tracking_id"/>, your file with
+                                    <span t-field="res_company.name"/>
+                                    stands cancelled.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </t>
             </t>
-        </template>
+        </t>
+    </template>
 
-        <report
-                string="Transfer Application"
-                id="transfer_application_letter_action"
-                model="file.transfer.request"
-                report_type="qweb-pdf"
-                name="real_estate.transfer_application_letter"
-                file="real_estate.report_transfer_application_letter"
-        />
+    <record id="paperformat_transfer_application_letter" model="report.paperformat">
+        <field name="name">Transfer Application Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">40</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
 
-    
+    <record id="transfer_application_letter_action" model="ir.actions.report">
+        <field name="name">Transfer Application</field>
+        <field name="model">transfer.application</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">real_estate.transfer_application_letter</field>
+        <field name="report_file">real_estate.transfer_application_letter</field>
+        <field name="print_report_name">'Transfer Application - %s' % (object.tracking_id or '')</field>
+        <field name="binding_model_id" ref="model_transfer_application"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_transfer_application_letter"/>
+    </record>
+
 </odoo>
