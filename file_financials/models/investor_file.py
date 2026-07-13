@@ -308,11 +308,11 @@ class InvestorFileExt(models.Model):
             raise ValidationError(_('You can not reset plan.Once, invoice created!'))
         else:
             for lines in self.installment_plan_ids:
-                if lines.installment_name in ('Booking', 'Down Payment'):
+                if lines.installment_name in ('Booking', 'Booking Payment'):
                     if lines.payment_status in ('not_paid', 'cancel'):
                         self.installment_plan_ids.unlink()
                         break
-                if lines.installment_name not in ('Booking', 'Down Payment'):
+                if lines.installment_name not in ('Booking', 'Booking Payment'):
                     lines.unlink()
         # self.installment_plan_ids.unlink()
         self.installment_created = False

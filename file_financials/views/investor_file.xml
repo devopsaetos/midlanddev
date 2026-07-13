@@ -75,7 +75,7 @@
                             invisible="state != 'open' or not installment_created"
                     />
                     <field name="installment_plan_ids" nolabel="1" force_save="1" readonly="1">
-                        <list editable="bottom" decoration-info="invoice_created == True" limit="80">
+                        <list editable="bottom" decoration-info="invoice_created == True" limit="500">
                             <field name="price_revised" invisible="1" force_save="1"/>
                             <field name="file_type" invisible="1"/>
                             <field name="double_check_paid_amount" invisible="1"/>

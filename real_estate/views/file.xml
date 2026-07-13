@@ -353,7 +353,7 @@
                                               invisible="create_manually == True">
                                             <field name="installment_plan_ids" readonly="file_status != 'draft'">
                                                 <list editable="bottom" decoration-info="invoice_created == True"
-                                                      limit="0">
+                                                      limit="500">
                                                     <field name="installment_number" string="Sr. No"/>
                                                     <field name="file_type" column_invisible="1"/>
                                                     <field name="double_check_paid_amount" column_invisible="1"/>
@@ -419,7 +419,7 @@
                                                     invisible="payment_states != 'draft' or file_status != 'lock'"
                                             />
                                             <field name="manual_installment_plan_ids" readonly="file_status != 'draft'">
-                                                <list editable="bottom" decoration-info="invoice_created == True">
+                                                <list editable="bottom" decoration-info="invoice_created == True" limit="500">
                                                     <field name="line_calculated" column_invisible="1"/>
                                                     <field name="installment_number" string="Sr. No"
                                                            force_save="1"/>
@@ -535,8 +535,7 @@
                             </group>
                         </page>
                         <page name='next_of_kin'
-                              string="Ownership"
-                              autofocus="autofocus">
+                              string="Ownership">
                             <group string="Nominee">
                                 <field name="kin_line_ids" nolabel="1" readonly="file_status != 'draft'">
                                     <list editable="bottom">

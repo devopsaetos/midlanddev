@@ -211,7 +211,7 @@
                 <list name='file_management' string="File Management" create="false">
                     <field name="name"/>
                     <field name="investor_name"/>
-                    <field name="investment_id" string="Realtor No."/>
+                    <field name="investment_id" string="Deal No."/>
                     <field name="booking_date"/>
                     <field name="inventory_id" string="Unit"/>
                     <field name="sector_id" string="Floor"/>

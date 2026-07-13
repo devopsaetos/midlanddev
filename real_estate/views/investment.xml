@@ -57,12 +57,12 @@
                             <field name="sequence_no"/>
                         </h1>
                     </div>
-                    <group name="investment_details" string="Realtor Details">
+                    <group name="investment_details" string="Deal Details">
                         <group>
                             <field name="partner_id" string="Investor Name"
                                    options="{'no_create': True, 'no_open': True}"
                                    readonly="state in 'payment'"/>
-                            <field name="options" string="Realtor Option" required="1"
+                            <field name="options" string="Deal Option" required="1"
                                    readonly="state in 'payment'"/>
                             <field name="reservation_type" required="1"
                                    readonly="state in 'payment'"/>
@@ -246,7 +246,7 @@
                                     invisible="(installment_created == False or generate_invoices_for_installment != False)"/>
                             <field name="investment_plan_ids" readonly="1">
                                 <list editable="bottom" decoration-info="invoice_created == True"
-                                      default_order="installment_number asc">
+                                      default_order="installment_number asc" limit="500">
                                     <field name="installment_number" string="Sr. No"/>
                                     <field name="installment_type" invisible="1"/>
                                     <field name="installment_name" invisible="0"/>
@@ -268,7 +268,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Realtor History">
+                        <page string="Deal History">
                             <field name="investment_history_ids" readonly="1">
                                 <list editable="bottom">
                                     <field name="installment_number" string="Sr. No"/>
@@ -370,12 +370,12 @@
     <!--    </record>-->
 
     <record model="ir.actions.act_window" id="real_estate.action_investment">
-        <field name="name">Realtor</field>
+        <field name="name">Deal</field>
         <field name="res_model">investment</field>
 
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
-                Click create to add Realtor data.
+                Click create to add Deal data.
             </p>
         </field>
         <field name="domain">

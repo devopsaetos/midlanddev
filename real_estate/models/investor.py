@@ -3,6 +3,7 @@ import psycopg2
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
+from .res_member import _format_cnic
 
 
 class ResInvestor(models.Model):
@@ -217,6 +218,14 @@ class ResInvestor(models.Model):
         self.state_id = self.city_id.state_id.id
         self.zip = self.city_id.zip
         self.country_id = self.state_id.country_id.id
+
+    @api.onchange('cnic')
+    def _onchange_cnic_format(self):
+        self.cnic = _format_cnic(self.cnic)
+
+    @api.onchange('kin_cnic')
+    def _onchange_kin_cnic_format(self):
+        self.kin_cnic = _format_cnic(self.kin_cnic)
 
     @api.onchange('is_same')
     def _onchange_is_same(self):

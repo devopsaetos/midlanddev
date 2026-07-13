@@ -744,15 +744,15 @@ class FileExtension(models.Model):
 
     def reset_installment_plan(self):
         if len(self.installment_plan_ids.filtered(
-                lambda l: l.installment_name not in ['Booking', 'Down Payment']).mapped('invoice_id.id')) > 1:
+                lambda l: l.installment_name not in ['Booking', 'Booking Payment']).mapped('invoice_id.id')) > 1:
             raise ValidationError(_('You can not reset plan.Once, invoice created!'))
         else:
             for lines in self.installment_plan_ids:
-                if lines.installment_name in ('Booking', 'Down Payment'):
+                if lines.installment_name in ('Booking', 'Booking Payment'):
                     if lines.payment_status in ('not_paid', 'cancel'):
                         self.installment_plan_ids.unlink()
                         break
-                if lines.installment_name not in ('Booking', 'Down Payment'):
+                if lines.installment_name not in ('Booking', 'Booking Payment'):
                     lines.unlink()
         # self.installment_plan_ids.unlink()
         self.installment_created = False
@@ -767,7 +767,7 @@ class FileExtension(models.Model):
         if self.no_of_invoices < 1 and self.type == 'normal':
             raise ValidationError("Please generate initial invoice first.")
         if self.payment_states == 'draft':
-            raise ValidationError("Please pay the down payment invoice.")
+            raise ValidationError("Please pay the booking payment invoice.")
         if self.installment_plan_ids:
             for lines in self.installment_plan_ids:
                 if lines.installment_name == 'Confirmation':

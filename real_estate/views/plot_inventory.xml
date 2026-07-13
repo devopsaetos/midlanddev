@@ -71,7 +71,7 @@
                                 <field name="actual_area"/>
 <!--                                <field name="street"/>-->
                                 <field name="possession_status"/>
-                                <field name="investment_id" string="Realtor No." invisible="0"/>
+                                <field name="investment_id" string="Deal No." invisible="0"/>
                                 <field name="partner_id" string="Investor" invisible="0"/>
                                 <field name="deal_price" invisible="0"/>
                                 <field name="investor_unit_price" invisible="0"/>

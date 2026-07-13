@@ -46,11 +46,11 @@
         </record>
 
         <record id="real_estate.downpayment_product" model="product.realestate">
-            <field name="name">DOWN PAYMENT</field>
+            <field name="name">Booking</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Down Payment of the file</field>
+            <field name="description">Booking of the file</field>
         </record>
 
         <record id="real_estate.balloting_product" model="product.realestate">
@@ -127,27 +127,27 @@
         </record>
 
         <record id="real_estate.investment" model="product.realestate">
-            <field name="name">Realtor Payment</field>
+            <field name="name">Deal Payment</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Realtor payment of files</field>
+            <field name="description">Deal payment of files</field>
         </record>
 
         <record id="real_estate.investment_installment" model="product.realestate">
-            <field name="name">Realtor Installment</field>
+            <field name="name">Deal Installment</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Realtor Installment of Files</field>
+            <field name="description">Deal Installment of Files</field>
         </record>
 
         <record id="real_estate.investment_adjustment" model="product.realestate">
-            <field name="name">Realtor Adjustment</field>
+            <field name="name">Deal Adjustment</field>
             <field name="is_include_net_amount">1</field>
             <field name="is_include_property_system">1</field>
             <field name="type">service</field>
-            <field name="description">Realtor Adjustments</field>
+            <field name="description">Deal Adjustments</field>
         </record>
 
         <record id="real_estate.file_transfer" model="product.realestate">

@@ -38,7 +38,7 @@ class InvestmentExt(models.Model):
     total_rebate_amount = fields.Float(string="Total Rebate Amount", compute='calculate_rebate', store=True)
     dealer_rebate_amount = fields.Float(string="Dealer Rebate", compute='calculate_rebate', store=True)
     marketing_rebate_amount = fields.Float(string="Marketing Rebate", compute='calculate_rebate', store=True)
-    down_payment = fields.Float('Down Payment', required=True, tracking=True)
+    down_payment = fields.Float('Booking Payment', required=True, tracking=True)
     balloting_amount = fields.Float()
     primary_amount = fields.Float()
     possession_amount = fields.Float()
@@ -467,7 +467,7 @@ class InvestmentExt(models.Model):
             raise ValidationError('Sorry, Cannot Create Rebate Invoice for Zero (0) Amount')
         if self.rebate_settlement == 'on_deal_close':
             if self.investment_plan_ids[0].installment_type == 'down' and self.investment_plan_ids[0].payment_status != 'paid':
-                raise ValidationError('Please Pay your Down Payment First...')
+                raise ValidationError('Please Pay your Booking Payment First...')
         if self.rebate_on_allotment_ids and not self.deal_rebate_invoice_created:
             rebate_type = self.rebate_on_allotment_ids[0].mapped('settlement_option')
             invoice_type = ''
@@ -668,7 +668,7 @@ class InvestmentExt(models.Model):
 
     def create_installment_plan(self):
         if self.payment_type == 'installments' and not self.down_payment:
-            raise ValidationError('Please enter down payment amount.')
+            raise ValidationError('Please enter booking payment amount.')
 
         if self.payment_type == 'installments':
             self.investment_plan_ids.create({

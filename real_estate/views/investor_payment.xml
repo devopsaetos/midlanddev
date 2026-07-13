@@ -28,7 +28,7 @@
         </record>
 
         <record model="ir.actions.act_window" id="real_estate.action_investor_payment">
-            <field name="name">Realtor Payment</field>
+            <field name="name">Deal Payment</field>
             <field name="res_model">investment.payment</field>
             <field name="view_mode">form</field>
             <field name="type">ir.actions.act_window</field>

@@ -124,6 +124,7 @@
     'assets': {
         'web.assets_backend': [
             # 'real_estate/static/src/xml/*.xml',  # Legacy QWeb templates for followup (needs OWL rewrite)
+            'real_estate/static/src/js/masked_char_field.js',
             'real_estate/static/src/css/file_state.scss',
             'real_estate/static/src/css/form_custom_styles.css',
             'real_estate/static/src/css/followup.css',

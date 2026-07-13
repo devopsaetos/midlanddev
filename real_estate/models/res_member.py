@@ -1,11 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import re
 import psycopg2
 from odoo import models, fields, api, _
 from odoo.exceptions import AccessError, UserError, ValidationError
 from lxml import etree as ET
 import json
+
+
+def _format_cnic(value):
+    """Reformat a CNIC-like char value to Pakistan's 5-7-1 layout
+    (99999-9999999-9) as the user types/tabs out, capped at 13 digits.
+    Pure in-memory formatting for use in onchange methods — no DB access."""
+    if not value:
+        return value
+    digits = re.sub(r'\D', '', value)[:13]
+    if len(digits) > 12:
+        return '%s-%s-%s' % (digits[:5], digits[5:12], digits[12:])
+    if len(digits) > 5:
+        return '%s-%s' % (digits[:5], digits[5:])
+    return digits
 
 
 class ResMember(models.Model):
@@ -224,6 +239,14 @@ class ResMember(models.Model):
     def onchange_company_type(self):
         if self.company_type == 'company':
             self.is_company = True
+
+    @api.onchange('cnic')
+    def _onchange_cnic_format(self):
+        self.cnic = _format_cnic(self.cnic)
+
+    @api.onchange('kin_cnic')
+    def _onchange_kin_cnic_format(self):
+        self.kin_cnic = _format_cnic(self.kin_cnic)
 
     @api.onchange('city_id')
     def onchange_city(self):

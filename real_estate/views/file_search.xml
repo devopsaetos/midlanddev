@@ -184,7 +184,7 @@
                                                 <form>
                                                     <field name="installment_plan_ids">
                                                         <list editable="bottom"
-                                                              decoration-info="invoice_created == True">
+                                                              decoration-info="invoice_created == True" limit="500">
                                                             <field name="installment_number"
                                                                    string="Sr. No"/>
                                                             <field name="installment_type"

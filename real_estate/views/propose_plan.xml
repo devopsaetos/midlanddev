@@ -70,7 +70,7 @@
                                         invisible="(installment_created != True or state != 'draft')"
                                         />
                                 <field name="propose_installment_plan_ids">
-                                    <list>
+                                    <list limit="500">
                                         <field name="installment_number" string="Sr. No"/>
                                         <field name="installment_type"/>
                                         <field name="date"/>
@@ -81,7 +81,7 @@
                             </page>
                             <page string="Manual Installment Plan" invisible="create_manually == False">
                                 <field name="manual_installment_plan_ids" readonly="state != 'draft'">
-                                    <list editable="bottom">
+                                    <list editable="bottom" limit="500">
                                         <field name="line_calculated" invisible="1"/>
                                         <field name="installment_number" string="Sr. No" force_save="1"/>
 <!--                                        <field name="installment_type"/>-->

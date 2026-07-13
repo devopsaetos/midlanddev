@@ -323,7 +323,7 @@
                                        invisible="kin_member_relation != 'other'" required="kin_member_relation == 'other'"/>
                             </group>
                         </group>
-                        <group name="investment_details" string="Realtor Details"
+                        <group name="investment_details" string="Deal Details"
                                invisible="applicable_on != 'investment'">
                             <group>
                                 <field name="investment_id" readonly="1"/>
