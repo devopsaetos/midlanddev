@@ -493,7 +493,7 @@
                                                widget='image'
                                                style="width:100px; height:100px" readonly="id"/>
                                     </group>
-                                    <group string="Next Of Kin">
+                                    <group string="Nominee">
                                         <field name="kin_name" required="company_type == 'person'" readonly="id"/>
                                         <field name="kin_mobile" widget="mask"
                                                data-inputmask="'mask': '+99-999-9999999'"
@@ -559,7 +559,7 @@
                             </page>
 
                             <page name='next_of_kin' invisible="company_type == 'company'"
-                                  string="Next of Kin">
+                                  string="Nominee">
                                 <field name="kin_line_ids" readonly="id">
                                     <list editable="bottom">
                                         <field name="name"/>

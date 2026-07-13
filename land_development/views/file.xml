@@ -200,7 +200,7 @@
                                 <!--                                    </page>-->
                                 <!--                                </notebook>-->
                             </group>
-                            <group string="Next Of Kin" class="pull-right">
+                            <group string="Nominee" class="pull-right">
                                 <field name="kin_name" readonly="1"/>
                                 <field name="kin_mobile" readonly="1" widget="mask"
                                        data-inputmask="'mask': '+99-999-9999999'"
@@ -603,7 +603,7 @@
                             <page name='next_of_kin'
                                   string="Ownership"
                                   autofocus="autofocus">
-                                <group string="Next of Kin">
+                                <group string="Nominee">
                                     <field name="kin_line_ids" nolabel="1">
                                         <list editable="bottom">
                                             <field name="name"
@@ -684,7 +684,7 @@
             <field name="model">file</field>
             <field name="priority">2</field>
             <field name="arch" type="xml">
-                <list name='file_management' string="File Management" create="false">
+                <list name='file_management' string="File Management">
                     <field name="name"/>
                     <field name="tracking_id"/>
                     <field name="membership_name"/>
