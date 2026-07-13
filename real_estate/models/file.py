@@ -38,6 +38,7 @@ class File(models.Model):
         ('lock', 'Lock'),
         ('approve', 'Approve'),
         ('dispute', 'Legal Dispute'),
+        ('cancel', 'Cancel'),
         ('merged_and_cancel', 'Merged And Cancel')
     ], default='draft', tracking=True)
     invoice_payment_type = fields.Selection([('osp', 'One Step Payment'),
@@ -1953,7 +1954,7 @@ class File(models.Model):
                                 balance = abs(line.balance)
                                 currency = line.currency_id or currency_company
                                 currency_invoice = record.currency_id
-                                payment_date = line.payment_id.payment_date
+                                payment_date = line.payment_id.date
 
                                 if currency_company != currency_invoice:
                                     advance_payment_residual = currency_invoice.with_context(date=payment_date) \
@@ -2319,7 +2320,7 @@ class InstallmentPlan(models.Model):
                     # if payment and rec.payment_status in ('in_payment', 'paid'):
                     # rec.payment_date = dateutil.parser.parse(str(payment.payment_date)) if payment.date else ''
                 if payment and rec.amount_paid > 0:
-                    rec.payment_date = payment.payment_date if payment.payment_date else False
+                    rec.payment_date = payment.date if payment.date else False
 
     def _double_check_paid_amount(self):
         for rec in self:

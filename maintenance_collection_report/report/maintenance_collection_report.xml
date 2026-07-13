@@ -1,0 +1,491 @@
+<odoo>
+    <template id="maintenance_collection_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row" style="font-family:'Roboto',sans-serif">
+                    <div class="col-7">
+                        <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"
+                        />
+                    </div>
+                    <div class="col-5" name="company_address" style="font-size:12px; text-align:right;color:black">
+                        <ul class="list-unstyled">
+                            <strong>
+                                <li t-if="o.env.company.name">
+                                    <span t-field="o.env.company.name"/>
+                                </li>
+                            </strong>
+                            <li t-if="o.env.company.street">
+                                <span t-field="o.env.company.street"/>
+                            </li>
+                            <li t-if="o.env.company.street2">
+                                <span t-field="o.env.company.street2"/>
+                                <span t-field="o.env.company.city"/>
+                            </li>
+                            <li t-if="o.env.company.country_id">
+                                <span t-field="o.env.company.country_id.name"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="maintenance_collection_footer">
+        <div class="footer">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:black;">
+                <div class="col-4 text-center" style="margin-top:0px;">
+                    <span>Printed By:
+                        <span t-esc="request.env.user.name"/>
+                    </span>
+                </div>
+                <div class="col-4 text-center" style="margin-top:0px;"/>
+                <div class="col-4 text-center" style="margin-top:0px;">
+                    <span>Print Date:
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+    <data>
+        <template id="maintenance_report_custom">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="maintenance_collection_report.maintenance_collection_header"/>
+                    <t t-call="maintenance_collection_report.maintenance_collection_footer"/>
+                    <t t-call="web.basic_layout">
+                        <div class="page">
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <h5 style="color:#191970;" class="text-capitalize">
+                                        <b>MAINTENANCE COLLECTION REPORT</b>
+                                    </h5>
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="col-12 text-capitalize">
+                                <div class="row" style="color:black;">
+                                    <div class="col-6">
+                                        <!--                                        <t t-if="society_id">-->
+                                        <!--                                            <div class="row" style="color:black;">-->
+                                        <!--                                                <div class="col-4">-->
+                                        <!--                                                    <b>Society:</b>-->
+                                        <!--                                                </div>-->
+                                        <!--                                                <div class="col-8" style="background-color:#F6F6F6;">-->
+                                        <!--                                                    <span t-esc="society_id.name"/>-->
+                                        <!--                                                </div>-->
+                                        <!--                                            </div>-->
+                                        <!--                                        </t>-->
+
+                                        <t t-if="category_ids">
+                                            <div class="row" style="color:black;">
+                                                <div class="col-4">
+                                                    <b>Category:</b>
+                                                </div>
+                                                <t t-foreach="category_ids" t-as="category">
+                                                    <div class="col-8" style="background-color:#F6F6F6;">
+                                                        <span t-esc="category.name"/>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        <t t-if="date_from">
+                                            <div class="row" style="color:black;">
+                                                <div class="col-4">
+                                                    <b>Date From:</b>
+                                                </div>
+                                                <div class="col-8" style="background-color:#F6F6F6;">
+                                                    <span t-esc="date_from"
+                                                          t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                        <t t-if="date_to">
+                                            <div class="row" style="color:black;">
+                                                <div class="col-4">
+                                                    <b>Date To:</b>
+                                                </div>
+                                                <div class="col-8" style="background-color:#F6F6F6;">
+                                                    <span t-esc="date_to"
+                                                          t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <div class="col-6">
+
+                                        <t t-if="unit_category_type_ids">
+                                            <div class="row" style="color:black;">
+                                                <div class="col-4">
+                                                    <b>Sector:</b>
+                                                </div>
+                                                <t t-foreach="unit_category_type_ids" t-as="product">
+                                                    <th class="p-1 align-middle text-center">
+                                                        <t t-esc="product.name"/>,
+                                                    </th>
+                                                </t>
+                                            </div>
+                                        </t>
+                                        <t t-if="sector_id">
+                                            <div class="row" style="color:black;">
+                                                <div class="col-4">
+                                                    <b>Sector:</b>
+                                                </div>
+                                                <t t-foreach="sector_id" t-as="sector">
+                                                    <th class="p-1 align-middle text-center">
+                                                        <t t-esc="sector.name"/>,
+                                                    </th>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr/>
+                        <!-- Ist Table -->
+                        <table class="table table-striped table-bordered" style="width:50%;">
+                            <thead>
+                                <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                    <th colspan="2" class="p-1 align-middle text-center">
+                                        <span>Maintenance Collection Month Wise</span>
+                                    </th>
+                                </tr>
+                                <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Month</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Total</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="months_list" t-as="month">
+                                    <tr>
+                                        <td class="p-1 align-middle text-center">
+                                            <span t-esc="month"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-right">
+                                            <span
+                                                    t-esc="sum(payment.payment_amount_cal for payment in account_payment if payment.payment_date and payment.payment_date.strftime('%b %Y') == month)"
+                                                    t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                    <th class="p-1 align-middle text-center">
+                                        <span>
+                                            <strong>Grand Total</strong>
+                                        </span>
+                                    </th>
+                                    <th class="p-1 align-middle text-right">
+                                        <span
+                                                t-esc="sum(payment.payment_amount_cal for payment in account_payment if payment.payment_date)"
+                                                t-options='{"widget": "float", "precision": 2}'/>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                    <th t-att-colspan="len(sector_id) + 1 if sector_id else len(sectors_from_payments) + 1" class="p-1 align-middle text-center">
+                                        <span>Maintenance Collection Sector &amp; Product Wise</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Sector</span>
+                                    </th>
+                                    <t t-if="unit_category_type_ids">
+                                        <t t-foreach="unit_category_product" t-as="product">
+                                            <th class="p-1 align-middle text-center">
+                                                <span t-esc="product.name"/>
+                                            </th>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-foreach="unique_product" t-as="product">
+                                            <th class="p-1 align-middle text-center">
+                                                <t t-esc="product.name"/>
+                                            </th>
+                                        </t>
+                                    </t>
+                                </tr>
+                                <t t-if="sector_id">
+                                    <t t-foreach="sector_id" t-as="sector">
+                                        <tr>
+                                            <td class="p-1 align-middle text-center">
+                                                <t t-esc="sector.name"/>
+                                            </td>
+                                            <t t-foreach="unit_category_product" t-as="product">
+                                                <td class="p-1 align-middle text-right">
+                                                    <t
+                                                            t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.sector_id.id == sector.id and payment.file_id.unit_category_type_id.id == product.id).mapped('payment_amount_cal'))"
+                                                            t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <t t-else="">
+                                    <t t-foreach="sectors_from_payments" t-as="sector">
+                                        <tr>
+                                            <td class="p-1 align-middle text-center">
+                                                <t t-esc="sector.name"/>
+                                            </td>
+                                            <t t-foreach="unique_product" t-as="product">
+                                                <td class="p-1 align-middle text-right">
+                                                    <t
+                                                            t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.sector_id.id == sector.id and payment.file_id.unit_category_type_id.id == product.id).mapped('payment_amount_cal'))"
+                                                            t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                            </t>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <!-- Grand Total row -->
+                                <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                    <td class="p-1 align-middle text-center">
+                                        <span>
+                                            <strong>Grand Total</strong>
+                                        </span>
+                                    </td>
+                                    <t t-if="sector_id">
+                                        <t t-foreach="unit_category_product" t-as="product">
+                                            <td class="p-1 align-middle text-right">
+                                                <t t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.unit_category_type_id.id == product.id).mapped('payment_amount_cal'))"
+                                                   t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <t t-foreach="unique_product" t-as="product">
+                                            <td class="p-1 align-middle text-right">
+                                                <t t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.unit_category_type_id.id == product.id).mapped('payment_amount_cal'))"
+                                                   t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </t>
+                                    </t>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Second Table Previous code -->
+<!--                        <table class="table table-striped table-bordered">-->
+<!--                            <thead>-->
+<!--                                <tr style="background-color:#191970;color:#fff;font-size:14px;">-->
+<!--                                    <th t-att-colspan="len(sector_id) + 2 if sector_id else len(sectors_from_payments) + 2" class="p-1 align-middle text-center">-->
+<!--                                        <span>Maintenance Collection Month &amp; Sector Wise</span>-->
+<!--                                    </th>-->
+<!--                                </tr>-->
+<!--                                <tr style="background-color:#191970;color:#fff;font-size:14px;">-->
+<!--                                    <th class="p-1 align-middle text-center">-->
+<!--                                        <span>Month</span>-->
+<!--                                    </th>-->
+<!--                                    <t t-if="sector_id">-->
+<!--                                        <t t-foreach="sector_id" t-as="sector">-->
+<!--                                            <th class="p-1 align-middle text-center">-->
+<!--                                                <t t-esc="sector.name"/>-->
+<!--                                            </th>-->
+<!--                                        </t>-->
+<!--                                        <th class="p-1 align-middle text-center">-->
+<!--                                            <span>Total</span>-->
+<!--                                        </th>-->
+<!--                                    </t>-->
+<!--                                    <t t-else="">-->
+<!--                                        &lt;!&ndash; Code to execute when sector_id is empty or False &ndash;&gt;-->
+<!--                                        <t t-foreach="sectors_from_payments" t-as="sector">-->
+<!--                                            <th class="p-1 align-middle text-center">-->
+<!--                                                <t t-esc="sector.name"/>-->
+<!--                                            </th>-->
+<!--                                        </t>-->
+<!--                                        <th class="p-1 align-middle text-center">-->
+<!--                                            <span>Total</span>-->
+<!--                                        </th>-->
+<!--                                    </t>-->
+<!--                                </tr>-->
+<!--                                &lt;!&ndash; Additional rows for each month and total amount for each sector in that month &ndash;&gt;-->
+<!--                                <t t-foreach="months_list" t-as="month">-->
+<!--                                    <tr>-->
+<!--                                        <td class="p-1 align-middle text-center">-->
+<!--                                            <span>-->
+<!--                                                <t t-esc="month"/>-->
+<!--                                            </span>-->
+<!--                                        </td>-->
+<!--                                        <t t-if="sector_id">-->
+<!--                                            <t t-foreach="sector_id" t-as="sector">-->
+<!--                                                <td class="p-1 align-middle text-right">-->
+<!--                                                    <t t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.sector_id.id == sector.id and payment.payment_date.strftime('%b %Y') == month).mapped('payment_amount_cal'))"-->
+<!--                                                       t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                                </td>-->
+<!--                                            </t>-->
+<!--                                            <td class="p-1 align-middle text-right">-->
+<!--                                                <span>-->
+<!--                                                    <t t-esc="sum(account_payment.filtered(lambda payment: payment.payment_date.strftime('%b %Y') == month).mapped('payment_amount_cal'))"-->
+<!--                                                       t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                                </span>-->
+<!--                                            </td>-->
+<!--                                        </t>-->
+<!--                                        <t t-else="">-->
+<!--                                            <t t-foreach="sectors_from_payments" t-as="sector">-->
+<!--                                                <td class="p-1 align-middle text-right">-->
+<!--                                                    <t t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.sector_id.id == sector.id and payment.payment_date.strftime('%b %Y') == month).mapped('payment_amount_cal'))"-->
+<!--                                                       t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                                </td>-->
+<!--                                            </t>-->
+<!--                                            <td class="p-1 align-middle text-right">-->
+<!--                                                <span>-->
+<!--                                                    <t t-esc="sum(account_payment.filtered(lambda payment: payment.payment_date.strftime('%b %Y') == month).mapped('payment_amount_cal'))"-->
+<!--                                                       t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                                </span>-->
+<!--                                            </td>-->
+<!--                                        </t>-->
+<!--                                    </tr>-->
+<!--                                </t>-->
+<!--                                &lt;!&ndash; Grand Total row &ndash;&gt;-->
+<!--                                <tr style="background-color:#191970;color:#fff;font-size:14px;">-->
+<!--                                    <td class="p-1 align-middle text-center">-->
+<!--                                        <span>-->
+<!--                                            <strong>Grand Total</strong>-->
+<!--                                        </span>-->
+<!--                                    </td>-->
+<!--                                    <t t-if="sector_id">-->
+<!--                                        <t t-foreach="sector_id" t-as="sector">-->
+<!--                                            <td class="p-1 align-middle text-right">-->
+<!--                                                <t t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.sector_id.id == sector.id).mapped('payment_amount_cal'))"-->
+<!--                                                   t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                            </td>-->
+<!--                                        </t>-->
+<!--                                        <td class="p-1 align-middle text-right">-->
+<!--                                            <span>-->
+<!--                                                <t t-esc="sum(account_payment.mapped('payment_amount_cal'))" t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                            </span>-->
+<!--                                        </td>-->
+<!--                                    </t>-->
+<!--                                    <t t-else="">-->
+<!--                                        <t t-foreach="sectors_from_payments" t-as="sector">-->
+<!--                                            <td class="p-1 align-middle text-right">-->
+<!--                                                <t t-esc="sum(account_payment.filtered(lambda payment: payment.file_id.sector_id.id == sector.id).mapped('payment_amount_cal'))"-->
+<!--                                                   t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                            </td>-->
+<!--                                        </t>-->
+<!--                                        <td class="p-1 align-middle text-right">-->
+<!--                                            <span>-->
+<!--                                                <t t-esc="sum(account_payment.mapped('payment_amount_cal'))" t-options='{"widget": "float", "precision": 2}'/>-->
+<!--                                            </span>-->
+<!--                                        </td>-->
+<!--                                    </t>-->
+<!--                                </tr>-->
+<!--                            </thead>-->
+<!--                        </table>-->
+                        <!-- End Second Table Previous code -->
+                        <br/>
+                        <br/>
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Sr No.</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Member</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>File No.</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Sector</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Street</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>House</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Date</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Journal</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Category</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Product</span>
+                                    </th>
+                                    <th class="p-1 align-middle text-center">
+                                        <span>Amount</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="total_amount" t-value="0"/>
+                                <t t-set="serial_number" t-value="0"/>
+                                <t t-foreach="account_payment" t-as="account">
+                                    <t t-set="serial_number" t-value="serial_number + 1"/>
+                                    <tr style="font-size:14px !important;">
+                                        <td class="p-1 align-middle text-center">
+                                            <span t-esc="serial_number"/>.
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.membership_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.sector_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.street_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.inventory_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.payment_date"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.journal_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.category_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-left">
+                                            <span t-esc="account.file_id.unit_category_type_id.name"/>
+                                        </td>
+                                        <td class="p-1 align-middle text-right">
+                                            <span t-esc="sum(account.multi_invoice_ids.filtered(lambda invoice: invoice.invoice_id.property_invoice_type in ['maintenance_charges', 'society_charges'] and any(line.product_id.id == 103 for line in invoice.invoice_id.invoice_line_ids)).mapped('payment_amount'))"
+                                                  t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                    </tr>
+                                    <t t-set="total_amount"
+                                       t-value="total_amount + sum(account.multi_invoice_ids.filtered(lambda invoice: invoice.invoice_id.property_invoice_type in ['maintenance_charges', 'society_charges'] and any(line.product_id.id == 103 for line in invoice.invoice_id.invoice_line_ids)).mapped('payment_amount'))"/>
+                                </t>
+                                <tr style="font-size:14px !important;">
+                                    <td colspan="10" class="p-1 align-middle text-left">
+                                        <strong>Total</strong>
+                                    </td>
+                                    <strong>
+                                        <td class="p-1 align-middle text-right">
+                                            <span t-esc="total_amount" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                    </strong>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
+

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_maintenance_summary_report_wizard,maintenance.summary.report.wizard,model_maintenance_summary_report_wizard,,1,1,1,1
+access_month_wise_report_wizard,month.wise.report.wizard,model_month_wise_report_wizard,,1,1,1,1
+access_maintenance_payment_summary_wizard,maintenance.payment.summary.wizard,model_maintenance_payment_summary_wizard,,1,1,1,1

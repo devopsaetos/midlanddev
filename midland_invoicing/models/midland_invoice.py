@@ -200,7 +200,11 @@ class MidlandInvoice(models.Model):
     # ── Actions ───────────────────────────────────────────────────────────────
 
     def action_post(self):
-        create_entry = self.env['ir.config_parameter'].sudo().get_param(
+        # Callers that need a real journal entry regardless of the global
+        # "Create Entry for Invoices" setting (e.g. a vendor bill refund that
+        # must be payable through the standard Accounting app) can force it
+        # with self.with_context(force_journal_entry=True).action_post().
+        create_entry = self.env.context.get('force_journal_entry') or self.env['ir.config_parameter'].sudo().get_param(
             'midland.create_invoice_entry', default='False'
         ) in ('True', '1', 'true')
         for rec in self:

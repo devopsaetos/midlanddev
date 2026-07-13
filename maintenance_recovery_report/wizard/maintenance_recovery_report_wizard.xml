@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="maintenance_recovery_report_wizards_view_form" model="ir.ui.view">
+        <field name="name">maintenance.recovery.wizard.view.form</field>
+        <field name="model">maintenance.recovery.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Recovery Report">
+                <newline/>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="society_id" options="{'no_create': True}"/>
+                            <field name="phase_id" options="{'no_create': True}"/>
+                            <field name="sector_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="product_id" options="{'no_create': True}"/>
+                            <field name="category_id" options="{'no_create': True}"/>
+                            <field name="agent_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="date_from"/>
+                        </group>
+                        <group>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="process_report" string="Print PDF" type="object" default_focus="1"
+                            class="oe_highlight"/>
+                    <button string="Cancel" class="btn btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- This is the report action actually invoked (see
+         wizard/maintenance_recovery_report_wizard.py process_report()/_print_report(), which
+         calls self.env.ref('maintenance_recovery_report.action_report_maintenance_recovery_report')
+         - the xmlid below). -->
+    <record id="action_report_maintenance_recovery_report" model="ir.actions.report">
+        <field name="name">Maintenance Recovery Report</field>
+        <field name="model">maintenance.recovery.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">maintenance_recovery_report.maintenance_recovery</field>
+        <!-- Odoo 19: report_file must match the qweb template xmlid used by report_name (same
+             convention as every other report action in this project, e.g.
+             maintenance_collection_report/report/report.xml) - the trailing ".xml" here was a
+             bug carried over from the source module. Original (bugged) value kept commented. -->
+        <!-- <field name="report_file">maintenance_recovery_report.maintenance_recovery_report.xml</field> -->
+        <field name="report_file">maintenance_recovery_report.maintenance_recovery</field>
+        <!-- Odoo 19: this action never had a paperformat_id set, so it silently ignored the
+             Landscape/A4 report.paperformat record (id maintenance_recovery_paperformat)
+             defined in report/report.xml, which was only ever wired into the orphaned/unused
+             duplicate action there. Linked here so the report that is actually rendered picks
+             up the intended paper format. -->
+        <field name="paperformat_id" ref="maintenance_recovery_report.maintenance_recovery_paperformat"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="maintenance_recovery_report_wizards_action" model="ir.actions.act_window">
+        <field name="name">Maintenance Recovery Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">maintenance.recovery.wizard</field>
+        <field name="view_id"
+               ref="maintenance_recovery_report.maintenance_recovery_report_wizards_view_form"/>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Odoo 19: original parent "axiom_recovery_report.report" referenced a module
+         (axiom_recovery_report) that does not exist anywhere in this codebase and is no longer
+         in this module's `depends` - installing with that parent would fail with an unresolved
+         external ID. Re-parented to maintenance_charges's own main menu
+         (maintenance_charges.maintenance_charges_main_menu), the same anchor used by the sibling
+         maintenance_recovery_batch and maintenance_invoice_report modules converted in this
+         batch. -->
+    <menuitem
+            name="Maintenance Recovery"
+            id="maintenance_recovery_report_wizards_menu"
+            parent="maintenance_charges.maintenance_charges_main_menu"
+            action="maintenance_recovery_report_wizards_action"
+            sequence="6"
+    />
+</odoo>

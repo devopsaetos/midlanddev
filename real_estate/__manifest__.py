@@ -53,7 +53,7 @@
         'views/file_payments.xml',
         'views/bulk_file_cancellation.xml',
         'views/ir_cron_ext.xml',
-        # 'views/crm_lead_ext.xml',
+        'views/crm_lead_ext.xml',
         # 'views/validations.xml',
         # 'report/full_pay_greeting_letter.xml',
         # 'report/greeting_letter.xml',

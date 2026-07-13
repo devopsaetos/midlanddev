@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="maintenance_ext.maintenance_request_form_inherit" model="ir.ui.view">
+            <field name="name">maintenance_ext maintenance_request_form</field>
+            <field name="model">maintenance.request</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_request_view_form"/>
+            <field name="arch" type="xml">
+                <!--
+                    Odoo 19 migration note: retargeted from expr="//sheet/div" (which
+                    ambiguously matches the current core arch's "not archive" warning div
+                    as its first result) to the unambiguous "//div[@class='oe_title']"
+                    anchor, position="before" - this places the button box as the first
+                    element of the sheet, immediately before the title, matching standard
+                    Odoo stat-button placement convention (see core maintenance's own
+                    "Equipment" form for the same pattern).
+                    The "Material Requisition" stat button (on_issue_requisition /
+                    material_requisition) was removed here because both the method and the
+                    field it displays are commented out in models/maintenance_request.py -
+                    they depended on the unavailable 'issue_requistion' module. Also
+                    dropped the dead 'modifiers="{...}"' attributes (a stale, hand-written
+                    serialization of attrs/readonly that Odoo 19's view engine derives
+                    automatically and does not use from the arch - not present anywhere
+                    else in this project's already-converted modules).
+                -->
+                <xpath expr="//div[@class='oe_title']" position="before">
+                    <div name="button_box" class="oe_button_box">
+                        <button class="oe_stat_button" name="on_tool_allocation" type="object" icon="fa-tasks">
+                            <field name="tools_allocation" string="Tool Request" widget="statinfo"/>
+                        </button>
+                        <!--
+                            Odoo 19 migration note: 'on_issue_requisition' / 'material_requisition'
+                            depend on the unavailable 'issue_requistion' module - see
+                            models/maintenance_request.py. Button commented out rather than deleted.
+                        <button class="oe_stat_button" name="on_issue_requisition" type="object" icon="fa-tasks">
+                            <field name="material_requisition" string="Material Requisition" widget="statinfo"/>
+                        </button>
+                        -->
+                        <button class="oe_stat_button" name="on_purchase_requisition" type="object" icon="fa-tasks">
+                            <field name="purchase_requisition" string="Purchase Requisition" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                </xpath>
+
+                <!--
+                    Odoo 19 migration note: retargeted from expr="//group" (ambiguous
+                    against the current core arch, which has an outer group plus 2 nested
+                    groups) to the unambiguous "//notebook" anchor, position="before" -
+                    preserves the original intent of inserting this extra notebook right
+                    after the main info group and before the core view's own notebook.
+                -->
+                <xpath expr="//notebook" position="before">
+                    <separator/>
+                    <notebook>
+                        <page name="products" string="Products">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="uom_id"/>
+                                    <field name="quantity"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="others" string="Others">
+                            <group>
+                                <group>
+                                    <field name="source_type"/>
+                                    <field name="society_id" invisible="source_type == 'internal'"/>
+                                    <field name="phase_id" invisible="source_type == 'internal'"/>
+                                </group>
+                                <group>
+                                    <field name="employee_id" invisible="source_type == 'customer'"/>
+                                    <field name="sector_id" invisible="source_type == 'internal'"/>
+                                    <field name="plot_id" invisible="source_type == 'internal'" domain="[('sector_id', '=', sector_id)]"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

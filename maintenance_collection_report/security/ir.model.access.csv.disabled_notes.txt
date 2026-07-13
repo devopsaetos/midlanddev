@@ -1,0 +1,18 @@
+This file is NOT loaded by the module manifest - it exists purely to preserve the following
+notes/dead rows that used to live as invalid "#"-comment lines inside ir.model.access.csv.
+Odoo's CSV loader does not support comments; any "#" line there is parsed as a data row and
+breaks with "IndexError: list index out of range" on install. Do not restore these lines into
+the .csv file verbatim - if ever needed, add them as proper 8-column rows.
+
+The two lines below were leftover boilerplate from a different module template
+(they reference models - maintenance_recovery_wizard / report_maintenance_recovery_report_
+maintenance_recovery - that do not exist anywhere in this module). Kept commented for
+reference only; the correct access rule for this module's actual wizard model
+(maintenance.collection.report) was added to ir.model.access.csv. The
+report.maintenance_collection_report.maintenance_report_custom AbstractModel used for the
+QWeb report does not need an access rule, consistent with every other report AbstractModel
+in this codebase (e.g. maintenance_invoice_report, maintenance_charges) - the report engine
+renders it via sudo.
+
+access_maintenance_recovery_wizard,maintenance_recovery_wizard,model_maintenance_recovery_wizard,,1,1,1,1
+access_report_maintenance_recovery_report_maintenance_recovery,report_maintenance_recovery_report_maintenance_recovery,model_report_maintenance_recovery_report_maintenance_recovery,,1,1,1,1

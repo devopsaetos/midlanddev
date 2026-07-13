@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="maintenance_invoice_report.maintenance_invoice_report_wizards_view_form" model="ir.ui.view">
+        <field name="name">maintenance_invoice_report maintenance_invoice_report_wizards_view_form</field>
+        <field name="model">maintenance.charges.wizard</field>
+        <field name="arch" type="xml">
+            <form string="File Payments Report">
+                <group>
+                    <group>
+                        <field name="society_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="phase_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="sector_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="street_id" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="inventory_ids" string="Unit No." widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+                    <group>
+                        <field name="category_ids" widget="many2many_tags"
+                               options="{'no_create': True, 'no_open': True}" style="width: 200px;"/>
+                        <field name="unit_category_type_ids" widget="many2many_tags"
+                               options="{'no_create': True, 'no_open': True}" style="width: 200px;"/>
+                        <field name="from_date" style="width: 200px;"/>
+                        <field name="to_date" style="width: 200px;"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="process_pdf_report" string="Print PDF" type="object" default_focus="1"
+                            class="oe_highlight"/>
+                    <button name="process_excel_report" string="Print Excel" type="object" default_focus="1"
+                            class="oe_highlight"/>
+                    <button string="Cancel" class="btn btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="maintenance_invoice_report.maintenance_invoice_report_wizard_action" model="ir.actions.act_window">
+        <field name="name">Maintenance Charges Invoice</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">maintenance.charges.wizard</field>
+        <field name="view_id" ref="maintenance_invoice_report.maintenance_invoice_report_wizards_view_form"/>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Original parent menu came from 'accounting_pdf_reports' (not available in Odoo 19 project):
+    <menuitem id="maintenance_invoice_report.maintenance_invoice_report_wizards_menu"
+              action="maintenance_invoice_report.maintenance_invoice_report_wizard_action"
+              name="Maintenance Charges Invoice"
+              parent="accounting_pdf_reports.menu_finance_legal_statement"
+    />
+    -->
+    <menuitem id="maintenance_invoice_report.maintenance_invoice_report_wizards_menu"
+              action="maintenance_invoice_report.maintenance_invoice_report_wizard_action"
+              name="Maintenance Charges Invoice"
+              parent="account.menu_finance_reports"
+    />
+</odoo>

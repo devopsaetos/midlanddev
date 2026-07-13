@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="maintenance_recovery_batch.select_daily_batch_invoices_view_form" model="ir.ui.view">
+            <field name="name">select.daily.batch.invoices.wizard.view.form</field>
+            <field name="model">select.daily.batch.invoices</field>
+            <field name="arch" type="xml">
+                <form string="Select Daily Batch Invoices">
+                    <group>
+                        <group>
+                            <field name="house_ids" widget="many2many_tags" required="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="product_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoices">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="is_select" string="Select"/>
+                                    <field name="invoice_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <footer>
+                        <button name="confirm_lines" string="Confirm" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_recovery_batch.select_daily_batch_invoices_action" model="ir.actions.act_window">
+            <field name="name">Select Invoices For Daily Batch</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">select.daily.batch.invoices</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

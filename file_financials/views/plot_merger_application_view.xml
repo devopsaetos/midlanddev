@@ -123,4 +123,122 @@
             </xpath>
         </field>
     </record>
+
+    <record id="plot_merger_application_form_inherit_real_estate" model="ir.ui.view">
+        <field name="name">plot.merger.application.form.inherit.real_estate</field>
+        <field name="model">plot.merger.application</field>
+        <field name="inherit_id" ref="real_estate.file_merger_application_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="/form/*" position="before">
+                <header>
+                    <button name="action_approved" type="object" string="Approve"
+                            class="oe_highlight"
+                            invisible="approve_status"/>
+                    <field name="merger_status" widget="statusbar"/>
+                </header>
+            </xpath>
+            <xpath expr="//field[@name='membership_id']" position="after">
+                <field name="waive_merger_application" force_save="1" readonly="merger_status == 'approve'"/>
+                <field name="show_approved_status" invisible="1" force_save="1"/>
+                <field name="approve_status" invisible="1" force_save="1"/>
+                <field name="merger_fee_type" force_save="1" invisible="waive_merger_application != 'no'" readonly="merger_status == 'approve'"/>
+                <field name="appointment_date" force_save="1" readonly="merger_status == 'approve'"/>
+                <field name="manual_adjusted" force_save="1" widget="boolean_toggle" readonly="merger_status == 'approve'"/>
+                <field name="notes" force_save="1" readonly="merger_status == 'approve'"/>
+                <field name="merger_fee_invoice_id" force_save="1" invisible="1"/>
+                <field name="credit_note_id" widget="many2many_tags" force_save="1" invisible="1"/>
+                <field name="journal_entry_id" widget="many2many_tags" force_save="1" invisible="1"/>
+                <field name="length_of_files" force_save="1" invisible="1"/>
+                <field name="invoice_create" force_save="1" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='total_receive_amount']" position="after">
+                <field name="merger_fee" force_save="1" invisible="waive_merger_application != 'no'"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="create_merger_fee_invoice" type="object" string="Create Invoice" class="oe_stat_button" icon="fa-pencil-square-o" widget="statinfo"
+                        invisible="merger_fee_type != 'separate' or invoice_create"/>
+                <button name="action_invoice" type="object" widget="statinfo" class="oe_stat_button" icon="fa-file-text-o" string="Invoice"
+                        invisible="not invoice_create"/>
+                <button name="button_view_credit_notes" type="object" widget="statinfo" class="oe_stat_button" icon="fa-pencil-square-o" string="Credit Note"/>
+                <button name="journal_entry_created" type="object" widget="statinfo" icon="fa-pencil-square-o" string="Journal Entry"
+                        invisible="merger_fee_type != 'net_off'"/>
+            </xpath>
+            <xpath expr="//field[@name='total_receive_amount']" position="before">
+                <field name="merger_date" force_save="1"/>
+            </xpath>
+            <xpath expr="//field[@name='membership_id']" position="attributes">
+                <attribute name="modifiers">{'readonly': [('merger_status', '=', 'approve')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='merger_date']" position="attributes">
+                <attribute name="modifiers">{'readonly': [('merger_status', '=', 'approve')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']" position="attributes">
+                <attribute name="modifiers">{'readonly': [('merger_status', '=', 'approve')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='target_merger_id']" position="attributes">
+                <attribute name="modifiers">{'readonly': [('merger_status', '=', 'approve')]}</attribute>
+            </xpath>
+            <xpath expr="//button[@name='create_credit_note']" position="attributes">
+                <attribute name="String">Merger Adjustment</attribute>
+            </xpath>
+            <xpath expr="//field[@name='amount_deduction']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!--             Source File -->
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='amount_remaining']" position="after">
+                <field name="type"/>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='amount_remaining']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='amount_received']" position="attributes">
+                <attribute name="string">Amount Paid</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='amount_received']" position="after">
+                <field name="file_merger_fee" sum="Total"/>
+                <field name="balance_amount" sum="Total"/>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='file_id']" position="before">
+                <field name="select_file" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='category_id']" position="after">
+                <field name="unit_category_type_id"/>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='tracking_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='source_merger_id']/list/field[@name='ttl_invoiced_amount']" position="before">
+                <field name="total_sale_amount"/>
+            </xpath>
+            <!--             Target Field -->
+            <xpath expr="//field[@name='target_merger_id']/list/field[@name='ttl_invoiced_amount']" position="before">
+                <field name="total_sale_amount"/>
+            </xpath>
+            <xpath expr="//field[@name='target_merger_id']/list/field[@name='tracking_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='target_merger_id']/list/field[@name='category_id']" position="after">
+                <field name="unit_category_type_id"/>
+            </xpath>
+            <xpath expr="//field[@name='target_merger_id']/list/field[@name='file_id']" position="before">
+                <field name="select_file" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='membership_id']" position="attributes">
+                <attribute name="string">Merger Member From</attribute>
+            </xpath>
+            <xpath expr="//field[@name='membership_id']" position="after">
+                <field name="merger_request" invisible="1"/>
+                <field name="membership_merge_to_id" invisible="not merger_request"/>
+            </xpath>
+            <xpath expr="//field[@name='target_merger_id']/list/field[@name='amount_remaining']" position="after">
+                <field name="amount_adjusted" sum="Total"/>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="total_adjusted_amount" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='target_merger_id']/list/field[@name='amount_received']" position="attributes">
+                <attribute name="string">Amount Paid</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>

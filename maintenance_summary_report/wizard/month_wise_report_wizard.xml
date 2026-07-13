@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="month_wise_report_wizard_view_form" model="ir.ui.view">
+            <field name="name">month.wise.report.wizard.view.form</field>
+            <field name="model">month.wise.report.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Maintenance Month Wise Report Wizard">
+                    <group>
+                        <group>
+                            <field name="society_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="sector_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="inventory_ids" widget="many2many_tags" string="Unit No." options="{'no_create': True, 'no_open': True}"/>
+                            <field name="unit_category_type_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+
+                        </group>
+                        <group>
+                            <field name="phase_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="street_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="category_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="unit_class_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="created_by" options="{'no_create': True, 'no_open': True}"/>
+
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="from_date" required="1"/>
+                            <field name="product_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                        </group>
+                        <group>
+                            <field name="to_date" required="1"/>
+                            <field name="month_wise" readonly="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="generate_xlsx_report" string="Generate XLSX" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="month_wise_report_wizard_action" model="ir.actions.act_window">
+            <field name="name">Maintenance Month Wise Report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">month.wise.report.wizard</field>
+            <field name="view_id" ref="maintenance_summary_report.month_wise_report_wizard_view_form"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+        <menuitem
+                name="Maintenance Month Wise Summary"
+                id="maintenance_month_wise_report_wizard_menu"
+                parent="maintenance_collection_report.menu_maintenance_charges_report_root"
+                action="month_wise_report_wizard_action"
+                sequence="5"
+        />
+    </data>
+</odoo>

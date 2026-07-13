@@ -19,6 +19,8 @@ access_ir_attachment,ir.attachment,model_ir_attachment,group_rsms_user,1,1,1,1
 access_file_cancel_application,file.cancel.application,model_file_cancel_application,group_rsms_user,1,1,1,1
 access_installment_remaining,installment.remaining,model_installment_remaining,group_rsms_user,1,1,1,1
 access_plot_merger_application,plot.merger.application,model_plot_merger_application,group_rsms_user,1,1,1,1
+access_plot_merger,plot.merger,model_plot_merger,group_rsms_user,1,1,1,1
+access_plot_merger_line,plot.merger.line,model_plot_merger_line,group_rsms_user,1,1,1,1
 access_source_merger,source.merger,model_source_merger,group_rsms_user,1,1,1,1
 access_target_merger,target.merger,model_target_merger,group_rsms_user,1,1,1,1
 access_file_refund,file.refund,model_file_refund,group_rsms_user,1,1,1,1

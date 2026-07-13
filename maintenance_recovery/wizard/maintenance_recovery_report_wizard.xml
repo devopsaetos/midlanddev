@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="maintenance_recovery.maintenance_recovery_wizard">
+            <field name="name">recovery_report maintenance_recovery_wizard</field>
+            <field name="model">maintenance.recovery.report</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="sector_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="size_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="type_id" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="product_id" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                            <group>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Print" name="print" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="maintenance_recovery.action_maintenance_recovery_wizard">
+            <field name="name">Maintenance Recovery Report</field>
+            <field name="res_model">maintenance.recovery.report</field>
+
+            <field name="view_mode">form</field>
+            <field name="context">{'current_view': 'recovery_report'}</field>
+            <field name="target">new</field>
+        </record>
+        <!-- Odoo 19: original parent "axiom_recovery_report.report" referenced a module
+             (axiom_recovery_report) that does not exist anywhere in this codebase and was
+             never declared in this module's `depends` (only file_financials is depended
+             on) - installing with that parent would fail with an unresolved external ID.
+             Re-parented to file_financials's own "Reports" menu
+             (file_financials.reports_menu_item, under the Realtor main menu), which is the
+             correct, always-available anchor for this module's single dependency. -->
+        <menuitem
+                name="Maintenance Recovery"
+                id="maintenance_recovery"
+                parent="file_financials.reports_menu_item"
+                action="action_maintenance_recovery_wizard"
+                sequence="13"
+        />
+    </data>
+</odoo>

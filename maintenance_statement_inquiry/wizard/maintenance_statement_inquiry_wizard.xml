@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="maintenance_statement_inquiry_wizard_view_form" model="ir.ui.view">
+            <field name="name">maintenance.inquiry.wizard.view.form</field>
+            <field name="model">maintenance.inquiry.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Report Wizard">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="society_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="phase_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sector_id" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="street_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="house_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="partner_id" options="{'no_create': True, 'no_open': True}" readonly="1"
+                                       force_save="1"/>
+                                <field name="category_id" options="{'no_create': True, 'no_open': True}" invisible="1"
+                                       force_save="1"/>
+                                <field name="file_id" options="{'no_create': True, 'no_open': True}" invisible="1"
+                                       force_save="1"/>
+                                <button name="get_maintenance_inquiry" type="object" string="Search"
+                                        class="btn btn-primary"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="category_id" options="{'no_create': True, 'no_open': True}" readonly="1"
+                                       force_save="1"/>
+                                <field name="unit_category_type_id" options="{'no_create': True, 'no_open': True}"
+                                       readonly="1" force_save="1"/>
+                            </group>
+                            <group>
+                                <field name="size_id" options="{'no_create': True, 'no_open': True}" readonly="1"
+                                       force_save="1"/>
+                                <field name="unit_class_id" options="{'no_create': True, 'no_open': True}" readonly="1"
+                                       force_save="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="maintenance_inquiry_line_ids" force_save="1" readonly="1" nolabel="1">
+                                <list>
+                                    <field name="installment_number"/>
+                                    <field name="date"/>
+                                    <field name="payment_date"/>
+                                    <field name="invoice_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="invoice_created" force_save="1" column_invisible="True"/>
+                                    <field name="amount" sum="Total Amount"/>
+                                    <field name="amount_paid" sum="Total Paid Amount"/>
+                                    <field name="residual" sum="Total Residual"/>
+                                    <field name="payment_status"/>
+                                    <field name="state" force_save="1" column_invisible="True"/>
+                                </list>
+                            </field>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Print" name="print_pdf" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_statement_inquiry_wizard_action" model="ir.actions.act_window">
+            <field name="name">Maintenance Inquiry</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">maintenance.inquiry.wizard</field>
+            <field name="view_id" ref="maintenance_statement_inquiry.maintenance_statement_inquiry_wizard_view_form"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        <menuitem
+                name="Maintenance Inquiry"
+                id="maintenance_statement_inquiry_wizard_menu"
+                parent="maintenance_charges.maintenance_charges_main_menu"
+                action="maintenance_statement_inquiry_wizard_action"
+                sequence="2"
+        />
+    </data>
+</odoo>

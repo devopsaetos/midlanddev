@@ -1,0 +1,936 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="maintenance_charges_customized_footer">
+        <div class="footer">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+                <div class="col-4 text-center" style="margin-top:40px;">
+                    <span>Printed By:
+                        <span t-esc="request.env.user.name"/>
+                    </span>
+                </div>
+                <div class="col-4 text-center" style="margin-top:50px;"/>
+
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Print Date:
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="maintenance_invoice_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <!--                <t t-call="maintenance_invoice_report.maintenance_charges_customized_header"/>-->
+                <!--                <t t-call="maintenance_invoice_report.maintenance_charges_customized_footer"/>-->
+                <t t-call="web.basic_layout">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-4"
+                                 style="font-family: 'Roboto', sans-serif; border-left: 2px solid black; border-top: 2px solid black; border-bottom: 2px solid black; border-right: 2px dashed black;">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <img t-if="docs[0].company_id.logo"
+                                             t-att-src="image_data_uri(docs[0].company_id.logo)"
+                                             alt="Logo" class="center"
+                                             style="width:100px; height:70px;"/>
+                                    </div>
+                                    <div class="col-6" style="text-align: center; margin-top:40px;">
+                                        <h6 style="text-decoration: underline;">
+                                            <b>BANK COPY</b>
+                                        </h6>
+                                        <h6>
+                                            <b>Maintenance Invoice</b>
+                                        </h6>
+                                        <h6>
+                                            <b>
+                                                <t t-esc="o.name"/>
+                                            </b>
+                                        </h6>
+                                    </div>
+                                    <div class="col-3" style="text-align:right; font-size:11px;margin-top:15px;">
+                                        <h7 style="color:black;">
+                                            <t t-if="docs[0].company_id">
+                                                <t t-esc="docs[0].company_id.street"/>,
+                                                <br/>
+                                                <t t-esc="docs[0].company_id.street2"/>,
+                                                <br/>
+                                                <t t-esc="docs[0].company_id.city"/>
+                                            </t>
+                                        </h7>
+                                    </div>
+                                </div>
+                                <!--                                ********************************************* New ************************************-->
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Customer</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.partner_id.name"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <b>Invoice Date</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.invoice_date"
+                                           t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Phone</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.partner_id.phone"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <b>Due Date</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="(o.invoice_date + relativedelta(days=14))"
+                                           t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                    </div>
+                                </div>
+                                <div class="row mt-0 ml-0 mr-0" style="color:#191970; font-size:15px;">
+                                    <span>
+                                        <b>Plot Details</b>
+                                    </span>
+                                </div>
+                                <div class="plot_details mt-0 ml-0 mr-0" style="border: 1px solid #DCDCDC;">
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Society</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <nobr>
+                                                <t t-esc="o.file_ids.society_id.name"/>
+                                            </nobr>
+                                        </div>
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Category</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.category_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Phase</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.phase_id.name"/>
+                                        </div>
+
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Size</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.size_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Sector</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.sector_id.name"/>
+                                        </div>
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Type</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.unit_class_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Street</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.street_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">House No</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.inventory_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-0 ml-0 mr-0">
+                                    <table class="table table-lg table-bordered table-striped">
+                                        <thead style="background-color:#191970;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;background-color:#191970;font-size:14px;"
+                                               class="text-white">
+                                            <tr>
+                                                <th style="text-align: left; padding-top: 5px; padding-bottom: 5px;">Description.</th>
+                                                <th style="text-align: right; padding-top: 5px; padding-bottom: 5px;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size:14px;">
+                                            <t t-set="total_amount" t-value="0"/>
+                                            <t t-foreach="o.invoice_line_ids" t-as="line">
+                                                <tr style="background-color: white;">
+                                                    <th style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <span>Maintenance Charges for the Month of
+                                                            <span t-esc="invoice_month"/>
+                                                        </span>
+                                                    </th>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="line.price_unit"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                    <t t-set="total_amount" t-value="total_amount + line.price_unit"/>
+                                                </tr>
+                                                <tr style="background-color: white;">
+                                                    <td style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <strong>Arrears</strong>
+                                                    </td>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="total_amount_residual_signed"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                                <tr style="background-color: white;">
+                                                    <td style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <strong>Total Amount</strong>
+                                                    </td>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="total_amount + total_amount_residual_signed"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p style="color:#191970; margin-top:10px; font-size: 13px;">
+                                            <strong>Amount In Words: &#160;&#160;&#160;&#160;</strong>
+                                            <span t-if="o.currency_id"
+                                                  t-esc="o.currency_id.amount_to_text(total_amount + total_amount_residual_signed)"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row"
+                                     style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Account Title</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>New City Housing Project Collection Account After</span>
+                                    </div>
+                                </div>
+                                <div class="row"
+                                     style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Bank Name</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>Habib Metro New City Branch</span>
+                                    </div>
+                                </div>
+                                <div class="row"
+                                     style="font-size: 13px; font-family: 'Roboto', sans-serif">
+                                    <div class="col-3">
+                                        <b>Account No</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>6-06-59-20301-714-100965</span>
+                                    </div>
+                                </div>
+                                <div class="row mt-0 ml-0 mr-0" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-12 ml-0 mr-0">
+                                        <span style="text-decoration: underline; margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px;">
+                                            <b>Note:</b>
+                                        </span>
+                                        <ol>
+                                            <li>
+                                                <span>For any queries and complains contact this No: +923171112642/+92346-1420413</span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    For Arears and other details Please contact &amp; visit Accounts office
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    If due amount exceeds than Rs 8000 (Current Bill + Arrears) all the services will be discontinued and action shall be taken according to society policy.
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    Please share your payment screenshots only on this number: +923171112642.
+                                                </span>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                <!--                                <div class="row ml-0 mr-0">-->
+                                <!--                                    <div class="note-section" style="font-size: 13px; font-family: 'Roboto', sans-serif; margin-top: 20px;">-->
+                                <!--                                        <h5 style="text-decoration: underline;">Note:</h5>-->
+                                <!--                                        <p>-->
+                                <!--                                            <b>1.</b>-->
+                                <!--                                            For any queries and complains contact this No: +923171112642/+92346-1420413-->
+                                <!--                                        </p>-->
+                                <!--                                        <p>-->
+                                <!--                                            <b>2.</b>-->
+                                <!--                                            For Arears and other details Please contact &amp; visit Accounts office-->
+                                <!--                                        </p>-->
+                                <!--                                        <p>-->
+                                <!--                                            <b>3.</b>-->
+                                <!--                                            Fine of 500 Rupees will be imposed after the Due date in case of nonpayment.-->
+                                <!--                                        </p>-->
+                                <!--                                    </div>-->
+                                <!--                                </div>-->
+
+                                <!--                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">-->
+                                <!--                                    <div class="col-3">-->
+                                <!--                                        <b>Contact</b>-->
+                                <!--                                    </div>-->
+                                <!--                                    <div class="col-9">-->
+                                <!--                                        <span>For any queries and complains contact this No: +923171112642</span>-->
+                                <!--                                    </div>-->
+                                <!--                                </div>-->
+                                <!--                                <div class="row mt-0 pt-0 ml-0 mr-0">-->
+                                <!--                                    <p style="color:#191970; margin-top:10px; font-size: 13px;">-->
+                                <!--                                        <strong>Note :</strong>-->
+                                <!--                                        For Previous Months Arrears Please Contact Head Office After due date 500 Rs-->
+                                <!--                                    </p>-->
+                                <!--                                </div>-->
+                                <div class="row">
+                                    <img src='/maintenance_invoice_report/static/image/maintenance.jpeg'
+                                         style="height: 40px; width: 100%;"/>
+                                </div>
+                                <div class="row mt-4" style="color:#191970">
+                                    <div class="col-4 text-left"/>
+                                    <div class="col-2 text-center"/>
+                                    <div class="col-6 text-center">
+                                        <span style="text-decoration:overline">Approved By</span>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+                                    <div class="col-4 text-center">
+                                        <span>Printed By:
+                                            <span t-esc="request.env.user.name"/>
+                                        </span>
+                                    </div>
+                                    <div class="col-4 text-center"/>
+
+                                    <div class="col-4 text-center">
+                                        <span>Print Date:
+                                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-4"
+                                 style="font-family: 'Roboto', sans-serif; border-left: None; border-top: 2px solid black; border-bottom: 2px solid black; border-right: 2px dashed black;">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <img t-if="docs[0].company_id.logo"
+                                             t-att-src="image_data_uri(docs[0].company_id.logo)"
+                                             alt="Logo" class="center"
+                                             style="width:100px; height:70px;"/>
+                                    </div>
+                                    <div class="col-6" style="text-align: center; margin-top:40px;">
+                                        <h6 style="text-decoration: underline;">
+                                            <b>ACCOUNT COPY</b>
+                                        </h6>
+                                        <h6>
+                                            <b>Maintenance Invoice</b>
+                                        </h6>
+                                        <h6>
+                                            <b>
+                                                <t t-esc="o.name"/>
+                                            </b>
+                                        </h6>
+                                    </div>
+                                    <div class="col-3" style="text-align:right; font-size:11px;margin-top:15px;">
+                                        <h7 style="color:black;">
+                                            <t t-if="docs[0].company_id">
+                                                <t t-esc="docs[0].company_id.street"/>,
+                                                <br/>
+                                                <t t-esc="docs[0].company_id.street2"/>,
+                                                <br/>
+                                                <t t-esc="docs[0].company_id.city"/>
+                                            </t>
+                                        </h7>
+                                    </div>
+                                </div>
+                                <!--                                ************************* New ********************************-->
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Customer</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.partner_id.name"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <b>Invoice Date</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.invoice_date"
+                                           t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Phone</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.partner_id.phone"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <b>Due Date</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="(o.invoice_date + relativedelta(days=14))"
+                                           t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-0 ml-0 mr-0" style="color:#191970; font-size:15px;">
+                                    <span>
+                                        <b>Plot Details</b>
+                                    </span>
+                                </div>
+                                <div class="plot_details mt-0 ml-0 mr-0" style="border: 1px solid #DCDCDC;">
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Society</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <nobr>
+                                                <t t-esc="o.file_ids.society_id.name"/>
+                                            </nobr>
+                                        </div>
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Category</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.category_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Phase</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.phase_id.name"/>
+                                        </div>
+
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Size</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.size_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Sector</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.sector_id.name"/>
+                                        </div>
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Type</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.unit_class_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Street</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.street_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">House No</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.inventory_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row mt-0 ml-0 mr-0">
+                                    <table class="table table-lg table-bordered table-striped">
+                                        <thead style="background-color:#191970;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;background-color:#191970;font-size:14px;"
+                                               class="text-white">
+                                            <tr>
+                                                <th style="text-align: left; padding-top: 5px; padding-bottom: 5px;">Description.</th>
+                                                <th style="text-align: right; padding-top: 5px; padding-bottom: 5px;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size:14px;">
+                                            <t t-set="total_amount" t-value="0"/>
+                                            <t t-foreach="o.invoice_line_ids" t-as="line">
+                                                <tr style="background-color: white;">
+                                                    <th style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <span>Maintenance Charges for the Month of
+                                                            <span t-esc="invoice_month"/>
+                                                        </span>
+                                                    </th>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="line.price_unit"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                    <t t-set="total_amount" t-value="total_amount + line.price_unit"/>
+                                                </tr>
+                                                <tr style="background-color: white;">
+                                                    <td style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <strong>Arrears</strong>
+                                                    </td>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="total_amount_residual_signed"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                                <tr style="background-color: white;">
+                                                    <td style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <strong>Total Amount</strong>
+                                                    </td>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="total_amount + total_amount_residual_signed"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p style="color:#191970; margin-top:10px; font-size: 13px;">
+                                            <strong>Amount In Words: &#160;&#160;&#160;&#160;</strong>
+                                            <span t-if="o.currency_id"
+                                                  t-esc="o.currency_id.amount_to_text(total_amount + total_amount_residual_signed)"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Account Title</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>New City Housing Project Collection Account After</span>
+                                    </div>
+                                </div>
+                                <div class="row"
+                                     style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Bank Name</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>Habib Metro New City Branch</span>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Account No</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>6-06-59-20301-714-100965</span>
+                                    </div>
+                                </div>
+                                <div class="row mt-0 ml-0 mr-0" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-12 ml-0 mr-0">
+                                        <span style="text-decoration: underline; margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px;">
+                                            <b>Note:</b>
+                                        </span>
+                                        <ol>
+                                            <li>
+                                                <span>For any queries and complains contact this No: +923171112642/+92346-1420413</span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    For Arears and other details Please contact &amp; visit Accounts office
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    Fine of 500 Rupees will be imposed after the Due date in case of non payment.
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    Collection center: 2nd Floor, Paradise Office, New City Arcade.
+                                                </span>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <!--                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">-->
+                                <!--                                    <div class="col-3">-->
+                                <!--                                        <b>Contact</b>-->
+                                <!--                                    </div>-->
+                                <!--                                    <div class="col-9">-->
+                                <!--                                        <span>For any queries and complains contact this No: +923171112642</span>-->
+                                <!--                                    </div>-->
+                                <!--                                </div>-->
+                                <!--                                <div class="row mt-0 pt-0 ml-0 mr-0">-->
+                                <!--                                    <p style="color:#191970; margin-top:10px; font-size: 13px;">-->
+                                <!--                                        <strong>Note :</strong>-->
+                                <!--                                        For Previous Months Arrears Please Contact Head Office After due date 500 Rs-->
+                                <!--                                    </p>-->
+                                <!--                                </div>-->
+                                <div class="row">
+                                    <img src='/maintenance_invoice_report/static/image/maintenance.jpeg'
+                                         style="height: 40px; width: 100%;"/>
+                                </div>
+                                <div class="row mt-4" style="color:#191970">
+                                    <div class="col-4 text-left"/>
+                                    <div class="col-2 text-center"/>
+                                    <div class="col-6 text-center">
+                                        <span style="text-decoration:overline">Approved By</span>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+                                    <div class="col-4 text-center">
+                                        <span>Printed By:
+                                            <span t-esc="request.env.user.name"/>
+                                        </span>
+                                    </div>
+                                    <div class="col-4 text-center"/>
+
+                                    <div class="col-4 text-center">
+                                        <span>Print Date:
+                                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4"
+                                 style="font-family: 'Roboto', sans-serif; border-left: None; border-top: 2px solid black; border-bottom: 2px solid black; border-right: 2px solid black;">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <img t-if="docs[0].company_id.logo"
+                                             t-att-src="image_data_uri(docs[0].company_id.logo)"
+                                             alt="Logo" class="center"
+                                             style="width:100px; height:70px;"/>
+                                    </div>
+                                    <div class="col-6" style="text-align: center; margin-top:40px;">
+                                        <h6 style="text-decoration: underline;">
+                                            <b>CUSTOMER COPY</b>
+                                        </h6>
+                                        <h6>
+                                            <b>Maintenance Invoice</b>
+                                        </h6>
+                                        <h6>
+                                            <b>
+                                                <t t-esc="o.name"/>
+                                            </b>
+                                        </h6>
+                                    </div>
+                                    <div class="col-3" style="text-align:right; font-size:11px;margin-top:15px;">
+                                        <h7 style="color:black;">
+                                            <t t-if="docs[0].company_id">
+                                                <t t-esc="docs[0].company_id.street"/>,
+                                                <br/>
+                                                <t t-esc="docs[0].company_id.street2"/>,
+                                                <br/>
+                                                <t t-esc="docs[0].company_id.city"/>
+                                            </t>
+                                        </h7>
+                                    </div>
+                                </div>
+
+                                <!--                                **************************** New**********************************************-->
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Customer</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.partner_id.name"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <b>Invoice Date</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.invoice_date"
+                                           t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Phone</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="o.partner_id.phone"/>
+                                    </div>
+                                    <div class="col-3">
+                                        <b>Due Date</b>
+                                    </div>
+                                    <div class="col-3">
+                                        <t t-esc="(o.invoice_date + relativedelta(days=14))"
+                                           t-options="{'widget': 'date','format': 'dd-MM-yyyy'}"/>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-0 ml-0 mr-0" style="color:#191970; font-size:15px;">
+                                    <span>
+                                        <b>Plot Details</b>
+                                    </span>
+                                </div>
+                                <div class="plot_details mt-0 ml-0 mr-0" style="border: 1px solid #DCDCDC;">
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Society</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <nobr>
+                                                <t t-esc="o.file_ids.society_id.name"/>
+                                            </nobr>
+                                        </div>
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Category</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.category_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Phase</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.phase_id.name"/>
+                                        </div>
+
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Size</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.size_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Sector</b>
+                                        </div>
+                                        <div class="col-3" style="margin-right: 10px;">
+                                            <t t-esc="o.file_ids.sector_id.name"/>
+                                        </div>
+                                        <div class="col-3">
+                                            <b style="margin-left: 25px;">Type</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.unit_class_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">Street</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.street_id.name"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                        <div class="col-3">
+                                            <b style="margin-left: 18px;">House No</b>
+                                        </div>
+                                        <div class="col-3">
+                                            <t t-esc="o.file_ids.inventory_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row mt-0 ml-0 mr-0">
+                                    <table class="table table-lg table-bordered table-striped">
+                                        <thead style="background-color:#191970;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;background-color:#191970;font-size:14px;"
+                                               class="text-white">
+                                            <tr>
+                                                <th style="text-align: left; padding-top: 5px; padding-bottom: 5px;">Description.</th>
+                                                <th style="text-align: right; padding-top: 5px; padding-bottom: 5px;">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="font-size:14px;">
+                                            <t t-set="total_amount" t-value="0"/>
+                                            <t t-foreach="o.invoice_line_ids" t-as="line">
+                                                <tr style="background-color: white;">
+                                                    <th style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <span>Maintenance Charges for the Month of
+                                                            <span t-esc="invoice_month"/>
+                                                        </span>
+                                                    </th>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="line.price_unit"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                    <t t-set="total_amount" t-value="total_amount + line.price_unit"/>
+                                                </tr>
+                                                <tr style="background-color: white;">
+                                                    <td style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <strong>Arrears</strong>
+                                                    </td>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="total_amount_residual_signed"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                                <tr style="background-color: white;">
+                                                    <td style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <strong>Total Amount</strong>
+                                                    </td>
+                                                    <td style="text-align: right; padding-top: 5px; padding-bottom: 5px;">
+                                                        <span t-esc="total_amount + total_amount_residual_signed"
+                                                              t-options='{"widget": "float", "precision": 2}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p style="color:#191970; margin-top:10px; font-size: 13px;">
+                                            <strong>Amount In Words: &#160;&#160;&#160;&#160;</strong>
+                                            <span t-if="o.currency_id"
+                                                  t-esc="o.currency_id.amount_to_text(total_amount + total_amount_residual_signed)"/>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Account Title</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>New City Housing Project Collection Account After</span>
+                                    </div>
+                                </div>
+                                <div class="row"
+                                     style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Bank Name</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>Habib Metro New City Branch</span>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-3">
+                                        <b>Account No</b>
+                                    </div>
+                                    <div class="col-9">
+                                        <span>6-06-59-20301-714-100965</span>
+                                    </div>
+                                </div>
+                                <div class="row mt-0 ml-0 mr-0" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
+                                    <div class="col-12 ml-0 mr-0">
+                                        <span style="text-decoration: underline; margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px;">
+                                            <b>Note:</b>
+                                        </span>
+                                        <ol>
+                                            <li>
+                                                <span>For any queries and complains contact this No: +923171112642/+92346-1420413</span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    For Arears and other details Please contact &amp; visit Accounts office
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    Fine of 500 Rupees will be imposed after the Due date in case of non payment.
+                                                </span>
+                                            </li>
+                                            <li>
+                                                <span>
+                                                    Collection center: 2nd Floor, Paradise Office, New City Arcade.
+                                                </span>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <!--                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">-->
+                                <!--                                    <div class="col-3">-->
+                                <!--                                        <b>Contact</b>-->
+                                <!--                                    </div>-->
+                                <!--                                    <div class="col-9">-->
+                                <!--                                        <span>For any queries and complains contact this No: +923171112642</span>-->
+                                <!--                                    </div>-->
+                                <!--                                </div>-->
+                                <!--                                <div class="row mt-0 pt-0 ml-0 mr-0">-->
+                                <!--                                    <p style="color:#191970; margin-top:10px; font-size: 13px;">-->
+                                <!--                                        <strong>Note :</strong>-->
+                                <!--                                        For Previous Months Arrears Please Contact Head Office After due date 500 Rs-->
+                                <!--                                    </p>-->
+                                <!--                                </div>-->
+                                <div class="row">
+                                    <img src='/maintenance_invoice_report/static/image/maintenance.jpeg'
+                                         style="height: 40px; width: 100%;"/>
+                                </div>
+                                <div class="row mt-4" style="color:#191970">
+                                    <div class="col-4 text-left"/>
+                                    <div class="col-2 text-center"/>
+                                    <div class="col-6 text-center">
+                                        <span style="text-decoration:overline">Approved By</span>
+                                    </div>
+                                </div>
+                                <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+                                    <div class="col-4 text-center">
+                                        <span>Printed By:
+                                            <span t-esc="request.env.user.name"/>
+                                        </span>
+                                    </div>
+                                    <div class="col-4 text-center"/>
+
+                                    <div class="col-4 text-center">
+                                        <span>Print Date:
+                                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="page-break-before: always"/>
+                </t>
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_maintainance_charges_invoice" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">360</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">18</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+    </record>
+    <!-- Odoo 19: the <report .../> XML shortcut tag no longer exists in core (it has been
+         removed from odoo/tools/convert.py); report actions must be declared as plain
+         ir.actions.report records. menu="False" is preserved by not setting
+         binding_model_id/binding_type, so this report action is not exposed in the Print menu. -->
+    <record id="action_maintenance_invoice_report" model="ir.actions.report">
+        <field name="name">Maintenance Charges Report</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">maintenance_invoice_report.maintenance_invoice_report</field>
+        <field name="report_file">maintenance_invoice_report.maintenance_invoice_report</field>
+        <field name="paperformat_id" ref="paperformat_maintainance_charges_invoice"/>
+    </record>
+</odoo>

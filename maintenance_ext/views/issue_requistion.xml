@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Odoo 19 migration note: this view inherits 'issue_requistion.issue_requistion_view_form',
+    a view provided by the 'issue_requistion' module, which does not exist anywhere in this
+    Odoo 19 project. This file is therefore no longer referenced from __manifest__.py's
+    'data' list (the manifest line is commented out there, with a note) and will NOT be
+    loaded. Its content below is left completely untouched/documented rather than deleted
+    or edited - it would need a real 'issue.requistion' base view to inherit from (see the
+    'supply_chain_customizations' module note in __manifest__.py for a possible native
+    Odoo 19 replacement the project owner may want to evaluate) before it could be
+    re-enabled.
+-->
+<odoo>
+    <record id="issue_requistion_ext_form" model="ir.ui.view">
+        <field name="name">issue.requistion.ext.form</field>
+        <field name="model">issue.requistion</field>
+        <field name="inherit_id" ref="issue_requistion.issue_requistion_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='location_id']" position="after">
+                <field name="maintenance_request_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

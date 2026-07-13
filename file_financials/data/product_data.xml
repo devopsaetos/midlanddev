@@ -14,5 +14,12 @@
             <field name="property_account_income_id">3073</field>
             <field name="property_account_expense_id">3073</field>
         </record>
+        <record id="file_financials.product_merger_adjustment_realestate" model="product.realestate">
+            <field name="name">Merger Adjustment</field>
+            <field name="type">service</field>
+            <field name="is_include_property_system">1</field>
+            <field name="description">Merger Adjustment</field>
+            <field name="product_id" ref="file_financials.product_merger_adjustment"/>
+        </record>
     </data>
 </odoo>

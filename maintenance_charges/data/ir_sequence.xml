@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="seq_maintenance_charges_payment" model="ir.sequence">
+            <field name="name">Maintenance Charges Payment</field>
+            <field name="code">maintenance.charges.payment</field>
+            <field name="prefix">MCP/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_change_unit_type" model="ir.sequence">
+            <field name="name">Change Unit Type</field>
+            <field name="code">change.unit.type</field>
+            <field name="prefix">UT/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

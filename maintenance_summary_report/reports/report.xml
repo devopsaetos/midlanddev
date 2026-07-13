@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+<!--        <report-->
+<!--                id="maintenance_summary_report_id"-->
+<!--                model="maintenance.summary.report.wizard"-->
+<!--                string="Maintenance Summary Report"-->
+<!--                report_type="qweb-xlsx"-->
+<!--                name="maintenance_summary_report.report_template_id"-->
+<!--                file="maintenance_summary_report.report_template_id"-->
+<!--                menu="False"-->
+<!--        />-->
+
+<!--        <template id="report_template_id">-->
+<!--            <t t-call="web.basic_layout">-->
+<!--                <div class="page">-->
+<!--                    <div class="page">-->
+<!--                        <div class="row">-->
+<!--                            <div class="col-xs-12">-->
+<!--                                <h2>Account Move Excel Report</h2>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="row">-->
+<!--                            <div class="col-xs-12">-->
+<!--                                <table class="table table-condensed">-->
+<!--                                    <thead>-->
+<!--                                        <tr>-->
+<!--                                            <th>Customer</th>-->
+<!--                                            <th>Sector</th>-->
+<!--                                            <th>StreetNo</th>-->
+<!--                                            <th>HouseNo</th>-->
+<!--                                            <th>Category</th>-->
+<!--                                            <th>Product</th>-->
+<!--                                            <th>Size</th>-->
+<!--                                            <th>Type</th>-->
+<!--                                            <th>InvoiceType</th>-->
+<!--                                            <th>TotalAmount</th>-->
+<!--                                            <th>PaidAmount</th>-->
+<!--                                            <th>DueAmount</th>-->
+<!--                                        </tr>-->
+<!--                                    </thead>-->
+<!--                                    <tbody>-->
+<!--                                        <tr t-foreach="docs" t-as="line">-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['customer']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['sector']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['street_no']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['house_no']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['category']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['product']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['size']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['type']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['invoice_type']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['total_amount']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['paid_amount']"/>-->
+<!--                                            </td>-->
+<!--                                            <td>-->
+<!--                                                <t t-esc="line['due_amount']"/>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
+<!--                                    </tbody>-->
+<!--                                </table>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </t>-->
+<!--        </template>-->
+    </data>
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- category_id was removed from res.groups in Odoo 19; groups are now organized via privilege_id -> res.groups.privilege -->
+    <record model="res.groups.privilege" id="privilege_maintenance_charges">
+        <field name="name">Maintenance Charges</field>
+        <field name="category_id" ref="real_estate.module_category_real_estate"/>
+    </record>
+
+    <record id="maintenance_charges.group_maintenance_payment_manager" model="res.groups">
+        <field name="name">Maintenance Charges Manager</field>
+        <!-- <field name="category_id" ref="real_estate.module_category_real_estate"/> removed in Odoo 19, replaced below -->
+        <field name="privilege_id" ref="privilege_maintenance_charges"/>
+        <field name="comment">Member of the groups are allowed to manage Maintenance Charges.</field>
+    </record>
+
+    <record id="maintenance_charges.group_maintenance_payment_collector" model="res.groups">
+        <field name="name">Maintenance Payment Collector</field>
+        <!-- <field name="category_id" ref="real_estate.module_category_real_estate"/> removed in Odoo 19, replaced below -->
+        <field name="privilege_id" ref="privilege_maintenance_charges"/>
+        <field name="comment">Member of the groups are allowed to receive Maintenance Charges Payment.</field>
+    </record>
+
+</odoo>

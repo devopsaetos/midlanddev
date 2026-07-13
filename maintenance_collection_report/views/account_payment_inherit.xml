@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherit Form View to Modify it -->
+    <record id="account_payment_inherit_form" model="ir.ui.view">
+        <field name="name">account.payment.form.inherit</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <!-- Original xpath targeted field[@name='branch_id'], which does not exist on
+                 account.payment in this Odoo 19 project: 'branch_id' is only defined on the
+                 unrelated midland.payment model (midland_invoicing module), not on
+                 account.payment itself, and core account_payment_view.xml has never had a
+                 branch_id field either. Retargeted to the 'memo' field in group1 of the core
+                 form (account/views/account_payment_view.xml), which is guaranteed present,
+                 following the same investigative fix pattern used for
+                 maintenance_charges/views/res_users.xml. -->
+            <xpath expr="//field[@name='memo']" position="after">
+                <field name="payment_amount_cal"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

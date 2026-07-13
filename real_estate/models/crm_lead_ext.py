@@ -17,25 +17,47 @@ class CrmLeadExt(models.Model):
     is_existing = fields.Boolean(default=False)
     token_paid = fields.Boolean(default=False)
     plan_locked = fields.Boolean()
+    party_type = fields.Selection([
+        ('member', 'Member'),
+        ('investor', 'Investor'),
+    ], default='member', string='Party Type')
+    investor_id = fields.Many2one('res.investor', string='Investor')
+
+    def action_create_member(self):
+        return {
+            'name': _('Create Member'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'res.member',
+            'view_id': self.env.ref('real_estate.view_partner_form').id,
+            'type': 'ir.actions.act_window',
+            'context': {'default_name': self.contact_name, 'current_view': 'realestate',
+                        'default_project_type': self.project_type or 'housing_society'},
+            'target': 'new',
+        }
+
+    def action_create_investor(self):
+        return {
+            'name': _('Create Investor'),
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'res.investor',
+            'view_id': self.env.ref('real_estate.investor_registration_form_view').id,
+            'type': 'ir.actions.act_window',
+            'context': {'current_view': 'realestate'},
+            'target': 'new',
+        }
 
     @api.onchange('partner_id')
     def _onchange_partner_id(self):
-        res = super(CrmLeadExt, self)._onchange_partner_id()
-
+        # Odoo 19's base crm.lead no longer has an _onchange_partner_id method to call -
+        # partner-driven field updates were split into separate @api.depends computes
+        # (_compute_contact_name, _compute_function, etc). This onchange only needs to
+        # add real_estate's own reaction on top of those, so there's nothing to super() into.
         if self.partner_id:
             self.is_existing = True
-            self.mobile = self.partner_id.mobile
+            self.phone = self.partner_id.mobile
             self.city = self.partner_id.city_id.name
-
-        return res
-
-    @api.depends('sequence_name')
-    def name_get(self):
-        result = []
-        for rec in self:
-            name = rec.sequence_name
-            result.append((rec.id, name))
-        return result
 
     def token_money(self):
         # if not self.plan_locked:
@@ -57,12 +79,14 @@ class CrmLeadExt(models.Model):
                     'default_from_crm': True,
                     'default_plan_locked': self.plan_locked,
                     'default_crm_id': self.id,
+                    'default_party_type': self.party_type,
+                    'default_investor_id': self.investor_id.id,
                     'default_is_existing': self.is_existing,
                     'default_company_type': self.partner_id.company_type,
                     'default_partner_id': self.partner_id.id if self.is_existing else False,
                     'default_contact_name': self.contact_name,
-                    'default_cp_phone_no': self.mobile,
-                    'default_phone_no': self.mobile,
+                    'default_cp_phone_no': self.phone,
+                    'default_phone_no': self.phone,
                     'default_email': self.email_from,
                     'default_society_id': self.society_id.id,
                     'default_token_line_ids': data,

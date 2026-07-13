@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Odoo 19: base.res_config_settings_view_form's core <form> is now completely empty
+         (settings blocks are assembled differently) and no longer has a
+         //div[hasclass('settings')] node to xpath into, so the old inherited xpath here would
+         fail to load. Converted to a standalone settings form (inherit_id eval="False") using
+         the new <app>/<block>/<setting> structure, following the same pattern already applied
+         in real_estate/views/res_config_setting.xml. Only reachable via this module's own
+         "Settings" menu item below, not via Odoo's General Settings app. -->
+    <record id="maintenance_recovery_batch.res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">maintenance_recovery_batch.res_config_settings_view_form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" eval="False"/>
+        <!-- Deliberately high: this is a second, unrelated root view for res.config.settings/form.
+             Odoo's default view resolution (no explicit view_id) picks the root view with the
+             lowest priority; this must never win that tie against the true base view
+             (res.config.settings.view.form, priority 16), or Odoo's native Settings app ends up
+             showing only this Maintenance Recovery block instead of the full merged settings
+             screen. Same fix already applied in real_estate/views/res_config_setting.xml. -->
+        <field name="priority" eval="100"/>
+        <field name="arch" type="xml">
+            <form string="Maintenance Recovery Settings" class="oe_form_configuration" js_class="base_settings">
+                <app name="maintenance_recovery_batch" string="Maintenance Charges">
+                    <block title="Maintenance Payment Settings">
+                        <setting>
+                            <label for="maintenance_payment_journal_id" string="Maintenance Payment Journal"/>
+                            <div class="text-muted">
+                                Maintenance Journal For Maintenance Payment.
+                            </div>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="maintenance_payment_journal_id" string="Maintenance Payment Journal" class="col-md-3 o_light_label"/>
+                                    <field name="maintenance_payment_journal_id"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </form>
+        </field>
+    </record>
+    <record
+            id="maintenance_recovery_batch.maintenance_configs_action"
+            model="ir.actions.act_window">
+
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="maintenance_recovery_batch.res_config_settings_view_form"/>
+        <field name="target">current</field>
+        <field name="context">{'module' : 'maintenance_recovery_batch'}</field>
+    </record>
+    <menuitem id="maintenance_recovery_batch.menu_maintenance_charges_configuration" name="Configuration" parent="maintenance_charges.maintenance_charges_main_menu"
+              sequence="100"/>
+    <menuitem id="maintenance_recovery_batch.menu_maintenance_charges_settings" name="Settings" parent="maintenance_recovery_batch.menu_maintenance_charges_configuration"
+              sequence="1"
+              action="maintenance_recovery_batch.maintenance_configs_action"/>
+</odoo>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_view_form" model="ir.ui.view">
+            <field name="name">maintenance.electricity.invoices.wizard.view.form</field>
+            <field name="model">maintenance.electricity.invoices.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Wizard">
+                    <group>
+                        <group>
+                            <field name="society_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="phase_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="sector_ids" required="1" widget="many2many_tags"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="street_id" required="0" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="house_id" required="0" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="category_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="unit_category_type_id" invisible="1"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="unit_class_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="company_id" options="{'no_create': True, 'no_open': True}" readonly="1"
+                                   force_save="1"/>
+                            <field name="file_ids" options="{'no_create': True, 'no_open': True}"
+                                   force_save="1"
+                                   widget="many2many_tags"
+                            />
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="product_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="till_date" required="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="generate_invoices" string="Generate Invoices" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_action"
+                model="ir.actions.act_window">
+            <field name="name">Maintenance / Electricity Invoices</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">maintenance.electricity.invoices.wizard</field>
+            <field name="view_id" ref="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_view_form"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+                name="Maintenance / Electricity Invoices"
+                id="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_menu"
+                parent="maintenance_charges.maintenance_charges_main_menu"
+                sequence='25'
+                action="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_action"
+        />
+    </data>
+</odoo>

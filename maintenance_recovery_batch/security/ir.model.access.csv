@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_daily_maintenance_batch,access_daily_maintenance_batch,model_daily_maintenance_batch,base.group_user,1,1,1,1
+access_daily_maintenance_line,access_daily_maintenance_line,model_daily_maintenance_line,base.group_user,1,1,1,1
+access_maintenance_electricity_invoices_wizard,maintenance.electricity.invoices.wizard,model_maintenance_electricity_invoices_wizard,base.group_user,1,1,1,1
+access_select_daily_batch_invoices,select.daily.batch.invoices,model_select_daily_batch_invoices,base.group_user,1,1,1,1
+access_select_daily_batch_invoice_lines,select.daily.batch.invoice.lines,model_select_daily_batch_invoice_lines,base.group_user,1,1,1,1

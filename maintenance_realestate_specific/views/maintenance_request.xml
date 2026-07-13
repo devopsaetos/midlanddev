@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="maintenance_realestate_specific.maintenance_request_form_inherit" model="ir.ui.view">
+            <field name="name">maintenance_realestate_specific maintenance_request_form</field>
+            <field name="model">maintenance.request</field>
+            <field name="inherit_id" ref="maintenance.hr_equipment_request_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='maintenance_type']" position="after">
+                    <!--
+                        Odoo 19 migration note: 'ticket_type_id' relates to
+                        'helpdesk.ticket.type', a concept specific to the unavailable
+                        'website_axis_helpdesk' module with no equivalent in core Odoo
+                        19 'helpdesk'. The field itself is commented out on the model
+                        (models/maintenance_request.py), so it is commented out here too.
+                    <field name="ticket_type_id" options="{'no_create': True, 'no_open': True}"/>
+                    -->
+                    <field name="source_type"/>
+                    <field name="department_id" invisible="source_type == 'customer'" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="project_type" invisible="1" readonly="0"/>
+                </xpath>
+                <!--
+                    Odoo 19 migration note: core Odoo 19's 'maintenance.hr_equipment_request_view_form'
+                    (odoo/addons/maintenance/views/maintenance_views.xml) no longer has an
+                    'employee_id' field anywhere in its arch (that field does not exist on
+                    this view in current core Odoo), so this xpath target no longer
+                    matches. The replacement content was already fully commented out in
+                    the pre-migration source, so this whole xpath is now a no-op;
+                    commented out entirely rather than left as a broken/matchless xpath.
+                <xpath expr="//field[@name='employee_id']" position="replace">
+                    <field name="employee_id" string="Created By"
+                           options="{'no_create_edit': True, 'no_open': True}"/>
+                </xpath>
+                -->
+<!--                <xpath expr="//form/sheet/group/group/field[@name='user_id']" position="replace">-->
+<!--                    <field name="team_members"/>-->
+<!--                </xpath>-->
+                <!--
+                    Odoo 19 migration note: the original xpath expr="//group" is
+                    ambiguous against the current core view (it now matches 3 <group>
+                    elements: one outer wrapping group plus 2 nested ones), which
+                    Odoo 19's view-inheritance xpath resolution rejects (expects a
+                    single match). Retargeted to expr="//notebook" position="before",
+                    a single unambiguous anchor in the current core arch, which
+                    preserves the original intent of inserting these extra
+                    groups right after the main info group and before the tabs.
+                -->
+                <xpath expr="//notebook" position="before">
+                    <separator/>
+                    <group name="contact_info" string="Contact Info">
+                        <group>
+                            <field name="partner_id" invisible="source_type == 'internal'" readonly="helpdesk_ticket_id != False" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="employee_id" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="helpdesk_ticket_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="file_id" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="contact_number" invisible="source_type == 'internal'"/>
+                            <field name="employee_contact" invisible="source_type == 'customer'"/>
+                        </group>
+                    </group>
+                    <separator/>
+                    <group name="property_detail" string="Property Detail">
+                        <group>
+                            <field name="society_id"
+                                   invisible="project_type != 'skyscraper'" readonly="helpdesk_ticket_id != False"
+                                   string="Project"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="society_id"
+                                   invisible="project_type != 'housing_society'" readonly="helpdesk_ticket_id != False"
+                                   string="Society"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="phase_id"
+                                   invisible="project_type != 'housing_society'" readonly="helpdesk_ticket_id != False"
+                                   domain="[('society_id','=', society_id)]"
+                                   string="Phase"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="phase_id"
+                                   invisible="project_type != 'skyscraper'" readonly="helpdesk_ticket_id != False"
+                                   string="Building"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="street_id"
+                                   invisible="project_type != 'housing_society'" readonly="helpdesk_ticket_id != False"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="sector_id"
+                                   invisible="project_type != 'skyscraper'" readonly="helpdesk_ticket_id != False"
+                                   string="Floor"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   domain="[('society_id', '=', society_id),('phase_id', '=', phase_id)]"/>
+
+                            <field name="sector_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   invisible="project_type != 'housing_society'" readonly="helpdesk_ticket_id != False"
+                                   domain="[('society_id', '=', society_id),('phase_id', '=', phase_id)]"
+                                   string="Sector"/>
+
+                            <field name="inventory_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   invisible="project_type != 'skyscraper'" readonly="helpdesk_ticket_id != False"
+                                   domain="[('society_id', '=', society_id),('phase_id', '=', phase_id),('sector_id','=',sector_id)]"
+                                   />
+
+                            <field name="inventory_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   invisible="project_type != 'housing_society'" readonly="helpdesk_ticket_id != False"
+                                   domain="[('society_id', '=', society_id),('phase_id', '=', phase_id),('sector_id','=',sector_id)]"
+                                   />
+
+                            <field name="plot_name"
+                                   string="Plot Number"
+                                   invisible="1"/>
+
+                            <field name="plot_name"
+                                   string="Unit"
+                                   invisible="1"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

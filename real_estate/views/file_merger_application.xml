@@ -6,6 +6,7 @@
             <field name="arch" type="xml">
                 <form create="false">
                     <sheet>
+                        <div class="oe_button_box" name="button_box"/>
                         <div class="oe_title oe_state_size">
                             <h1>
                                 <field name="name"/>

@@ -80,22 +80,25 @@ class PlotMergerExt(models.TransientModel):
             merger_vals.update({
                 'membership_id': self.membership_source_id.id,
                 'membership_merge_to_id': self.membership_target_id.id,
-                'merger_request': True
+                'merger_request': True,
+                'merger_status': 'process'
             })
 
         elif self.cnic and not self.tar_member_cnic:
-            member_record = self.env['res.partner'].search([('cnic', '=', self.cnic)], limit=1)
+            member_record = self.env['res.member'].search([('cnic', '=', self.cnic)], limit=1)
             merger_vals.update({
                 'membership_id': member_record.id,
+                'merger_status': 'process'
             })
 
         elif self.cnic and self.tar_member_cnic:
-            member_record = self.env['res.partner'].search([('cnic', '=', self.cnic)], limit=1)
-            tar_member_record = self.env['res.partner'].search([('cnic', '=', self.tar_member_cnic)], limit=1)
+            member_record = self.env['res.member'].search([('cnic', '=', self.cnic)], limit=1)
+            tar_member_record = self.env['res.member'].search([('cnic', '=', self.tar_member_cnic)], limit=1)
             merger_vals.update({
                 'membership_id': member_record.id,
                 'membership_merge_to_id': tar_member_record.id,
-                'merger_request': True
+                'merger_request': True,
+                'merger_status': 'process'
             })
         merger_vals.update({
             'waive_merger_application': self.waive_merger_application,

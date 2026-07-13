@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_maintenance_charges,maintenance.charges,model_maintenance_charges,,1,1,1,1
+access_maintenance_charges_line,maintenance.charges.line,model_maintenance_charges_line,,1,1,1,1
+access_maintenance_charges_type,maintenance.charges.type,model_maintenance_charges_type,,1,1,1,1
+access_maintenance_charges_type_lines,maintenance.charges.type.lines,model_maintenance_charges_type_lines,,1,1,1,1
+access_maintenance_charges_history,maintenance.charges.history,model_maintenance_charges_history,,1,1,1,1
+access_maintenance_charges_payment,maintenance.charges.payment,model_maintenance_charges_payment,,1,1,1,1
+access_change_unit_type,change.unit.type,model_change_unit_type,,1,1,1,1
+access_change_unit_type_lines,change.unit.type.lines,model_change_unit_type_lines,,1,1,1,1
+access_maintenance_advance_payment_lines,maintenance.advance.payment.lines,model_maintenance_advance_payment_lines,,1,1,1,1

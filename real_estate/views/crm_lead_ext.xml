@@ -11,7 +11,7 @@
                                 type="object" class="oe_highlight"
                                 invisible="not active or probability == 100 or type == 'lead'"/>
                         <button name="%(crm.crm_lead_lost_action)d" string="Mark Lost"
-                                type="action" class="oe_highlight" context="{'default_lead_id': active_id}"
+                                type="action" class="oe_highlight"
                                 invisible="type == 'lead' or not active or probability == 100"/>
                         <button name="%(crm.action_crm_lead2opportunity_partner)d" string="Convert to Opportunity"
                                 type="action" help="Convert to Opportunity"
@@ -109,67 +109,18 @@
                             <field name="is_existing" string="Is Existing?"
                                    readonly="type == 'opportunity'"/>
                         </div>
-                        <group string="Contact Information" invisible="is_existing == True">
-                            <group>
-                                <label for="contact_name" string="Potential Customer"/>
-<!--                                <div class="o_row">-->
-<!--                                    <field name="title" placeholder="Title" domain="[]"-->
-<!--                                           required="is_existing != True" readonly="probability == 100"-->
-<!--                                           options='{"no_open": True}'/>-->
-<!--                                    <field name="contact_name" placeholder="Name"-->
-<!--                                           required="is_existing != True" readonly="probability == 100"/>-->
-<!--                                </div>-->
-                                <field name="partner_name"/>
-                                <label for="street" string="Address"/>
-                                <div class="o_address_format">
-                                    <field name="street" placeholder="Street..." class="o_address_street"
-                                           readonly="probability == 100"/>
-                                    <field name="street2" placeholder="Street 2..." class="o_address_street"
-                                           readonly="probability == 100"/>
-                                    <field name="city"
-                                           required="is_existing != True" readonly="probability == 100"
-                                           placeholder="City" class="o_address_city"/>
-                                    <field name="state_id" class="o_address_state" placeholder="State"
-                                           readonly="probability == 100"
-                                           options='{"no_open": True}'/>
-                                    <field name="zip" placeholder="ZIP" class="o_address_zip"
-                                           readonly="probability == 100"/>
-                                    <field name="country_id" placeholder="Country" class="o_address_country"
-                                           readonly="probability == 100"
-                                           options='{"no_open": True, "no_create": True}'/>
-                                </div>
-                                <field name="website" invisible="1" widget="url"
-                                       placeholder="e.g. https://www.odoo.com"/>
-                                <field name="lang_id" invisible="1"/>
-                            </group>
-                            <group class="mt48">
-                                <field name="function" readonly="probability == 100"/>
-<!--                                <field name="mobile" widget="mask" data-inputmask="'mask': '+99-999-9999999'"-->
-<!--                                       placeholder='+92-300-8765432' required="1"-->
-<!--                                       readonly="probability == 100"-->
-<!--                                       />-->
-<!--                                <label for="email_from" class="oe_inline"-->
-<!--                                       readonly="probability == 100"/>-->
-<!--                                <div class="o_row o_row_readonly">-->
-<!--                                    <i class="fa fa-ban" style="color: red;" role="img"-->
-<!--                                       title="This email is blacklisted for mass mailing"-->
-<!--                                       aria-label="Blacklisted"-->
-<!--                                       invisible="(is_blacklisted == False or partner_address_email != False)"-->
-<!--                                       groups="base.group_user"/>-->
-<!--                                    <field name="email_from"-->
-<!--                                           invisible="partner_address_email != False" readonly="probability == 100"-->
-<!--                                           string="Email" widget="email"/>-->
-<!--                                    <i class="fa fa-ban" style="color: red;" role="img"-->
-<!--                                       title="This email is blacklisted for mass mailing"-->
-<!--                                       aria-label="Blacklisted"-->
-<!--                                       invisible="(partner_is_blacklisted == False or partner_address_email == False)"-->
-<!--                                       groups="base.group_user"/>-->
-<!--                                    <field name="partner_address_email"-->
-<!--                                           invisible="partner_address_email == False" readonly="probability == 100"-->
-<!--                                           widget="email" string="Email"/>-->
-<!--                                </div>-->
-                                <field name="referred" readonly="probability == 100"/>
-                            </group>
+                        <group>
+                            <field name="party_type"/>
+                            <field name="investor_id" invisible="party_type != 'investor'"
+                                   required="party_type == 'investor'" options="{'no_create': True}"/>
+                            <button name="action_create_member" type="object" string="Create Member"
+                                    class="oe_link" icon="fa-plus"
+                                    invisible="party_type != 'member' or is_existing == True"/>
+                            <button name="action_create_investor" type="object" string="Create Investor"
+                                    class="oe_link" icon="fa-plus"
+                                    invisible="party_type != 'investor'"/>
+                        </group>
+                        <group>
                             <group string="Marketing">
                                 <field name="campaign_id" readonly="probability == 100"/>
                                 <field name="medium_id" groups="real_estate.group_rsms_manager" readonly="probability == 100"/>
@@ -196,7 +147,6 @@
                                         'default_country_id': country_id,
                                         'default_function': function,
                                         'default_phone': phone,
-                                        'default_mobile': mobile,
                                         'default_email': email_from,
                                         'default_user_id': user_id,
                                         'default_team_id': team_id,
@@ -283,13 +233,11 @@
                                         'default_company_name': type == 'opportunity' and partner_name,
                                         'default_street2': street2,
                                         'default_city': city,
-                                        'default_title': title,
                                         'default_state_id': state_id,
                                         'default_zip': zip,
                                         'default_country_id': country_id,
                                         'default_function': function,
                                         'default_phone': phone,
-                                        'default_mobile': mobile,
                                         'default_email': email_from,
                                         'default_user_id': user_id,
                                         'default_team_id': team_id,
@@ -497,44 +445,4 @@
             </field>
         </record>
 
-        <!--
-            crm.lead (as Opportunity tree) views
-        -->
-        <record id="crm.crm_case_tree_view_oppor" model="ir.ui.view">
-            <field name="name">crm.lead.tree.opportunity</field>
-            <field name="model">crm.lead</field>
-            <field name="arch" type="xml">
-                <list string="Opportunities" multi_edit="1"  decoration-bf="message_needaction==True" decoration-muted="probability == 100" decoration-danger="activity_date_deadline and (activity_date_deadline &lt; current_date)">
-                    <field name="date_deadline" invisible="1"/>
-                    <field name="create_date" optional="show" string="Date"/>
-                    <field name="name" string="Opportunity"/>
-                    <field name="contact_name" string="Customer" optional="show"/>
-<!--                    <field name="mobile" class="o_force_ltr" optional="show"/>-->
-<!--                    <field name="phone" class="o_force_ltr" optional="hide" invisible="1"/>-->
-                    <field name="city" optional="show"/>
-                    <field name="country_id" optional="show"/>
-                    <field name="user_id" optional="show"/>
-                    <field name="medium_id" invisible="0" string="Source"/>
-                    <field name="campaign_id" invisible="0"/>
-                    <field name="state_id" optional="hide"/>
-                    <field name="activity_date_deadline" optional="show" invisible="1"/>
-                    <field name="activity_summary" optional="show" readonly="1" invisible="1"/>
-                    <field name="source_id" invisible="1"/>
-                    <field name="email_from" optional="hide" invisible="1"/>
-                    <field name="stage_id" required="1" optional="show" invisible="1"/>
-                    <field name="planned_revenue" sum="Expected Revenues" optional="show" invisible="1"/>
-                    <field name="probability" avg="Avg. of Probability" optional="show" invisible="1"/>
-                    <field name="team_id" optional="show" invisible="1"/>
-                    <field name="referred" invisible="1"/>
-                    <field name="message_needaction" invisible="1"/>
-                    <field name="probability" invisible="1"/>
-                    <field name="write_date" invisible="1"/>
-                    <field name="company_id" groups="base.group_multi_company" optional="show" invisible="1" />
-                    <field name="tag_ids" optional="hide" widget="many2many_tags" invisible="1"/>
-                    <field name="priority" optional="hide" invisible="1"/>
-                    <field name="activity_exception_decoration" widget="activity_exception" invisible="1"/>
-                </list>
-            </field>
-        </record>
 </odoo>
-        <!-- ????????????????????????????????????????????? -->

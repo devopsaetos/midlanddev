@@ -1,0 +1,25 @@
+<odoo>
+    <data>
+        <record id="maintenance_groups_category_id" model="ir.module.category">
+            <field name="name">Maintenance Security Groups</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <!-- category_id was removed from res.groups in Odoo 19; groups are now organized via privilege_id -> res.groups.privilege -->
+        <record id="privilege_maintenance_recovery_batch" model="res.groups.privilege">
+            <field name="name">Maintenance Security Groups</field>
+            <field name="category_id" ref="maintenance_recovery_batch.maintenance_groups_category_id"/>
+        </record>
+
+        <record id="officer_group_id" model="res.groups">
+            <field name="name">Maintenance Officer</field>
+            <!-- <field name="category_id" ref="maintenance_recovery_batch.maintenance_groups_category_id"/> removed in Odoo 19, replaced below -->
+            <field name="privilege_id" ref="maintenance_recovery_batch.privilege_maintenance_recovery_batch"/>
+        </record>
+        <record id="manager_group_id" model="res.groups">
+            <field name="name">Maintenance Manager</field>
+            <!-- <field name="category_id" ref="maintenance_recovery_batch.maintenance_groups_category_id"/> removed in Odoo 19, replaced below -->
+            <field name="privilege_id" ref="maintenance_recovery_batch.privilege_maintenance_recovery_batch"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,175 @@
+<odoo>
+    <data>
+        <template id="maintenance_recovery">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="col-12" style="text-align:center;">
+                            <h1>
+                                <strong>Maintenance Recovery Report</strong>
+                            </h1>
+                        </div>
+                        <br/>
+
+                        <div class="col-12"
+                             style="font-family:'Roboto',sans-serif;font-family:'Roboto',sans-serif;font-size:30px;color:#161515; text-align:center;">
+                            <strong>
+                                <b>Summary
+                                </b>
+                            </strong>
+                        </div>
+                        <table class="table table-bordered table-sm" style="margin-top:15px;">
+                            <thead>
+                                <tr style="background-color:#575554;font-size:14px;">
+                                    <th class="text-capitalize" style="color:white;font-weight: normal;">
+                                        Sectors
+                                    </th>
+                                    <th class="text-capitalize text-center" style="color:white;font-weight: normal;">
+                                        Category
+                                    </th>
+                                    <th class="text-capitalize text-center" style="color:white;font-weight: normal;">
+                                        Agents
+                                    </th>
+                                    <th class="text-capitalize text-center" style="color:white;font-weight: normal;">
+                                        Amount Due
+                                    </th>
+                                    <th class="text-capitalize text-center" style="color:white;font-weight: normal;">
+                                        Amount Paid
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="grand_amount" t-value="0"/>
+                                <t t-set="grand_amount_paid" t-value="0"/>
+                                <t t-set="grand_amount_due" t-value="0"/>
+                                <t t-foreach="data" t-as="o">
+                                    <t t-foreach="o.maintenance_history_ids" t-as="doc">
+                                        <t t-if="date_from and date_to is False">
+                                            <t t-if="doc.date &gt;= date_from and doc.date &lt;= date_to">
+                                                <t t-set="grand_amount" t-value="grand_amount + doc.amount"/>
+                                                <t t-set="grand_amount_paid"
+                                                   t-value="grand_amount_paid + doc.amount_paid"/>
+                                                <t t-set="grand_amount_due" t-value="grand_amount_due + doc.residual"/>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="grand_amount" t-value="grand_amount + doc.amount"/>
+                                            <t t-set="grand_amount_paid" t-value="grand_amount_paid + doc.amount_paid"/>
+                                            <t t-set="grand_amount_due" t-value="grand_amount_due + doc.residual"/>
+                                        </t>
+                                    </t>
+                                </t>
+                                <tr style="background-color:#FCC704;">
+
+                                    <td class="text-capitalize"
+                                        style="color:black;font-weight: normal;text-align:left;">
+                                        <t t-if="sector_ids">
+                                            <t t-foreach="sector_ids" t-as="sec">
+                                                <span t-esc="sec.name"/>,
+                                            </t>
+                                        </t>
+                                    </td>
+
+                                    <td class="text-capitalize text-left"
+                                        style="color:black;font-weight: normal;">
+                                        <t t-if="category_id">
+                                            <span t-esc="category_id.name"/>
+                                        </t>
+                                    </td>
+
+                                    <td class="text-capitalize text-left"
+                                        style="color:black;font-weight: normal;">
+                                        <t t-if="agent_ids">
+                                            <t t-foreach="agent_ids" t-as="agent">
+                                                <span t-esc="agent.name"/>,
+                                            </t>
+                                        </t>
+                                    </td>
+
+                                    <td class="text-capitalize text-right"
+                                        style="color:black;font-weight: normal;">
+                                        <span t-esc="grand_amount_due"/>
+                                    </td>
+                                    <td class="text-capitalize text-right"
+                                        style="color:black;font-weight: normal;background-color:#FCC704;">
+                                        <span t-esc="grand_amount_paid"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table style="text-align:center;">
+                            <thead>
+                                <th style="width:08%;">File No.</th>
+                                <th style="width:08%;">Tracking ID</th>
+                                <th style="width:20%;">Member Name</th>
+                                <th style="width:14%;">Mobile</th>
+                                <th style="width:10%;">Plot No</th>
+                                <th style="width:10%;">Amount</th>
+                                <th style="width:10%;">Amount Paid</th>
+                                <th style="width:10%;">Amount Due</th>
+                                <th style="width:10%;">Status</th>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data" t-as="o">
+                                    <tr>
+                                        <td style="text-align:left">
+                                            <span t-esc="o.name"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <span t-esc="o.tracking_id"/>
+                                        </td>
+                                        <td style="text-align:left">
+                                            <span t-esc="o.membership_id.name"/>
+                                        </td>
+                                        <td style="text-align:left">
+                                            <span t-esc="o.membership_id.mobile"/>
+                                        </td>
+                                        <td style="text-align:left">
+                                            <span t-esc="o.unit_number"/>
+                                        </td>
+
+                                        <t t-set="amount" t-value="0"/>
+                                        <t t-set="amount_paid" t-value="0"/>
+                                        <t t-set="amount_due" t-value="0"/>
+                                        <t t-foreach="o.maintenance_history_ids" t-as="doc">
+                                            <t t-if="date_from and date_to is False">
+                                                <t t-if="doc.date &gt;= date_from and doc.date &lt;= date_to">
+                                                    <t t-set="amount" t-value="amount + doc.amount"/>
+                                                    <t t-set="amount_paid" t-value="amount_paid + doc.amount_paid"/>
+                                                    <t t-set="amount_due" t-value="amount_due + doc.residual"/>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-set="amount" t-value="amount + doc.amount"/>
+                                                <t t-set="amount_paid" t-value="amount_paid + doc.amount_paid"/>
+                                                <t t-set="amount_due" t-value="amount_due + doc.residual"/>
+                                            </t>
+                                        </t>
+                                        <td style="text-align:right">
+                                            <span t-esc="amount"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <span t-esc="amount_paid"/>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <span t-esc="amount_due"/>
+                                        </td>
+                                        <td style="text-align:center">
+                                            <t t-if="amount_due > 0">
+                                                <span>Not Paid</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span>Paid</span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

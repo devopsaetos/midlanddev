@@ -58,7 +58,7 @@
         'views/installment_invoice_wizard.xml',
         'wizard/unit_import_wizard.xml',
         # 'views/templates.xml',
-        # 'views/crm_lead_ext.xml'
+        'views/crm_lead_ext.xml',
     ],
 
     'assets': {

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="sequence_maintenance_exemption" model="ir.sequence">
+            <field name="name">Maintenance Exemption Sequence</field>
+            <field name="code">maintenance.exemption</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">EXE-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+
+        <record id="sequence_maintenance_exemption_line" model="ir.sequence">
+            <field name="name">Maintenance Exemption Line Sequence</field>
+            <field name="code">maintenance.exemption.line</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">EXEP-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+         <record id="sequence_maintenance_exemption_withdrawal" model="ir.sequence">
+            <field name="name">Maintenance Exemption Withdrawal Sequence</field>
+            <field name="code">maintenance.exemption.withdrawal</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">EXW-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+
+        <record id="sequence_maintenance_exemption_withdrawal_line" model="ir.sequence">
+            <field name="name">Maintenance Exemption Withdrawal Line Sequence</field>
+            <field name="code">maintenance.exemption.withdrawal.line</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">EXEW-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
+</odoo>

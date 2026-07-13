@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--
+            Odoo 19 migration note: this view previously inherited
+            'website_axis_helpdesk.helpdesk_ticket_view_form' (an old Odoo 13/17
+            third-party module not available in this project). It now inherits the
+            real form view shipped by Odoo 19 Enterprise's core 'helpdesk' module
+            (odoo/addons/helpdesk/views/helpdesk_ticket_views.xml, record
+            'helpdesk_ticket_view_form'). Several xpaths below were rewritten against
+            that view's actual current structure (different field/button layout than
+            website_axis_helpdesk used); some content had no core equivalent at all
+            and is commented out in place with a note instead of deleted.
+        -->
+        <record id="maintenance_realestate_specific.helpdesk_ticket_form_inherit" model="ir.ui.view">
+            <field name="name">maintenance_realestate_specific help desk ticket form</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <!--
+                    Odoo 19 migration note: core Odoo 19 'helpdesk' has no
+                    'assign_ticket_to_self' button, no 'is_self_assigned' field and no
+                    'website_axis_helpdesk.group_helpdesk_user' group - these were all
+                    specific to the unavailable website_axis_helpdesk module. There is
+                    no equivalent "assign ticket to me" quick-action in core helpdesk
+                    (users can still set the standard 'user_id' field manually on the
+                    form). Commented out rather than deleted; would need new
+                    field/method implementation to restore, which is out of scope for
+                    a version migration.
+                <xpath expr="//header/button[@name='assign_ticket_to_self']" position='replace'>
+                    <button name="assign_ticket_to_self" string="Assign To Me" type="object" class="oe_highlight"
+                            groups="website_axis_helpdesk.group_helpdesk_user"
+                            attrs="{'invisible': ['|',('is_self_assigned', '=', True),('helpdesk_ticket_count','>', 0)]}"/>
+                </xpath>
+                -->
+                <xpath expr="//header" position='inside'>
+                    <button name="search_contact_number"
+                            type="object"
+                            class="oe_highlight"
+                            string="Search"
+                            icon="fa-search"
+                            invisible="not project_type or helpdesk_ticket_count &gt; 0"/>
+                </xpath>
+                <!--
+                    Odoo 19 migration note: core Odoo 19 'helpdesk' has no 'create_task'
+                    button (that comes from project/timesheet bridge modules such as
+                    'helpdesk_timesheet'/'project_helpdesk', which this module does not
+                    depend on). Retargeted the "Assign" (send_to_maintenance) stat
+                    button to the core form's existing stat-button box
+                    (div[@name='button_box']) instead of anchoring after 'create_task'.
+                -->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="send_to_maintenance"
+                            type="object"
+                            class="oe_stat_button"
+                            string="Assign"
+                            icon="fa-bars"
+                            invisible="not project_type">
+                        <field name="helpdesk_ticket_count"/>
+                    </button>
+                </xpath>
+                <!--
+                    Odoo 19 migration note: 'project_project_id' does not exist on
+                    core Odoo 19 helpdesk.ticket (it is only added by project bridge
+                    modules this module doesn't depend on). Nothing to hide - commented
+                    out rather than deleted.
+                <xpath expr="//field[@name='project_project_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                -->
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <!--
+                    Odoo 19 migration note: 'partner_name' and 'partner_email' exist as
+                    fields on core helpdesk.ticket, but the core Odoo 19
+                    'helpdesk_ticket_view_form' arch no longer displays them at all
+                    (it shows 'partner_phone' instead). There is therefore nothing in
+                    the current arch for these xpaths to match / hide. Commented out
+                    rather than deleted.
+                <xpath expr="//field[@name='partner_name']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='partner_email']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                -->
+                <!--
+                    Odoo 19 migration note: the original xpaths targeted
+                    group[@name='ticket_detail'] and group[@name='detail'], which do
+                    not exist in core Odoo 19's helpdesk ticket form (different group
+                    naming/structure). Both custom groups (contact + property detail)
+                    are now inserted together, before the core view's <notebook>
+                    (a single, unambiguous anchor that exists in the current arch),
+                    which preserves the original intent of showing these details in
+                    the sheet body above the tabs.
+                -->
+                <xpath expr="//notebook" position="before">
+                    <separator/>
+                    <group name="contact_detail" string="Contact Details">
+                        <group>
+                            <field name="project_type" invisible="1" readonly="0"/>
+
+                            <field name="source_type" string="Raised By" readonly="helpdesk_ticket_count == 1"/>
+
+                            <field name="employee_id"
+                                   invisible="source_type == 'customer'"
+                                   readonly="helpdesk_ticket_count == 1"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="maintenance_team_id" options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="partner_id" options="{'no_create': True, 'no_open': True}"
+                                   invisible="source_type == 'internal'"
+                                   readonly="1"/>
+
+                            <field name="customer_name"
+                                   invisible="source_type == 'internal'"/>
+
+                            <field name="phase_id"
+                                   invisible="project_type != 'housing_society'"
+                                   readonly="source_type == 'customer' or helpdesk_ticket_count == 1"
+                                   domain="[('society_id','=', society_id)]"
+                                   options="{'no_create': True, 'no_open': True}" string="Phase"/>
+
+                            <field name="phase_id"
+                                   invisible="project_type != 'skyscraper'"
+                                   readonly="source_type == 'customer' or helpdesk_ticket_count == 1"
+                                   domain="[('society_id','=', society_id)]"
+                                   options="{'no_create': True, 'no_open': True}" string="Building"/>
+
+                            <field name="street_id"
+                                   force_save="1"
+                                   domain="[('sector_id','=', sector_id)]"
+                                   invisible="project_type != 'housing_society'"
+                                   readonly="source_type == 'customer' or helpdesk_ticket_count == 1"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="file_id" invisible="1" string="File"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="society_id" invisible="1" string="Society"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="society_id" invisible="1" string="Project"  options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="department_id"
+                                   invisible="source_type == 'customer'"
+                                   readonly="helpdesk_ticket_count == 1"
+                                   options="{'no_create': True, 'no_open': True}"/>
+
+                            <field name="inventory_id"
+                                   invisible="project_type != 'housing_society'"
+                                   readonly="helpdesk_ticket_count == 1"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   string="Unit Number"/>
+
+                            <field name="inventory_id"
+                                   invisible="project_type != 'skyscraper'"
+                                   readonly="helpdesk_ticket_count == 1"
+                                   options="{'no_create': True, 'no_open': True}" string="Unit Number"/>
+
+                            <field name="plot_name"
+                                   invisible="1"
+                                   string="Unit Number"/>
+
+                            <field name="contact_number"
+                                   invisible="source_type == 'internal'"
+                                   readonly="helpdesk_ticket_count == 1"/>
+
+                            <field name="employee_contact"
+                                   invisible="source_type == 'customer'"
+                                   readonly="helpdesk_ticket_count == 1"/>
+
+                            <field name="sector_id"
+                                   invisible="project_type != 'skyscraper'"
+                                   readonly="source_type == 'customer' or helpdesk_ticket_count == 1"
+                                   domain="[('society_id', '=', society_id),('phase_id', '=', phase_id)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   string="Floor"/>
+
+                            <field name="sector_id"
+                                   invisible="project_type != 'housing_society'"
+                                   readonly="source_type == 'customer' or helpdesk_ticket_count == 1"
+                                   domain="[('society_id', '=', society_id),('phase_id', '=', phase_id)]"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   string="Sector"/>
+                        </group>
+                    </group>
+                    <separator/>
+                    <!-- original arch had both attrs invisible-if-internal AND a hardcoded invisible="1";
+                         preserved as always-invisible to match the pre-migration behavior exactly -->
+                    <group name="property_detail" string="Property Detail" invisible="1">
+                        <group>
+                            <field name="society_id" invisible="project_type != 'housing_society'" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="phase_id" invisible="project_type != 'housing_society'" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="project_id" invisible="project_type != 'skyscraper'" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="building_id" invisible="project_type != 'skyscraper'" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="sector_id" invisible="project_type != 'housing_society'" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="inventory_id" invisible="project_type != 'housing_society'" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="floor_id" invisible="project_type != 'skyscraper'" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="building_inventory_id" invisible="project_type != 'skyscraper'" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

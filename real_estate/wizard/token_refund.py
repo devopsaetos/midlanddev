@@ -30,21 +30,24 @@ class TokenRefund(models.TransientModel):
             token = self.env['token.money'].browse(active_id)
             company = self.env.company
             if token.token_paid:
-                invoice = self.env['account.move'].create({
-                    'partner_id': self.partner_id.partner_id.id,
-                    'token_id': self.token_id.id,
+                invoice_vals = {
+                    'token_id': token.id,
                     'move_type': 'in_invoice',
                     'company_id': company.id,
                     'invoice_date': fields.Date.today(),
-                    'journal_id': company.knockoff_journal_id.id,
-                    'invoice_line_ids': [(0, None, {
-                        'product_id': token_refund.product_id.id,
+                    'invoice_line_ids': [(0, 0, {
+                        'product_id': token_refund.id,
                         'name': token_refund.name,
+                        'account_id': token_refund.product_id.with_company(company).property_account_expense_id.id,
                         'quantity': 1.0,
                         'price_unit': token.token_fees,
                     })]
-                })
-                invoice.action_post()
+                }
+                invoice_vals.update(token._token_party_vals())
+                invoice = self.env['midland.invoice'].create(invoice_vals)
+                # Vendor Bill refund must be a real payable JV, payable through the
+                # standard Accounting app - same reasoning as file_refund.py.
+                invoice.with_context(force_journal_entry=True).action_post()
                 token.state = 'refund'
                 token.validity_expire = False
                 token.token_line_ids.inventory_id.state = 'avalible_for_sale'

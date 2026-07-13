@@ -21,6 +21,7 @@ class ResConfigSettingsRSMS(models.TransientModel):
     group_unit_size_in_specific = fields.Boolean(default=True, implied_group='real_estate.group_unit_size_in_specific', readonly=False)
     token_partner_id = fields.Many2one('res.partner', readonly=False, related='company_id.token_partner_id')
     account_journal_id = fields.Many2one('account.journal', domain=[('type', '=', 'sale')], readonly=False, related='company_id.account_journal_id')
+    merger_advance_account_id = fields.Many2one('account.account', readonly=False, related='company_id.merger_advance_account_id')
     payment_type = fields.Selection([
         ('osp', 'One Step Payment'),
         ('tsp', 'Two Step Payment'),
@@ -59,6 +60,7 @@ class ResConfigSettingsRSMS(models.TransientModel):
             company.correspondence_letter_postman = self.correspondence_letter_postman
             company.token_partner_id = self.token_partner_id
             company.account_journal_id = self.account_journal_id
+            company.merger_advance_account_id = self.merger_advance_account_id
             company.payment_type = self.payment_type
             company.transfer_fee = self.transfer_fee
             company.allow_bank_finance = self.allow_bank_finance

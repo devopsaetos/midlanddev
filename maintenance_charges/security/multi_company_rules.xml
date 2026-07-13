@@ -1,0 +1,40 @@
+<odoo>
+    <data>
+        <record id="maintenance_charges.maintenance_charges_type_rule" model="ir.rule">
+            <field name="name">Maintenance Charges Type Multi-company</field>
+            <field name="model_id" ref="model_maintenance_charges_type"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('society_id.company_id','=',False),
+                ('society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="maintenance_charges.maintenance_charges_payment_rule" model="ir.rule">
+            <field name="name">Maintenance Charges Payment Multi-company</field>
+            <field name="model_id" ref="model_maintenance_charges_payment"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('sector_id.society_id.company_id','=',False),
+                ('sector_id.society_id.company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="maintenance_charges.maintenance_charges_rule" model="ir.rule">
+            <field name="name">Maintenance Charges Multi-company</field>
+            <field name="model_id" ref="model_maintenance_charges"/>
+            <field name="domain_force">[('society_id.company_id','in',company_ids)]</field>
+        </record>
+
+        <record id="maintenance_charges.maintenance_change_unit_type_rule" model="ir.rule">
+            <field name="name">Maintenance Charges Unit Type Multi-company</field>
+            <field name="model_id" ref="model_change_unit_type"/>
+            <field name="domain_force">[('society_id.company_id','in',company_ids)]</field>
+        </record>
+
+    </data>
+</odoo>

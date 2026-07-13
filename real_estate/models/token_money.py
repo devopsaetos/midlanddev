@@ -26,6 +26,11 @@ class TokenMoney(models.Model):
         ('cancel', 'Cancel'),
     ], default='open', tracking=True)
     token_generated = fields.Boolean()
+    party_type = fields.Selection([
+        ('member', 'Member'),
+        ('investor', 'Investor'),
+    ], default='member', required=True, tracking=True, string='Party Type')
+    investor_id = fields.Many2one('res.investor', string='Investor', tracking=True)
     is_existing = fields.Boolean('Existing Member?')
     change_member = fields.Selection([
         ('yes', 'Yes'),
@@ -78,7 +83,7 @@ class TokenMoney(models.Model):
     payment_date = fields.Date()
 
     def _compute_no_of_invoices(self):
-        self.no_of_invoices = len(self.env['account.move'].search([('token_id', '=', self.id)]))
+        self.no_of_invoices = len(self.env['midland.invoice'].search([('token_id', '=', self.id)]))
 
     @api.depends('ttl_sale_amount', 'token_fees')
     def _compute_balance_amount(self):
@@ -88,14 +93,11 @@ class TokenMoney(models.Model):
     def open_invoices(self):
         return {
             'type': 'ir.actions.act_window',
-            'views': [(self.env.ref('account.view_invoice_tree').id, 'list'),
-                      (self.env.ref('account.view_move_form').id, 'form')],
             'view_mode': 'list,form',
             'name': _('Token Invoices'),
-            'res_model': 'account.move',
+            'res_model': 'midland.invoice',
             'domain': [('token_id', '=', self.id)],
-            'context': {'default_name': self.contact_name, 'default_partner_id': self.partner_id.partner_id.id,
-                        'current_view': 'realestate'},
+            'context': {'current_view': 'realestate'},
         }
 
 
@@ -128,7 +130,7 @@ class TokenMoney(models.Model):
             if rec.company_type == 'aop' and not rec.line_ids:
                 raise ValidationError(_("Please add information in Details tab."))
 
-            if not rec.is_existing:
+            if rec.party_type == 'member' and not rec.is_existing:
                 partner = rec.env['res.member'].create({
                     'name': rec.contact_name,
                     'company_type': rec.company_type,
@@ -151,6 +153,30 @@ class TokenMoney(models.Model):
         #     raise ValidationError(_("Please add information in Details tab."))
         return res
 
+    def _token_party_vals(self):
+        """member_id/partner_id pair to merge into a midland.invoice or midland.payment
+        create() dict, depending on whether this token is for a Member or an Investor.
+        For investors there's no dedicated link field on midland.invoice/midland.payment,
+        so partner_id is set directly (bypassing the member_id-driven compute) - the same
+        pattern file_financials/models/investment.py already uses for investor payments."""
+        self.ensure_one()
+        if self.party_type == 'investor':
+            if not self.investor_id:
+                raise ValidationError(_("Please select an Investor first."))
+            return {'partner_id': self.investor_id.partner_id.id}
+        if not self.partner_id:
+            raise ValidationError(_("Please select a Member first."))
+        return {'member_id': self.partner_id.id}
+
+    def _token_accounting_partner_id(self):
+        """The res.partner id behind this token, whichever party_type it is - for spots
+        (like cancel_token()'s manual journal entry) that need a plain partner_id rather
+        than the member_id/partner_id pair midland.invoice/midland.payment expect."""
+        self.ensure_one()
+        if self.party_type == 'investor':
+            return self.investor_id.partner_id.id
+        return self.partner_id.partner_id.id
+
     def create_token_fees(self):
         if self.token_fees <= 0:
             return ''
@@ -171,61 +197,48 @@ class TokenMoney(models.Model):
         token = self.env.ref('real_estate.token_money')
         company = self.env.company
         if self.token_fees:
-            if not company.account_journal_id:
-                raise ValidationError(_("Setup company journal before generate token."))
-            invoice = self.env['account.move'].create({
-                'partner_id': self.partner_id.partner_id.id,
-                'move_type': 'out_invoice',
+            invoice_vals = {
                 'company_id': company.id,
                 'crm_id': self.crm_id.id,
                 'token_id': self.id,
-                'token_partner': self.crm_id.contact_name,
                 'invoice_date': self.token_date if self.token_date else fields.Date.today(),
-                'journal_id': company.account_journal_id.id,
                 'property_invoice_type': 'token',
-                'invoice_line_ids': [(0, None, {
+                'invoice_line_ids': [(0, 0, {
                     'product_id': token.id,
                     'name': token.name,
-                    'account_id': token.product_id.property_account_income_id.id or False,
+                    'account_id': token.property_account_income_id.id or False,
                     'quantity': 1.0,
                     'price_unit': self.token_fees,
-                    'company_id': company.id,
                 })]
-            })
+            }
+            invoice_vals.update(self._token_party_vals())
+            invoice = self.env['midland.invoice'].create(invoice_vals)
             invoice.action_post()
 
             payment_type = self.env.company.payment_type
-            if payment_type:
-                if payment_type == 'osp':
-                    invoice_ids = self.env['multi.invoice.payment'].create(
-                        {'invoice_id': invoice.id, 'payment_id': False, 'payment_due': invoice.amount_residual,
-                         'payment_amount': invoice.amount_residual})
-                    Payment = self.env['account.payment'].with_context(
-                        default_multi_invoice_ids=[(4, invoice_ids.id, False)])
-                    payment = Payment.create({
-                        'payment_date': fields.Date.today(),
-                        'payment_type': 'inbound',
-                        'partner_type': 'customer',
-                        'partner_id': self.partner_id.partner_id.id,
-                        'amount': self.token_fees,
-                        'journal_id': self.journal_id.id,
-                        'company_id': company.id,
-                        'currency_id': company.currency_id.id,
-                        'memo': invoice.name,
-                        'cheque_name': self.cheque_name,
-                        'cheque_no': self.cheque_no,
-                        'bank_ref': self.bank_ref,
-                    })
-                    payment.post()
-                    self.token_paid = True
-                    self.state = 'paid'
             if not payment_type:
                 raise ValidationError(_("Please Setup Payment Steps Type from Setting first."))
+            if payment_type == 'osp':
+                payment_vals = {
+                    'date': fields.Date.today(),
+                    'payment_amount': self.token_fees,
+                    'journal_id': self.journal_id.id,
+                    'company_id': company.id,
+                    'currency_id': company.currency_id.id,
+                    'remarks': invoice.name,
+                    'invoice_line_ids': [(0, 0, {'invoice_id': invoice.id, 'payment_amount': self.token_fees})],
+                }
+                payment_vals.update(self._token_party_vals())
+                payment = self.env['midland.payment'].create(payment_vals)
+                payment.action_confirm()
+                self.token_paid = True
+                self.state = 'paid'
 
             for rec in self.token_line_ids:
-                rec.inventory_id.state = 'reserved'
+                rec.inventory_id.state = 'investor' if self.party_type == 'investor' else 'reserved'
 
-            self.partner_id.project_type = self.project_type
+            if self.party_type == 'member':
+                self.partner_id.project_type = self.project_type
             self.token_generated = True
 
     def create_open_file_invoice(self):
@@ -237,65 +250,48 @@ class TokenMoney(models.Model):
         prod.append((0, 0, {
                     'product_id': lump_sum.id,
                     'name': lump_sum.name,
-                    'account_id': lump_sum.product_id.property_account_income_id.id or False,
+                    'account_id': lump_sum.property_account_income_id.id or False,
                     'quantity': 1.0,
                     'price_unit': self.balance_amount + self.token_fees,
-                    'company_id': self.env.company.id,
                 }))
         prod.append((0, 0, {
                     'product_id': token.id,
                     'name': token.name,
-                    'account_id': token.product_id.property_account_income_id.id or False,
+                    'account_id': token.property_account_income_id.id or False,
                     'quantity': 1.0,
                     'price_unit': -self.token_fees,
-                    'company_id': self.env.company.id,
                 }))
         if self.balance_amount:
-            if not self.env.company.account_journal_id:
-                raise ValidationError(_("Setup company journal before generate token."))
-            invoice = self.env['account.move'].create({
-                'partner_id': self.partner_id.partner_id.id,
-                'move_type': 'out_invoice',
+            invoice_vals = {
                 'company_id': self.env.company.id,
                 'crm_id': self.crm_id.id,
                 'token_id': self.id,
-                'token_partner': self.crm_id.contact_name,
                 'invoice_date': self.token_date if self.token_date else fields.Date.today(),
-                'journal_id': self.env.company.account_journal_id.id,
                 'property_invoice_type': 'initial_payment',
-                'invoice_line_ids': prod
-            })
-
+                'invoice_line_ids': prod,
+            }
+            invoice_vals.update(self._token_party_vals())
+            invoice = self.env['midland.invoice'].create(invoice_vals)
             invoice.action_post()
 
             self.state = 'adjusted'
             payment_type = self.env.company.payment_type
-            if payment_type:
-                if payment_type == 'osp':
-                    invoice_ids = self.env['multi.invoice.payment'].create(
-                        {'invoice_id': invoice.id, 'payment_id': False, 'payment_due': invoice.amount_residual,
-                         'payment_amount': invoice.amount_residual})
-                    Payment = self.env['account.payment'].with_context(
-                        default_multi_invoice_ids=[(4, invoice_ids.id, False)])
-                    payment = Payment.create({
-                        'payment_date': fields.Date.today(),
-                        'payment_type': 'inbound',
-                        'partner_type': 'customer',
-                        'partner_id': self.partner_id.partner_id.id,
-                        'amount': self.balance_amount,
-                        'journal_id': self.journal_id.id,
-                        'company_id': self.env.company.id,
-                        'currency_id': self.env.company.currency_id.id,
-                        'memo': invoice.name,
-                        'cheque_name': self.cheque_name,
-                        'cheque_no': self.cheque_no,
-                        'bank_ref': self.bank_ref,
-                    })
-                    payment.post()
-                    self.open_file_amount_received = True
-
             if not payment_type:
                 raise ValidationError(_("Please Setup Payment Steps Type from Setting first."))
+            if payment_type == 'osp':
+                payment_vals = {
+                    'date': fields.Date.today(),
+                    'payment_amount': self.balance_amount,
+                    'journal_id': self.journal_id.id,
+                    'company_id': self.env.company.id,
+                    'currency_id': self.env.company.currency_id.id,
+                    'remarks': invoice.name,
+                    'invoice_line_ids': [(0, 0, {'invoice_id': invoice.id, 'payment_amount': self.balance_amount})],
+                }
+                payment_vals.update(self._token_party_vals())
+                payment = self.env['midland.payment'].create(payment_vals)
+                payment.action_confirm()
+                self.open_file_amount_received = True
 
     def create_member(self):
         if not self.token_paid:
@@ -365,6 +361,10 @@ class TokenMoney(models.Model):
     def create_file(self):
         if not self.token_paid:
             raise ValidationError(_("You can not Create File without paying token fees."))
+        if self.party_type == 'investor':
+            raise ValidationError(_(
+                "Investor tokens are converted via 'Create Open File', not 'Create File' - "
+                "investors get an Investor File, not a Member File."))
         self.state = 'adjusted'
 
         if self.project_type == 'skyscraper':
@@ -1032,7 +1032,7 @@ class TokenMoney(models.Model):
                 debit_vals = {
                     'debit': abs(self.token_fees),
                     'credit': 0.0,
-                    'account_id': token_cancel.property_account_expense_id.id,
+                    'account_id': token_cancel.product_id.property_account_expense_id.id,
                     'company_id': self.env.company.id,
                 }
 
@@ -1046,7 +1046,7 @@ class TokenMoney(models.Model):
                 vals = {
                     'journal_id': self.journal_id.id,
                     'ref': self.serial_number,
-                    'partner_id': self.partner_id.partner_id.id,
+                    'partner_id': self._token_accounting_partner_id(),
                     'token_id': self.id,
                     'type': 'entry',
                     'date': self.date,
