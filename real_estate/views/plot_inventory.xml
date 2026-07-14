@@ -172,6 +172,12 @@
                     <field name="street"/>
                     <field name="category_id"/>
                     <field name="possession_status"/>
+                    <group name="group_by">
+                        <filter name="group_by_street" string="Street" context="{'group_by': 'street_id'}"/>
+                        <filter name="group_by_sector" string="Sector" context="{'group_by': 'sector_id'}"/>
+                        <filter name="group_by_category" string="Category" context="{'group_by': 'category_id'}"/>
+                        <filter name="group_by_state" string="State" context="{'group_by': 'state'}"/>
+                    </group>
                 </search>
             </field>
         </record>
@@ -194,7 +200,8 @@
             <field name="context">
                 {
                     'current_view': 'realestate',
-                    'default_project_type':'housing_society'
+                    'default_project_type':'housing_society',
+                    'search_default_group_by_street': 1
                 }
             </field>
         </record>
