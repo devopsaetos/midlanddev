@@ -81,6 +81,23 @@
                 </xpath>
             </field>
         </record>
+        <record model="ir.ui.view" id="unit_swapping_request_search_ext">
+            <field name="name">file_financials.unit_swapping_request_search_ext</field>
+            <field name="model">unit.swapping.request</field>
+            <field name="inherit_id" ref="real_estate.unit_swapping_request_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='in_process']" position="after">
+                    <filter name="printed" string="Printed" domain="[('state','=','printed')]"/>
+                </xpath>
+                <xpath expr="//filter[@name='cancelled']" position="after">
+                    <separator/>
+                    <filter name="expiring_soon" string="Expiring Soon (3 days)"
+                            domain="[('validation_date','!=', False),
+                                     ('validation_date','&lt;=','today +3d'),
+                                     ('state','not in',['approve','cancel'])]"/>
+                </xpath>
+            </field>
+        </record>
         <!--        CRON JOB -->
         <record id="ir_cron_file_issuance_request_expiry" model="ir.cron">
             <field name="name">File Issuance Request Date Validity</field>

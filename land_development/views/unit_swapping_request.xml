@@ -295,6 +295,7 @@
             (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.unit_swapping_request_form')}),
             ]"
             />
+            <field name="search_view_id" ref="real_estate.unit_swapping_request_search"/>
             <field name="context">{'current_view': 'buildings'}</field>
         </record>
 

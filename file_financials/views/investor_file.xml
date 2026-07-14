@@ -299,6 +299,18 @@
                 </form>
             </field>
         </record>
+        <record model="ir.ui.view" id="investor_file_search_view_ext">
+            <field name="name">investor_file_search_view_ext</field>
+            <field name="model">investor.file</field>
+            <field name="inherit_id" ref="real_estate.investor_file_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='cancel']" position="after">
+                    <separator/>
+                    <filter name="issuance_request_created" string="Issuance Request Created"
+                            domain="[('issuance_request_created','=', True)]"/>
+                </xpath>
+            </field>
+        </record>
         <record model="ir.actions.act_window" id="file_financials.action_installment_plan_lines">
             <field name="name">Installment Plan Lines</field>
             <field name="res_model">installment.plan</field>

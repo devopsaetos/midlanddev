@@ -34,6 +34,7 @@ class Investment(models.Model):
         ('housing_society', 'Housing Society'),
     ])
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company, tracking=True)
+    token_id = fields.Many2one('token.money', string='Token', copy=False, tracking=True)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('reserved', 'Reserved'),
@@ -273,6 +274,27 @@ class Investment(models.Model):
                 vals['sequence_no'] = self.env['ir.sequence'].next_by_code('investment.sequence') or _('New')
         result = super(Investment, self).create(vals_list)
         return result
+
+    def generate_token(self):
+        self.ensure_one()
+        if not self.token_id:
+            if not self.partner_id:
+                raise UserError(_('Please select an Investor first.'))
+            if not self.society_id:
+                raise UserError(_('Please select a Society first.'))
+            self.token_id = self.env['token.money'].create({
+                'party_type': 'investor',
+                'investor_id': self.partner_id.id,
+                'society_id': self.society_id.id,
+                'date': fields.Date.today(),
+            }).id
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'token.money',
+            'view_mode': 'form',
+            'res_id': self.token_id.id,
+            'target': 'current',
+        }
 
     def reserve_inventory(self):
         for rec in self:
