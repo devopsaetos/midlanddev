@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import io
 import os
 
 from odoo import models, fields, _
@@ -8,6 +9,7 @@ from datetime import datetime
 root_path = os.path.dirname(os.path.abspath(__file__))
 
 from xlrd import open_workbook
+from openpyxl import load_workbook
 
 
 class ImportData(models.TransientModel):
@@ -19,6 +21,7 @@ class ImportData(models.TransientModel):
     x_action = fields.Selection([
         ('members', 'Members'),
         ('invoices', 'Invoices'),
+        ('unit_inventory', 'Unit Inventory'),
         ],
         string='Action', required=True)
 
@@ -138,3 +141,124 @@ class ImportData(models.TransientModel):
                             dataline['import_invices_id'] = recp.id
 
                             recp.import_invoice_line.create(dataline)
+
+    # ------------------------------------------------------------------
+    # Unit Inventory (plot.inventory) import from .xlsx
+    # ------------------------------------------------------------------
+
+    UNIT_INVENTORY_HEADERS = {
+        'serial number': 'serial_number',
+        'plot number': 'name',
+        'project type': 'project_type',
+        'society': 'society_id',
+        'phase': 'phase_id',
+        'sector': 'sector_id',
+        'street': 'street_id',
+        'category': 'category_id',
+        'unit category type': 'unit_category_type_id',
+        'product': 'unit_category_type_id',
+        'size': 'size_id',
+        'unit class': 'unit_class_id',
+        'type': 'unit_class_id',
+        'net area': 'net_area',
+        'balcony area': 'balcony_area',
+        'standard area (sft)': 'standard_area',
+        'total area (sft)': 'standard_area',
+        'actual area': 'actual_area',
+        'state': 'state',
+        'possession status': 'possession_status',
+    }
+
+    def _find_by_name(self, model, name, domain=None, row_no=0):
+        if not name:
+            return False
+        name = str(name).strip()
+        record = self.env[model].search([('name', '=', name)] + (domain or []), limit=1)
+        if not record:
+            raise ValidationError(
+                _("Row %s: '%s' not found in %s. Please create it first.") % (row_no, name, model))
+        return record.id
+
+    def _selection_value(self, field_name, label, row_no=0):
+        if not label:
+            return False
+        label = str(label).strip()
+        for value, string in self.env['plot.inventory']._fields[field_name].selection:
+            if label.lower() in (value.lower(), string.lower()):
+                return value
+        raise ValidationError(
+            _("Row %s: '%s' is not a valid value for %s.") % (row_no, label, field_name))
+
+    def import_unit_inventory(self):
+        wb = load_workbook(io.BytesIO(base64.b64decode(self.file)), read_only=True, data_only=True)
+        Inventory = self.env['plot.inventory']
+        created = updated = 0
+
+        for sheet in wb.worksheets:
+            rows = sheet.iter_rows(values_only=True)
+            header = next(rows, None)
+            if not header:
+                continue
+            columns = [self.UNIT_INVENTORY_HEADERS.get(str(h or '').strip().lower()) for h in header]
+
+            for row_no, row in enumerate(rows, start=2):
+                data = {field: row[col] for col, field in enumerate(columns) if field and col < len(row)}
+                if not any(v not in (None, '') for v in data.values()):
+                    continue
+
+                society_id = self._find_by_name(
+                    'society', data.get('society_id'), [('is_society', '=', True)], row_no)
+                phase_id = self._find_by_name(
+                    'society', data.get('phase_id'),
+                    [('is_society', '!=', True), ('society_id', '=', society_id)], row_no)
+                sector_id = self._find_by_name(
+                    'sector', data.get('sector_id'), [('phase_id', '=', phase_id)], row_no)
+                street_id = self._find_by_name(
+                    'street', data.get('street_id'), [('sector_id', '=', sector_id)], row_no)
+
+                vals = {
+                    'name': str(data['name']).strip() if data.get('name') else False,
+                    'project_type': self._selection_value(
+                        'project_type', data.get('project_type'), row_no) or 'housing_society',
+                    'society_id': society_id,
+                    'phase_id': phase_id,
+                    'sector_id': sector_id,
+                    'street_id': street_id,
+                    'category_id': self._find_by_name('plot.category', data.get('category_id'), row_no=row_no),
+                    'unit_category_type_id': self._find_by_name(
+                        'unit.category.type', data.get('unit_category_type_id'), row_no=row_no),
+                    'unit_class_id': self._find_by_name('unit.class', data.get('unit_class_id'), row_no=row_no),
+                    'size_id': self._find_by_name('unit.size', data.get('size_id'), row_no=row_no),
+                    'net_area': float(data.get('net_area') or 0),
+                    'balcony_area': float(data.get('balcony_area') or 0),
+                    'standard_area': float(data.get('standard_area') or 0),
+                    'actual_area': float(data.get('actual_area') or 0),
+                    'state': self._selection_value('state', data.get('state'), row_no) or 'avalible_for_sale',
+                    'possession_status': self._selection_value(
+                        'possession_status', data.get('possession_status'), row_no) or 'pending',
+                }
+
+                serial = str(data['serial_number']).strip() if data.get('serial_number') else False
+                existing = serial and Inventory.search([('serial_number', '=', serial)], limit=1)
+                if existing:
+                    existing.write(vals)
+                    updated += 1
+                else:
+                    if serial:
+                        vals['serial_number'] = serial
+                    elif not (sector_id and vals['category_id'] and vals['unit_category_type_id']):
+                        raise ValidationError(
+                            _("Row %s: Sector, Category and Product are required to generate the serial number.") % row_no)
+                    Inventory.create(vals)
+                    created += 1
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Unit Inventory Import'),
+                'message': _('%s record(s) created, %s record(s) updated.') % (created, updated),
+                'type': 'success',
+                'next': {'type': 'ir.actions.act_window_close'},
+            },
+        }
