@@ -207,6 +207,17 @@ class InvestmentExt(models.Model):
             self._onchange_total_amount()
 
     def create_open_file(self):
+        # open files copy payment_type from the investment but interval/installments
+        # from the options, so a mismatched pair produces broken open files that
+        # cannot generate an installment plan
+        if self.options == 'full' and self.payment_type == 'installments':
+            raise ValidationError(_(
+                "Investment option 'Full Payment' cannot be combined with payment type "
+                "'Installment'. Set Payment Type to 'Lump Sum', or use option 'Down Payment'."))
+        if self.options == 'down' and self.payment_type == 'lump_sum':
+            raise ValidationError(_(
+                "Investment option 'Down Payment' cannot be combined with payment type "
+                "'Lump Sum'. Set Payment Type to 'Installment', or use option 'Full Payment'."))
         inventory = self.env['plot.inventory'].search([('investment_id', '=', self.id)])
         prorate = self.down_payment / self.total_amount
         investor_file = self.env['investor.file']
@@ -671,6 +682,14 @@ class InvestmentExt(models.Model):
             raise ValidationError('Please enter booking payment amount.')
 
         if self.payment_type == 'installments':
+            # Clear lines that are neither invoiced nor paid before regenerating,
+            # so re-running the plan does not duplicate them
+            existing = self.investment_plan_ids.filtered(
+                lambda l: not l.invoice_created and l.payment_status not in ('in_payment', 'paid'))
+            if existing:
+                existing.unlink()
+            self.installment_created = False
+
             self.investment_plan_ids.create({
                 'date': self.booking_date,
                 'installment_type': 'down',
@@ -769,11 +788,48 @@ class InvestmentExt(models.Model):
                         for rec in range(1, self.total_installment):
                             dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
 
+                    # balloons replace installment slots only when the plan treats them as
+                    # installments; treated as balloons they come on top of the regular ones
+                    balloon_uses_slots = (not self.include_installment and self.predefine_plan_id
+                                          and self.predefine_plan_id.include_in_plan == 'yes'
+                                          and self.predefine_plan_id.treat_balloon_as == 'installment')
                     installment_amount = round(balance / (
-                            self.total_installment - self.balloon_payment_frequency)) if not self.include_installment and self.predefine_plan_id and self.predefine_plan_id.include_in_plan == 'yes' else round(
+                            self.total_installment - self.balloon_payment_frequency)) if balloon_uses_slots else round(
                         balance / self.total_installment)
 
-                    for rec in dates:
+                    expected_installments = self.total_installment
+                    if balloon_uses_slots:
+                        expected_installments = self.total_installment - self.balloon_payment_frequency
+
+                    def _pending_plan_events():
+                        # regular installments and balloon/possession/balloting lines whose
+                        # slot falls beyond the generated dates still have to be scheduled
+                        if self.plan_type != 'predefine' or not self.predefine_plan_id:
+                            return False
+                        if installment_count <= expected_installments:
+                            return True
+                        plan_products = self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                        if (self.env.ref('real_estate.balloon_payment').id in plan_products
+                                and interval < self.balloon_payment_frequency):
+                            return True
+                        if (self.env.ref('real_estate.possession_amount_product').id in plan_products
+                                and possession_interval < self.possession_amount_frequency):
+                            return True
+                        if (self.env.ref('real_estate.additional_balloon').id in plan_products
+                                and add_balloon_interval < self.add_balloon_frequency):
+                            return True
+                        if (self.env.ref('real_estate.balloting_product').id in plan_products
+                                and primary_interval < self.primary_amount_frequency):
+                            return True
+                        return False
+
+                    date_index = 0
+                    while date_index < len(dates) or (_pending_plan_events()
+                                                      and len(dates) < self.total_installment + 120):
+                        if date_index >= len(dates):
+                            dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
+                        rec = dates[date_index]
+                        date_index += 1
                         if self.balloon_payment_start and not start_balloon_payment:
                             if installment_number == self.balloon_payment_start:
                                 if balance:
@@ -919,6 +975,12 @@ class InvestmentExt(models.Model):
                             installment_number = installment_number + 1
                             continue
                         else:
+                            if self.plan_type == 'predefine' and installment_count > expected_installments:
+                                # all regular installment slots are filled; keep the slot
+                                # numbering and dates moving so later balloon/possession
+                                # slots land on their configured positions
+                                installment_number = installment_number + 1
+                                continue
                             self.investment_plan_ids.create({
                                 'date': rec,
                                 'installment_type': 'installment',
@@ -967,19 +1029,20 @@ class InvestmentExt(models.Model):
                         installment_count += 1
 
                     total = sum(self.investment_plan_ids.mapped('amount'))
+                    last_line = self.investment_plan_ids[-1]
                     if total < self.total_amount:
                         price = self.total_amount - total
-                        self.investment_plan_ids.search([])[-1].update({
-                            'amount': self.investment_plan_ids.search([])[-1].amount + price,
-                            'residual': self.investment_plan_ids.search([])[-1].residual + price,
-                            'balance_amount': self.investment_plan_ids.search([])[-1].balance_amount + price,
+                        last_line.update({
+                            'amount': last_line.amount + price,
+                            'residual': last_line.residual + price,
+                            'balance_amount': last_line.balance_amount + price,
                         })
                     elif total > self.total_amount:
                         price = total - self.total_amount
-                        self.investment_plan_ids.search([])[-1].update({
-                            'amount': self.investment_plan_ids.search([])[-1].amount - price,
-                            'residual': self.investment_plan_ids.search([])[-1].residual - price,
-                            'balance_amount': self.investment_plan_ids.search([])[-1].balance_amount - price,
+                        last_line.update({
+                            'amount': last_line.amount - price,
+                            'residual': last_line.residual - price,
+                            'balance_amount': last_line.balance_amount - price,
                         })
                     del installment_number
 

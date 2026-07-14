@@ -83,6 +83,9 @@ access_investment_payment_mode,investment.payment.mode,model_investment_payment_
 access_allotment_request,allotment.request,model_allotment_request,group_rsms_user,1,1,1,1
 access_unit_swapping_request,unit.swapping.request,model_unit_swapping_request,group_rsms_user,1,1,1,1
 access_unit_swapping_request_lines,unit.swapping.request.lines,model_unit_swapping_request_lines,group_rsms_user,1,1,1,1
+access_unit_swapping,unit.swapping,model_unit_swapping,group_rsms_user,1,1,1,1
+access_unit_swapping_line,unit.swapping.line,model_unit_swapping_line,group_rsms_user,1,1,1,1
+access_unit_swapping_investment_line,unit.swapping.investment.line,model_unit_swapping_investment_line,group_rsms_user,1,1,1,1
 access_unit_cancel_swap_history,unit.cancel.swap.history,model_unit_cancel_swap_history,group_rsms_user,1,1,1,1
 access_res_kin_request,res.kin.request,model_res_kin_request,group_rsms_user,1,1,1,1
 access_res_kin_request_lines,res.kin.request.lines,model_res_kin_request_lines,group_rsms_user,1,1,1,1

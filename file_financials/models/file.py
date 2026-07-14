@@ -806,6 +806,12 @@ class FileExtension(models.Model):
         self.installment_created = False
         # if len(self.installment_plan_ids.mapped('invoice_id').ids) > 1:
         #     raise ValidationError(_('You can not reset plan.Once, invoice created!'))
+
+    def recompute_lps_for_current_file(self):
+        # LPS recompute is not implemented in this branch (midland_invoicing
+        # stubs action_recompute_lps as well); kept as a no-op so issuance
+        # approval and other callers do not crash
+        pass
         # self.installment_plan_ids.unlink()
         # self.installment_created = False
 

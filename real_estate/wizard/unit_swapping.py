@@ -189,7 +189,7 @@ class UnitSwapping(models.TransientModel):
                 return {
                     'name': _('Unit Swapping Request'),
                     'view_type': 'form',
-                    'view_mode': 'tree,form',
+                    'view_mode': 'list,form',
                     'res_model': 'unit.swapping.request',
                     'view_id': False,
                     'type': 'ir.actions.act_window',
@@ -227,7 +227,7 @@ class UnitSwapping(models.TransientModel):
                 return {
                     'name': _('Unit Cancel Request'),
                     'view_type': 'form',
-                    'view_mode': 'tree,form',
+                    'view_mode': 'list,form',
                     'res_model': 'unit.swapping.request',
                     'view_id': False,
                     'type': 'ir.actions.act_window',
@@ -299,7 +299,7 @@ class UnitSwapping(models.TransientModel):
                             'current_view': 'realestate'
                         },
                         'view_type': 'form',
-                        'view_mode': 'tree,form',
+                        'view_mode': 'list,form',
                         # 'res_id': new_request.id,
                         'domain': [('id', 'in', new_request_ids)],
                         'target': 'self',
@@ -350,7 +350,7 @@ class UnitSwapping(models.TransientModel):
                 return {
                     'name': _('Change Amount Request'),
                     'view_type': 'form',
-                    'view_mode': 'tree,form',
+                    'view_mode': 'list,form',
                     'res_model': 'unit.swapping.request',
                     'view_id': False,
                     'type': 'ir.actions.act_window',
