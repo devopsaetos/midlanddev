@@ -222,10 +222,13 @@
                                        readonly="is_transferee_partner == True"/>
                                 <field name="transferee_gender"
                                        readonly="is_transferee_partner == True"/>
+                                <field name="transferee_tax_status"
+                                       force_save="1"
+                                       readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
                             </group>
                             <group>
                                 <field name="transferee_relation_name" string="Father/Spouse "
-                                       readonly="is_transferee_partner == True"/>
+                                       readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
                             </group>
                             <group name='primary_address' string="Primary Address">
                                 <!-- All address fields are Inherited field except city_id -->
@@ -236,13 +239,13 @@
                                             placeholder="Street..."
                                             class="o_address_street"
                                             required='0'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_street2"
                                             placeholder="Street 2..."
                                             class="o_address_street"
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_city_id"
@@ -250,7 +253,7 @@
                                             class="o_address_city"
                                             required='0'
                                             options='{"no_open": True}'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_state_id"
@@ -258,20 +261,20 @@
                                             class="o_address_state"
                                             placeholder="State"
                                             options='{"no_open": True}'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_zip"
                                             placeholder="ZIP"
                                             class="o_address_zip"
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_country_id"
                                             placeholder="Country"
                                             class="o_address_country"
                                             options='{"no_open": True, "no_create": True}'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
                                 </div>
                             </group>
                             <group name='secondary_address' string="Secondary Address">
