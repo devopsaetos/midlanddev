@@ -103,8 +103,55 @@ class PriceList(models.Model):
         # if not is_set([(rec.size_id.id, rec.category_id.id, rec.sector_id.id,) for rec in self.pricelist_line]):
         #     raise ValidationError(_("Duplication in same category"))
 
+    def apply_generic_prices_to_units(self):
+        """Push generic price list lines to every matching unit so the price
+        shows up on the unit's own Price List tab (and its List Price)."""
+        PriceListLine = self.env['price.list.line']
+        for rec in self:
+            if rec.price_list_type != 'generic':
+                continue
+            for line in rec.pricelist_line.filtered(lambda l: not l.unit_inventory_id):
+                domain = [
+                    ('society_id', '=', rec.society_id.id),
+                    ('phase_id', '=', rec.phase_id.id),
+                    ('category_id', '=', line.category_id.id),
+                    ('unit_category_type_id', '=', line.unit_category_type_id.id),
+                ]
+                if line.sector_id:
+                    domain.append(('sector_id', '=', line.sector_id.id))
+                if line.size_id:
+                    domain.append(('size_id', '=', line.size_id.id))
+                if line.unit_class_id:
+                    domain.append(('unit_class_id', '=', line.unit_class_id.id))
+                starting_date = line.starting_date or rec.starting_date
+                end_date = line.end_date or rec.end_date
+                for unit in self.env['plot.inventory'].search(domain):
+                    existing = PriceListLine.search([
+                        ('unit_inventory_id', '=', unit.id),
+                        ('starting_date', '=', starting_date),
+                        ('category_id', '=', line.category_id.id),
+                        ('unit_category_type_id', '=', line.unit_category_type_id.id),
+                    ], limit=1)
+                    if existing:
+                        if existing.price != line.price or existing.end_date != end_date:
+                            existing.write({'price': line.price, 'end_date': end_date})
+                        continue
+                    PriceListLine.create({
+                        'unit_inventory_id': unit.id,
+                        'price': line.price,
+                        'starting_date': starting_date,
+                        'end_date': end_date,
+                    })
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records.apply_generic_prices_to_units()
+        return records
+
     def write(self,vals):
         res = super(PriceList, self).write(vals)
+        self.apply_generic_prices_to_units()
         mx_sdate = self.pricelist_line.search([('line_id', '=', self.id)]).mapped('starting_date')
         # p_lines = max(mx_sdate) if mx_sdate else False
         # if p_lines:
@@ -188,7 +235,9 @@ class PriceListLine(models.Model):
                         ('unit_category_type_id', '=', rec.unit_category_type_id.id),
                         ('category_id', '=', rec.category_id.id),
                         ('size_id', '=', rec.size_id.id),
-                        ('sector_id', '=', rec.sector_id.id)
+                        ('sector_id', '=', rec.sector_id.id),
+                        # same combination is allowed again for a new period
+                        ('starting_date', '=', rec.starting_date)
                     ])
                 if record:
                     raise ValidationError(_("New line with same entries are not allowed."))
