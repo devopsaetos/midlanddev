@@ -235,11 +235,11 @@
     </record>
 
     <record model="ir.actions.act_window" id="file_financials.action_investment">
-        <field name="name">Realtor</field>
+        <field name="name">Deal</field>
         <field name="res_model">investment</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
-                Click create to add Realtor data.
+                Click create to add Deal data.
             </p>
         </field>
         <field name="context">{'current_view': 'realestate'}</field>

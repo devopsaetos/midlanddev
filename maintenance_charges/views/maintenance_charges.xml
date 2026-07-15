@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="maintenance_charges_view_form" model="ir.ui.view">
+            <field name="name">maintenance_charges maintenance_charges_view_form</field>
+            <field name="model">maintenance.charges</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" required="1" readonly="0"/>
+                                <field name="society_id" required="1"
+                                       domain="[('project_type','=','housing_society'),('is_society','=',True)]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="phase_id" required="1"
+                                       domain="[('project_type','=','housing_society'),('is_society','!=',True)]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sector_ids" widget="many2many_tags"
+                                       domain="[('project_type','=','housing_society')]"
+                                       options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="date_from" required="1"/>
+                                <field name="date_to" required="1"/>
+                                <field name="applicable_from"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="maintenance_charges_details" string="Details" autofocus="autofocus">
+                                <field name="maintenance_charges_line_ids">
+                                    <list editable="bottom">
+                                        <field name="category_id" required="1"
+                                               domain="[('project_type','=','housing_society')]"
+                                               options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="from_no" string="From Plot(Marla)"/>
+                                        <field name="to_no" string="To Plot(Marla)"/>
+                                        <field name="unit_class_id" string="Type" required="1"
+                                               options="{'no_create': True, 'no_open': True}"
+                                               domain="[('project_type', '=', 'housing_society')]"/>
+                                        <field name="maintenance_charges_type_id" string="Charge Type" required="1" options="{'no_create': True, 'no_open': True}"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_charges_view_tree" model="ir.ui.view">
+            <field name="name">maintenance_charges maintenance_charges_view_tree</field>
+            <field name="model">maintenance.charges</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="society_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="phase_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="sector_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="maintenance_charges.action_maintenance_charges">
+            <field name="name">Maintenance Charges</field>
+            <field name="res_model">maintenance.charges</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="maintenance_charges.maintenance_charges_main_menu"
+                name="Maintenance Charges"
+                groups="maintenance_charges.group_maintenance_payment_collector,maintenance_charges.group_maintenance_payment_manager"
+                web_icon="maintenance_charges,static/description/icon.png"
+                sequence='1'
+        />
+
+        <menuitem
+                id="maintenance_charges.maintenance_charges_menu"
+                name="Maintenance Charges"
+                groups="maintenance_charges.group_maintenance_payment_manager"
+                parent="maintenance_charges.maintenance_charges_main_menu"
+                action="maintenance_charges.action_maintenance_charges"
+                sequence='1'
+        />
+    </data>
+</odoo>

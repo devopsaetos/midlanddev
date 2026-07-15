@@ -374,12 +374,21 @@ class UnitSwappingRequestExt(models.Model):
 
             elif self.transaction_type == 'open_file':
                 self.check_for_duplicate_request_against_file()
-                if not self.is_transferee_partner and not all(
-                        [self.transferee_name, self.transferee_mobile, self.transferee_relation_name, self.transferee_street,
-                         self.transferee_country_id,
-                         self.transferee_company_type, self.kin_name, self.kin_member_relation]):
-                    raise ValidationError("Please fill the following fields to proceed: \n "
-                                          "Name, Member Type, Mobile, Father/Spouse, Street, Country, Kin Name and Relation.")
+                if not self.is_transferee_partner:
+                    required_fields = [
+                        ('transferee_name', 'Name'),
+                        ('transferee_company_type', 'Member Type'),
+                        ('transferee_mobile', 'Mobile'),
+                        ('transferee_relation_name', 'Father/Spouse'),
+                        ('transferee_street', 'Street'),
+                        ('transferee_country_id', 'Country'),
+                        ('kin_name', 'Kin Name'),
+                        ('kin_member_relation', 'Kin Relation'),
+                    ]
+                    missing = [label for field_name, label in required_fields if not self[field_name]]
+                    if missing:
+                        raise ValidationError(
+                            _("Please fill the following fields to proceed:\n%s") % ", ".join(missing))
 
                 if not self.transferee_partner_id:
                     self.create_partner()

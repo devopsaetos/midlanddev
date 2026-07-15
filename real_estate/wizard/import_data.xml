@@ -31,6 +31,15 @@
                         class="oe_highlight"
                         invisible="x_action != 'invoices'"
                     />
+
+                    <button
+                        name="import_unit_inventory"
+                        string="Import Unit Inventory"
+                        type="object"
+                        default_focus="1"
+                        class="oe_highlight"
+                        invisible="x_action != 'unit_inventory'"
+                    />
                     or
                     <button string="Cancel" class="oe_link" special="cancel"/>
                 </footer>
@@ -49,11 +58,29 @@
         <field name="target">new</field>
     </record>
 
-    <menuitem 
-        id="real_estate.import_data" 
-        name="Import Data" 
+    <menuitem
+        id="real_estate.import_data"
+        name="Import Data"
         action="real_estate.action_import_data"
         parent="real_estate.menu_settings"
         sequence="2"
+    />
+
+    <record id="real_estate.action_import_unit_inventory" model="ir.actions.act_window">
+        <field name="name">Import Unit Inventory</field>
+        <field name="res_model">import.data</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="real_estate.import_data_form"/>
+        <field name="context">{ 'current_view': 'realestate', 'default_x_action': 'unit_inventory' }</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+        id="real_estate.menu_import_unit_inventory"
+        name="Import Unit Inventory"
+        action="real_estate.action_import_unit_inventory"
+        parent="real_estate.menu_inventory_root"
+        sequence="4"
     />
 </odoo>

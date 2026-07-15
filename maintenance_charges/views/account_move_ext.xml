@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="maintenance_charges.account_move_ext_form">
+            <field name="name">maintenance_charges.account_move_ext_form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="is_maintenance_batch" force_save="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

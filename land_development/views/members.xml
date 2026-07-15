@@ -70,7 +70,8 @@
                             </group>
                             <group>
                                 <field name='source_ids' options='{"no_open": True, "no_create": True}' readonly="id"/>
-                                <field name='cnic' string="CNIC"
+                                <field name='cnic' string="CNIC" widget="mask"
+                                       data-inputmask="'mask': '99999-9999999-9'"
                                        invisible="company_type != 'person'" readonly="id"/>
                                 <field name='relation_name' string="Father/Spouse"
                                        invisible="company_type != 'person'"
@@ -295,12 +296,13 @@
                                                widget='image'
                                                style="width:100px; height:100px" readonly="id"/>
                                     </group>
-                                    <group string="Next Of Kin">
+                                    <group string="Nominee">
                                         <field name="kin_name" required="company_type == 'person'" readonly="id"/>
                                         <field name="kin_mobile" widget="mask"
                                                data-inputmask="'mask': '+99-999-9999999'"
                                                placeholder="+92-300-2132132" readonly="id"/>
-                                        <field name="kin_cnic" readonly="id"/>
+                                        <field name="kin_cnic" widget="mask"
+                                               data-inputmask="'mask': '99999-9999999-9'" readonly="id"/>
                                         <field name="kin_member_relation"
                                                required="company_type == 'person'" readonly="id"/>
                                         <field name="other_relation"
@@ -308,16 +310,22 @@
                                                required="kin_member_relation == 'other'" readonly="id"/>
                                     </group>
                                     <group invisible="identification_type not in ('cnic', 'parent_cnic')">
-                                        <field name='cnic_front' widget='image'
-                                               style="width:100px; height:100px" readonly="id"/>
-                                        <button name="scan_image"
-                                                context="{'target_field': 'cnic_front'}"
-                                                type="object" string="Scan CNIC Front"/>
-                                        <field name='cnic_back' widget='image'
-                                               style="width:100px; height:100px" readonly="id"/>
-                                        <button name="scan_image"
-                                                context="{'target_field': 'cnic_back'}"
-                                                type="object" string="Scan CNIC Back"/>
+                                        <label for="cnic_front"/>
+                                        <div>
+                                            <field name='cnic_front' widget='image'
+                                                   style="width:100px; height:100px" readonly="id"/>
+                                            <button name="scan_image"
+                                                    context="{'target_field': 'cnic_front'}"
+                                                    type="object" string="Scan CNIC Front" class="btn-secondary d-block mt-2"/>
+                                        </div>
+                                        <label for="cnic_back"/>
+                                        <div>
+                                            <field name='cnic_back' widget='image'
+                                                   style="width:100px; height:100px" readonly="id"/>
+                                            <button name="scan_image"
+                                                    context="{'target_field': 'cnic_back'}"
+                                                    type="object" string="Scan CNIC Back" class="btn-secondary d-block mt-2"/>
+                                        </div>
                                     </group>
                                 </group>
                             </page>
@@ -337,7 +345,7 @@
                             </page>
 
                             <page name='next_of_kin' invisible="company_type == 'company'"
-                                  string="Next of Kin">
+                                  string="Nominee">
                                 <field name="kin_line_ids" readonly="id">
                                     <list editable="bottom">
                                         <field name="name"/>

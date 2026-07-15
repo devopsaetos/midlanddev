@@ -50,10 +50,18 @@ class TaskSubContract(models.Model):
     @api.onchange('task_id')
     def _onchange_task_id(self):
         if self.task_id and not self.purchase_line_ids:
+            # Any existing Cost Sheet for this task is a valid material-list source to
+            # pre-fill a new Sub Contract from, even one already linked to a prior Sub
+            # Contract — a task's companion Cost Sheet only ever gets created together
+            # with its Sub Contract (see create() below), so restricting this search to
+            # "standalone" (task_subcontract_id=False) sheets meant the lines came up
+            # empty for every task that already had one subcontract, which is the common
+            # case, not the exception. Picking the most recent one (by id) if there are
+            # several is a reasonable default; the fallback to Project Budget lines below
+            # still applies when the task has no Cost Sheet at all yet.
             cost_sheet = self.env['task.cost.sheet'].search([
                 ('task_id', '=', self.task_id.id),
-                ('task_subcontract_id', '=', False),
-            ], limit=1)
+            ], order='id desc', limit=1)
             if cost_sheet:
                 self.purchase_line_ids = [(0, 0, {
                     'product_id': line.product_id.id,
@@ -63,9 +71,7 @@ class TaskSubContract(models.Model):
                     'rate': line.unit_price,
                 }) for line in cost_sheet.material_task_cost_line_ids]
             else:
-                # No standalone Cost Sheet exists yet for this task (this Sub Contract's
-                # own companion Cost Sheet only gets created after save, and gets synced
-                # separately via TaskCostSheetSubcontractExt.write) — fall back to the
+                # No Cost Sheet exists yet for this task at all — fall back to the
                 # Project Budget's planned material lines for this task, if any.
                 budget_lines = self.env['project.budget.material.line'].search([
                     ('task_id', '=', self.task_id.id),

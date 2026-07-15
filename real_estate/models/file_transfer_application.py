@@ -233,36 +233,35 @@ class TransferApplication(models.Model):
             raise ValidationError(_('Please select "Payment Made BY" field'))
 
         if self.payment_by == "transferor":
-            partner_id = self.membership_id.partner_id
+            member = self.membership_id
         elif self.payment_by == "tranferee":
-            partner_id = self.transferee_partner_id.partner_id
+            member = self.transferee_partner_id
 
-        if self.file_payment_ids:
-            prod = [(0, 0, {
-                'product_id': rec.product_id.id,
-                'name': rec.product_id.name,
-                'account_id': rec.product_id.property_account_income_id.id,
-                'price_unit': rec.value if rec.payment_type == 'fix' else
-                [self.file_id.net_sale_amount * rec.value / 100][0]
-            }) for rec in self.file_payment_ids]
-
-            invoice = self.env['account.move'].create({
-                'transfer_application_id': self.id,
-                # 'file_ids': self.file_id.id,
-                'partner_id': partner_id.id,
-                'account_id': self.membership_id.partner_id.property_account_receivable_id.id,
-                'property_invoice_type': 'transfer_application',
-                'move_type': 'out_invoice',
-                'invoice_date': fields.Date.today(),
-                'company_id': self.env.company.id,
-                'invoice_line_ids': prod
-            })
-            invoice.file_ids = self.file_id.id
-            invoice.action_post()
-
-            self.stages = 'invoiced'
-        else:
+        if not self.file_payment_ids:
             raise ValidationError(_('Please add fees entry first'))
+
+        lines = [(0, 0, {
+            'product_id': rec.product_id.id,
+            'name': rec.product_id.name,
+            'account_id': rec.product_id.property_account_income_id.id,
+            'quantity': 1.0,
+            'price_unit': rec.value if rec.payment_type == 'fix' else
+            self.file_id.net_sale_amount * rec.value / 100,
+        }) for rec in self.file_payment_ids]
+
+        invoice = self.env['midland.invoice'].create({
+            'transfer_application_id': self.id,
+            'file_ids': self.file_id.id,
+            'member_id': member.id,
+            'property_invoice_type': 'transfer_application',
+            'move_type': 'out_invoice',
+            'invoice_date': fields.Date.today(),
+            'company_id': self.env.company.id,
+            'invoice_line_ids': lines,
+        })
+        invoice.action_post()
+
+        self.stages = 'invoiced'
 
     def create_tax_invoices(self):
         taxes = self.env['required.taxes'].search([('transfer_req_id', '=', self.t_request_id.id)])
@@ -432,7 +431,7 @@ class TransferApplication(models.Model):
             'view_type': 'form',
             'view_mode': 'form',
             'res_model': 'res.member',
-            'view_id': self.env.ref('real_estate.view_member_form').id,
+            'view_id': self.env.ref('real_estate.view_partner_form').id,
             'type': 'ir.actions.act_window',
             'context': {'default_name': self.transferee_name,
                         'default_cnic': self.transferee_cnic_number, 'current_view': 'realestate', 'default_project_type': 'housing_society'},
@@ -449,7 +448,7 @@ class TransferApplication(models.Model):
             'name': _('Member Invoices'),
             'view_type': 'form',
             'view_mode': 'list,form',
-            'res_model': 'account.move',
+            'res_model': 'midland.invoice',
             'view_id': False,
             'type': 'ir.actions.act_window',
             'domain': domain,
@@ -459,7 +458,7 @@ class TransferApplication(models.Model):
         }
 
     def _compute_no_of_invoices(self):
-        self.no_of_invoices = len(self.env['account.move'].search([('transfer_application_id', '=', self.id)]).mapped('id'))
+        self.no_of_invoices = self.env['midland.invoice'].search_count([('transfer_application_id', '=', self.id)])
         # self.no_of_invoices = 0
         # if self.payment_by == 'transferor':
         #     domain = [('file_ids', '=', self.file_id.id), ('partner_id', '=', self.membership_id.id),('transfer_application_id', '=', self.id)]
@@ -471,10 +470,25 @@ class TransferApplication(models.Model):
         #         self.env['account.move'].search(domain).mapped('id'))
 
     def print_invoice(self):
-        return self.env['account.move'].search([('name', '=', self.t_request_id.name), (
-        'property_invoice_type', '=', 'transfer_application')]).invoice_print()
+        # midland.invoice doesn't have a PDF report yet — open the invoice record
+        # instead of crashing on a report action that doesn't exist for this model.
+        invoice = self.env['midland.invoice'].search([
+            ('transfer_application_id', '=', self.id),
+        ], limit=1, order='id desc')
+        if not invoice:
+            raise ValidationError(_('No invoice found for this transfer application.'))
+        return {
+            'name': _('Transfer Fee Invoice'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'midland.invoice',
+            'view_mode': 'form',
+            'res_id': invoice.id,
+        }
 
     def file_transfer(self):
+        if self.file_id.file_status == 'merged_and_cancel' or self.file_id.state in ('merged', 'cancel'):
+            raise ValidationError(_(
+                "File %s is Merged And Cancel - it cannot be transferred." % self.file_id.name))
         docs = self.env['required.documents'].search([('transfer_req_id', '=', self.t_request_id.id)])
 
         if self.transfer_type != 'open_file':
@@ -514,105 +528,105 @@ class TransferApplication(models.Model):
                         for member in installment.file_id.membership_id.cnic_line_ids:
                             if installment.installment_type == 'final':
                                 prod.append((0, 0, {
-                                    'product_id': self.env.ref('real_estate.final_product').product_id.id,
+                                    'product_id': self.env.ref('real_estate.final_product').id,
                                     'name': member.member_name,
                                     'account_id': self.env.ref(
-                                        'real_estate.final_product').product_id.property_account_income_id.id,
+                                        'real_estate.final_product').property_account_income_id.id,
                                     'price_unit': (installment.amount * member.ownership) / 100,
                                     # 'tax_ids': tax_ids,
                                 }))
                             elif installment.installment_type == 'installment':
                                 prod.append((0, 0, {
-                                    'product_id': self.env.ref('real_estate.installment_product').product_id.id,
+                                    'product_id': self.env.ref('real_estate.installment_product').id,
                                     'name': member.member_name,
                                     'account_id': self.env.ref(
-                                        'real_estate.installment_product').product_id.property_account_income_id.id,
+                                        'real_estate.installment_product').property_account_income_id.id,
                                     'price_unit': (installment.amount * member.ownership) / 100,
                                     # 'tax_ids': tax_ids,
                                 }))
                             elif installment.installment_type == 'balloon':
                                 prod.append((0, 0, {
-                                    'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
+                                    'product_id': self.env.ref('real_estate.balloon_payment').id,
                                     'name': member.member_name,
                                     'account_id': self.env.ref(
-                                        'real_estate.balloon_payment').product_id.property_account_income_id.id,
+                                        'real_estate.balloon_payment').property_account_income_id.id,
                                     'price_unit': (installment.amount * member.ownership) / 100
                                 }))
                             elif installment.installment_type == 'possession_amount':
                                 prod = [(0, 0, {
-                                    'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
+                                    'product_id': self.env.ref('real_estate.possession_amount_product').id,
                                     'name': self.env.ref('real_estate.possession_amount_product').name,
                                     'account_id': self.env.ref(
-                                        'real_estate.possession_amount_product').product_id.property_account_income_id.id,
+                                        'real_estate.possession_amount_product').property_account_income_id.id,
                                     'price_unit': installment.amount
                                 })]
 
                             elif installment.installment_type == 'confirmation_amount':
                                 prod = [(0, 0, {
-                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
+                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
                                     'name': self.env.ref('real_estate.confirmation_amount_product').name,
                                     'account_id': self.env.ref(
-                                        'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
+                                        'real_estate.confirmation_amount_product').property_account_income_id.id,
                                     'price_unit': installment.amount
                                 })]
 
                             elif installment.installment_type == 'balloting_amount':
                                 prod = [(0, 0, {
-                                    'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
+                                    'product_id': self.env.ref('real_estate.balloting_product').id,
                                     'name': self.env.ref('real_estate.balloting_product').name,
                                     'account_id': self.env.ref(
-                                        'real_estate.balloting_product').product_id.property_account_income_id.id,
+                                        'real_estate.balloting_product').property_account_income_id.id,
                                     'price_unit': installment.amount
                                 })]
                     else:
                         if installment.installment_type == 'final':
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.final_product').product_id.id,
+                                'product_id': self.env.ref('real_estate.final_product').id,
                                 'name': self.env.ref('real_estate.final_product').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.final_product').product_id.property_account_income_id.id,
+                                    'real_estate.final_product').property_account_income_id.id,
                                 'price_unit': installment.amount,
                                 # 'tax_ids': tax_ids,
                             })]
                         elif installment.installment_type == 'installment':
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.installment_product').product_id.id,
+                                'product_id': self.env.ref('real_estate.installment_product').id,
                                 'name': self.env.ref('real_estate.installment_product').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.installment_product').product_id.property_account_income_id.id,
+                                    'real_estate.installment_product').property_account_income_id.id,
                                 'price_unit': installment.amount,
                                 # 'tax_ids': tax_ids,
                             })]
                         elif installment.installment_type == 'balloon':
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
+                                'product_id': self.env.ref('real_estate.balloon_payment').id,
                                 'name': self.env.ref('real_estate.balloon_payment').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.balloon_payment').product_id.property_account_income_id.id,
+                                    'real_estate.balloon_payment').property_account_income_id.id,
                                 'price_unit': installment.amount
                             })]
                         elif installment.installment_type == 'possession_amount':
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
+                                'product_id': self.env.ref('real_estate.possession_amount_product').id,
                                 'name': self.env.ref('real_estate.possession_amount_product').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.possession_amount_product').product_id.property_account_income_id.id,
+                                    'real_estate.possession_amount_product').property_account_income_id.id,
                                 'price_unit': installment.amount
                             })]
                         elif installment.installment_type == 'confirmation_amount':
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
+                                'product_id': self.env.ref('real_estate.confirmation_amount_product').id,
                                 'name': self.env.ref('real_estate.confirmation_amount_product').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
+                                    'real_estate.confirmation_amount_product').property_account_income_id.id,
                                 'price_unit': installment.amount
                             })]
                         elif installment.installment_type == 'balloting_amount':
                             prod = [(0, 0, {
-                                'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
+                                'product_id': self.env.ref('real_estate.balloting_product').id,
                                 'name': self.env.ref('real_estate.balloting_product').name,
                                 'account_id': self.env.ref(
-                                    'real_estate.balloting_product').product_id.property_account_income_id.id,
+                                    'real_estate.balloting_product').property_account_income_id.id,
                                 'price_unit': installment.amount
                             })]
                         else:
@@ -623,32 +637,28 @@ class TransferApplication(models.Model):
                         ('invoice_id', '!=', False)
                     ]))
 
-                    invoice = self.env['account.move'].create({
-                        # 'file_ids': installment.file_id.id,
-                        # 'invoice_payment_ref': installment.file_id.name,
-                        'partner_id': self.transferee_partner_id.partner_id.id,
+                    new_invoice = self.env['midland.invoice'].create({
+                        'member_id': self.transferee_partner_id.id,
                         'move_type': 'out_invoice',
-                        'journal_id': self.env.company.account_journal_id.id,
-                        'property_invoice_type': 'installment',
-                        'user_id': installment.file_id.user_id.id,
-                        'date': installment.date,
+                        'property_invoice_type': installment.installment_type or 'installment',
+                        'payment_term_id': installment.file_id.env.company.payment_terms_final_id.id if installment.installment_type == 'final' else False,
+                        'installment_id': installment.id,
+                        'file_ids': installment.file_id.id,
+                        'currency_id': installment.file_id.currency_id.id,
                         'invoice_date': installment.date,
-                        'invoice_payment_term_id': installment.file_id.env.company.payment_terms_final_id.id if installment.installment_type == 'final' else False,
+                        'invoice_line_ids': prod,
                     })
-                    invoice.file_ids = installment.file_id.id
-                    invoice.invoice_line_ids = prod
-
-                    invoice.action_post()
+                    new_invoice.action_post()
 
                     installment.file_id.file_payment_history_id.create({
-                        'invoice_id': invoice.id,
+                        'invoice_id': new_invoice.jv_id.id if new_invoice.jv_id else False,
                         'file_id': installment.file_id.id
                     })
 
-                    installment.invoice_id = invoice.id
-                    print("INVOICE ID:>>>>>>>", invoice.id)
-
-                    installment.invoice_created = True
+                    installment.write({
+                        'invoice_created': True,
+                        'invoice_id': new_invoice.jv_id.id if new_invoice.jv_id else False,
+                    })
 
 
             self.file_id.membership_id = self.transferee_partner_id

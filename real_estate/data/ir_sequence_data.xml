@@ -101,7 +101,7 @@
 
         <!-- Sequences for Investors -->
         <record id="seq_investment_number" model="ir.sequence">
-            <field name="name">Realtor Number</field>
+            <field name="name">Deal Number</field>
             <field name="code">investment.sequence</field>
             <field name="prefix">INT/</field>
             <field name="padding">5</field>

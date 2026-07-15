@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--
+            Odoo 19 migration note: this view previously inherited
+            'website_axis_helpdesk.helpdesk_ticket_view_form' (an old Odoo 13/17
+            third-party module not available in this project). It now inherits the
+            real form view shipped by Odoo 19 Enterprise's core 'helpdesk' module
+            (odoo/addons/helpdesk/views/helpdesk_ticket_views.xml, record
+            'helpdesk_ticket_view_form'). Several xpaths below were rewritten against
+            that view's actual current structure (different field/button layout than
+            website_axis_helpdesk used); some content had no core equivalent at all
+            and is commented out in place with a note instead of deleted. Same
+            investigation/approach as maintenance_realestate_specific (converted
+            earlier in this same migration batch).
+        -->
+        <record id="maintenance_ext.helpdesk_ticket_form_inherit" model="ir.ui.view">
+            <field name="name">maintenance_ext help desk ticket form</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <!--
+                    Odoo 19 migration note: core Odoo 19 'helpdesk' has no 'create_task'
+                    button (that comes from project/timesheet bridge modules such as
+                    'helpdesk_timesheet'/'project_helpdesk', which this module does not
+                    depend on). Retargeted the "Assign" (send_to_maintenance) stat button
+                    to the core form's existing stat-button box (div[@name='button_box'])
+                    instead of anchoring after 'create_task'.
+                <xpath expr="//button[@name='create_task']" position="after">
+                    <button name="send_to_maintenance"
+                            type="object"
+                            class="oe_stat_button"
+                            string="Assign"
+                            icon="fa-bars">
+                        <field name="helpdesk_ticket_count"/>
+                    </button>
+                </xpath>
+                -->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="send_to_maintenance"
+                            type="object"
+                            class="oe_stat_button"
+                            string="Assign"
+                            icon="fa-bars">
+                        <field name="helpdesk_ticket_count"/>
+                    </button>
+                </xpath>
+                <!--
+                    Odoo 19 migration note: 'project_project_id' does not exist on core
+                    Odoo 19 helpdesk.ticket (it is only added by project bridge modules
+                    this module doesn't depend on). Nothing to hide - commented out
+                    rather than deleted.
+                <xpath expr="//field[@name='project_project_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                -->
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <!--
+                    Odoo 19 migration note: 'partner_name' and 'partner_email' exist as
+                    fields on core helpdesk.ticket, but the core Odoo 19
+                    'helpdesk_ticket_view_form' arch no longer displays them at all (it
+                    shows 'partner_phone' instead). There is therefore nothing in the
+                    current arch for these xpaths to match / hide. Commented out rather
+                    than deleted.
+                <xpath expr="//field[@name='partner_name']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='partner_email']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                -->
+                <!--
+                    Odoo 19 migration note: the original xpath targeted
+                    group[@name='ticket_detail'], which does not exist in core Odoo 19's
+                    helpdesk ticket form (different group naming/structure). Retargeted
+                    to expr="//notebook" position="before", a single unambiguous anchor
+                    in the current core arch, which preserves the original intent of
+                    showing these contact details in the sheet body above the tabs.
+                -->
+                <xpath expr="//notebook" position="before">
+                    <separator/>
+                    <group name="contact_detail" string="Contact Details">
+                        <group>
+                            <field name="source_type" string="Raised By"
+                                   readonly="helpdesk_ticket_count == 1 or stage_id in (2, 3, 4) or context.get('from_employee_portal', False)"/>
+                            <field name="society_id" invisible="source_type == 'internal'"/>
+                            <field name="phase_id" invisible="source_type == 'internal'"/>
+                            <field name="sector_id" invisible="source_type == 'internal'"/>
+                            <field name="plot_id" invisible="source_type == 'internal'" domain="[('sector_id', '=', sector_id)]"/>
+
+                            <field name="employee_id"
+                                   invisible="source_type == 'customer'"
+                                   readonly="helpdesk_ticket_count == 1 or context.get('from_employee_portal', False)"/>
+
+                            <field name="partner_id"
+                                   invisible="source_type == 'internal'"
+                                   readonly="1"/>
+
+                            <field name="customer_name"
+                                   invisible="source_type == 'internal'"/>
+                        </group>
+                        <group>
+
+                            <field name="contact_number"
+                                   invisible="source_type == 'internal'"
+                                   readonly="helpdesk_ticket_count == 1"/>
+
+                            <field name="employee_contact"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

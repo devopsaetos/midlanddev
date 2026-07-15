@@ -22,38 +22,31 @@
                         <button
                                 class="oe_stat_button"
                                 name="issued_files"
-                                widget="statinfo"
                                 type="object" icon="fa-file-text-o"
-                                string="Issued Files : "
                                 invisible="files_created != True">
-                            <field name="no_of_issued_files"/>
+                            <field name="no_of_issued_files" widget="statinfo" string="Issued Files"/>
                         </button>
                         <button
                                 class="oe_stat_button"
                                 name="investor_inventory"
-                                widget="statinfo"
                                 type="object" icon="fa-list-ul"
-                                string="Inventory : "
                                 invisible="(amount_received != True or reservation_type == 'bulk')">
-                            <field name="no_of_units"/>
+                            <field name="no_of_units" widget="statinfo" string="Inventory"/>
                         </button>
                         <button
                                 class="oe_stat_button"
                                 name="investor_files"
-                                widget="statinfo"
                                 type="object" icon="fa-file-text-o"
-                                string="Files : "
                                 invisible="files_created != True">
-                            <field name="no_of_files"/>
+                            <field name="no_of_files" widget="statinfo" string="Files"/>
                         </button>
                         <button
                                 name="open_invoices"
                                 type="object"
                                 class="oe_stat_button"
-                                string="Invoices :  "
                                 icon="fa-pencil-square-o"
                                 invisible="no_of_invoices == 0">
-                            <field name="no_of_invoices" invisible="no_of_invoices == 0"/>
+                            <field name="no_of_invoices" widget="statinfo" string="Invoices" invisible="no_of_invoices == 0"/>
                         </button>
                     </div>
                     <div class="oe_title" readonly="1">
@@ -64,12 +57,12 @@
                             <field name="sequence_no"/>
                         </h1>
                     </div>
-                    <group name="investment_details" string="Realtor Details">
+                    <group name="investment_details" string="Deal Details">
                         <group>
                             <field name="partner_id" string="Investor Name"
                                    options="{'no_create': True, 'no_open': True}"
                                    readonly="state in 'payment'"/>
-                            <field name="options" string="Realtor Option" required="1"
+                            <field name="options" string="Deal Option" required="1"
                                    readonly="state in 'payment'"/>
                             <field name="reservation_type" required="1"
                                    readonly="state in 'payment'"/>
@@ -188,6 +181,7 @@
                                     <field name="price_list_id" force_save="1" invisible="1"/>
                                     <field name="investor_price" force_save="1"/>
                                     <field name="deal_price"/>
+                                    <field name="token_id" string="Token" readonly="1"/>
                                     <field name="reservation_type" force_save="1" invisible="1"/>
                                 </list>
                             </field>
@@ -215,6 +209,7 @@
                                     <field name="list_price"/>
                                     <field name="investor_unit_price" force_save="1"/>
                                     <field name="deal_price" readonly="0"/>
+                                    <field name="token_id" string="Token" readonly="1"/>
                                     <field name="state" string="File Status" readonly="1"/>
                                 </list>
                             </field>
@@ -251,7 +246,7 @@
                                     invisible="(installment_created == False or generate_invoices_for_installment != False)"/>
                             <field name="investment_plan_ids" readonly="1">
                                 <list editable="bottom" decoration-info="invoice_created == True"
-                                      default_order="installment_number asc">
+                                      default_order="installment_number asc" limit="500">
                                     <field name="installment_number" string="Sr. No"/>
                                     <field name="installment_type" invisible="1"/>
                                     <field name="installment_name" invisible="0"/>
@@ -273,7 +268,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Realtor History">
+                        <page string="Deal History">
                             <field name="investment_history_ids" readonly="1">
                                 <list editable="bottom">
                                     <field name="installment_number" string="Sr. No"/>
@@ -375,12 +370,12 @@
     <!--    </record>-->
 
     <record model="ir.actions.act_window" id="real_estate.action_investment">
-        <field name="name">Realtor</field>
+        <field name="name">Deal</field>
         <field name="res_model">investment</field>
 
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
-                Click create to add Realtor data.
+                Click create to add Deal data.
             </p>
         </field>
         <field name="domain">

@@ -1,0 +1,45 @@
+<odoo>
+
+    <record id="maintenance_recovery_paperformat" model="report.paperformat">
+        <field name="name">A4</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">25</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Odoo 19: the <report .../> XML shortcut tag no longer exists in core (removed from
+         odoo/tools/convert.py); report actions must be declared as plain ir.actions.report
+         records (same pattern used in maintenance_recovery/report/report.xml and every other
+         sibling report module converted in this batch).
+
+         NOTE: this action (xmlid report_maintenance_recovery_report) is not referenced by
+         anything else in this module - wizard/maintenance_recovery_report_wizard.py calls
+         self.env.ref('maintenance_recovery_report.action_report_maintenance_recovery_report'),
+         which is a SEPARATE ir.actions.report record defined in
+         wizard/maintenance_recovery_report_wizard.xml. This one appears to be an orphaned/
+         duplicate leftover (its original model="investment" strongly suggests it was
+         copy-pasted from an unrelated Data Elite "investment recovery" report module, the same
+         class of bug as the type_id = Many2one('unit.type') mistake fixed in the sibling
+         maintenance_recovery module). Kept (not deleted) per migration policy, and its
+         model repointed to the model actually used by this module's wizard so it is at least
+         internally consistent if ever wired up. Original value kept commented below. -->
+    <record id="report_maintenance_recovery_report" model="ir.actions.report">
+        <field name="name">Maintenance Recovery Report</field>
+        <!-- <field name="model">investment</field> -->
+        <field name="model">maintenance.recovery.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">maintenance_recovery_report.maintenance_recovery</field>
+        <field name="report_file">maintenance_recovery_report.maintenance_recovery</field>
+        <field name="paperformat_id" ref="maintenance_recovery_paperformat"/>
+    </record>
+
+</odoo>

@@ -153,6 +153,9 @@ class UnitSwappingRequest(models.Model):
         ('male', 'Male'),
         ('female', 'Female'),
     ], string='Gender', default='male')
+    transferee_tax_status = fields.Selection(related='transferee_partner_id.tax_status',
+                                             store=True, readonly=False,
+                                             string='Tax Status', tracking=True)
     transferee_partner_id = fields.Many2one('res.member', 'Name ', tracking=True)
 
     transferee_relation = fields.Selection([
@@ -510,11 +513,21 @@ class UnitSwappingRequest(models.Model):
                 self.state = 'approve'
 
             elif self.transaction_type == 'open_file':
-                if not self.is_transferee_partner and not all(
-                        [self.transferee_name, self.transferee_mobile, self.transferee_relation_name, self.transferee_street, self.transferee_country_id,
-                         self.transferee_company_type, self.kin_name, self.kin_member_relation]):
-                    raise ValidationError("Please fill the following fields to proceed: \n "
-                                          "Name, Member Type, Mobile, Father/Spouse, Street, Country, Kin Name and Relation.")
+                if not self.is_transferee_partner:
+                    required_fields = [
+                        ('transferee_name', 'Name'),
+                        ('transferee_company_type', 'Member Type'),
+                        ('transferee_mobile', 'Mobile'),
+                        ('transferee_relation_name', 'Father/Spouse'),
+                        ('transferee_street', 'Street'),
+                        ('transferee_country_id', 'Country'),
+                        ('kin_name', 'Kin Name'),
+                        ('kin_member_relation', 'Kin Relation'),
+                    ]
+                    missing = [label for field_name, label in required_fields if not self[field_name]]
+                    if missing:
+                        raise ValidationError(
+                            _("Please fill the following fields to proceed:\n%s") % ", ".join(missing))
 
                 if not self.transferee_partner_id:
                     self.create_partner()
@@ -830,6 +843,7 @@ class UnitSwappingRequest(models.Model):
             'emirates_id': self.transferee_emirates_id,
             'email': self.transferee_email,
             'gender': self.transferee_gender,
+            'tax_status': self.transferee_tax_status,
             'street': self.transferee_street,
             'street2': self.transferee_street2,
             'city_id': self.transferee_city_id.id,
@@ -970,6 +984,7 @@ class UnitSwappingRequestLines(models.Model):
         ('swap', 'Unit Swap'),
         ('cancel', 'Unit Cancellation'),
         ('open_file', 'File Issuance'),
+        ('authorised_person', 'Authorised Person'),
         ('change_amount', 'Change Amount')
     ], default='swap')
     investor_unit_price = fields.Float()

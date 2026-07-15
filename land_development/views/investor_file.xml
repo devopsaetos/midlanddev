@@ -211,7 +211,7 @@
                 <list name='file_management' string="File Management" create="false">
                     <field name="name"/>
                     <field name="investor_name"/>
-                    <field name="investment_id" string="Realtor No."/>
+                    <field name="investment_id" string="Deal No."/>
                     <field name="booking_date"/>
                     <field name="inventory_id" string="Unit"/>
                     <field name="sector_id" string="Floor"/>
@@ -224,28 +224,36 @@
             </field>
         </record>
 
-<!--        <record id="land_development.investor_file_search" model="ir.ui.view">-->
-<!--            <field name="name">land_development investor_file_search</field>-->
-<!--            <field name="model">investor.file</field>-->
-<!--            <field name="priority">2</field>-->
-<!--            <field name="arch" type="xml">-->
-<!--                <search>-->
-<!--                    <field name="name"/>-->
-<!--                    <field name="state"/>-->
-<!--                    <field name="society_id" string="Project"/>-->
-<!--                    <field name="phase_id" string="Building"/>-->
-<!--                    <field name="sector_id" string="Floor"/>-->
-<!--                    <field name="booking_date"/>-->
-<!--                    <field name="payment_type"/>-->
-<!--                    <field name="category_id"/>-->
-<!--                    <field name="size_id"/>-->
-<!--                    <field name="inventory_id"/>-->
-<!--                    <group expand="0" string="Group By">-->
-<!--                        <filter name='group_by_investor_id' string="Investor" domain="[]" context="{'group_by':'investor_id'}"/>-->
-<!--                    </group>-->
-<!--                </search>-->
-<!--            </field>-->
-<!--        </record>-->
+        <record id="land_development.investor_file_search" model="ir.ui.view">
+            <field name="name">land_development investor_file_search</field>
+            <field name="model">investor.file</field>
+            <field name="priority">2</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="society_id" string="Project"/>
+                    <field name="phase_id" string="Building"/>
+                    <field name="sector_id" string="Floor"/>
+                    <field name="booking_date"/>
+                    <field name="payment_type"/>
+                    <field name="category_id"/>
+                    <field name="size_id"/>
+                    <field name="inventory_id"/>
+                    <filter name="open" string="Open" domain="[('state','=','open')]"/>
+                    <filter name="selected" string="Selected" domain="[('state','=','selected')]"/>
+                    <filter name="in_process" string="In Process" domain="[('state','=','in_process')]"/>
+                    <filter name="issued" string="Issued" domain="[('state','=','issued')]"/>
+                    <filter name="cancel" string="Cancelled" domain="[('state','=','cancel')]"/>
+                    <separator/>
+                    <group colspan="16">
+                        <filter name='group_by_investor_id' string="Investor" domain="[]" context="{'group_by':'investor_id'}"/>
+                        <filter name='group_by_state' string="Status" domain="[]" context="{'group_by':'state'}"/>
+                        <filter name='group_by_society' string="Project" domain="[]" context="{'group_by':'society_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
 
         <record model="ir.actions.act_window" id="land_development.action_investor_file">
 
@@ -259,7 +267,7 @@
                 ]
             </field>
             <field name="context">{'current_view': 'building', 'default_project_type': 'skyscraper', 'search_default_group_by_investor_id': 1}</field>
-<!--            <field name="search_view_id" ref="land_development.investor_file_search"/>-->
+            <field name="search_view_id" ref="land_development.investor_file_search"/>
             <field name="view_ids" eval="[(5, 0, 0),
                 (0, 0, {'view_mode': 'list', 'view_id': ref('land_development.investor_file_tree')}),
                 (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.investor_file_form')}),

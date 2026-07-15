@@ -1,0 +1,253 @@
+<odoo>
+    <template id="maintenance_customized_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row text-dark" style="font-family:'Roboto',sans-serif;">
+                    <div class="col-3">
+                        <img t-if="o.company_id.logo"
+                             t-att-src="image_data_uri(o.company_id.logo)"
+                             alt="Logo"
+                             class="center" style="max-height: 70px;"/>
+                    </div>
+                    <div class="col-6 text-center"
+                         style="margin-top:70px;font-style:Octarine;font-size:30px;color:black;">
+                        <h2 style="color:#191970;width:100% !important;text-align:center;font-size:26px !important;">
+                            <strong>
+                                Maintenance Daily Report
+                                <br/>
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="col-3" style="text-align:right; font-size:11px;margin-top:15px;">
+                        <h7 style="color:black;">
+                            <t t-if="o.company_id">
+                                <t t-esc="o.company_id.street"/>,
+                                <br/>
+                                <t t-esc="o.company_id.street2"/>,
+                                <br/>
+                                <t t-esc="o.company_id.city"/>
+                            </t>
+                        </h7>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="maintenance_customized_footer">
+        <div class="footer" style="font-size:11px;font-family:'Roboto',sans-serif">
+            <div class="row" style="color:#191970;margin-top:40px;">
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Printed By:
+                        <u>
+                            <span t-esc="request.env.user.name"/>
+                        </u>
+                    </span>
+                </div>
+                <div class="col-4 text-center" style="margin-top:50px;"/>
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Print Date:
+                        <u>
+                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                        </u>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="report_maintenance_batch">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="maintenance_recovery_batch.maintenance_customized_header"/>
+                <t t-call="maintenance_recovery_batch.maintenance_customized_footer"/>
+                <t t-call="web.external_layout">
+                    <style>
+                        .page{padding-top:25px !important;}
+                        .table th, .table td {
+                        padding: 0.35rem !important;
+                        }
+                        th{text-align: center !important;}
+                        thead { display: table-header-group }
+                        tfoot { display: table-row-group }
+                        tr { page-break-inside: avoid }
+                        @media print {
+                        .export-table {
+                        overflow: visible !important;
+                        }
+                        .class-name-which-holds-the-table {
+                        overflow: visible !important;
+                        }
+                        }
+                    </style>
+                    <hr/>
+                    <div class="page text-dark" style="font-family:'Roboto',sans-serif; font-size:15px;">
+                        <div class="row text-capitalize text-dark" style="margin-top:30px;">
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>
+                                            <span>Name:</span>
+                                        </strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <t t-if="o.user_id">
+                                            <t t-esc="o.user_id.name"/>
+                                        </t>
+                                    </div>
+                                    <div class="col-2"/>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <strong>
+                                            <span>Transaction No:</span>
+                                        </strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <t t-if="o.user_id">
+                                            <t t-esc="o.name"/>
+                                        </t>
+                                    </div>
+                                    <div class="col-2"/>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-3"/>
+                                    <div class="col-3">
+                                        <strong>
+                                            <span>Date:</span>
+                                        </strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <t t-if="o.date">
+                                            <p t-esc="o.date.strftime('%d-%m-%Y')"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div class="row mt-3 ml-0 mr-0">
+                            <table class="table table-lg table-bordered table-striped">
+                                <thead style="background-color:#191970;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;background-color:#191970;font-size:14px;"
+                                       class="text-white">
+                                    <th class="text-white text-center">
+                                        <span>Sr No.</span>
+                                    </th>
+                                    <th class="text-white text-center">Sector</th>
+                                    <th class="text-white text-center">Street</th>
+                                    <th class="text-center text-white">House</th>
+                                    <th class="text-center text-white">Category</th>
+                                    <th class="text-white text-center">Amount Due</th>
+                                    <th class="text-white text-center">Amount Paid</th>
+                                    <th class="text-center text-white">Balance</th>
+                                </thead>
+                                <tbody style="font-size:14px;">
+                                    <t t-set="total_amount" t-value="0"/>
+                                    <t t-set="serial_number" t-value="0"/>
+                                    <t t-foreach="o.maintenance_line_ids" t-as="line">
+                                        <t t-set="serial_number" t-value="serial_number + 1"/>
+                                        <tr>
+                                            <td class="p-1 align-middle text-center">
+                                                <span t-esc="serial_number"/>.
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="line.sector_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="line.street_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-esc="line.house_id.name"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-esc="line.category_id.name"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="line.due_amount" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="line.paid_amount" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="line.balance" t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr style="background-color:#191970;color:#fff;font-size:14px;">
+                                        <td class="p-1 align-middle text-left" colspan="5">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="sum(o.maintenance_line_ids.mapped('due_amount'))" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="sum(o.maintenance_line_ids.mapped('paid_amount'))" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="sum(o.maintenance_line_ids.mapped('balance'))" t-options='{"widget": "float", "precision": 2}'/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row" style="margin-top:120px;color:#191970">
+                            <div class="col-4 text-left">
+                                <span t-esc="o.create_uid.name"/>
+                            </div>
+                            <!--                            <div class="col-3 text-center">-->
+                            <!--                                <span t-esc="o.write_uid.name"/>-->
+                            <!--                            </div>-->
+                            <div class="col-4"/>
+                            <div class="col-4"/>
+                        </div>
+                        <div class="row" style="color:#191970">
+                            <div class="col-4 text-left">
+                                <span style="text-decoration:overline" class="text-capitalize">prepared by</span>
+                            </div>
+                            <!--                            <div class="col-3 text-center">-->
+                            <!--                                <span style="text-decoration:overline" class="text-capitalize">validated by</span>-->
+                            <!--                            </div>-->
+                            <div class="col-4 text-center">
+                                <span style="text-decoration:overline" class="text-capitalize">approved by</span>
+                            </div>
+                            <div class="col-4 text-right">
+                                <span style="text-decoration:overline" class="text-capitalize">received by</span>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="maintenance_paper_format" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Odoo 19: the <report .../> XML shortcut tag no longer exists in core; report actions
+         must be declared as plain ir.actions.report records (see
+         maintenance_invoice_report/report/maintenance_charges_report.xml for the same pattern
+         already applied there). -->
+    <record id="action_maintenance_batch_report" model="ir.actions.report">
+        <field name="name">Maintenance Batch Report</field>
+        <field name="model">daily.maintenance.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">maintenance_recovery_batch.report_maintenance_batch</field>
+        <field name="report_file">maintenance_recovery_batch.report_maintenance_batch</field>
+        <field name="paperformat_id" ref="maintenance_paper_format"/>
+    </record>
+</odoo>

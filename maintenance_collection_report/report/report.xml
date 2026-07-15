@@ -1,0 +1,34 @@
+<odoo>
+
+    <record id="maintenance_collection_report_paperformat" model="report.paperformat">
+        <field name="name">Customized Paper Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Odoo 19: the <report .../> XML shortcut tag no longer exists in core (removed from
+         odoo/tools/convert.py); report actions must be declared as plain ir.actions.report
+         records (see maintenance_invoice_report/report/maintenance_charges_report.xml for the
+         same pattern used elsewhere in this project). menu="False" is preserved by not setting
+         binding_model_id/binding_type below, so this report action stays out of any Print menu -
+         it is only ever invoked programmatically from
+         wizard/maintenance_collection_report_wizard.py's print() method. -->
+    <record id="action_maintenance_collection_report" model="ir.actions.report">
+        <field name="name">Maintenance Collection Report</field>
+        <field name="model">transfer.application</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">maintenance_collection_report.maintenance_report_custom</field>
+        <field name="report_file">maintenance_collection_report.maintenance_report_custom</field>
+        <field name="paperformat_id" ref="maintenance_collection_report_paperformat"/>
+    </record>
+</odoo>

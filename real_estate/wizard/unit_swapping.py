@@ -76,7 +76,9 @@ class UnitSwapping(models.TransientModel):
                 'unit_swapping_id': self.id
             })]
 
-        elif self.investment_id:
+        elif self.investment_id and self.transaction_type != 'open_file':
+            # open_file lines are already added above; running this block too
+            # would list every unit twice
             if self.reservation_type == 'unit':
                 open_files = self.env['investor.file'].search(
                     [('inventory_id', 'in', self.investment_id.inventory_ids.ids), ('state', '=', 'open')])
@@ -113,7 +115,7 @@ class UnitSwapping(models.TransientModel):
         #             'unit_swapping_id': self.id
         #         })]
 
-        elif self.inventory_id:
+        elif self.inventory_id and self.transaction_type != 'open_file':
             open_files = self.env['investor.file'].search(
                 [('inventory_id', '=', self.investor_file_id.inventory_id.id), ('state', '=', 'open')])
             for rec in open_files:
@@ -189,7 +191,7 @@ class UnitSwapping(models.TransientModel):
                 return {
                     'name': _('Unit Swapping Request'),
                     'view_type': 'form',
-                    'view_mode': 'tree,form',
+                    'view_mode': 'list,form',
                     'res_model': 'unit.swapping.request',
                     'view_id': False,
                     'type': 'ir.actions.act_window',
@@ -227,7 +229,7 @@ class UnitSwapping(models.TransientModel):
                 return {
                     'name': _('Unit Cancel Request'),
                     'view_type': 'form',
-                    'view_mode': 'tree,form',
+                    'view_mode': 'list,form',
                     'res_model': 'unit.swapping.request',
                     'view_id': False,
                     'type': 'ir.actions.act_window',
@@ -299,7 +301,7 @@ class UnitSwapping(models.TransientModel):
                             'current_view': 'realestate'
                         },
                         'view_type': 'form',
-                        'view_mode': 'tree,form',
+                        'view_mode': 'list,form',
                         # 'res_id': new_request.id,
                         'domain': [('id', 'in', new_request_ids)],
                         'target': 'self',
@@ -350,8 +352,35 @@ class UnitSwapping(models.TransientModel):
                 return {
                     'name': _('Change Amount Request'),
                     'view_type': 'form',
-                    'view_mode': 'tree,form',
+                    'view_mode': 'list,form',
                     'res_model': 'unit.swapping.request',
+                    'view_id': False,
+                    'type': 'ir.actions.act_window',
+                    'context': {
+                        'current_view': 'realestate'
+                    }
+                }
+
+            authorised_person_units = self.unit_swapping_investment_lines.filtered(
+                lambda l: l.transaction_type == 'authorised_person' and l.check == True)
+            if authorised_person_units and self.transaction_type == 'authorised_person':
+                # the authorised person is changed per investment; units are only
+                # listed for context, the request itself carries no unit lines
+                new_request = record.create({
+                    'applicable_on': self.applicable_on,
+                    'appointment_date': fields.Date.today(),
+                    'investment_id': self.investment_id.id,
+                    'society_id': self.investment_id.society_id.id,
+                    'phase_id': self.investment_id.phase_id.id,
+                    'project_type': self.investment_id.project_type,
+                    'transaction_type': 'authorised_person',
+                })
+                return {
+                    'name': _('Authorised Person Request'),
+                    'view_type': 'form',
+                    'view_mode': 'form',
+                    'res_model': 'unit.swapping.request',
+                    'res_id': new_request.id,
                     'view_id': False,
                     'type': 'ir.actions.act_window',
                     'context': {
@@ -571,6 +600,7 @@ class UnitSwappingInvestmentLines(models.TransientModel):
         ('swap', 'Unit Swap'),
         ('cancel', 'Unit Cancellation'),
         ('open_file', 'File Issuance'),
+        ('authorised_person', 'Authorised Person'),
         ('change_amount', 'Change Amount')
     ], default='swap')
     investor_unit_price = fields.Float()

@@ -248,6 +248,10 @@ class ReturnLine(models.TransientModel):
         self.transferee_cnic_number = False
 
     def add_intention(self):
+        if self.file_id.file_status == 'merged_and_cancel' or self.file_id.state in ('merged', 'cancel'):
+            raise ValidationError(_(
+                "File %s is Merged And Cancel - it cannot be transferred, cancelled, refunded, "
+                "registered or otherwise processed any further." % self.file_id.name))
         if self.transaction_type == 'transfer':
             plans_invoice_created = self.installment_plan_ids.search([('invoice_created', '=', True), ('file_id', '=', self.file_id.id)])
             # if True in self.installment_plan_ids.mapped('invoice_created'):

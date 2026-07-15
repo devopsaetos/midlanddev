@@ -60,8 +60,9 @@ class ProposePlan(models.Model):
 
     @api.constrains('starting_date')
     def _check_date_validity(self):
-        if self.starting_date < fields.Date.today():
-            raise ValidationError(_("Please give a valid date :)"))
+        for rec in self:
+            if rec.starting_date and rec.starting_date < fields.Date.today():
+                raise ValidationError(_("Please give a valid date :)"))
 
     def lock(self):
         if not self.propose_installment_plan_ids:
@@ -395,9 +396,12 @@ class ProposePlan(models.Model):
 
     @api.constrains('manual_installment_plan_ids')
     def _check_manual_installment_plan_ids(self):
-        total_percentage = sum(self.manual_installment_plan_ids.mapped('percentage'))
-        if total_percentage < 100 or total_percentage > 100:
-            raise UserError(_('You cannot save record when installment is less than or greater than hundred ;)'))
+        for rec in self:
+            if not rec.manual_installment_plan_ids:
+                continue
+            total_percentage = sum(rec.manual_installment_plan_ids.mapped('percentage'))
+            if total_percentage < 100 or total_percentage > 100:
+                raise UserError(_('You cannot save record when installment is less than or greater than hundred ;)'))
 
     @api.model
     def fields_view_get(self, view_id=None, view_type=False, context=None, toolbar=False, submenu=False):

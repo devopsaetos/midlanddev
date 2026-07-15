@@ -19,6 +19,7 @@
         'allotment',
         'unit_booking',
         'default_payment',
+        'land_development',
     ],
 
     'data': [

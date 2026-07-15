@@ -1158,7 +1158,7 @@ class BookingAllotmentPlan(models.Model):
                     ('invoice_ids.name', '=', rec.invoice_id.name)
                 ], limit=1, order='id desc')
 
-                rec.payment_date = dateutil.parser.parse(str(date.payment_date)) if date else ''
+                rec.payment_date = dateutil.parser.parse(str(date.date)) if date else ''
             else:
                 rec.payment_date = ''
 

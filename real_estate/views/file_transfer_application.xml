@@ -1,373 +1,389 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="real_estate.transfer_application_form" model="ir.ui.view">
-            <field name="name">real_estate transfer_application_form</field>
-            <field name="model">transfer.application</field>
-            <field name="priority">1</field>
-            <field name="arch" type="xml">
-                <form create="false">
+    <record id="real_estate.transfer_application_form" model="ir.ui.view">
+        <field name="name">real_estate transfer_application_form</field>
+        <field name="model">transfer.application</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form create="false">
 
-                    <header>
-                        <button name="file_transfer" type="object" string="Confirm Transfer" class="oe_highlight"
-                                invisible="state != 'open'" groups="real_estate.group_approve_transfer_app"/>
-                        <field name="state" widget="statusbar"/>
-                    </header>
-                    <sheet>
+                <header>
+                    <button name="file_transfer" type="object" string="Confirm Transfer" class="oe_highlight"
+                            invisible="state != 'open'" groups="real_estate.group_approve_transfer_app"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
 
-                        <div class="oe_button_box">
-                            <button name="open_invoices" type="object" class="oe_stat_button" string="Invoices :  "
-                                    icon="fa-pencil-square-o"
-                                    invisible="(no_of_invoices == 0 or by_pass_documents == 'yes')"
-                                    groups="real_estate.group_approve_transfer_app,real_estate.group_prepare_transfer_app">
-
-                                <field name="no_of_invoices"/>
-
+                    <div name="button_box" class="oe_button_box">
+                        <div class="btn-group">
+                            <button type="button"
+                                    class="btn btn-outline-secondary oe_stat_button dropdown-toggle"
+                                    data-bs-toggle="dropdown">
+                                <i class="fa fa-print me-1"/>
+                                Print
                             </button>
-                            <button name="generate_invoice"
-                                    type="object"
-                                    class="oe_stat_button"
-                                    string="Generate Invoice"
-                                    icon="fa-pencil-square-o"
-                                    invisible="1"
-                                    groups="real_estate.group_prepare_transfer_app">
-                            </button>
-                            <button class="oe_stat_button" name="document_view" type="object" icon="fa-list-ol"
-                                    invisible="1" groups="real_estate.group_prepare_transfer_app">
-                                <field string="Documents" name="document_count" widget="statinfo"/>
-                            </button>
-                            <button
-                                    name="open_documents"
-                                    type="object"
-                                    string="Documents"
-                                    class="oe_stat_button"
-                                    icon="fa-pencil-square-o"
-                                    groups="real_estate.group_prepare_transfer_app"
-                                    invisible="by_pass_documents == 'yes'"
-                            />
-                            <button
-                                    name="open_taxes"
-                                    type="object"
-                                    string="Taxes"
-                                    class="oe_stat_button"
-                                    icon="fa-pencil-square-o"
-                                    groups="real_estate.group_prepare_transfer_app"
-                                    invisible="by_pass_documents == 'yes'"
-                            />
-<!--                            <button-->
-<!--                                    name="create_tax_invoices"-->
-<!--                                    type="object"-->
-<!--                                    string="Create Invoice"-->
-<!--                                    class="oe_stat_button"-->
-<!--                                    icon="fa-pencil-square-o"-->
-<!--                                    invisible="(tax_invoice_created == True or by_pass_documents == 'yes')"-->
-<!--                                    groups="real_estate.group_prepare_transfer_app"-->
-
-<!--                            />-->
+                            <div class="dropdown-menu" role="menu" style="z-index: 1030;">
+                                <button name="%(real_estate.transfer_application_letter_action)d" type="action"
+                                        string="Transfer Application" class="dropdown-item"/>
+                                <button name="%(real_estate.processing_form_action)d" type="action"
+                                        string="Processing Form" class="dropdown-item"/>
+                            </div>
                         </div>
-                        <div class="oe_title oe_state_size">
-                            <h1>
-                                <field name="t_request_id" readonly="1"/>
-                            </h1>
-                            <field name="transfer_type"/>
-                            <field name="tax_invoice_created" invisible="1"/>
-                        </div>
-                        <label string="Appointment Date" for="appointment_date"/>
-                        <field name="appointment_date"/>
+                        <button name="open_invoices" type="object" class="oe_stat_button" string="Invoices :  "
+                                icon="fa-pencil-square-o"
+                                invisible="(no_of_invoices == 0 or by_pass_documents == 'yes')"
+                                groups="real_estate.group_approve_transfer_app,real_estate.group_prepare_transfer_app">
+
+                            <field name="no_of_invoices"/>
+
+                        </button>
+                        <button name="generate_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                string="Generate Invoice"
+                                icon="fa-pencil-square-o"
+                                invisible="1"
+                                groups="real_estate.group_prepare_transfer_app">
+                        </button>
+                        <button class="oe_stat_button" name="document_view" type="object" icon="fa-list-ol"
+                                invisible="1" groups="real_estate.group_prepare_transfer_app">
+                            <field string="Documents" name="document_count" widget="statinfo"/>
+                        </button>
+                        <button
+                                name="open_documents"
+                                type="object"
+                                string="Documents"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                groups="real_estate.group_prepare_transfer_app"
+                                invisible="by_pass_documents == 'yes'"
+                        />
+                        <button
+                                name="open_taxes"
+                                type="object"
+                                string="Taxes"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                groups="real_estate.group_prepare_transfer_app"
+                                invisible="by_pass_documents == 'yes'"
+                        />
+                        <!--                            <button-->
+                        <!--                                    name="create_tax_invoices"-->
+                        <!--                                    type="object"-->
+                        <!--                                    string="Create Invoice"-->
+                        <!--                                    class="oe_stat_button"-->
+                        <!--                                    icon="fa-pencil-square-o"-->
+                        <!--                                    invisible="(tax_invoice_created == True or by_pass_documents == 'yes')"-->
+                        <!--                                    groups="real_estate.group_prepare_transfer_app"-->
+
+                        <!--                            />-->
+                    </div>
+                    <div class="oe_title oe_state_size">
+                        <h1>
+                            <field name="t_request_id" readonly="1"/>
+                        </h1>
+                        <field name="transfer_type"/>
+                        <field name="tax_invoice_created" invisible="1"/>
+                    </div>
+                    <label string="Appointment Date" for="appointment_date"/>
+                    <field name="appointment_date"/>
+                    <group>
                         <group>
-                            <group>
-                                <field name="by_pass_documents" readonly="tax_invoice_created == True" invisible="transfer_type != 'open_file'" required="transfer_type == 'open_file'"/>
-                                <field name="allow_request"
-                                       invisible="transfer_type != 'sale'"/>
-                                <field name="reason"
-                                       placeholder="Please give the reason to by pass due invoices for this transfer."
-                                       invisible="allow_request != True" required="allow_request == True"/>
-                                <field name="wave_transfer_fee" string="Waive Transfer Fee"
-                                       readonly="tax_invoice_created == True" invisible="by_pass_documents == 'yes'"/>
-                                <field name="wave_transfer_amount"
-                                       invisible="(wave_transfer_fee == 'no' or by_pass_documents == 'yes')" required="wave_transfer_fee == 'yes'" readonly="tax_invoice_created == True"/>
-                                <field name="transfer_date"/>
-                                <field name="noc_reference" required="1"/>
-                            </group>
+                            <field name="by_pass_documents" readonly="tax_invoice_created == True"
+                                   invisible="transfer_type != 'open_file'" required="transfer_type == 'open_file'"/>
+                            <field name="allow_request"
+                                   invisible="transfer_type != 'sale'"/>
+                            <field name="reason"
+                                   placeholder="Please give the reason to by pass due invoices for this transfer."
+                                   invisible="allow_request != True" required="allow_request == True"/>
+                            <field name="wave_transfer_fee" string="Waive Transfer Fee"
+                                   readonly="tax_invoice_created == True" invisible="by_pass_documents == 'yes'"/>
+                            <field name="wave_transfer_amount"
+                                   invisible="(wave_transfer_fee == 'no' or by_pass_documents == 'yes')"
+                                   required="wave_transfer_fee == 'yes'" readonly="tax_invoice_created == True"/>
+                            <field name="transfer_date"/>
+                            <field name="noc_reference" required="1"/>
                         </group>
-                        <group string="Member Details">
-                            <group>
-                                <field name="membership_id" readonly="1"
-                                       context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
-                                <field name="company_type" string="Member Type"/>
-                                <field name="member_name" readonly="1"
-                                       invisible="company_type not in 'person'"/>
-                                <field name="member_cnic" readonly="1"
-                                       invisible="company_type not in 'person'"/>
-                            </group>
-                            <group>
-                                <field name="image" widget="image" readonly="1" class="oe_avatar"/>
-                            </group>
-                            <group string="Details" colspan="4"
-                                   invisible="company_type not in 'aop'">
-                                <form>
-                                    <field name="cnic_line_ids">
-                                        <list editable="bottom">
-                                            <field name="member_name"/>
-                                            <field name="cnic" widget="mask"
-                                                   data-inputmask="'mask': '99999-9999999-9'"/>
-                                            <field name="cnic_expiry_date"/>
-                                            <field name="cnic_front"/>
-                                            <field name="cnic_back"/>
-                                            <field name="phone"/>
-                                            <field name="tax_status"/>
-                                            <field name="address"/>
-                                            <field name="name"/>
-                                            <field name="father_spouse_cnic"/>
-                                        </list>
-                                    </field>
-                                </form>
-                            </group>
-                        </group>
-
-                        <group string="Transferee Details" invisible="transfer_type == 'open_file'">
-                            <group>
-                                <field name="transferee_existing_partner" readonly="1"/>
-                                <field name="transferee_partner_id" force_save="1"
-                                       invisible="transferee_existing_partner != 'yes'" readonly="1"
-                                       context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
-                                <field name="transferee_company_type" string="Transferee Type"/>
-                                <label for="transferee_name" string="Name"/>
-                                <div class="o_address_format">
-
-                                    <field
-                                            name="transferee_partner_id_name"
-                                            invisible="transferee_existing_partner != 'yes'"
-                                    />
-
-                                    <field
-                                            name="transferee_name"
-                                            invisible="transferee_existing_partner == 'yes'"
-                                    />
-
-                                    <button
-                                            name="create_partner"
-                                            icon="fa-arrow-right"
-                                            type="object"
-                                            string="Create Member"
-                                            class="btn-link"
-                                            invisible="(transferee_existing_partner == 'yes' or state == 'transfered')"
-                                    />
-                                </div>
-                                <field name="transferee_cnic_number" readonly="1"
-                                       invisible="company_type not in 'person'"/>
-
-                            </group>
-                            <group>
-                                <field name="transferee_image" readonly="1" widget="image" class="oe_avatar"/>
-                            </group>
-                            <group string="Details" colspan="4"
-                                   invisible="transferee_company_type not in 'aop'">
-                                <form>
-                                    <field name="transferee_cnic_line_ids">
-                                        <list editable="bottom">
-                                            <field name="member_name"/>
-                                            <field name="cnic" widget="mask"
-                                                   data-inputmask="'mask': '99999-9999999-9'"/>
-                                            <field name="cnic_expiry_date"/>
-                                            <field name="cnic_front"/>
-                                            <field name="cnic_back"/>
-                                            <field name="phone"/>
-                                            <field name="tax_status"/>
-                                            <field name="address"/>
-                                            <field name="name"/>
-                                            <field name="father_spouse_cnic"/>
-                                        </list>
-                                    </field>
-                                </form>
-                            </group>
-                        </group>
-
-                        <group string="Property Details ">
-                            <group>
-                                <field name="file_id" readonly="1"/>
-                                <field name="society_id"/>
-                                <field name="phase_id"/>
-                                <field name="sector_id"/>
-                                <field name="street_id"/>
-                                <field name="inventory_id" string="Unit"/>
-                                <field name="unit_number" string="Plot No."/>
-                            </group>
-                            <group>
-                                <field name="tracking_id" readonly="1"/>
-                                <field name="category_id"/>
-                                <field name="unit_category_type_id" string="Product"/>
-                                <field name="size_id"/>
-                                <field name="unit_class_id" string="Type"/>
-                            </group>
+                    </group>
+                    <group string="Member Details">
+                        <group>
+                            <field name="membership_id" readonly="1"
+                                   context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
+                            <field name="company_type" string="Member Type"/>
+                            <field name="member_name" readonly="1"
+                                   invisible="company_type not in 'person'"/>
+                            <field name="member_cnic" readonly="1"
+                                   invisible="company_type not in 'person'"/>
                         </group>
                         <group>
-                            <group>
-                                <field name="payment_by" invisible="1"
-                                       readonly="state == 'transfered'"/>
-                            </group>
+                            <field name="image" widget="image" readonly="1" class="oe_avatar"/>
                         </group>
-                        <group string="File Details" name="file_details">
-                            <header invisible="1">
-                                <field name="installment_created" invisible="1"/>
-                                <!-- <button name="create_installment_plan"
-                                        type="object"
-                                        string="Create Installment Plan"
-                                        class="oe_highlight"
-                                        invisible="1"
-                                /> -->
-                            </header>
-                            <group>
-                                <field name="booking_date"/>
-                                <field name="starting_date"/>
-                                <field name="payment_states"/>
-                                <field name="interval_id"/>
-                            </group>
-                            <group>
-                                <field name="net_sale_amount"/>
-                                <field name="ttl_sale_amount"/>
-                                <field name="initial_payment"/>
-                                <field name="plan_description"/>
-                                <field name="deal_price" required="1" readonly="1"/>
-                            </group>
-                        </group>
-                        <group name="payment_history" string="Payment History">
-                            <group>
-                                <field name="sale_amount"/>
-                                <field name="factor_amount"/>
-                                <field name="discount_type"/>
-                                <field name="discount_amount"/>
-                                <field name="balance_amount"/>
-                            </group>
-                            <group>
-                                <field name="total_installment"/>
-                                <field name="installments_paid" readonly="1"/>
-                                <field name="total_installments_paid" readonly="1"/>
-                                <field name="total_installments_due" readonly="1"/>
-                                <field name="installments_due" readonly="1"/>
-                            </group>
-                        </group>
-                        <group name="witnesses" string="Witnesses">
+                        <group string="Details" colspan="4"
+                               invisible="company_type not in 'aop'">
                             <form>
-                                <field name="transfer_witness_ids"
-                                       readonly="state == 'transfered'">
+                                <field name="cnic_line_ids">
                                     <list editable="bottom">
-                                        <field name="witness_for"/>
-                                        <field name="name"/>
-                                        <field name="father_name"/>
+                                        <field name="member_name"/>
                                         <field name="cnic" widget="mask"
                                                data-inputmask="'mask': '99999-9999999-9'"/>
-                                        <field name="cnic_expiry"/>
-                                        <field name="cnic_front" widget='image' style="width:100px; height:100px"/>
-                                        <field name="cnic_back" widget='image' style="width:100px; height:100px"/>
+                                        <field name="cnic_expiry_date"/>
+                                        <field name="cnic_front"/>
+                                        <field name="cnic_back"/>
+                                        <field name="phone"/>
+                                        <field name="tax_status"/>
+                                        <field name="address"/>
+                                        <field name="name"/>
+                                        <field name="father_spouse_cnic"/>
                                     </list>
                                 </field>
                             </form>
                         </group>
-                        <group name="combine_image" string="Combine Image">
-                            <form>
-                                <field name="combine_image" widget="image"/>
-                            </form>
-                        </group>
-                        <group name="installment_plan_and_history" string="Installment Plan And History">
-                            <form>
-                                <field name="installment_plan_ids">
-                                    <list editable="bottom" decoration-info="invoice_created == True">
-                                        <field name="installment_number"
-                                               string="Sr. No"/>
-                                        <field name="installment_type"
-                                               invisible="0"/>
-                                        <field name="property_invoice_type"
-                                               invisible="1"/>
-                                        <field name="date"/>
-                                        <field name="payment_date"
-                                               string="Payment date"/>
-                                        <field name="amount" sum="Total"/>
-                                        <field name="invoice_created"/>
-                                        <field name="invoice"/>
-                                        <field name="invoice_id" invisible="1"/>
-                                        <field name="state" string="Invoice Status"
-                                               invisible="1"/>
-                                        <field name="amount_paid"
-                                               sum="Amount Paid"/>
-                                        <field name="residual"
-                                               sum="Remaining Amount"/>
-                                        <field name="payment_status"
-                                               string="Status"/>
-                                    </list>
-                                </field>
-                            </form>
-                        </group>
-                        <notebook>
-                            <page string="File Payment History" invisible="1">
-                                <field name="file_payment_history_id">
-                                    <list options="{'no_open': True}" create="false" editable="bottom"
-                                          decoration-info="state == 'open'"
-                                          decoration-danger="state == 'paid'"
-                                          decoration-muted="state == 'cancel'">
-                                        <field name="date_invoice"/>
-                                        <field name="invoice_id"/>
-                                        <field name="amount_total"/>
-                                        <field name="amount_paid"/>
-                                        <field name="residual"/>
-                                        <field name="state"/>
-                                    </list>
-                                </field>
-                            </page>
-                        </notebook>
-                        <notebook>
-                            <page string="Payments" invisible="1">
-                                <field name="stages" invisible="1"/>
+                    </group>
 
-                                <button name="create_invoice" type="object" string="Create Invoice" class="oe_highlight"
-                                        invisible="stages == 'invoiced'"/>
+                    <group string="Transferee Details" invisible="transfer_type == 'open_file'">
+                        <group>
+                            <field name="transferee_existing_partner" readonly="1"/>
+                            <field name="transferee_partner_id" force_save="1"
+                                   invisible="transferee_existing_partner != 'yes'" readonly="1"
+                                   context="{'form_view_ref': 'real_estate.view_partner_form'}"/>
+                            <field name="transferee_company_type" string="Transferee Type"/>
+                            <label for="transferee_name" string="Name"/>
+                            <div class="o_address_format">
 
-                                <button name="print_invoice" type="object" string="Print Invoice" class="oe_highlight"
-                                        invisible="state != 'draft'"/>
-                                <field name="file_payment_ids">
+                                <field
+                                        name="transferee_partner_id_name"
+                                        invisible="transferee_existing_partner != 'yes'"
+                                />
+
+                                <field
+                                        name="transferee_name"
+                                        invisible="transferee_existing_partner == 'yes'"
+                                />
+
+                                <button
+                                        name="create_partner"
+                                        icon="fa-arrow-right"
+                                        type="object"
+                                        string="Create Member"
+                                        class="btn-link"
+                                        invisible="(transferee_existing_partner == 'yes' or state == 'transfered')"
+                                />
+                            </div>
+                            <field name="transferee_cnic_number" readonly="1"
+                                   invisible="company_type not in 'person'"/>
+
+                        </group>
+                        <group>
+                            <field name="transferee_image" readonly="1" widget="image" class="oe_avatar"/>
+                        </group>
+                        <group string="Details" colspan="4"
+                               invisible="transferee_company_type not in 'aop'">
+                            <form>
+                                <field name="transferee_cnic_line_ids">
                                     <list editable="bottom">
-                                        <field name="product_id"/>
-                                        <field name="payment_type"/>
-                                        <field name="value"/>
-                                        <field name="total" sum="total"/>
+                                        <field name="member_name"/>
+                                        <field name="cnic" widget="mask"
+                                               data-inputmask="'mask': '99999-9999999-9'"/>
+                                        <field name="cnic_expiry_date"/>
+                                        <field name="cnic_front"/>
+                                        <field name="cnic_back"/>
+                                        <field name="phone"/>
+                                        <field name="tax_status"/>
+                                        <field name="address"/>
+                                        <field name="name"/>
+                                        <field name="father_spouse_cnic"/>
                                     </list>
                                 </field>
-                            </page>
-                        </notebook>
-                    </sheet>
-                    <chatter/>
-                </form>
-            </field>
-        </record>
-        <record id="real_estate.transfer_application_tree" model="ir.ui.view">
-            <field name="name">real_estate transfer_application_tree</field>
-            <field name="model">transfer.application</field>
-            <field name="priority">1</field>
-            <field name="arch" type="xml">
-                <list create="false" edit="false">
-                    <field name="t_request_id" string="Request No."/>
-                    <field name="membership_id"/>
-                    <field name="file_id"/>
-                    <field name="transferee_partner_id" string="Tranferee Name"/>
-                    <field name="phase_id"/>
-                    <field name="sector_id"/>
-                    <field name="category_id"/>
-                    <field name="size_id"/>
-                </list>
-            </field>
-        </record>
-        <record
-                model="ir.actions.act_window"
-                id="real_estate.action_transfer_application">
-            <field name="name">Transfer Application</field>
-            <field name="res_model">transfer.application</field>
-            <field name="context">{'current_view': 'realestate'}</field>
-            <field name="view_mode">list,form</field>
-        </record>
-        <menuitem
-                id="real_estate.transfer_application"
-                name="Transfer Application"
-                action="real_estate.action_transfer_application"
-                parent="real_estate.menu_transfer"
-                sequence="3"
-        />
+                            </form>
+                        </group>
+                    </group>
+
+                    <group string="Property Details ">
+                        <group>
+                            <field name="file_id" readonly="1"/>
+                            <field name="society_id"/>
+                            <field name="phase_id"/>
+                            <field name="sector_id"/>
+                            <field name="street_id"/>
+                            <field name="inventory_id" string="Unit"/>
+                            <field name="unit_number" string="Plot No."/>
+                        </group>
+                        <group>
+                            <field name="tracking_id" readonly="1"/>
+                            <field name="category_id"/>
+                            <field name="unit_category_type_id" string="Product"/>
+                            <field name="size_id"/>
+                            <field name="unit_class_id" string="Type"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="payment_by"
+                                   readonly="state == 'transfered'"/>
+                        </group>
+                    </group>
+                    <group string="File Details" name="file_details">
+                        <header invisible="1">
+                            <field name="installment_created" invisible="1"/>
+                            <!-- <button name="create_installment_plan"
+                                    type="object"
+                                    string="Create Installment Plan"
+                                    class="oe_highlight"
+                                    invisible="1"
+                            /> -->
+                        </header>
+                        <group>
+                            <field name="booking_date"/>
+                            <field name="starting_date"/>
+                            <field name="payment_states"/>
+                            <field name="interval_id"/>
+                        </group>
+                        <group>
+                            <field name="net_sale_amount"/>
+                            <field name="ttl_sale_amount"/>
+                            <field name="initial_payment"/>
+                            <field name="plan_description"/>
+                            <field name="deal_price" required="1" readonly="1"/>
+                        </group>
+                    </group>
+                    <group name="payment_history" string="Payment History">
+                        <group>
+                            <field name="sale_amount"/>
+                            <field name="factor_amount"/>
+                            <field name="discount_type"/>
+                            <field name="discount_amount"/>
+                            <field name="balance_amount"/>
+                        </group>
+                        <group>
+                            <field name="total_installment"/>
+                            <field name="installments_paid" readonly="1"/>
+                            <field name="total_installments_paid" readonly="1"/>
+                            <field name="total_installments_due" readonly="1"/>
+                            <field name="installments_due" readonly="1"/>
+                        </group>
+                    </group>
+                    <group name="witnesses" string="Witnesses">
+                        <form>
+                            <field name="transfer_witness_ids"
+                                   readonly="state == 'transfered'">
+                                <list editable="bottom">
+                                    <field name="witness_for"/>
+                                    <field name="name"/>
+                                    <field name="father_name"/>
+                                    <field name="cnic" widget="mask"
+                                           data-inputmask="'mask': '99999-9999999-9'"/>
+                                    <field name="cnic_expiry"/>
+                                    <field name="cnic_front" widget='image' style="width:100px; height:100px"/>
+                                    <field name="cnic_back" widget='image' style="width:100px; height:100px"/>
+                                </list>
+                            </field>
+                        </form>
+                    </group>
+                    <group name="combine_image" string="Combine Image">
+                        <form>
+                            <field name="combine_image" widget="image"/>
+                        </form>
+                    </group>
+                    <group name="installment_plan_and_history" string="Installment Plan And History">
+                        <form>
+                            <field name="installment_plan_ids">
+                                <list editable="bottom" decoration-info="invoice_created == True" limit="500">
+                                    <field name="installment_number"
+                                           string="Sr. No"/>
+                                    <field name="installment_type"
+                                           invisible="0"/>
+                                    <field name="property_invoice_type"
+                                           invisible="1"/>
+                                    <field name="date"/>
+                                    <field name="payment_date"
+                                           string="Payment date"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="invoice_created"/>
+                                    <field name="invoice"/>
+                                    <field name="invoice_id" invisible="1"/>
+                                    <field name="state" string="Invoice Status"
+                                           invisible="1"/>
+                                    <field name="amount_paid"
+                                           sum="Amount Paid"/>
+                                    <field name="residual"
+                                           sum="Remaining Amount"/>
+                                    <field name="payment_status"
+                                           string="Status"/>
+                                </list>
+                            </field>
+                        </form>
+                    </group>
+                    <notebook>
+                        <page string="File Payment History" invisible="1">
+                            <field name="file_payment_history_id">
+                                <list options="{'no_open': True}" create="false" editable="bottom"
+                                      decoration-info="state == 'open'"
+                                      decoration-danger="state == 'paid'"
+                                      decoration-muted="state == 'cancel'">
+                                    <field name="date_invoice"/>
+                                    <field name="invoice_id"/>
+                                    <field name="amount_total"/>
+                                    <field name="amount_paid"/>
+                                    <field name="residual"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <notebook>
+                        <page string="Payments">
+                            <field name="stages" invisible="1"/>
+
+                            <button name="create_invoice" type="object" string="Create Invoice" class="oe_highlight"
+                                    invisible="stages == 'invoiced'"/>
+
+                            <button name="print_invoice" type="object" string="Print Invoice" class="oe_highlight"
+                                    invisible="no_of_invoices == 0"/>
+                            <field name="file_payment_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="payment_type"/>
+                                    <field name="value"/>
+                                    <field name="total" sum="total"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="real_estate.transfer_application_tree" model="ir.ui.view">
+        <field name="name">real_estate transfer_application_tree</field>
+        <field name="model">transfer.application</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="t_request_id" string="Request No."/>
+                <field name="membership_id"/>
+                <field name="file_id"/>
+                <field name="transferee_partner_id" string="Tranferee Name"/>
+                <field name="phase_id"/>
+                <field name="sector_id"/>
+                <field name="category_id"/>
+                <field name="size_id"/>
+            </list>
+        </field>
+    </record>
+    <record
+            model="ir.actions.act_window"
+            id="real_estate.action_transfer_application">
+        <field name="name">Transfer Application</field>
+        <field name="res_model">transfer.application</field>
+        <field name="context">{'current_view': 'realestate'}</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem
+            id="real_estate.transfer_application"
+            name="Transfer Application"
+            action="real_estate.action_transfer_application"
+            parent="real_estate.menu_transfer"
+            sequence="3"
+    />
 </odoo>

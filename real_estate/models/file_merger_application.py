@@ -5,6 +5,19 @@ from odoo.exceptions import UserError, ValidationError
 import datetime
 from dateutil.relativedelta import relativedelta
 
+# Maps installment_type -> product.realestate XML ref, mirrored from
+# midland_invoicing/models/file_ext.py's _INSTALLMENT_PRODUCT (real_estate can't import
+# that module - it's a dependent, not a dependency - so the mapping is duplicated here).
+_MERGER_INSTALLMENT_PRODUCT = {
+    'down': 'real_estate.downpayment_product',
+    'installment': 'real_estate.installment_product',
+    'balloon': 'real_estate.balloon_payment',
+    'final': 'real_estate.final_product',
+    'possession_amount': 'real_estate.possession_amount_product',
+    'balloting_amount': 'real_estate.balloting_product',
+    'confirmation_amount': 'real_estate.confirmation_amount_product',
+}
+
 
 class PlotMergerApplication(models.Model):
     _name = "plot.merger.application"
@@ -43,8 +56,12 @@ class PlotMergerApplication(models.Model):
                    ('no', 'No')],
         default="no", required=False, track_visility='always')
     invoice_create = fields.Boolean(string='Invoice Created ?', default=False, track_visility='always')
-    merger_fee_invoice_id = fields.Many2one('account.move', string='Account Move', track_visility='always')
-    credit_note_id = fields.Many2many('account.move', string='Credit Note', track_visility='always')
+    # Comodel is overridden to 'midland.invoice' in midland_invoicing/models/plot_merger_application_ext.py.
+    # Can't declare that comodel here directly: real_estate is a dependency of midland_invoicing
+    # (via file_financials), so declaring a field of comodel 'midland.invoice' in this module would
+    # be a circular dependency — midland.invoice wouldn't exist yet when this module's models load.
+    merger_fee_invoice_id = fields.Many2one('account.move', string='Merger Fee Invoice', track_visility='always')
+    credit_note_id = fields.Many2many('account.move', 'plot_merger_credit_note_account_move_rel', string='Credit Note', track_visility='always')
     journal_entry_id = fields.Many2one('account.move', string='Journal Entry', track_visility='always')
     show_approved_status = fields.Boolean(string='Show Approved Status', default=False)
     merger_status = fields.Selection([
@@ -66,7 +83,7 @@ class PlotMergerApplication(models.Model):
             else:
                 rec.net_adjusted = rec.total_receive_amount
 
-    @api.depends('source_merger_id', 'merger_fee')
+    @api.depends('source_merger_id.amount_received', 'merger_fee')
     def _amount_to_be_adjusted(self):
         for rec in self:
             rec.total_receive_amount = 0.0
@@ -76,7 +93,7 @@ class PlotMergerApplication(models.Model):
             else:
                 rec.total_receive_amount = 0.0
 
-    @api.depends('target_merger_id')
+    @api.depends('target_merger_id.amount_adjusted')
     def _total_adjusted_amount(self):
         for rec in self:
             rec.total_adjusted_amount = 0.0
@@ -100,8 +117,110 @@ class PlotMergerApplication(models.Model):
 
         return super(PlotMergerApplication, self).create(vals_list)
 
+    def _settle_target_installments(self, file_id, amount):
+        """Pay off as much of `amount` as possible against the target file's own due
+        midland.invoice installments (existing due ones first, then newly generated
+        ones for not-yet-invoiced installments), via a genuine midland.payment - the
+        same mechanism a normal customer payment uses, so the installment lines
+        actually flip to Paid/Partial instead of the money sitting in a credit note.
+        Returns whatever amount could not be applied to any installment (the leftover
+        that should still become a credit note)."""
+        self.ensure_one()
+        remaining = amount
+        payment_lines = []
+
+        due_invoices = file_id.midland_invoice_ids.filtered(
+            lambda inv: inv.state == 'posted' and inv.payment_state != 'paid'
+        ).sorted('invoice_date')
+        for inv in due_invoices:
+            if remaining <= 0:
+                break
+            pay_amount = min(remaining, inv.amount_residual)
+            if pay_amount > 0:
+                payment_lines.append((0, 0, {'invoice_id': inv.id, 'payment_amount': pay_amount}))
+                remaining -= pay_amount
+
+        if remaining > 0:
+            installment_plan = file_id.manual_installment_plan_ids or file_id.installment_plan_ids
+            not_posted_invoices = installment_plan.filtered(
+                lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state != 'posted')
+            if not_posted_invoices:
+                raise ValidationError(_("In %s installment plan, invoice are present which is not posted yet please post them first" % file_id.name))
+            invoices_to_create = installment_plan.filtered(
+                lambda l: not l.invoice_created and l.installment_type != 'down').sorted('date')
+            for installment in invoices_to_create:
+                if remaining <= 0:
+                    break
+                xml_ref = _MERGER_INSTALLMENT_PRODUCT.get(installment.installment_type, 'real_estate.installment_product')
+                product = file_id._resolve_product(xml_ref)
+                new_invoice = self.env['midland.invoice'].create({
+                    'member_id': file_id.membership_id.id,
+                    'partner_id': file_id.membership_id.partner_id.id,
+                    'invoice_date': installment.date,
+                    'property_invoice_type': installment.installment_type or 'installment',
+                    'installment_id': installment.id,
+                    'file_ids': file_id.id,
+                    'currency_id': file_id.currency_id.id,
+                    'invoice_line_ids': [(0, 0, {
+                        'product_id': product.id if product else False,
+                        'name': product.name if product else (installment.installment_name or 'Installment'),
+                        'account_id': file_id._resolve_income_account(product).id,
+                        'quantity': 1.0,
+                        'price_unit': installment.amount,
+                    })],
+                })
+                new_invoice.action_post()
+                pay_amount = min(remaining, new_invoice.amount_residual)
+                if pay_amount > 0:
+                    payment_lines.append((0, 0, {'invoice_id': new_invoice.id, 'payment_amount': pay_amount}))
+                    remaining -= pay_amount
+
+        if payment_lines:
+            payment = self.env['midland.payment'].create({
+                'member_id': file_id.membership_id.id,
+                'partner_id': file_id.membership_id.partner_id.id,
+                'file_id': file_id.id,
+                'payment_amount': amount - max(remaining, 0.0),
+                'currency_id': file_id.currency_id.id,
+                'journal_id': self.env.company.account_journal_id.id,
+                'remarks': f"{self.name} - Merger Adjustment",
+                'invoice_line_ids': payment_lines,
+            })
+            payment.action_confirm()
+
+        return max(remaining, 0.0)
+
+    def _create_merger_credit_note(self, member, amount, file_id=False):
+        self.ensure_one()
+        adjustment_product = self.env.ref('file_financials.product_merger_adjustment').with_company(self.company_id)
+        ref = f"{self.name} - {file_id.name}" if file_id else f"{self.name} - Merged Files"
+        invoice = self.env['midland.invoice'].create({
+            'member_id': member.id,
+            'company_id': self.company_id.id,
+            'invoice_date': self.merger_date.strftime('%Y-%m-%d') if self.merger_date else fields.Date.today(),
+            'file_ids': file_id.id if file_id else False,
+            'ref': ref,
+            'move_type': 'out_refund',
+            'property_invoice_type': 'merger_adjustment',
+            'merger_application_id': self.id,
+            'invoice_line_ids': [(0, 0, {
+                'product_id': self.env.ref('file_financials.product_merger_adjustment_realestate').id,
+                'name': 'Adjustment Amount From Source File',
+                'quantity': 1,
+                'price_unit': amount,
+                'account_id': adjustment_product.property_account_income_id.id,
+            })],
+        })
+        invoice.action_post()
+        return invoice
+
     def create_credit_note(self):
-        if self.waive_merger_application == 'no' and self.merger_fee_type == 'separate' and self.invoice_create == False or self.merger_fee_invoice_id.state == 'draft':
+        if not self.merger_date:
+            raise ValidationError(_('Please set the Merger Date first.'))
+        if self.waive_merger_application == 'no' and self.merger_fee_type not in ('net_off', 'separate'):
+            raise ValidationError(_('Please select a Merger Fee Type (Net Off or Separate) first.'))
+        if (self.waive_merger_application == 'no' and self.merger_fee_type == 'separate'
+                and (self.invoice_create == False or self.merger_fee_invoice_id.state == 'draft')):
             raise ValidationError(_('Please Create And Pay the Merger Invoice First'))
         journal_entry_ids = []
         for line in self.source_merger_id:
@@ -122,17 +241,33 @@ class PlotMergerApplication(models.Model):
                         reversed_entry.action_post()
                     for line_id in invoice.line_ids.filtered(lambda l: 'Reverse entry' in l.name):
                         line_id.date = self.merger_date
-            # self.env.cr.execute(f"""UPDATE installment_plan SET payment_status = 'cancel' WHERE id IN {tuple(installment_plan.mapped('id'))}""")
-            installment_ids = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state == 'posted').mapped('id')
+            # Cancel every installment line of the source file (paid or not) - the paid amount is
+            # being carried over to the target file, so none of it should still read as active/paid here.
+            installment_ids = installment_plan.mapped('id')
             if installment_ids:
                 self.env.cr.execute("""UPDATE installment_plan SET payment_status = 'cancel' WHERE id IN %s""", (tuple(installment_ids),))
             line.file_id.state = 'merged'
             line.file_id.file_status = 'merged_and_cancel'
+            if line.file_id.inventory_id:
+                line.file_id.inventory_id.state = 'avalible_for_sale'
         if self.waive_merger_application == 'no' and self.merger_fee_type == 'net_off':
-            journal = self.env.company.account_journal_id.id,
-            advance_account = self.env['account.account'].search([('name', '=', 'Advance from Customers-NCP')], limit=1)
+            if self.merger_fee <= 0:
+                raise ValidationError(_(
+                    'Merger Fee must be greater than zero to net it off. Please set the '
+                    '"Merger Fee" amount on the Source Detail line(s) first.'))
+            if not self.company_id.account_journal_id:
+                raise ValidationError(_(
+                    'Please set the "Journal" field under Real Estate Settings '
+                    '(Accounting configuration) for company %s first.') % self.company_id.name)
+            advance_account = self.company_id.merger_advance_account_id
+            if not advance_account:
+                raise ValidationError(_(
+                    'Please set the "Merger Advance Account" field under Real Estate Settings '
+                    '(Accounting configuration) for company %s first.') % self.company_id.name)
+            journal = self.company_id.account_journal_id.id
             move_vals = {
                 'journal_id': journal,
+                'company_id': self.company_id.id,
                 'partner_id': self.membership_id.partner_id.id,
                 'date': self.merger_date.strftime('%Y-%m-%d'),
                 # 'file_ids': line.file_id.id,
@@ -143,7 +278,7 @@ class PlotMergerApplication(models.Model):
                     (0, 0, {
                         'name': 'Processing Fee',
                         'partner_id': self.membership_id.partner_id.id,
-                        'account_id': self.env.ref('real_estate.file_transfer').product_id.property_account_income_id.id,
+                        'account_id': self.env.ref('real_estate.file_transfer').with_company(self.company_id).property_account_income_id.id,
                         'credit': self.merger_fee,
                     }),
                     (0, 0, {
@@ -163,209 +298,27 @@ class PlotMergerApplication(models.Model):
         self.credit_note_created = True
 
     def amount_adjust(self):
+        if not self.merger_date:
+            raise ValidationError(_('Please set the Merger Date first.'))
+        if self.waive_merger_application == 'no' and self.merger_fee_type not in ('net_off', 'separate'):
+            raise ValidationError(_('Please select a Merger Fee Type (Net Off or Separate) first.'))
         length_of_file = len(self.target_merger_id.file_id)
         credit_note_ids = []
+        leftover_total = 0.0
         for line in self.target_merger_id:
+            if not line.file_id:
+                continue
+            if not (line.file_id.manual_installment_plan_ids or line.file_id.installment_plan_ids):
+                raise ValidationError(_('File installment plan is not created for %s' % line.file_id.tracking_id))
             if line.amount_adjusted:
-                remaining_amount = line.amount_adjusted
-                if line.file_id:
-                    installment_plan = line.file_id.manual_installment_plan_ids or line.file_id.installment_plan_ids
-                    if not installment_plan:
-                        raise ValidationError(_('File installment plan is not created for %s' % line.file_id.tracking_id))
-                    invoices = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state == 'posted')
-                    open_invoices_due_amount = sum(inv.residual for inv in invoices)
-                    remaining_amount -= open_invoices_due_amount
-                    print(remaining_amount, 'remaining amount')
-                    if remaining_amount > 0:
-                        invoices_to_create = installment_plan.filtered(lambda l: not l.invoice_created)
-                        invoices_to_create_qty = len(invoices_to_create)
-                        not_posted_invoices = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state != 'posted')
-                        for installment in invoices_to_create:
-                            if len(not_posted_invoices) >= 1:
-                                raise ValidationError(_("In %s installment plan, invoice are present which is not posted yet please post them first" % line.file_id.name))
-                            # Check if Adjusting Amount is more than Installment Invoices Due Amount and Installment Lines still have some Invoices to be genrated
-                            if remaining_amount > 0 and invoices_to_create_qty >= 1:
-                                date = invoices[-1].date + relativedelta(months=+1) if invoices else (installment_plan.filtered(lambda l: l.payment_status == 'paid')[-1].date +
-                                                                                                      relativedelta(months=+1))
-                                # tax_ids = line.file_id.installment_tax_ids.ids if line.file_id.installment_tax_ids else self.env.company.installment_tax_ids.ids
-                                payment_terms = self.env.company.payment_terms_final_id if installment.installment_type == 'final' else self.env.company.payment_terms_installment_id
-                                if installment.installment_type != 'down' and installment.date <= date and not installment.invoice_created:
-                                    try:
-                                        prod = []
-                                        if self.env.company.ownership_percentage and line.file_id.membership_id.company_type == 'aop':
-                                            for member in line.file_id.membership_id.cnic_line_ids:
-                                                if installment.installment_type == 'final':
-                                                    prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.final_product').product_id.id,
-                                                        'name': member.member_name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.final_product').product_id.property_account_income_id.id,
-                                                        'price_unit': (installment.amount * member.ownership) / 100,
-                                                        # 'tax_ids': tax_ids,
-                                                    }))
-                                                elif installment.installment_type == 'installment':
-                                                    prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.installment_product').product_id.id,
-                                                        'name': member.member_name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.installment_product').product_id.property_account_income_id.id,
-                                                        'price_unit': (installment.amount * member.ownership) / 100,
-                                                        #                                                         'tax_ids': tax_ids,
-                                                    }))
-                                                elif installment.installment_type == 'balloon':
-                                                    prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
-                                                        'name': member.member_name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.balloon_payment').product_id.property_account_income_id.id,
-                                                        'price_unit': (installment.amount * member.ownership) / 100
-                                                    }))
-                                                elif installment.installment_type == 'possession_amount':
-                                                    prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
-                                                        'name': self.env.ref('real_estate.possession_amount_product').name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.possession_amount_product').product_id.property_account_income_id.id,
-                                                        'price_unit': installment.amount
-                                                    })]
-                                                elif installment.installment_type == 'confirmation_amount':
-                                                    prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
-                                                        'name': self.env.ref('real_estate.confirmation_amount_product').name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
-                                                        'price_unit': installment.amount
-                                                    })]
-                                                elif installment.installment_type == 'balloting_amount':
-                                                    prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
-                                                        'name': self.env.ref('real_estate.balloting_product').name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.balloting_product').product_id.property_account_income_id.id,
-                                                        'price_unit': installment.amount
-                                                    })]
-                                        else:
-                                            if installment.installment_type == 'final':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.final_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.final_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.final_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount,
-                                                    #                                                     'tax_ids': tax_ids,
-                                                })]
-                                            elif installment.installment_type == 'installment':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.installment_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.installment_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.installment_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount,
-                                                    #                                                     'tax_ids': tax_ids,
-                                                })]
-                                            elif installment.installment_type == 'balloon':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
-                                                    'name': self.env.ref('real_estate.balloon_payment').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.balloon_payment').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-                                            elif installment.installment_type == 'possession_amount':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.possession_amount_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.possession_amount_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-                                            elif installment.installment_type == 'confirmation_amount':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.confirmation_amount_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-                                            elif installment.installment_type == 'balloting_amount':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.balloting_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.balloting_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-                                        new_invoice = self.env['account.move'].create({
-                                            'partner_id': line.file_id.membership_id.partner_id.id,
-                                            'move_type': 'out_invoice',
-                                            'journal_id': self.env.company.account_journal_id.id,
-                                            # 'property_invoice_type': 'installment',
-                                            'property_invoice_type': installment.installment_type if installment.installment_type else 'installment',
-                                            'user_id': line.file_id.user_id.id,
-                                            'date': installment.date,
-                                            'invoice_date': installment.date,
-                                            'invoice_payment_term_id': payment_terms.id,
-                                        })
-                                        new_invoice.file_ids = line.file_id.id
-                                        new_invoice.invoice_line_ids = prod
-                                        new_invoice.action_post()
-                                        installment.invoice_id = new_invoice.id
-                                        installment.invoice_created = True
-                                        remaining_amount -= new_invoice.amount_residual
-                                        invoices_to_create_qty -= 1
-                                        date += relativedelta(months=+1)
-                                    except Exception as e:
-                                        raise ValueError('There is some error: %s in auto invoice creation for installment' % e)
-                                    invoices = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state == 'posted')
-                if self.membership_id and not self.membership_merge_to_id:
-                    print('Membership 1')
-                    credit_note_vals = {
-                        'partner_id': self.membership_id.partner_id.id,
-                        'company_id': self.env.company.id,
-                        'invoice_date': self.merger_date,
-                        'file_ids': line.file_id.id,
-                        'journal_id': self.env.company.account_journal_id.id,
-                        'ref': f"{self.name} - {line.file_id.name}",
-                        'move_type': 'out_refund',
-                        'invoice_line_ids': [(0, 0, {
-                            'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                            'name': 'Adjustment Amount From Source File',
-                            'quantity': 1,
-                            'price_unit': line.amount_adjusted,
-                        })],
-                    }
-                    credit_note = self.env['account.move'].create(credit_note_vals)
-                    credit_note.file_ids = line.file_id.id
-                    credit_note.action_post()
-                    credit_note_ids.append(credit_note.id)
-                if self.membership_id and self.membership_merge_to_id:
-                    print('Membership 2')
-                    credit_note_vals = {
-                        'partner_id': self.membership_merge_to_id.partner_id.id,
-                        'company_id': self.env.company.id,
-                        'invoice_date': self.merger_date,
-                        'file_ids': line.file_id.id,
-                        'journal_id': self.env.company.account_journal_id.id,
-                        'ref': f"{self.name} - {line.file_id.name}",
-                        'move_type': 'out_refund',
-                        'invoice_line_ids': [(0, 0, {
-                            'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                            'name': 'Adjustment Amount From Source File',
-                            'quantity': 1,
-                            'price_unit': line.amount_adjusted,
-                        })],
-                    }
-                    credit_note = self.env['account.move'].create(credit_note_vals)
-                    credit_note.file_ids = line.file_id.id
-                    credit_note.action_post()
-                    credit_note_ids.append(credit_note.id)
+                leftover = self._settle_target_installments(line.file_id, line.amount_adjusted)
+                if leftover > 0:
+                    if self.membership_id and not self.membership_merge_to_id:
+                        credit_note_ids.append(
+                            self._create_merger_credit_note(self.membership_id, leftover, line.file_id).id)
+                    if self.membership_id and self.membership_merge_to_id:
+                        credit_note_ids.append(
+                            self._create_merger_credit_note(self.membership_merge_to_id, leftover, line.file_id).id)
                 line.file_id.merger_ref = self.name
                 self.credit_note_id = [(6, 0, credit_note_ids)]
                 line.file_id.history_ids.create({
@@ -374,309 +327,19 @@ class PlotMergerApplication(models.Model):
                     'file_id': line.file_id.id,
                 })
             else:
-                print(length_of_file)
                 adjusting_amount = (self.net_adjusted / length_of_file)
-                if line.file_id.manual_installment_plan_ids:
-                    installment_plan = line.file_id.manual_installment_plan_ids
-                elif line.file_id.installment_plan_ids:
-                    installment_plan = line.file_id.installment_plan_ids
-                else:
-                    raise ValidationError(_('File installment plan is not created %s' % line.file_id.tracking_id))
-                invoices = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state == 'posted')
-                # Posted Invoices Amount
-                open_invoices_due_amount = sum(inv.residual for inv in invoices)
-                balance = adjusting_amount - open_invoices_due_amount
-                # remaining_amount = 0
-                invoices_to_create = installment_plan.filtered(lambda l: l.invoice_created == False)
-                invoices_to_create_qty = len(invoices_to_create)
-                not_posted_invoices = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state != 'posted')
-                if len(not_posted_invoices) >= 1:
-                    raise ValidationError(
-                        _("In %s installment plan, invoice are present which is not posted yet please post them first" %
-                          line.file_id.name))
-                # Check if Adjusting Amount is more than Installment Invoices Due Amount and Installment Lines still have some Invoices to be genrated
-                if balance > 0 and invoices_to_create_qty >= 1:
-                    # date = invoices[-1].date + relativedelta(months=+1)
-                    date = invoices[-1].date + relativedelta(months=+1) if invoices else installment_plan.filtered(lambda l: l.payment_status == 'paid')[-1].date + relativedelta(
-                        months=+1)
-                    tax_ids = line.file_id.installment_tax_ids.ids if line.file_id.installment_tax_ids else self.env.company.installment_tax_ids.ids
-                    if installment_plan:
-                        for installment in invoices_to_create:
-                            if balance > 0 and invoices_to_create_qty >= 1:
-                                payment_terms = self.env.company.payment_terms_final_id if installment.installment_type == 'final' else self.env.company.payment_terms_installment_id
-                                if installment.installment_type != 'down' and installment.date <= date and not installment.invoice_created:
-                                    try:
-                                        prod = []
-                                        if self.env.company.ownership_percentage and line.file_id.membership_id.company_type == 'aop':
-                                            for member in line.file_id.membership_id.cnic_line_ids:
-                                                if installment.installment_type == 'final':
-                                                    prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.final_product').product_id.id,
-                                                        'name': member.member_name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.final_product').product_id.property_account_income_id.id,
-                                                        'price_unit': (installment.amount * member.ownership) / 100,
-                                                        #                                                         'tax_ids': tax_ids,
-                                                    }))
-                                                elif installment.installment_type == 'installment':
-                                                    prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.installment_product').product_id.id,
-                                                        'name': member.member_name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.installment_product').product_id.property_account_income_id.id,
-                                                        'price_unit': (installment.amount * member.ownership) / 100,
-                                                        #                                                         'tax_ids': tax_ids,
-                                                    }))
-                                                elif installment.installment_type == 'balloon':
-                                                    prod.append((0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
-                                                        'name': member.member_name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.balloon_payment').product_id.property_account_income_id.id,
-                                                        'price_unit': (installment.amount * member.ownership) / 100
-                                                    }))
-                                                elif installment.installment_type == 'possession_amount':
-                                                    prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
-                                                        'name': self.env.ref('real_estate.possession_amount_product').name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.possession_amount_product').product_id.property_account_income_id.id,
-                                                        'price_unit': installment.amount
-                                                    })]
-                                                elif installment.installment_type == 'confirmation_amount':
-                                                    prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
-                                                        'name': self.env.ref('real_estate.confirmation_amount_product').name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
-                                                        'price_unit': installment.amount
-                                                    })]
-                                                elif installment.installment_type == 'balloting_amount':
-                                                    prod = [(0, 0, {
-                                                        'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
-                                                        'name': self.env.ref('real_estate.balloting_product').name,
-                                                        'account_id': self.env.ref(
-                                                            'real_estate.balloting_product').product_id.property_account_income_id.id,
-                                                        'price_unit': installment.amount
-                                                    })]
-                                        else:
-                                            if installment.installment_type == 'final':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.final_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.final_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.final_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount,
-                                                    #                                                     'tax_ids': tax_ids,
-                                                })]
-                                            elif installment.installment_type == 'installment':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.installment_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.installment_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.installment_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount,
-                                                    #                                                     'tax_ids': tax_ids,
-                                                })]
-                                            elif installment.installment_type == 'balloon':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloon_payment').product_id.id,
-                                                    'name': self.env.ref('real_estate.balloon_payment').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.balloon_payment').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount,
-                                                })]
-                                            elif installment.installment_type == 'possession_amount':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.possession_amount_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.possession_amount_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.possession_amount_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-                                            elif installment.installment_type == 'confirmation_amount':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.confirmation_amount_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.confirmation_amount_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.confirmation_amount_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-                                            elif installment.installment_type == 'balloting_amount':
-                                                prod = [(0, 0, {
-                                                    'product_id': self.env.ref('real_estate.balloting_product').product_id.id,
-                                                    'name': self.env.ref('real_estate.balloting_product').name,
-                                                    'account_id': self.env.ref(
-                                                        'real_estate.balloting_product').product_id.property_account_income_id.id,
-                                                    'price_unit': installment.amount,
-                                                    # 'price_unit': installment.amount
-                                                })]
-
-                                        new_invoice = self.env['account.move'].create({
-                                            'partner_id': line.file_id.membership_id.partner_id.id,
-                                            'move_type': 'out_invoice',
-                                            'journal_id': self.env.company.account_journal_id.id,
-                                            # 'property_invoice_type': 'installment',
-                                            'property_invoice_type': installment.installment_type if installment.installment_type else 'installment',
-                                            'user_id': line.file_id.user_id.id,
-                                            'date': installment.date,
-                                            'invoice_date': installment.date,
-                                            'invoice_payment_term_id': payment_terms.id,
-                                        })
-                                        new_invoice.file_ids = line.file_id.id
-                                        new_invoice.invoice_line_ids = prod
-                                        new_invoice.action_post()
-                                        installment.invoice_id = new_invoice.id
-                                        installment.invoice_created = True
-                                        # remaining_amount += new_invoice.amount_residual
-                                        balance -= new_invoice.amount_residual
-                                        invoices_to_create_qty -= 1
-                                        date += relativedelta(months=+1)
-                                    except Exception as e:
-                                        raise ValueError('There is some error: %s in auto invoice creation for installment' % e)
-                invoices = installment_plan.filtered(lambda l: l.invoice_created and l.payment_status == 'not_paid' and l.invoice_id.state == 'posted')
-                if len(not_posted_invoices) >= 1:
-                    raise ValidationError(
-                        _("In %s installment plan, invoice are present which is not posted yet please post them first" %
-                          line.file_id.name))
+                leftover_total += self._settle_target_installments(line.file_id, adjusting_amount)
                 line.file_id.merger_ref = self.name
                 # ***************************************************** Code For Credit Note ***********************************************************************
-        if self.total_adjusted_amount <= 0.0:
+        if self.total_adjusted_amount <= 0.0 and leftover_total > 0:
             credit_note_ids = []
-            if self.membership_id and not self.membership_merge_to_id and self.waive_merger_application == 'no':
-                print('1111')
-                if self.waive_merger_application == 'no':
-                    if self.merger_fee_type == 'net_off':
-                        print('self member net off')
-                        credit_note_vals = {
-                            'partner_id': self.membership_id.partner_id.id,
-                            'company_id': self.env.company.id,
-                            'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
-                            # 'file_ids': line.file_id.id,
-                            'journal_id': self.env.company.account_journal_id.id,
-                            'ref': f"{self.name} - Merged Files",
-                            'move_type': 'out_refund',
-                            'invoice_line_ids': [(0, 0, {
-                                'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                                'name': 'Adjustment Amount From Source File',
-                                'quantity': 1,
-                                'price_unit': self.net_adjusted,
-                            })],
-                        }
-                        credit_note = self.env['account.move'].create(credit_note_vals)
-                        credit_note.file_ids = [(6, 0, [line.file_id.id for line in self.target_merger_id])]
-                        credit_note.action_post()
-                        credit_note_ids.append(credit_note.id)
-                    if self.merger_fee_type == 'separate':
-                        print('self member separate')
-                        credit_note_vals = {
-                            'partner_id': self.membership_id.partner_id.id,
-                            'company_id': self.env.company.id,
-                            'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
-                            'journal_id': self.env.company.account_journal_id.id,
-                            # 'file_ids': line.file_id.id,
-                            'ref': f"{self.name} - Merged Files",
-                            'move_type': 'out_refund',
-                            'invoice_line_ids': [(0, 0, {
-                                'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                                # 'account_id': self.membership_id.property_account_receivable_id.id,
-                                'name': 'Adjustment Amount From Source File',
-                                'quantity': 1,
-                                'price_unit': self.total_receive_amount,
-                            })],
-                        }
-                        credit_note = self.env['account.move'].create(credit_note_vals)
-                        credit_note.file_ids = [(6, 0, [line.file_id.id for line in self.target_merger_id])]
-                        credit_note.action_post()
-                        credit_note_ids.append(credit_note.id)
-            if self.membership_id and self.membership_merge_to_id and self.waive_merger_application == 'no':
-                print('22222222222')
-                if self.waive_merger_application == 'no':
-                    if self.merger_fee_type == 'net_off':
-                        credit_note_vals = {
-                            'partner_id': self.membership_merge_to_id.partner_id.id,
-                            'company_id': self.env.company.id,
-                            'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
-                            'journal_id': self.env.company.account_journal_id.id,
-                            'ref': f"{self.name} - Merged Files",
-                            'move_type': 'out_refund',
-                            'invoice_line_ids': [(0, 0, {
-                                'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                                'name': 'Adjustment Amount From Source File',
-                                'quantity': 1,
-                                'price_unit': self.net_adjusted,
-                            })],
-                        }
-                        credit_note = self.env['account.move'].create(credit_note_vals)
-                        credit_note.file_ids = [(6, 0, [line.file_id.id for line in self.target_merger_id])]
-                        credit_note.action_post()
-                        credit_note_ids.append(credit_note.id)
-
-                    if self.merger_fee_type == 'separate':
-                        print('separate')
-                        credit_note_vals = {
-                            'partner_id': self.membership_merge_to_id.partner_id.id,
-                            'company_id': self.env.company.id,
-                            'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
-                            'journal_id': self.env.company.account_journal_id.id,
-                            'ref': f"{self.name} - Merged Files",
-                            'move_type': 'out_refund',
-                            'invoice_line_ids': [(0, 0, {
-                                'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                                # 'account_id': self.membership_id.property_account_receivable_id.id,
-                                'name': 'Adjustment Amount From Source File',
-                                'quantity': 1,
-                                'price_unit': self.total_receive_amount,
-                            })],
-                        }
-                        credit_note = self.env['account.move'].create(credit_note_vals)
-                        credit_note.file_ids = [(6, 0, [line.file_id.id for line in self.target_merger_id])]
-                        credit_note.action_post()
-                        credit_note_ids.append(credit_note.id)
-            if self.membership_id and not self.membership_merge_to_id and self.waive_merger_application == 'yes':
-                credit_note_vals = {
-                    'partner_id': self.membership_id.partner_id.id,
-                    'company_id': self.env.company.id,
-                    'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
-                    # 'file_ids': line.file_id.id,
-                    'journal_id': self.env.company.account_journal_id.id,
-                    'ref': f"{self.name} - Merged Files",
-                    'move_type': 'out_refund',
-                    'invoice_line_ids': [(0, 0, {
-                        'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                        'name': 'Adjustment Amount From Source File',
-                        'quantity': 1,
-                        'price_unit': self.net_adjusted,
-                    })],
-                }
-                credit_note = self.env['account.move'].create(credit_note_vals)
-                credit_note.file_ids = [(6, 0, [line.file_id.id for line in self.target_merger_id])]
-                credit_note.action_post()
-                credit_note_ids.append(credit_note.id)
-            if self.membership_id and self.membership_merge_to_id and self.waive_merger_application == 'yes':
-                credit_note_vals = {
-                    'partner_id': self.membership_merge_to_id.partner_id.id,
-                    'company_id': self.env.company.id,
-                    'invoice_date': self.merger_date.strftime('%Y-%m-%d'),
-                    'journal_id': self.env.company.account_journal_id.id,
-                    'ref': f"{self.name} - Merged Files",
-                    'move_type': 'out_refund',
-                    'invoice_line_ids': [(0, 0, {
-                        'product_id': self.env.ref('file_financials.product_merger_adjustment').id,
-                        'name': 'Adjustment Amount From Source File',
-                        'quantity': 1,
-                        'price_unit': self.net_adjusted,
-                    })],
-                }
-                credit_note = self.env['account.move'].create(credit_note_vals)
-                credit_note.file_ids = [(6, 0, [line.file_id.id for line in self.target_merger_id])]
-                credit_note.action_post()
-                credit_note_ids.append(credit_note.id)
+            lump_sum_file = self.target_merger_id[0].file_id if self.target_merger_id else False
+            if self.membership_id and not self.membership_merge_to_id:
+                credit_note_ids.append(
+                    self._create_merger_credit_note(self.membership_id, leftover_total, lump_sum_file).id)
+            if self.membership_id and self.membership_merge_to_id:
+                credit_note_ids.append(
+                    self._create_merger_credit_note(self.membership_merge_to_id, leftover_total, lump_sum_file).id)
             self.credit_note_id = [(6, 0, credit_note_ids)]
         self.amount_adjust_done = True
         self.show_approved_status = True
@@ -687,7 +350,7 @@ class PlotMergerApplication(models.Model):
             'name': 'Journal Entries',
             'view_mode': 'list,form',
             'target': 'current',
-            'res_model': 'account.move',
+            'res_model': 'midland.invoice',
             'domain': [('id', 'in', self.credit_note_id.ids)]
         }
 

@@ -21,7 +21,7 @@
         <field name="model">file</field>
         <field name="priority">1</field>
         <field name="arch" type="xml">
-            <form name="file_management" string="File Management" create="false" edit="true">
+            <form name="file_management" string="File Management" edit="true">
                 <header>
                     <button name="lock" type="object" string="Lock" class="oe_highlight"
                             invisible="file_status not in 'draft'"
@@ -210,7 +210,7 @@
                                 </list>
                             </field>
                         </group>
-                        <group string="Next Of Kin" class="pull-right">
+                        <group string="Nominee" class="pull-right">
                             <field name="kin_name" readonly="file_status != 'draft'"/>
                             <field name="kin_mobile" readonly="file_status != 'draft'" widget="mask"
                                    data-inputmask="'mask': '+99-999-9999999'"
@@ -353,7 +353,7 @@
                                               invisible="create_manually == True">
                                             <field name="installment_plan_ids" readonly="file_status != 'draft'">
                                                 <list editable="bottom" decoration-info="invoice_created == True"
-                                                      limit="0">
+                                                      limit="500">
                                                     <field name="installment_number" string="Sr. No"/>
                                                     <field name="file_type" column_invisible="1"/>
                                                     <field name="double_check_paid_amount" column_invisible="1"/>
@@ -419,7 +419,7 @@
                                                     invisible="payment_states != 'draft' or file_status != 'lock'"
                                             />
                                             <field name="manual_installment_plan_ids" readonly="file_status != 'draft'">
-                                                <list editable="bottom" decoration-info="invoice_created == True">
+                                                <list editable="bottom" decoration-info="invoice_created == True" limit="500">
                                                     <field name="line_calculated" column_invisible="1"/>
                                                     <field name="installment_number" string="Sr. No"
                                                            force_save="1"/>
@@ -535,9 +535,8 @@
                             </group>
                         </page>
                         <page name='next_of_kin'
-                              string="Ownership"
-                              autofocus="autofocus">
-                            <group string="Next of Kin">
+                              string="Ownership">
+                            <group string="Nominee">
                                 <field name="kin_line_ids" nolabel="1" readonly="file_status != 'draft'">
                                     <list editable="bottom">
                                         <field name="name"
@@ -610,7 +609,7 @@
         <field name="model">file</field>
         <field name="priority">1</field>
         <field name="arch" type="xml">
-            <list name='file_management' string="File Management" create="false">
+            <list name='file_management' string="File Management">
                 <field name="name"/>
                 <field name="tracking_id"/>
                 <field name="membership_name"/>

@@ -19,6 +19,8 @@ access_ir_attachment,ir.attachment,model_ir_attachment,group_rsms_user,1,1,1,1
 access_file_cancel_application,file.cancel.application,model_file_cancel_application,group_rsms_user,1,1,1,1
 access_installment_remaining,installment.remaining,model_installment_remaining,group_rsms_user,1,1,1,1
 access_plot_merger_application,plot.merger.application,model_plot_merger_application,group_rsms_user,1,1,1,1
+access_plot_merger,plot.merger,model_plot_merger,group_rsms_user,1,1,1,1
+access_plot_merger_line,plot.merger.line,model_plot_merger_line,group_rsms_user,1,1,1,1
 access_source_merger,source.merger,model_source_merger,group_rsms_user,1,1,1,1
 access_target_merger,target.merger,model_target_merger,group_rsms_user,1,1,1,1
 access_file_refund,file.refund,model_file_refund,group_rsms_user,1,1,1,1
@@ -81,6 +83,9 @@ access_investment_payment_mode,investment.payment.mode,model_investment_payment_
 access_allotment_request,allotment.request,model_allotment_request,group_rsms_user,1,1,1,1
 access_unit_swapping_request,unit.swapping.request,model_unit_swapping_request,group_rsms_user,1,1,1,1
 access_unit_swapping_request_lines,unit.swapping.request.lines,model_unit_swapping_request_lines,group_rsms_user,1,1,1,1
+access_unit_swapping,unit.swapping,model_unit_swapping,group_rsms_user,1,1,1,1
+access_unit_swapping_line,unit.swapping.line,model_unit_swapping_line,group_rsms_user,1,1,1,1
+access_unit_swapping_investment_line,unit.swapping.investment.line,model_unit_swapping_investment_line,group_rsms_user,1,1,1,1
 access_unit_cancel_swap_history,unit.cancel.swap.history,model_unit_cancel_swap_history,group_rsms_user,1,1,1,1
 access_res_kin_request,res.kin.request,model_res_kin_request,group_rsms_user,1,1,1,1
 access_res_kin_request_lines,res.kin.request.lines,model_res_kin_request_lines,group_rsms_user,1,1,1,1
@@ -111,3 +116,4 @@ access_investment_category,investment.category,model_investment_category,base.gr
 access_amenity_amenity,amenity.amenity,model_amenity_amenity,base.group_user,1,1,1,1
 access_refund_policy,refund.policy,model_refund_policy,base.group_user,1,1,1,1
 access_registration_security_line,registration.security.line,model_registration_security_line,base.group_user,1,1,1,1
+access_import_data,import.data,model_import_data,base.group_system,1,1,1,1

@@ -32,6 +32,8 @@
         'data/product_data.xml',
         'data/automate_action.xml',
         'data/ir_actions_data.xml',
+        'report/transfer_application.xml',
+        'report/processing_form.xml',
         'views/menuitems.xml',
         # 'views/res_users.xml',
         'views/res_config_setting.xml',
@@ -53,13 +55,12 @@
         'views/file_payments.xml',
         'views/bulk_file_cancellation.xml',
         'views/ir_cron_ext.xml',
-        # 'views/crm_lead_ext.xml',
+        'views/crm_lead_ext.xml',
         # 'views/validations.xml',
         # 'report/full_pay_greeting_letter.xml',
         # 'report/greeting_letter.xml',
         # 'report/transfer_request.xml',
         # 'report/transfer_letter.xml',
-        # 'report/transfer_application.xml',
         # 'report/reminder_letter.xml',
         # 'report/forfeiture_notice.xml',
         # 'report/final_notice.xml',
@@ -123,6 +124,7 @@
     'assets': {
         'web.assets_backend': [
             # 'real_estate/static/src/xml/*.xml',  # Legacy QWeb templates for followup (needs OWL rewrite)
+            'real_estate/static/src/js/masked_char_field.js',
             'real_estate/static/src/css/file_state.scss',
             'real_estate/static/src/css/form_custom_styles.css',
             'real_estate/static/src/css/followup.css',

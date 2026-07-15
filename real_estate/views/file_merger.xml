@@ -68,7 +68,7 @@
 
                                             <page string="Installment Plan">
                                                  <field name="installment_plan_ids">
-                                                     <list editable="bottom" decoration-info="invoice_created == True">
+                                                     <list editable="bottom" decoration-info="invoice_created == True" limit="500">
                                                          <field name="date"/>
                                                          <field name="amount"/>
                                                          <field name="invoice_created"/>

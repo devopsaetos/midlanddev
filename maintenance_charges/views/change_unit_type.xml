@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="change_unit_type_view_form" model="ir.ui.view">
+            <field name="name">maintenance_charges change_unit_type_view_form</field>
+            <field name="model">change.unit.type</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button class='btn btn-primary'
+                                name="button_submit"
+                                type="object"
+                                string="Submit"
+                                groups="maintenance_charges.group_maintenance_payment_collector"
+                                invisible="state != 'draft' or submit_app != False"/>
+                        <button class='btn btn-primary'
+                                name="button_approve"
+                                type="object"
+                                string="Approve"
+                                groups="maintenance_charges.group_maintenance_payment_manager"
+                                invisible="state != 'draft' or approved_app != False"/>
+                        <button class='btn btn-primary'
+                                name="button_cancel"
+                                type="object"
+                                string="Cancel"
+                                groups="maintenance_charges.group_maintenance_payment_manager"
+                                invisible="state != 'draft'"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="from_app" invisible="1"/>
+                                <field name="submit_app" invisible="1"/>
+                                <field name="approved_app" invisible="1"/>
+                                <field name="society_id"
+                                       domain="[('project_type','=','housing_society'),('is_society','=',True)]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or from_app == True"/>
+                                <field name="phase_id"
+                                       domain="[('project_type','=','housing_society'),('is_society','!=',True)]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or from_app == True"/>
+                                <field name="sector_id"
+                                       domain="[('project_type','=','housing_society')]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or from_app == True"/>
+                                <field name="street_id"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       readonly="state != 'draft' or from_app == True"/>
+                                <field name="inventory_id" string="Unit No." readonly="state != 'draft' or from_app == True"
+                                       options="{'no_create': True, 'no_open': True}" invisible="1"/>
+                                <field name="category_id" readonly="1" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="size_id" readonly="1" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                            <group>
+                                <field name="date" required="1" readonly="state != 'draft' or from_app == True"/>
+                                <field name="file_id" readonly="1" force_save="1" options="{'no_create': True, 'no_open': True}" invisible="1"/>
+                                <field name="tracking_id" readonly="1" force_save="1" invisible="1"/>
+                                <field name="membership_id" string="Member" readonly="1" force_save="1" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="unit_category_type_id" string="Product" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="unit_class_id" string="Type" invisible="1" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="new_unit_class_id" string="Select New Type"
+                                       readonly="state != 'draft' or from_app == True"
+                                       required="0"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       domain="[('project_type','=','housing_society')]" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="files_details" string="File Details">
+                                <field name="unit_change_typy_line_ids" readonly="state == 'approve'">
+                                    <list editable="bottom">
+                                        <field name="inventory_id" string="Unit No." options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="membership_id" string="Member" readonly="1" force_save="1" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="file_id" readonly="1" force_save="1" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="tracking_id" readonly="1" force_save="1"/>
+                                        <field name="category_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="size_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_class_id" string="Type" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="new_unit_class_id" required="1" domain="[('project_type','=','housing_society')]" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_change_type_id" readonly="1"  options="{'no_create': True, 'no_open': True}" invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="change_unit_type_view_tree" model="ir.ui.view">
+            <field name="name">maintenance_charges change_unit_type_view_tree</field>
+            <field name="model">change.unit.type</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="file_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="membership_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="category_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="size_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="date"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="change_unit_type_view_search" model="ir.ui.view">
+            <field name="name">maintenance_charges change_unit_type_view_search</field>
+            <field name="model">change.unit.type</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name" string="Serial #"/>
+                    <field name="file_id"/>
+                    <field name="sector_id"/>
+                    <field name="category_id"/>
+                    <field name="unit_category_type_id" string="Product"/>
+                    <field name="size_id"/>
+                    <field name="date" string="Date"/>
+                    <!-- Odoo 19: <group> in search views no longer accepts expand="0"/string="Group By" attributes -->
+                    <group>
+                        <filter name="group_by_sector" string="Sector" domain="[]" context="{'group_by':'sector_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_change_unit_type">
+            <field name="name">Change Unit Type</field>
+            <field name="res_model">change.unit.type</field>
+            <field name="view_mode">list,form,search</field>
+            <field name="context">
+                {
+                'search_default_group_by_sector': 1,
+                }
+            </field>
+        </record>
+
+        <menuitem
+                id="maintenance_charges.change_unit_type"
+                name="Change Unit Type"
+                groups="maintenance_charges.group_maintenance_payment_collector,maintenance_charges.group_maintenance_payment_manager"
+                parent="maintenance_charges.maintenance_charges_main_menu"
+                action="action_change_unit_type"
+                sequence='5'
+        />
+    </data>
+</odoo>

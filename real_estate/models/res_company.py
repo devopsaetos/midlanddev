@@ -12,6 +12,12 @@ class ResCompanyExt(models.Model):
     merjer_adjust_journal_id = fields.Many2one('account.journal')
     merjer_adjust_payment_method_id = fields.Many2one('account.payment.method')
     merjer_adjust_advance_journal_id = fields.Many2one('account.journal')
+    merger_advance_account_id = fields.Many2one(
+        'account.account',
+        string='Merger Advance Account',
+        help='Account credited/debited when a merger fee is "Net Off" against the '
+             'customer\'s advance balance instead of a separate invoice.',
+    )
     correspondence_letter_postman = fields.Many2many('res.users')
     token_partner_id = fields.Many2one('res.partner', readonly=False)
     account_journal_id = fields.Many2one('account.journal', readonly=False)

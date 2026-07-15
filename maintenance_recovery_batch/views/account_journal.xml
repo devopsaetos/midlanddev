@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    <record id="maintenance_recovery_batch.view_account_journal_form" model="ir.ui.view">
+        <field name="name">maintenance_recovery_batch view_account_journal_form</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <!-- Odoo 19: account.journal merged default_debit_account_id/default_credit_account_id
+                 into a single default_account_id field (core view no longer has
+                 'default_credit_account_id'); retargeted xpath accordingly. -->
+            <xpath expr="//field[@name='default_account_id']" position="after">
+                <field name="show_in_maintenance"/>
+            </xpath>
+        </field>
+    </record>
+    </data>
+</odoo>

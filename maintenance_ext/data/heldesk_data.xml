@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!--Email template -->
+    <record id="help_desk_ticket_send_mail" model="mail.template">
+        <field name="name">Help Desk Ticket Send Mail</field>
+        <field name="email_from">
+            ${(object.company_id.email and '&quot;%s&quot; &lt;%s&gt;' % (object.company_id.name, object.company_id.email) or '')|safe}
+        </field>
+        <field name="subject">${object.name} Ticket Generated</field>
+        <field name="email_to">${object.employee_id.hod_id.work_email}</field>
+        <!--
+            Odoo 19 migration note: unqualified 'ref' attributes in XML data files are
+            auto-prefixed with the CURRENT loading module (see odoo/tools/convert.py
+            Environment.make_xml_id) - this used to resolve to
+            "website_axis_helpdesk.model_helpdesk_ticket" implicitly via inheritance
+            context, but 'helpdesk.ticket' is now provided by core module 'helpdesk', so
+            the ir.model record's real xmlid is "helpdesk.model_helpdesk_ticket". Fixed
+            to the fully-qualified ref.
+        -->
+        <field name="model_id" ref="helpdesk.model_helpdesk_ticket"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html"><![CDATA[
+                <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 14px; color: rgb(34, 34, 34); background-color: #FFF;">
+               	<p>Dear <b>${object.employee_id.hod_id.name}</b>,</p>
+               	<p>Please Check The Ticket Request Raised By  <b>${object.employee_id.name}</b></p>
+           </div>
+
+            ]]></field>
+    </record>
+
+
+</odoo>
+
+
+
+
+
+
+

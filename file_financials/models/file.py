@@ -352,6 +352,12 @@ class FileExtension(models.Model):
         if self.balance_amount == 0 and self.balloting_amount == 0:
             raise ValidationError('You cannot create plan with zero "Balance Amount".')
 
+        # Clear existing non-invoiced installment lines before regenerating
+        existing = self.installment_plan_ids.filtered(lambda l: not l.invoice_created)
+        if existing:
+            existing.unlink()
+        self.installment_created = False
+
         if all([self.starting_date, self.interval_id, self.total_installment, self.net_sale_amount]) and self.active:
             dates = [fields.Date.from_string(self.starting_date)]
 
@@ -471,13 +477,47 @@ class FileExtension(models.Model):
             else:
                 installment_number = 2
 
+            # balloons replace installment slots only when the plan treats them as
+            # installments; treated as balloons they come on top of the regular ones
+            balloon_uses_slots = (not self.include_installment and self.predefine_plan_id
+                                  and self.predefine_plan_id.include_in_plan == 'yes'
+                                  and self.predefine_plan_id.treat_balloon_as == 'installment')
             installment_amount = round(
                 self.balance_amount / (self.total_installment - self.balloon_payment_frequency)
-            ) if not self.include_installment and self.predefine_plan_id and self.predefine_plan_id.include_in_plan == 'yes' else round(
+            ) if balloon_uses_slots else round(
                 self.balance_amount / self.total_installment)
+
+            expected_installments = self.total_installment
+            if balloon_uses_slots:
+                expected_installments = self.total_installment - self.balloon_payment_frequency
+
+            def _pending_plan_events():
+                # regular installments and balloon/possession/balloting lines whose
+                # slot falls beyond the generated dates still have to be scheduled
+                if self.plan_type != 'predefine' or not self.predefine_plan_id:
+                    return False
+                if installment_count <= expected_installments:
+                    return True
+                plan_products = self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                if (self.env.ref('real_estate.balloon_payment').id in plan_products
+                        and interval < self.balloon_payment_frequency):
+                    return True
+                if (self.env.ref('real_estate.possession_amount_product').id in plan_products
+                        and possession_interval < self.possession_amount_frequency):
+                    return True
+                if (self.env.ref('real_estate.balloting_product').id in plan_products
+                        and primary_interval < self.primary_amount_frequency):
+                    return True
+                return False
+
             i = 0
             total_dates = len(dates) - 1
-            while i <= total_dates:
+            while True:
+                if i > total_dates:
+                    if not _pending_plan_events() or len(dates) >= self.total_installment + 120:
+                        break
+                    dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
+                    total_dates += 1
                 # for rec in dates:
                 # first balloon payment
                 if self.balloon_payment_frequency and not start_balloon_payment:
@@ -690,6 +730,13 @@ class FileExtension(models.Model):
                         installment_number = installment_number + 1
                         i += 1
                 else:
+                    if self.plan_type == 'predefine' and installment_count > expected_installments:
+                        # all regular installment slots are filled; keep the slot
+                        # numbering and dates moving so later balloon/possession
+                        # slots land on their configured positions
+                        installment_number = installment_number + 1
+                        i += 1
+                        continue
                     self.installment_plan_ids.create({
                         # 'date': rec,
                         'date': dates[i],
@@ -724,17 +771,18 @@ class FileExtension(models.Model):
 
             total = sum(self.installment_plan_ids.mapped('amount'))
             if not self.type == 'investor':
+                last_line = self.installment_plan_ids[-1]
                 if total < self.net_sale_amount:
                     price = self.net_sale_amount - total
-                    self.installment_plan_ids.search([])[-1].update({
-                        'amount': self.installment_plan_ids.search([])[-1].amount + price,
-                        'residual': self.installment_plan_ids.search([])[-1].residual + price
+                    last_line.update({
+                        'amount': last_line.amount + price,
+                        'residual': last_line.residual + price
                     })
                 elif total > self.net_sale_amount:
                     price = total - self.net_sale_amount
-                    self.installment_plan_ids.search([])[-1].update({
-                        'amount': self.installment_plan_ids.search([])[-1].amount - price,
-                        'residual': self.installment_plan_ids.search([])[-1].amount - price
+                    last_line.update({
+                        'amount': last_line.amount - price,
+                        'residual': last_line.residual - price
                     })
             self.installment_created = True
         #     Commented Code Ends Here
@@ -744,20 +792,26 @@ class FileExtension(models.Model):
 
     def reset_installment_plan(self):
         if len(self.installment_plan_ids.filtered(
-                lambda l: l.installment_name not in ['Booking', 'Down Payment']).mapped('invoice_id.id')) > 1:
+                lambda l: l.installment_name not in ['Booking', 'Booking Payment']).mapped('invoice_id.id')) > 1:
             raise ValidationError(_('You can not reset plan.Once, invoice created!'))
         else:
             for lines in self.installment_plan_ids:
-                if lines.installment_name in ('Booking', 'Down Payment'):
+                if lines.installment_name in ('Booking', 'Booking Payment'):
                     if lines.payment_status in ('not_paid', 'cancel'):
                         self.installment_plan_ids.unlink()
                         break
-                if lines.installment_name not in ('Booking', 'Down Payment'):
+                if lines.installment_name not in ('Booking', 'Booking Payment'):
                     lines.unlink()
         # self.installment_plan_ids.unlink()
         self.installment_created = False
         # if len(self.installment_plan_ids.mapped('invoice_id').ids) > 1:
         #     raise ValidationError(_('You can not reset plan.Once, invoice created!'))
+
+    def recompute_lps_for_current_file(self):
+        # LPS recompute is not implemented in this branch (midland_invoicing
+        # stubs action_recompute_lps as well); kept as a no-op so issuance
+        # approval and other callers do not crash
+        pass
         # self.installment_plan_ids.unlink()
         # self.installment_created = False
 
@@ -767,7 +821,7 @@ class FileExtension(models.Model):
         if self.no_of_invoices < 1 and self.type == 'normal':
             raise ValidationError("Please generate initial invoice first.")
         if self.payment_states == 'draft':
-            raise ValidationError("Please pay the down payment invoice.")
+            raise ValidationError("Please pay the booking payment invoice.")
         if self.installment_plan_ids:
             for lines in self.installment_plan_ids:
                 if lines.installment_name == 'Confirmation':

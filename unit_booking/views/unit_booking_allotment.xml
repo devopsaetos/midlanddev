@@ -134,7 +134,7 @@
 
                                 <field name="remaining_installments" invisible="1"/>
 
-                                <field name="options" string="Realtor Option" required="1"
+                                <field name="options" string="Deal Option" required="1"
                                        readonly="state != 'draft' or unit_batch_id"/>
                                 <!--                            <field name="reservation_type" required="1"-->
                                 <!--                                   readonly="state != 'draft'"/>-->

@@ -97,32 +97,35 @@ class FileRefund(models.Model):
         if reimbursable_amount <= 0.0:
             raise ValidationError(_('Your paid amount is not refundable'))
 
-        refund_invoice = self.env['account.move'].create({
-            'name': self.file_id.name,
-            # 'file_ids': self.file_id.id,
+        refund_product = self.env.ref('real_estate.refund_product').with_company(self.company_id)
+        deduction_product = self.env.ref('real_estate.deductions').with_company(self.company_id)
+        refund_invoice = self.env['midland.invoice'].create({
+            'member_id': self.membership_id.id,
+            'company_id': self.company_id.id,
             'move_type': 'in_invoice',
-            'company_id': self.env.company.id,
-            'journal_id': self.env.company.knockoff_journal_id.id,
-            'partner_id': self.membership_id.partner_id.id,
+            'file_ids': self.file_id.id,
             'invoice_date': fields.Date.today(),
-            'invoice_date_due': fields.Date.today(),
             'invoice_line_ids': [
                 (0, 0, {
-                    'product_id': self.env.ref('real_estate.refund_product').product_id.id,
-                    'name': self.env.ref('real_estate.refund_product').name,
-                    'account_id': self.env.ref('real_estate.refund_product').product_id.property_account_expense_id.id,
-                    'price_unit': amount_paid
+                    'product_id': refund_product.id,
+                    'name': refund_product.name,
+                    'account_id': refund_product.product_id.with_company(self.company_id).property_account_expense_id.id,
+                    'quantity': 1.0,
+                    'price_unit': amount_paid,
                 }),
                 (0, 0, {
-                    'product_id': self.env.ref('real_estate.deductions').product_id.id,
-                    'name': self.env.ref('real_estate.deductions').name,
-                    # 'account_id': self.env.ref('real_estate.deductions').property_account_expense_id.id,
-                    'price_unit': (deduction_amount + processing_fee) * -1
-                })
+                    'product_id': deduction_product.id,
+                    'name': deduction_product.name,
+                    'account_id': deduction_product.product_id.with_company(self.company_id).property_account_expense_id.id,
+                    'quantity': 1.0,
+                    'price_unit': (deduction_amount + processing_fee) * -1,
+                }),
             ]
         })
-        refund_invoice.file_ids = self.file_id.id
-        refund_invoice.action_post()
+        # This must be a real payable JV (not just a lightweight midland.invoice record) -
+        # it's the vendor bill the accountant will actually pay out to the member from the
+        # bank/cash journal, regardless of the global "Create Entry for Invoices" setting.
+        refund_invoice.with_context(force_journal_entry=True).action_post()
         self.state = 'refund'
         self.file_id.state = 'refund'
         self.file_id.file_status = 'cancel'

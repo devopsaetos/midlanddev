@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="maintenance_summary_report_wizard_view_form" model="ir.ui.view">
+            <field name="name">maintenance.summary.report.wizard.view.form</field>
+            <field name="model">maintenance.summary.report.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Report Wizard">
+                    <group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                        <group>
+                            <field name="product_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                            <field name="unit_class_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="generate_report" string="Generate Report" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_summary_report_wizard_action" model="ir.actions.act_window">
+            <field name="name">Maintenance Summary Report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">maintenance.summary.report.wizard</field>
+            <field name="view_id" ref="maintenance_summary_report.maintenance_summary_report_wizard_view_form"/>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+<!--        <menuitem-->
+<!--                name="Reports"-->
+<!--                id="maintenance_reports_main_menu"-->
+<!--                parent="maintenance_charges.maintenance_charges_main_menu"-->
+<!--                sequence="6"-->
+<!--        />-->
+
+        <menuitem
+                name="Maintenance Summary Report"
+                id="maintenance_summary_report_wizard_menu"
+                parent="maintenance_collection_report.menu_maintenance_charges_report_root"
+                action="maintenance_summary_report_wizard_action"
+                sequence="2"
+        />
+    </data>
+</odoo>

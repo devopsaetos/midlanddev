@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="maintenance_ext.tools_allocation_view_form" model="ir.ui.view">
+            <field name="name">maintenance_ext form_view</field>
+            <field name="model">tools.allocation</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="on_issued"
+                                        string="Issued"
+                                        type="object"
+                                        class="btn-primary"
+                                        invisible="state in ('issued', 'returned')"
+                                />
+                        <button name="on_return"
+                                        string="Returned"
+                                        type="object"
+                                        class="btn-primary"
+                                        invisible="state in ('draft', 'returned')"
+                                />
+                        <field name="state" invisible="0" readonly="1" widget="statusbar" statusbar_visible="draft,issued,returned"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_state_size">
+                            <h1><field name="name"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="maintenance_request_id"/>
+                                <field name="asset_id" string="Assets" readonly="is_issued"/>
+                                <field name="employee_id" string="To Employee"/>
+                                <field name="state" invisible="1"/>
+                                <field name="is_issued" invisible="1"/>
+                                <field name="is_returned" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="to_location"/>
+                                <field name="issue_date" readonly="is_issued"/>
+                                <field name="return_date" readonly="is_returned"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_ext.tools_allocation_tree" model="ir.ui.view">
+            <field name="name">maintenance_ext tools_allocation_tree</field>
+            <field name="model">tools.allocation</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="asset_id"/>
+                    <field name="employee_id"/>
+                    <field name="to_location"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="maintenance_ext.tools_allocation_action_window" model="ir.actions.act_window">
+            <field name="name">Tools Allocation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">tools.allocation</field>
+<!--            <field name="view_type">form</field>-->
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click here to add Tools Allocation.
+                </p>
+            </field>
+        </record>
+
+        <menuitem
+                name="Tools Allocation"
+                id="maintenance_ext.tools_allocation_menu"
+                parent="stock.menu_stock_inventory_control"
+                action="maintenance_ext.tools_allocation_action_window"
+                sequence="2"
+        />
+
+    </data>
+</odoo>

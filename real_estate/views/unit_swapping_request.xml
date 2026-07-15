@@ -222,10 +222,13 @@
                                        readonly="is_transferee_partner == True"/>
                                 <field name="transferee_gender"
                                        readonly="is_transferee_partner == True"/>
+                                <field name="transferee_tax_status"
+                                       force_save="1"
+                                       readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
                             </group>
                             <group>
                                 <field name="transferee_relation_name" string="Father/Spouse "
-                                       readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                       readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
                             </group>
                             <group name='primary_address' string="Primary Address">
                                 <!-- All address fields are Inherited field except city_id -->
@@ -236,13 +239,13 @@
                                             placeholder="Street..."
                                             class="o_address_street"
                                             required='0'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_street2"
                                             placeholder="Street 2..."
                                             class="o_address_street"
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_city_id"
@@ -250,7 +253,7 @@
                                             class="o_address_city"
                                             required='0'
                                             options='{"no_open": True}'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_state_id"
@@ -258,20 +261,20 @@
                                             class="o_address_state"
                                             placeholder="State"
                                             options='{"no_open": True}'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_zip"
                                             placeholder="ZIP"
                                             class="o_address_zip"
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
 
                                     <field
                                             name="transferee_country_id"
                                             placeholder="Country"
                                             class="o_address_country"
                                             options='{"no_open": True, "no_create": True}'
-                                            readonly="(state != 'draft' or is_transferee_partner == True)"/>
+                                            readonly="(state in ('approve', 'cancel') or is_transferee_partner == True)"/>
                                 </div>
                             </group>
                             <group name='secondary_address' string="Secondary Address">
@@ -323,7 +326,7 @@
                                        invisible="kin_member_relation != 'other'" required="kin_member_relation == 'other'"/>
                             </group>
                         </group>
-                        <group name="investment_details" string="Realtor Details"
+                        <group name="investment_details" string="Deal Details"
                                invisible="applicable_on != 'investment'">
                             <group>
                                 <field name="investment_id" readonly="1"/>
@@ -417,6 +420,31 @@
             </field>
         </record>
 
+        <record id="unit_swapping_request_search" model="ir.ui.view">
+            <field name="name">real_estate unit_swapping_request_search</field>
+            <field name="model">unit.swapping.request</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="membership_id"/>
+                    <field name="society_id"/>
+                    <field name="phase_id"/>
+                    <field name="transaction_type"/>
+                    <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                    <filter name="in_process" string="In Process" domain="[('state','=','in_process')]"/>
+                    <filter name="approved" string="Approved" domain="[('state','=','approve')]"/>
+                    <filter name="cancelled" string="Cancelled" domain="[('state','=','cancel')]"/>
+                    <separator/>
+                    <filter name="open_file" string="File Issuance" domain="[('transaction_type','=','open_file')]"/>
+                    <group colspan="16">
+                        <filter name="group_by_state" string="Status" context="{'group_by':'state'}"/>
+                        <filter name="group_by_society" string="Society" context="{'group_by':'society_id'}"/>
+                        <filter name="group_by_transaction_type" string="Transaction Type" context="{'group_by':'transaction_type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <record id="real_estate.unit_swapping_request_tree" model="ir.ui.view">
             <field name="name">real_estate unit_swapping_request_tree</field>
             <field name="model">unit.swapping.request</field>
@@ -445,7 +473,7 @@
                 ]
             </field>
             <field name="view_mode">list,form</field>
-            <!--            <field name="view_id" ref="real_estate.file_search_form"/>-->
+            <field name="search_view_id" ref="unit_swapping_request_search"/>
             <field name="context">{'current_view': 'realestate'}</field>
         </record>
 
@@ -464,6 +492,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="domain">[('transaction_type','=','open_file'),('applicable_on','=','investment')]</field>
             <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="unit_swapping_request_search"/>
             <field name="context">{'current_view': 'realestate'}</field>
         </record>
 

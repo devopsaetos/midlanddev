@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="maintenance_collection_report.maintenance_collection_report_wizard">
+            <field name="name">maintenance_collection maintenance_collection_report_wizard</field>
+            <field name="model">maintenance.collection.report</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <!--                                <field name="investor_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>-->
+                                <field name="category_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                                <!--                                <field name="society_id" options="{'no_create': True, 'no_open': True}"/>-->
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="company_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <!--                                <field name="investment_id" options="{'no_create': True, 'no_open': True}"/>-->
+                                <field name="unit_category_type_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sector_id" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="invoice_type"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Print" name="print" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="maintenance_collection_report.action_maintenance_collection_report_wizard">
+            <field name="name">Maintenance Collection Report</field>
+            <field name="res_model">maintenance.collection.report</field>
+
+            <field name="view_mode">form</field>
+            <field name="context">{'current_view': 'maintenance_collection'}</field>
+            <field name="target">new</field>
+        </record>
+        <menuitem
+                name="Reports"
+                id="menu_maintenance_charges_report_root"
+                parent="maintenance_charges.maintenance_charges_main_menu"
+        />
+        <menuitem
+                name="Maintenance Collection Report"
+                id="maintenance_collection_report"
+                parent="maintenance_collection_report.menu_maintenance_charges_report_root"
+                action="maintenance_collection_report.action_maintenance_collection_report_wizard"
+                sequence="1"
+        />
+    </data>
+</odoo>

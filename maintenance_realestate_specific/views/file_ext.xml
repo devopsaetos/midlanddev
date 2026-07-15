@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="maintenance_realestate_specific.view_file_extension_form">
+            <field name="name">maintenance_realestate_specific view_file_extension_form</field>
+            <field name="model">file</field>
+            <field name="inherit_id" ref="real_estate.file_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='exemption']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="/form/sheet/notebook/page[3]" position="inside">
+                    <group name="maintenance_exemption_history" string="Maintenance Exemption History">
+                        <field name="maintenance_exemption_history_ids" nolabel="1" readonly="1">
+                            <list create="false" delete="false" duplicate="false" edit="false">
+                                <field name="maintenance_exemption_id" string="Exemption No."/>
+                                <field name="maintenance_exemption_batch_id" column_invisible="True"/>
+                                <field name="product_id"/>
+                                <field name="exemption_type"/>
+                                <field name="exemption_nature"/>
+                                <field name="exemption_percent"/>
+                                <field name="exemption_amount"/>
+                                <field name="from_date"/>
+                                <field name="to_date"/>
+                                <field name="exemption_state"/>
+                            </list>
+                        </field>
+                    </group>
+
+                    <group name="exemption_withdrawal_history" string="Exemption Withdrawal History">
+                        <field name="exemption_withdrawal_history_ids" nolabel="1" readonly="1">
+                            <list create="false" delete="false" duplicate="false" edit="false">
+                                <field name="maintenance_exemption_withdrawal_id" string="Exemption Withdrawal No."/>
+                                <field name="withdrawal_batch_id" column_invisible="True"/>
+                                <field name="product_id"/>
+                                <field name="from_date"/>
+                                <field name="to_date"/>
+                            </list>
+                        </field>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

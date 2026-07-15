@@ -1,0 +1,86 @@
+<odoo>
+    <record id="search_record_form_housing_society" model="ir.ui.view">
+        <field name="name">maintenance_realestate_specific search_record_wizard_form_housing_society</field>
+        <field name="model">search.record</field>
+        <field name="arch" type="xml">
+            <form string="Search Record">
+                <header>
+                    <button name="search_record" type="object" string="Search" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="contact_number"/>
+                        </group>
+                        <group>
+                            <field name="project_type"/>
+                            <field name="partner_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <form>
+                        <field name="search_record_line_ids"
+                               invisible="not project_type">
+                            <list editable="bottom">
+                                <field name="search_record_id" column_invisible="True"/>
+                                <field name="is_selected"/>
+                                <field name="project_type"/>
+                                <field name="file_id" string="File" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="society_id" string="Society" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="phase_id" string="Phase" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sector_id" string="Sector" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="inventory_id" string="Unit No" options="{'no_create': True, 'no_open': True}"/>
+                            </list>
+                        </field>
+                    </form>
+                </sheet>
+                <footer>
+                    <button name="assign_record" string="Assign" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="search_record_form_skyscraper" model="ir.ui.view">
+        <field name="name">maintenance_realestate_specific search_record_wizard_form_skyscraper</field>
+        <field name="model">search.record</field>
+        <field name="priority">2</field>
+        <field name="arch" type="xml">
+            <form string="Search Record">
+                <header>
+                    <button name="search_record" type="object" string="Search" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="contact_number"/>
+                        </group>
+                        <group>
+                            <field name="project_type"/>
+                            <field name="partner_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                    </group>
+                    <form>
+                        <field name="search_record_line_ids"
+                               invisible="not project_type">
+                            <list editable="bottom">
+                                <field name="search_record_id" column_invisible="True"/>
+                                <field name="is_selected"/>
+                                <field name="project_type"/>
+                                <field name="file_id" string="File" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="society_id" string="Project" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="phase_id" string="Building" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="sector_id" string="Floor" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="inventory_id" string="Office No" options="{'no_create': True, 'no_open': True}"/>
+                            </list>
+                        </field>
+                    </form>
+                </sheet>
+                <footer>
+                    <button name="assign_record" string="Assign" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

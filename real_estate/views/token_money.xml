@@ -101,12 +101,16 @@
                             <field name="token_generated" invisible="1"/>
                             <field name="plan_locked" invisible="1"/>
                             <field name="open_file_amount_received" invisible="1"/>
+                            <field name="party_type" readonly="token_generated == True"/>
+                            <field name="investor_id" invisible="party_type != 'investor'"
+                                   required="party_type == 'investor'" readonly="token_generated == True"
+                                   options="{'no_create': True}"/>
 <!--                            <field name="is_existing"-->
 <!--                                   readonly="(token_generated == True or token_generated == True)"/>-->
-                            <field name="is_existing"/>
-                            <field name="change_member"/>
+                            <field name="is_existing" invisible="party_type == 'investor'"/>
+                            <field name="change_member" invisible="party_type == 'investor'"/>
                             <field name="create_open_file" invisible="state != 'draft'"/>
-                            <field name="contact_name" invisible="is_existing == True" required="is_existing != True" readonly="token_generated == True"/>
+                            <field name="contact_name" invisible="is_existing == True or party_type == 'investor'" required="is_existing != True and party_type != 'investor'" readonly="token_generated == True"/>
                             <field name="name" invisible="1"/>
 <!--                            <field name="partner_id" domain="[('project_type','=','housing_society'),('is_member','=',True)]" invisible="is_existing != True" required="is_existing == True" readonly="token_generated == True"-->
 <!--                                   options="{'no_create': True, 'no_open': True}"/>-->
@@ -115,21 +119,22 @@
                             <!--                            />-->
 
                             <field name="company_type" string="Member Type"
+                                   invisible="party_type == 'investor'"
                             />
 
                             <!--                            <field name="phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'"-->
                             <!--                                   readonly="(token_generated == True or is_existing == True)" invisible="company_type != 'person'" required="company_type == 'person'"/>-->
                             <field name="phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'"
-                                   invisible="company_type != 'person'"/>
+                                   invisible="company_type != 'person' or party_type == 'investor'"/>
                             <!--                            <field name="cp_phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'" string="Phone No"-->
                             <!--                                   readonly="(token_generated == True or is_existing == True)" invisible="company_type == 'person'" required="company_type != 'person'"/>-->
                             <field name="cp_phone_no" widget="mask" data-inputmask="'mask': '+99-999-9999999'"
                                    string="Phone No"
-                                   invisible="company_type == 'person'"/>
+                                   invisible="company_type == 'person' or party_type == 'investor'"/>
 
                             <field name="cnic" widget="mask" data-inputmask="'mask': '99999-9999999-9'"
-                                   readonly="token_generated == True" invisible="company_type != 'person'" required="company_type == 'person'"/>
-                            <field name="email" readonly="token_generated == True"/>
+                                   readonly="token_generated == True" invisible="company_type != 'person' or party_type == 'investor'" required="company_type == 'person' and party_type != 'investor'"/>
+                            <field name="email" readonly="token_generated == True" invisible="party_type == 'investor'"/>
                         </group>
                         <group>
                             <field name="token_fees" readonly="token_generated == True"/>
@@ -257,6 +262,35 @@
             sequence="4"
             parent="real_estate.menu_fms"
     />
+
+    <!-- Investor Token -->
+    <record id="real_estate.investor_token_money_tree" model="ir.ui.view">
+        <field name="name">investor.token.fee.tree</field>
+        <field name="model">token.money</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="serial_number"/>
+                <field name="investor_id"/>
+                <field name="society_id"/>
+                <field name="token_fees"/>
+                <field name="date" string="Valid Upto"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="real_estate.investor_token_action">
+        <field name="name">Investor Token</field>
+        <field name="res_model">token.money</field>
+        <field name="domain">[('party_type','=','investor')]</field>
+        <field name="context">{'default_party_type': 'investor', 'current_view': 'realestate'}</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('real_estate.investor_token_money_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('real_estate.validate_token_form')}),
+                ]"
+        />
+    </record>
     <!--    Record Rule for Multi Company-->
         <record id="real_estate.token_money_rule" model="ir.rule">
             <field name="name">token_money multi-company</field>

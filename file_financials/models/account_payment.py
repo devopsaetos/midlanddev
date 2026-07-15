@@ -300,7 +300,7 @@ class AccountPaymentExt(models.Model):
                                         'partner_id': rec.file_id.investment_id.partner_id.id,
                                         'payment_type': rec.payment_type,
                                         'partner_type': rec.partner_type,
-                                        'payment_date': rec.payment_date,
+                                        'date': rec.date,
                                         'currency_id': rec.currency_id.id,
                                         'cheque_name': rec.cheque_name,
                                         'cheque_no': rec.cheque_no,
@@ -319,7 +319,7 @@ class AccountPaymentExt(models.Model):
                                     'partner_id': rec.file_id.investment_id.partner_id.id,
                                     'payment_type': rec.payment_type,
                                     'partner_type': rec.partner_type,
-                                    'payment_date': rec.payment_date,
+                                    'date': rec.date,
                                     'currency_id': rec.currency_id.id,
                                     'cheque_name': rec.cheque_name,
                                     'cheque_no': rec.cheque_no,
@@ -335,7 +335,7 @@ class AccountPaymentExt(models.Model):
                         if lines.invoice_id.investment_id:
                             investment_history = lines.invoice_id.investment_id.investment_history_ids[0]
                             investment_history.payment_received = investment_history.payment_received + lines.payment_amount
-                            investment_history.payment_date = rec.payment_date
+                            investment_history.payment_date = rec.date
                             if lines.invoice_id.investment_id.options == 'full':
                                 lines.invoice_id.investment_id.amount_paid = lines.invoice_id.investment_id.amount_paid + lines.payment_amount
                         if lines.invoice_id.token_id and lines.invoice_id.payment_state == 'paid':
@@ -406,7 +406,7 @@ class AccountPaymentExt(models.Model):
                             # 'currency_id': payment.currency_id,
                             'debit': payment.discount_amount or 0.0,
                             'credit': 0.0,
-                            'date_maturity': payment.payment_date,
+                            'date_maturity': payment.date,
                             # 'partner_id': payment.partner_id.commercial_partner_id.id,
                             'account_id': self.env.company.discount_allowed_account_id.id,
                             'payment_id': payment.id,
@@ -429,7 +429,7 @@ class AccountPaymentExt(models.Model):
             move_names = payment.move_name.split(
                 payment._get_move_name_transfer_separator()) if payment.move_name else None
             move_vals = {
-                'date': payment.payment_date,
+                'date': payment.date,
                 'ref': payment.communication,
                 'journal_id': payment.journal_id.id,
                 'currency_id': payment.journal_id.currency_id.id or payment.company_id.currency_id.id,
@@ -467,9 +467,9 @@ class AccountPaymentExt(models.Model):
                 else:
                     # Multi-currencies.
                     balance = payment.currency_id._convert(counterpart_amount, company_currency, payment.company_id,
-                                                           payment.payment_date)
+                                                           payment.date)
                     write_off_balance = payment.currency_id._convert(write_off_amount, company_currency,
-                                                                     payment.company_id, payment.payment_date)
+                                                                     payment.company_id, payment.date)
                     currency_id = payment.currency_id.id
 
                 # Manage custom currency on journal for liquidity line.
@@ -481,7 +481,7 @@ class AccountPaymentExt(models.Model):
                     else:
                         liquidity_line_currency_id = payment.journal_id.currency_id.id
                     liquidity_amount = company_currency._convert(
-                        balance, payment.journal_id.currency_id, payment.company_id, payment.payment_date)
+                        balance, payment.journal_id.currency_id, payment.company_id, payment.date)
                 else:
                     # Use the payment currency.
                     liquidity_line_currency_id = currency_id
@@ -519,7 +519,7 @@ class AccountPaymentExt(models.Model):
                         'currency_id': currency_id,
                         'debit': balance + write_off_balance - invoice.discount_amount > 0.0 and balance + write_off_balance - invoice.discount_amount or 0.0,
                         'credit': balance + write_off_balance - invoice.discount_amount < 0.0 and -balance - write_off_balance + invoice.discount_amount or 0.0,
-                        'date_maturity': payment.payment_date,
+                        'date_maturity': payment.date,
                         'partner_id': payment.partner_id.commercial_partner_id.id,
                         'account_id': payment.destination_account_id.id,
                         'payment_id': payment.id,
@@ -535,7 +535,7 @@ class AccountPaymentExt(models.Model):
                         'currency_id': liquidity_line_currency_id,
                         'debit': balance < 0.0 and -balance or 0.0,
                         'credit': balance > 0.0 and balance or 0.0,
-                        'date_maturity': payment.payment_date,
+                        'date_maturity': payment.date,
                         'partner_id': payment.partner_id.commercial_partner_id.id,
                         'account_id': liquidity_line_account.id,
                         'payment_id': payment.id,
@@ -558,7 +558,7 @@ class AccountPaymentExt(models.Model):
                         'currency_id': currency_id,
                         'debit': invoice.discount_amount if payment.payment_type == 'inbound' else 0.0,
                         'credit': invoice.discount_amount * -1 if payment.payment_type == 'outbound' else 0.0,
-                        'date_maturity': payment.payment_date,
+                        'date_maturity': payment.date,
                         'partner_id': payment.partner_id.commercial_partner_id.id,
                         'account_id': self.env.company.discount_allowed_account_id.id if payment.payment_type == 'inbound' else self.env.company.discount_earned_account_id.id,
                         'payment_id': payment.id,
@@ -583,7 +583,7 @@ class AccountPaymentExt(models.Model):
                         'currency_id': currency_id,
                         'debit': write_off_balance < 0.0 and -write_off_balance or 0.0,
                         'credit': write_off_balance > 0.0 and write_off_balance or 0.0,
-                        'date_maturity': payment.payment_date,
+                        'date_maturity': payment.date,
                         'partner_id': payment.partner_id.commercial_partner_id.id,
                         'account_id': invoice.writeoff_account_id.id,
                         'payment_id': payment.id,
@@ -797,7 +797,7 @@ class AccountPaymentExt(models.Model):
                     balance = abs(line.balance)
                     currency = line.currency_id or currency_company
                     currency_invoice = record.currency_id
-                    payment_date = line.payment_id.payment_date
+                    payment_date = line.payment_id.date
 
                     if currency_company != currency_invoice:
                         advance_payment_residual = currency_invoice.with_context(date=payment_date) \

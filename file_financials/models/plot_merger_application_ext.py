@@ -12,7 +12,6 @@ class PlotMergerApplicationExt(models.Model):
         default="no", required=False, track_visility='always')
     merger_date = fields.Datetime(string='Merger Date', track_visility='always')
     merger_fee = fields.Float(string='Merger Fee', compute='_compute_merger_fee', store=True)
-    merger_fee_invoice_id = fields.Many2one('account.move', string='Account Move', track_visility='always')
     invoice_create = fields.Boolean(string='Invoice Created ?', default=False, track_visility='always')
     appointment_date = fields.Date(string='Application Date')
     membership_merge_to_id = fields.Many2one('res.member', string='Merger Member To')
@@ -24,9 +23,9 @@ class PlotMergerApplicationExt(models.Model):
         required=False, )
     total_adjusted_amount = fields.Float(compute='_total_adjusted_amount', store=True)
 
-    # credit_note_id = fields.Many2many('account.move', string='Credit Note')
-    # journal_entry_id = fields.Many2many('account.move', string='Journal Entry')
-    credit_note_id = fields.Many2many('account.move', 'credit_note_move_rel', 'credit_note_id', 'move_id', string='Credit Notes')
+    # credit_note_id comodel is overridden to 'midland.invoice' in
+    # midland_invoicing/models/plot_merger_application_ext.py (see file_merger_application.py
+    # in real_estate for why it can't be declared with that comodel here).
     journal_entry_id = fields.Many2many('account.move', 'journal_entry_move_rel', 'journal_entry_id', 'move_id', string='Journal Entry')
     notes = fields.Text(string='Internal Notes')
     manual_adjusted = fields.Boolean(string='Manually Adjusted', default=False)
@@ -39,7 +38,7 @@ class PlotMergerApplicationExt(models.Model):
         for rec in self:
             rec.merger_status = 'approve'
 
-    @api.depends('target_merger_id')
+    @api.depends('target_merger_id.amount_adjusted')
     def _total_adjusted_amount(self):
         for rec in self:
             rec.total_adjusted_amount = 0.0
@@ -55,7 +54,7 @@ class PlotMergerApplicationExt(models.Model):
             length_of_file = len(rec.target_merger_id.file_id)
             rec.length_of_files = length_of_file
 
-    @api.depends('source_merger_id')
+    @api.depends('source_merger_id.file_merger_fee')
     def _compute_merger_fee(self):
         for rec in self:
             rec.merger_fee = 0.0
@@ -75,30 +74,28 @@ class PlotMergerApplicationExt(models.Model):
         if self.waive_merger_application == 'yes':
             raise ValidationError('You Cannot Create Invoice if Waive Is Yes')
         else:
-            merger_fee_product = self.env.ref('real_estate.file_transfer')
+            merger_fee_product = self.env.ref('real_estate.file_transfer').with_company(self.company_id)
             if not merger_fee_product:
                 raise ValidationError('Product "Merger Fee" not found.')
-            merger_invoice = self.env['account.move'].sudo().create({
+            merger_invoice = self.env['midland.invoice'].sudo().create({
                 'move_type': 'out_invoice',
                 'property_invoice_type': 'merger_fee',
-                # 'branch_id': self.env.branch.id,
-                'company_id': self.env.company.id,
-                'partner_id': self.membership_id.id,
+                'company_id': self.company_id.id,
+                'member_id': self.membership_id.id,
+                'merger_application_id': self.id,
+                'file_ids': self.target_merger_id[0].file_id.id if self.target_merger_id else False,
                 'invoice_date': fields.Date.today(),
-                'invoice_date_due': fields.Date.today(),
                 'invoice_line_ids': [
                     (0, 0, {
                         'product_id': merger_fee_product.id,
                         'name': merger_fee_product.name,
-                        'account_id': merger_fee_product.product_id.property_account_income_id.id,
+                        'account_id': merger_fee_product.property_account_income_id.id,
                         'price_unit': self.merger_fee
                     })
                 ]
             })
             merger_invoice.action_post()
             if merger_invoice:
-                self.merger_fee_invoice_id.file_ids = self.target_merger_id[
-                    0].file_id.id if self.target_merger_id else None
                 self.merger_fee_invoice_id = merger_invoice.id
                 self.invoice_create = True
                 return {
@@ -106,7 +103,7 @@ class PlotMergerApplicationExt(models.Model):
                     'name': 'Merger Fee Invoice',
                     'view_mode': 'form',
                     'target': 'current',
-                    'res_model': 'account.move',
+                    'res_model': 'midland.invoice',
                     'res_id': self.merger_fee_invoice_id.id,
                     'domain': [('id', '=', self.merger_fee_invoice_id.id)]
                 }
@@ -117,7 +114,7 @@ class PlotMergerApplicationExt(models.Model):
             'name': 'Merger Fee Invoice',
             'view_mode': 'form',
             'target': 'current',
-            'res_model': 'account.move',
+            'res_model': 'midland.invoice',
             'res_id': self.merger_fee_invoice_id.id,
             'domain': [('id', '=', self.merger_fee_invoice_id.id)]
         }
@@ -129,7 +126,7 @@ class PlotMergerApplicationExt(models.Model):
                 'name': 'Credit Note',
                 'view_mode': 'list,form',
                 'target': 'current',
-                'res_model': 'account.move',
+                'res_model': 'midland.invoice',
                 'domain': [('id', 'in', self.credit_note_id.ids)]
             }
 

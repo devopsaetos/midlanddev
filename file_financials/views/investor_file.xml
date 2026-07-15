@@ -75,7 +75,7 @@
                             invisible="state != 'open' or not installment_created"
                     />
                     <field name="installment_plan_ids" nolabel="1" force_save="1" readonly="1">
-                        <list editable="bottom" decoration-info="invoice_created == True" limit="80">
+                        <list editable="bottom" decoration-info="invoice_created == True" limit="500">
                             <field name="price_revised" invisible="1" force_save="1"/>
                             <field name="file_type" invisible="1"/>
                             <field name="double_check_paid_amount" invisible="1"/>
@@ -297,6 +297,18 @@
                         </group>
                     </sheet>
                 </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="investor_file_search_view_ext">
+            <field name="name">investor_file_search_view_ext</field>
+            <field name="model">investor.file</field>
+            <field name="inherit_id" ref="real_estate.investor_file_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='cancel']" position="after">
+                    <separator/>
+                    <filter name="issuance_request_created" string="Issuance Request Created"
+                            domain="[('issuance_request_created','=', True)]"/>
+                </xpath>
             </field>
         </record>
         <record model="ir.actions.act_window" id="file_financials.action_installment_plan_lines">

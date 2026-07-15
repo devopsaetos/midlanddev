@@ -34,6 +34,7 @@ class Investment(models.Model):
         ('housing_society', 'Housing Society'),
     ])
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company, tracking=True)
+    token_id = fields.Many2one('token.money', string='Token', copy=False, tracking=True)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('reserved', 'Reserved'),
@@ -273,6 +274,27 @@ class Investment(models.Model):
                 vals['sequence_no'] = self.env['ir.sequence'].next_by_code('investment.sequence') or _('New')
         result = super(Investment, self).create(vals_list)
         return result
+
+    def generate_token(self):
+        self.ensure_one()
+        if not self.token_id:
+            if not self.partner_id:
+                raise UserError(_('Please select an Investor first.'))
+            if not self.society_id:
+                raise UserError(_('Please select a Society first.'))
+            self.token_id = self.env['token.money'].create({
+                'party_type': 'investor',
+                'investor_id': self.partner_id.id,
+                'society_id': self.society_id.id,
+                'date': fields.Date.today(),
+            }).id
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'token.money',
+            'view_mode': 'form',
+            'res_id': self.token_id.id,
+            'target': 'current',
+        }
 
     def reserve_inventory(self):
         for rec in self:
@@ -1462,6 +1484,7 @@ class InvestmentLine(models.Model):
     category_id = fields.Many2one('plot.category', 'Category', store=True, related="inventory_id.category_id",
                                   readonly=False)
     inventory_id = fields.Many2one('plot.inventory')
+    token_id = fields.Many2one('token.money', string='Token', store=True, related='inventory_id.token_id', readonly=True)
     no_of_units = fields.Integer('No. of Units', default=1)
     list_price = fields.Float(store=True, compute='_sale_amount')
     price_list_id = fields.Many2one('price.list', compute='_price_list', store=True, readonly=False)
@@ -1629,7 +1652,7 @@ class InvestmentPlan(models.Model):
                     ('invoice_ids.name', '=', rec.invoice_id.name)
                 ], limit=1, order='id desc')
 
-                rec.payment_date = dateutil.parser.parse(str(date.payment_date)) if date else ''
+                rec.payment_date = dateutil.parser.parse(str(date.date)) if date else ''
             else:
                 rec.payment_date = ''
 

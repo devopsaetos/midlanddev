@@ -37,6 +37,10 @@
                                     <label for="account_journal_id" string="Journal" class="col-md-3 o_light_label"/>
                                     <field name="account_journal_id" options="{'no_create': True}"/>
                                 </div>
+                                <div class="row mt16">
+                                    <label for="merger_advance_account_id" string="Merger Advance Account" class="col-md-3 o_light_label"/>
+                                    <field name="merger_advance_account_id" options="{'no_create': True}"/>
+                                </div>
                             </div>
                         </setting>
                         <setting>

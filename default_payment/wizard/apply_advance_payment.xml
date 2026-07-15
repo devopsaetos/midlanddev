@@ -67,7 +67,7 @@
                         </div>
                         <group>
                             <group>
-                                <field name="journal_id" domain="[('company_id', '=', company_id)]"/>
+                                <field name="journal_id" domain="[('company_id', '=', company_id), ('type', 'in', ['bank', 'cash'])]"/>
                                 <field name="date" />
                                 <field name="invoice_residual"/>
                                 <field name="advance_payment_total"/>

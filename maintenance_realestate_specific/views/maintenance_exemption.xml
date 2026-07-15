@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="maintenance_exemption_view_form" model="ir.ui.view">
+            <field name="name">maintenance_realestate_specific maintenance_exemption_view_form</field>
+            <field name="model">maintenance.exemption</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                        <button class="btn btn-primary" name="button_submit" type="object" string="Submit To Approve" invisible="state != 'draft'" groups="maintenance_recovery_batch.officer_group_id"/>
+                        <button class="btn btn-primary" name="button_approve" type="object" string="Approve" invisible="state != 'submit_approve'" groups="maintenance_recovery_batch.manager_group_id"/>
+                        <button class="btn btn-primary" name="button_cancel" type="object" string="Cancel" invisible="state != 'submit_approve'" groups="maintenance_recovery_batch.manager_group_id"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="exemption_batch_no" required="1" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="product_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+                        </group>
+                        <notebook colspan="4">
+                            <page name="maintenance_exemption_lines" string="Lines">
+                                <field name="exemption_line_ids">
+                                    <list editable="bottom" delete="true">
+                                        <field name="exemption_no" readonly="1"/>
+                                        <field name="file_id" optional="hide" column_invisible="True" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="inventory_id" required="1" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="unit_category_type_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="society_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="phase_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="sector_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="street_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="category_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="size_id" optional="hide" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="exemption_type" required="1"/>
+                                        <field name="exemption_nature"
+                                               readonly="exemption_type == 'percentage'" required="exemption_type != 'percentage'"/>
+                                        <field name="exemption_percent" string="Percentage"
+                                               readonly="exemption_type == 'fixed_amount'" required="exemption_type == 'percentage'"/>
+                                        <field name="exemption_amount"
+                                               readonly="exemption_type == 'percentage' or exemption_nature == 'full'" required="exemption_nature != 'full'"
+                                               string="Fixed Amount"/>
+                                        <field name="from_date"/>
+                                        <field name="to_date"/>
+                                        <field name="exemption_state"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_exemption_view_tree" model="ir.ui.view">
+            <field name="name">maintenance_realestate_specific maintenance_exemption_view_tree</field>
+            <field name="model">maintenance.exemption</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="exemption_batch_no"/>
+                    <field name="product_id" options="{'no_create': True, 'no_open': True}"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="maintenance_realestate_specific.action_maintenance_exemption">
+            <field name="name">Maintenance Exemption</field>
+            <field name="res_model">maintenance.exemption</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+                id="maintenance_realestate_specific.maintenance_exemption_parent_menu"
+                name="Exemption/Withdrawal"
+                parent="maintenance_charges.maintenance_charges_main_menu"
+                sequence='2'
+        />
+
+        <menuitem
+                id="maintenance_realestate_specific.maintenance_exemption_menu"
+                name="Maintenance Exemption"
+                parent="maintenance_realestate_specific.maintenance_exemption_parent_menu"
+                action="maintenance_realestate_specific.action_maintenance_exemption"
+                sequence='1'
+        />
+    </data>
+</odoo>

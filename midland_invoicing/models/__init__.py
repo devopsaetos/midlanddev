@@ -7,3 +7,4 @@ from . import file_ext
 from . import investment_ext
 from . import file_payment_view_ext
 from . import file_installment_payment_ext
+from . import plot_merger_application_ext

@@ -221,7 +221,7 @@
                                        readonly="is_transferee_partner == True"/>
                             </group>
                         </group>
-                        <group name="investment_details" string="Realtor Details"
+                        <group name="investment_details" string="Deal Details"
                                invisible="applicable_on != 'investment'">
                             <group>
                                 <field name="investment_id" readonly="1"/>
@@ -295,6 +295,7 @@
             (0, 0, {'view_mode': 'form', 'view_id': ref('land_development.unit_swapping_request_form')}),
             ]"
             />
+            <field name="search_view_id" ref="real_estate.unit_swapping_request_search"/>
             <field name="context">{'current_view': 'buildings'}</field>
         </record>
 

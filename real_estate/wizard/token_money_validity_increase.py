@@ -17,6 +17,6 @@ class ValidityIncrease(models.TransientModel):
             if self.current_date < self.valid_up_to_date and self.valid_up_to_date >= fields.Date.today():
                 token.date = self.valid_up_to_date
                 token.validity_expire = False
-                token.token_line_ids[0].inventory_id.state = 'reserved'
+                token.token_line_ids[0].inventory_id.state = 'investor' if token.party_type == 'investor' else 'reserved'
             else:
                 raise ValidationError(_('Valid Up To Date Passed, Select Up Coming Date'))

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="sequence_daily_maintenance_line" model="ir.sequence">
+        <field name="name">Daily Maintenance Line Sequence</field>
+        <field name="code">daily.maintenance.line</field>
+        <field name="prefix"></field>
+        <field name="padding">0</field>
+    </record>
+
+</odoo>

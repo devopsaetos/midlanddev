@@ -38,6 +38,7 @@ class File(models.Model):
         ('lock', 'Lock'),
         ('approve', 'Approve'),
         ('dispute', 'Legal Dispute'),
+        ('cancel', 'Cancel'),
         ('merged_and_cancel', 'Merged And Cancel')
     ], default='draft', tracking=True)
     invoice_payment_type = fields.Selection([('osp', 'One Step Payment'),
@@ -785,11 +786,41 @@ class File(models.Model):
             else:
                 installment_number = 2
 
+            # balloons replace installment slots only when the plan treats them as
+            # installments; treated as balloons they come on top of the regular ones
+            balloon_uses_slots = (not self.include_installment and self.predefine_plan_id
+                                  and self.predefine_plan_id.include_in_plan == 'yes'
+                                  and self.predefine_plan_id.treat_balloon_as == 'installment')
             installment_amount = round(self.balance_amount / (
-                    self.total_installment - self.balloon_payment_frequency)) if not self.include_installment and self.predefine_plan_id and self.predefine_plan_id.include_in_plan == 'yes' else round(
+                    self.total_installment - self.balloon_payment_frequency)) if balloon_uses_slots else round(
                 self.balance_amount / self.total_installment)
 
-            for rec in dates:
+            expected_installments = self.total_installment
+
+            def _pending_plan_events():
+                # balloon/possession/balloting lines whose slot falls beyond the
+                # generated dates still have to be scheduled
+                if self.plan_type != 'predefine' or not self.predefine_plan_id:
+                    return False
+                plan_products = self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                if (self.env.ref('real_estate.balloon_payment').id in plan_products
+                        and interval < self.balloon_payment_frequency):
+                    return True
+                if (self.env.ref('real_estate.possession_amount_product').id in plan_products
+                        and possession_interval < self.possession_amount_frequency):
+                    return True
+                if (self.env.ref('real_estate.balloting_product').id in plan_products
+                        and primary_interval < self.primary_amount_frequency):
+                    return True
+                return False
+
+            date_index = 0
+            while date_index < len(dates) or (_pending_plan_events()
+                                              and len(dates) < self.total_installment + 120):
+                if date_index >= len(dates):
+                    dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
+                rec = dates[date_index]
+                date_index += 1
                 # first balloon payment
                 if self.balloon_payment_frequency and not start_balloon_payment:
                     if installment_number == balloon_start:
@@ -954,6 +985,12 @@ class File(models.Model):
                         installment_count += 1
                         installment_number = installment_number + 1
                 else:
+                    if self.plan_type == 'predefine' and installment_count > expected_installments:
+                        # all regular installment slots are filled; keep the slot
+                        # numbering moving so later balloon/possession slots land
+                        # on their configured positions
+                        installment_number = installment_number + 1
+                        continue
                     self.installment_plan_ids.create({
                         'date': rec,
                         'installment_number': installment_number,
@@ -986,17 +1023,18 @@ class File(models.Model):
 
             total = sum(self.installment_plan_ids.mapped('amount'))
             if not self.type == 'investor':
+                last_line = self.installment_plan_ids[-1]
                 if total < self.net_sale_amount:
                     price = self.net_sale_amount - total
-                    self.installment_plan_ids.search([])[-1].update({
-                        'amount': self.installment_plan_ids.search([])[-1].amount + price,
-                        'residual': self.installment_plan_ids.search([])[-1].residual + price
+                    last_line.update({
+                        'amount': last_line.amount + price,
+                        'residual': last_line.residual + price
                     })
                 elif total > self.net_sale_amount:
                     price = total - self.net_sale_amount
-                    self.installment_plan_ids.search([])[-1].update({
-                        'amount': self.installment_plan_ids.search([])[-1].amount - price,
-                        'residual': self.installment_plan_ids.search([])[-1].amount - price
+                    last_line.update({
+                        'amount': last_line.amount - price,
+                        'residual': last_line.residual - price
                     })
 
             self.installment_created = True
@@ -1953,7 +1991,7 @@ class File(models.Model):
                                 balance = abs(line.balance)
                                 currency = line.currency_id or currency_company
                                 currency_invoice = record.currency_id
-                                payment_date = line.payment_id.payment_date
+                                payment_date = line.payment_id.date
 
                                 if currency_company != currency_invoice:
                                     advance_payment_residual = currency_invoice.with_context(date=payment_date) \
@@ -2319,7 +2357,7 @@ class InstallmentPlan(models.Model):
                     # if payment and rec.payment_status in ('in_payment', 'paid'):
                     # rec.payment_date = dateutil.parser.parse(str(payment.payment_date)) if payment.date else ''
                 if payment and rec.amount_paid > 0:
-                    rec.payment_date = payment.payment_date if payment.payment_date else False
+                    rec.payment_date = payment.date if payment.date else False
 
     def _double_check_paid_amount(self):
         for rec in self:
