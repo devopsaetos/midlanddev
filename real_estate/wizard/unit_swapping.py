@@ -76,7 +76,9 @@ class UnitSwapping(models.TransientModel):
                 'unit_swapping_id': self.id
             })]
 
-        elif self.investment_id:
+        elif self.investment_id and self.transaction_type != 'open_file':
+            # open_file lines are already added above; running this block too
+            # would list every unit twice
             if self.reservation_type == 'unit':
                 open_files = self.env['investor.file'].search(
                     [('inventory_id', 'in', self.investment_id.inventory_ids.ids), ('state', '=', 'open')])
@@ -113,7 +115,7 @@ class UnitSwapping(models.TransientModel):
         #             'unit_swapping_id': self.id
         #         })]
 
-        elif self.inventory_id:
+        elif self.inventory_id and self.transaction_type != 'open_file':
             open_files = self.env['investor.file'].search(
                 [('inventory_id', '=', self.investor_file_id.inventory_id.id), ('state', '=', 'open')])
             for rec in open_files:
