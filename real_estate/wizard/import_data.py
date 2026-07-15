@@ -154,6 +154,7 @@ class ImportData(models.TransientModel):
         'phase': 'phase_id',
         'sector': 'sector_id',
         'street': 'street_id',
+        'location': 'location_id',
         'category': 'category_id',
         'unit category type': 'unit_category_type_id',
         'product': 'unit_category_type_id',
@@ -165,6 +166,8 @@ class ImportData(models.TransientModel):
         'standard area (sft)': 'standard_area',
         'total area (sft)': 'standard_area',
         'actual area': 'actual_area',
+        'deal price': 'deal_price',
+        'investor unit price': 'investor_unit_price',
         'state': 'state',
         'possession status': 'possession_status',
     }
@@ -216,8 +219,9 @@ class ImportData(models.TransientModel):
                 street_id = self._find_by_name(
                     'street', data.get('street_id'), [('sector_id', '=', sector_id)], row_no)
 
+                # only columns present in the file are written, so a partial
+                # sheet updates just those fields and leaves the rest untouched
                 vals = {
-                    'name': str(data['name']).strip() if data.get('name') else False,
                     'project_type': self._selection_value(
                         'project_type', data.get('project_type'), row_no) or 'housing_society',
                     'society_id': society_id,
@@ -228,15 +232,23 @@ class ImportData(models.TransientModel):
                     'unit_category_type_id': self._find_by_name(
                         'unit.category.type', data.get('unit_category_type_id'), row_no=row_no),
                     'unit_class_id': self._find_by_name('unit.class', data.get('unit_class_id'), row_no=row_no),
-                    'size_id': self._find_by_name('unit.size', data.get('size_id'), row_no=row_no),
-                    'net_area': float(data.get('net_area') or 0),
-                    'balcony_area': float(data.get('balcony_area') or 0),
-                    'standard_area': float(data.get('standard_area') or 0),
-                    'actual_area': float(data.get('actual_area') or 0),
-                    'state': self._selection_value('state', data.get('state'), row_no) or 'avalible_for_sale',
-                    'possession_status': self._selection_value(
-                        'possession_status', data.get('possession_status'), row_no) or 'pending',
                 }
+                if 'name' in data:
+                    vals['name'] = str(data['name']).strip() if data.get('name') else False
+                if 'location_id' in data:
+                    vals['location_id'] = self._find_by_name('location', data.get('location_id'), row_no=row_no)
+                if 'size_id' in data:
+                    vals['size_id'] = self._find_by_name('unit.size', data.get('size_id'), row_no=row_no)
+                for float_field in ('net_area', 'balcony_area', 'standard_area', 'actual_area',
+                                    'deal_price', 'investor_unit_price'):
+                    if float_field in data:
+                        vals[float_field] = float(data.get(float_field) or 0)
+                if 'state' in data:
+                    vals['state'] = self._selection_value(
+                        'state', data.get('state'), row_no) or 'avalible_for_sale'
+                if 'possession_status' in data:
+                    vals['possession_status'] = self._selection_value(
+                        'possession_status', data.get('possession_status'), row_no) or 'pending'
 
                 serial = str(data['serial_number']).strip() if data.get('serial_number') else False
                 existing = serial and Inventory.search([('serial_number', '=', serial)], limit=1)
