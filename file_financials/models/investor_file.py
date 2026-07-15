@@ -521,7 +521,7 @@ class InvestorFileExt(models.Model):
                     # else:
                     #     pass
 
-                if (self.plan_type == 'predefine'
+                if (self.predefine_plan_id
                         and self.env.ref('real_estate.confirmation_amount_product').id
                         in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids):
                     installment_number = 3
@@ -560,6 +560,8 @@ class InvestorFileExt(models.Model):
                 ) if balloon_uses_slots else round(
                     self.balance_amount / self.total_installment)
 
+                # with include_installment the balloon is a separate line and every
+                # month still gets its own installment line
                 expected_installments = self.total_installment
                 if balloon_uses_slots:
                     expected_installments = self.total_installment - self.balloon_payment_frequency
@@ -567,7 +569,7 @@ class InvestorFileExt(models.Model):
                 def _pending_plan_events():
                     # regular installments and balloon/possession/balloting lines whose
                     # slot falls beyond the generated dates still have to be scheduled
-                    if self.plan_type != 'predefine' or not self.predefine_plan_id:
+                    if not self.predefine_plan_id:
                         return False
                     if installment_count <= expected_installments:
                         return True
@@ -588,12 +590,21 @@ class InvestorFileExt(models.Model):
 
                 i = 0
                 total_dates = len(dates) - 1
+                extra_dates = 0
                 while True:
                     if i > total_dates:
-                        if not _pending_plan_events() or len(dates) >= self.total_installment + 120:
+                        if not _pending_plan_events() or extra_dates > 120:
                             break
-                        dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-                        total_dates += 1
+                        # prepare_next_iterator_value can leave `dates` empty, so fall
+                        # back to the last scheduled line when extending the schedule
+                        if dates:
+                            base_date = dates[-1]
+                        else:
+                            plan_dates = self.installment_plan_ids.mapped('date')
+                            base_date = max(plan_dates) if plan_dates else fields.Date.from_string(self.starting_date)
+                        dates.append(base_date + relativedelta(months=+self.interval_id.nom))
+                        total_dates = len(dates) - 1
+                        extra_dates += 1
                     # for rec in dates:
                     # first balloon payment
                     if self.balloon_payment_start and not start_balloon_payment:
@@ -603,32 +614,39 @@ class InvestorFileExt(models.Model):
                             else:
                                 amount = 0
                             self.installment_plan_ids.create({
-                                # 'date': rec,
-                                'date': dates[i] - relativedelta(months=+self.interval_id.nom) if is_balloon_included else
-                                dates[i],
+                                # with include_installment the balloon shares the date of the
+                                # installment that follows it (same month, separate lines)
+                                'date': dates[i],
                                 'installment_number': installment_number,
                                 'installment_type': 'balloon',
                                 'installment_name': 'Installment' + ' ' + str(installment_count) if
                                 self.predefine_plan_id.treat_balloon_as == 'installment' else 'Balloon',
                                 'payment_status': 'not_paid',
-                                'residual': amount + installment_amount if self.include_installment else amount,
-                                'amount': amount + installment_amount if self.include_installment else amount,
+                                'residual': amount,
+                                'amount': amount,
                                 'investor_file_id': self.id
                             })
                             if self.predefine_plan_id.treat_balloon_as == 'installment':
                                 installment_count += 1
                             interval = interval + 1
-                            balloon_interval += self.balloon_payment_start
+                            # with include_installment the balloon occupies an extra row,
+                            # so the next balloon slot shifts one number further
+                            balloon_interval += self.balloon_payment_start + (1 if self.include_installment else 0)
                             start_balloon_payment = True
                             installment_number = installment_number + 1
                             if is_balloon_included:
+                                # ensure a date remains after the shift so the paired
+                                # installment lands on the balloon's date
+                                if i >= total_dates:
+                                    dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
+                                    total_dates = len(dates) - 1
                                 i, total_dates, dates = self.prepare_next_iterator_value(dates, i, total_dates)
                             else:
                                 i += 1
                             continue
 
                     # Same set of flow as defined for other products of predefined plan
-                    if (self.plan_type == 'predefine' and self.env.ref('real_estate.additional_balloon').id in
+                    if (self.predefine_plan_id and self.env.ref('real_estate.additional_balloon').id in
                             self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids):
                         if self.total_installment > 1:
                             try:
@@ -663,7 +681,7 @@ class InvestorFileExt(models.Model):
                                     continue
 
                     # for recs in self.predefine_plan_id.predefine_plan_line_ids:
-                    if (self.plan_type == 'predefine' and self.env.ref('real_estate.possession_amount_product').id in
+                    if (self.predefine_plan_id and self.env.ref('real_estate.possession_amount_product').id in
                             self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids):
                         if self.total_installment > 1:
                             try:
@@ -715,7 +733,7 @@ class InvestorFileExt(models.Model):
                                 installment_number = installment_number + 1
                                 i += 1
                                 continue
-                    if (self.plan_type == 'predefine'
+                    if (self.predefine_plan_id
                             and self.env.ref('real_estate.balloting_product').id
                             in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids):
                         try:
@@ -749,7 +767,7 @@ class InvestorFileExt(models.Model):
                                 else:
                                     i += 1
                                 continue
-                    if (self.plan_type == 'predefine' and self.env.ref(
+                    if (self.predefine_plan_id and self.env.ref(
                             'real_estate.balloon_payment').id in self.predefine_plan_id.predefine_plan_line_ids.mapped(
                         'product_id').ids and (installment_number % balloon_interval == 0
                                                and interval < self.balloon_payment_frequency and start_balloon_payment)):
@@ -765,16 +783,21 @@ class InvestorFileExt(models.Model):
                             'installment_name': 'Installment' + ' ' + str(installment_count) if
                             self.predefine_plan_id.treat_balloon_as == 'installment' else 'Balloon',
                             'payment_status': 'not_paid',
-                            'residual': amount + installment_amount if self.include_installment else amount,
-                            'amount': amount + installment_amount if self.include_installment else amount,
+                            'residual': amount,
+                            'amount': amount,
                             'investor_file_id': self.id
                         })
                         if self.predefine_plan_id.treat_balloon_as == 'installment':
                             installment_count += 1
                         interval = interval + 1
-                        balloon_interval += self.balloon_payment_interval
+                        balloon_interval += self.balloon_payment_interval + (1 if self.include_installment else 0)
                         installment_number = installment_number + 1
                         if is_balloon_included:
+                            # ensure a date remains after the shift so the paired
+                            # installment lands on the balloon's date
+                            if i >= total_dates:
+                                dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
+                                total_dates = len(dates) - 1
                             i, total_dates, dates = self.prepare_next_iterator_value(dates, i, total_dates)
                         else:
                             i += 1
@@ -797,7 +820,7 @@ class InvestorFileExt(models.Model):
                         installment_number = installment_number + 1
                         i += 1
                     elif self.investment_id:
-                        if self.plan_type == 'predefine' and installment_count > expected_installments:
+                        if self.predefine_plan_id and installment_count > expected_installments:
                             # all regular installment slots are filled; keep the slot
                             # numbering and dates moving so later balloon/possession
                             # slots land on their configured positions
@@ -825,7 +848,7 @@ class InvestorFileExt(models.Model):
                             installment_number = installment_number + 1
                             i += 1
                     else:
-                        if self.plan_type == 'predefine' and installment_count > expected_installments:
+                        if self.predefine_plan_id and installment_count > expected_installments:
                             installment_number = installment_number + 1
                             i += 1
                             continue
