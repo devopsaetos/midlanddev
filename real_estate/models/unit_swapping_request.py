@@ -984,6 +984,7 @@ class UnitSwappingRequestLines(models.Model):
         ('swap', 'Unit Swap'),
         ('cancel', 'Unit Cancellation'),
         ('open_file', 'File Issuance'),
+        ('authorised_person', 'Authorised Person'),
         ('change_amount', 'Change Amount')
     ], default='swap')
     investor_unit_price = fields.Float()

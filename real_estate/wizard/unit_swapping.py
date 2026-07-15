@@ -361,6 +361,33 @@ class UnitSwapping(models.TransientModel):
                     }
                 }
 
+            authorised_person_units = self.unit_swapping_investment_lines.filtered(
+                lambda l: l.transaction_type == 'authorised_person' and l.check == True)
+            if authorised_person_units and self.transaction_type == 'authorised_person':
+                # the authorised person is changed per investment; units are only
+                # listed for context, the request itself carries no unit lines
+                new_request = record.create({
+                    'applicable_on': self.applicable_on,
+                    'appointment_date': fields.Date.today(),
+                    'investment_id': self.investment_id.id,
+                    'society_id': self.investment_id.society_id.id,
+                    'phase_id': self.investment_id.phase_id.id,
+                    'project_type': self.investment_id.project_type,
+                    'transaction_type': 'authorised_person',
+                })
+                return {
+                    'name': _('Authorised Person Request'),
+                    'view_type': 'form',
+                    'view_mode': 'form',
+                    'res_model': 'unit.swapping.request',
+                    'res_id': new_request.id,
+                    'view_id': False,
+                    'type': 'ir.actions.act_window',
+                    'context': {
+                        'current_view': 'realestate'
+                    }
+                }
+
 
 class UnitSwappingLine(models.TransientModel):
     _name = 'unit.swapping.line'
@@ -573,6 +600,7 @@ class UnitSwappingInvestmentLines(models.TransientModel):
         ('swap', 'Unit Swap'),
         ('cancel', 'Unit Cancellation'),
         ('open_file', 'File Issuance'),
+        ('authorised_person', 'Authorised Person'),
         ('change_amount', 'Change Amount')
     ], default='swap')
     investor_unit_price = fields.Float()
