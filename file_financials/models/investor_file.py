@@ -1163,6 +1163,36 @@ class InvestorFileExt(models.Model):
         #     file.create_installment_plan()
         # Previous Installment Plann Code Ends here
 
+        # Reallocate the unissued portion of the investor's plan: the customer
+        # file now collects this unit's balance, so reduce the investment's
+        # uninvoiced lines and record the shift in File Adjusted. No accounting
+        # entry — this is a plan-level reallocation only.
+        if self.investment_id.options == 'down' and file.total_installment:
+            per_line = file.balance_amount / file.total_installment
+            open_lines = self.investment_id.investment_plan_ids.filtered(
+                lambda l: not l.invoice_created and l.balance_amount > 0)
+            old_total = sum(open_lines.mapped('balance_amount'))
+            for line in open_lines:
+                deduction = min(per_line, line.balance_amount)
+                line.update({
+                    'file_adjusted_amount': line.file_adjusted_amount + deduction,
+                    'balance_amount': line.balance_amount - deduction,
+                    'residual': max(line.residual - deduction, 0),
+                })
+            if open_lines:
+                history_lines = self.investment_id.investment_history_ids
+                self.investment_id.investment_history_ids = [(0, 0, {
+                    'installment_number': (history_lines[-1].installment_number + 1) if history_lines else 1,
+                    'date': fields.Date.today(),
+                    'transaction_type': 'customer',
+                    'file_id': file.id,
+                    'amount': round(per_line),
+                    'new_amount': round(per_line),
+                    'old_balance': old_total,
+                    'new_balance': sum(open_lines.mapped('balance_amount')),
+                    'investment_id': self.investment_id.id,
+                })]
+
         self.state = 'issued'
         self.inventory_id.state = 'sold'
         self.file_created = True
