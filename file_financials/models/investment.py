@@ -583,27 +583,55 @@ class InvestmentExt(models.Model):
     def receive_payment(self):
         if not self.investment_plan_ids:
             raise ValidationError(_('Create Installment Plan first.'))
+        if self.token_id and not self.token_id.token_paid:
+            raise ValidationError(_('Please pay fees against this Token: %s .') % self.token_id.serial_number)
         if self.total_amount:
             _inv_ref = self.env.ref('real_estate.investment')
             first_plan = self.investment_plan_ids.filtered(lambda l: l.installment_number == 1)
+            invoice_lines = [(0, 0, {
+                'product_id': _inv_ref.id,
+                'name': _inv_ref.name,
+                # property_account_income_id is company_dependent and this product is
+                # shared across every company — always resolve it through this
+                # investment's own company, never the ambient env.company.
+                'account_id': _inv_ref.with_company(self.company_id or self.env.company).property_account_income_id.id,
+                'quantity': 1.0,
+                'price_unit': self.down_payment if self.options == 'down' else self.total_amount,
+            })]
+            token_fees = 0
+            if self.token_id and self.token_id.state == 'paid':
+                # the investor already paid the token; knock it off the booking
+                token_fees = self.token_id.token_fees
+                _token_ref = self.env.ref('real_estate.token_adjustment')
+                invoice_lines.append((0, 0, {
+                    'product_id': _token_ref.id,
+                    'name': _token_ref.name,
+                    'account_id': _token_ref.with_company(
+                        self.company_id or self.env.company).property_account_income_id.id,
+                    'quantity': 1.0,
+                    'price_unit': -token_fees,
+                }))
             inv = self.env['midland.invoice'].create({
                 'partner_id': self.partner_id.partner_id.id,
                 'invoice_date': self.booking_date,
                 'property_invoice_type': 'investment',
                 'investment_id': self.id,
                 'investment_installment_id': first_plan.id if first_plan else False,
-                'invoice_line_ids': [(0, 0, {
-                    'product_id': _inv_ref.id,
-                    'name': _inv_ref.name,
-                    # property_account_income_id is company_dependent and this product is
-                    # shared across every company — always resolve it through this
-                    # investment's own company, never the ambient env.company.
-                    'account_id': _inv_ref.with_company(self.company_id or self.env.company).property_account_income_id.id,
-                    'quantity': 1.0,
-                    'price_unit': self.down_payment if self.options == 'down' else self.total_amount,
-                })],
+                'invoice_line_ids': invoice_lines,
             })
             inv.action_post()
+            if token_fees:
+                self.token_id.state = 'adjusted'
+                if first_plan:
+                    # the token was received in advance; settle its share of the
+                    # Booking plan line so only the net amount stays receivable
+                    new_paid = (first_plan.amount_paid or 0.0) + token_fees
+                    remaining = (first_plan.amount or 0.0) - new_paid
+                    first_plan.write({
+                        'amount_paid': min(new_paid, first_plan.amount),
+                        'residual': max(remaining, 0.0),
+                        'payment_status': 'paid' if remaining <= 0 else 'in_payment',
+                    })
 
             for rec in self.investment_plan_ids:
                 if rec.installment_number == 1 and rec.invoice_created != True:
@@ -615,20 +643,23 @@ class InvestmentExt(models.Model):
             payment_type = self.env.company.payment_type
             if payment_type:
                 if payment_type == 'osp':
-                    payment = self.env['midland.payment'].create({
-                        'partner_id': self.partner_id.partner_id.id,
-                        'investment_id': self.id,
-                        'payment_amount': self.down_payment,
-                        'currency_id': self.env.company.currency_id.id,
-                        'journal_id': self.journal_id.id or self.env.company.account_journal_id.id,
-                        'company_id': self.env.company.id,
-                        'remarks': inv.name,
-                        'invoice_line_ids': [(0, 0, {
-                            'invoice_id': inv.id,
-                            'payment_amount': self.down_payment,
-                        })],
-                    })
-                    payment.action_confirm()
+                    # the token portion was already received with the token itself
+                    net_amount = self.down_payment - token_fees
+                    if net_amount > 0:
+                        payment = self.env['midland.payment'].create({
+                            'partner_id': self.partner_id.partner_id.id,
+                            'investment_id': self.id,
+                            'payment_amount': net_amount,
+                            'currency_id': self.env.company.currency_id.id,
+                            'journal_id': self.journal_id.id or self.env.company.account_journal_id.id,
+                            'company_id': self.env.company.id,
+                            'remarks': inv.name,
+                            'invoice_line_ids': [(0, 0, {
+                                'invoice_id': inv.id,
+                                'payment_amount': net_amount,
+                            })],
+                        })
+                        payment.action_confirm()
 
             self.amount_received = True
             for rec in self:

@@ -260,6 +260,9 @@ class MidlandInvoice(models.Model):
                 if rec.jv_id.state == 'posted':
                     rec.jv_id.button_cancel()
             rec.state = 'cancelled'
+            # free the linked plan line so it can be invoiced again
+            if rec.investment_installment_id and rec.investment_installment_id.invoice_created:
+                rec.investment_installment_id.write({'invoice_created': False, 'invoice_id': False})
 
     def action_reset_to_draft(self):
         for rec in self:

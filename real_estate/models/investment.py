@@ -275,6 +275,22 @@ class Investment(models.Model):
         result = super(Investment, self).create(vals_list)
         return result
 
+    @api.constrains('token_id')
+    def _check_token_unique(self):
+        for rec in self:
+            if rec.token_id:
+                other = self.search([('token_id', '=', rec.token_id.id), ('id', '!=', rec.id)], limit=1)
+                if other:
+                    raise ValidationError(_(
+                        'Token %s is already used on Deal %s.') % (rec.token_id.serial_number, other.sequence_no))
+                if rec.token_id.party_type != 'investor':
+                    raise ValidationError(_('Only investor tokens can be attached to a Deal.'))
+                if rec.token_id.investor_id and rec.partner_id and rec.token_id.investor_id != rec.partner_id:
+                    raise ValidationError(_(
+                        'Token %s belongs to investor %s, not %s.') % (
+                        rec.token_id.serial_number, rec.token_id.investor_id.investor_id,
+                        rec.partner_id.investor_id))
+
     def generate_token(self):
         self.ensure_one()
         if not self.token_id:
@@ -285,8 +301,10 @@ class Investment(models.Model):
             self.token_id = self.env['token.money'].create({
                 'party_type': 'investor',
                 'investor_id': self.partner_id.id,
+                'investment_id': self.id,
                 'society_id': self.society_id.id,
                 'date': fields.Date.today(),
+                'ttl_sale_amount': self.total_amount,
             }).id
         return {
             'type': 'ir.actions.act_window',

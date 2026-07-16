@@ -360,7 +360,8 @@ class MidlandPayment(models.Model):
             if inv.installment_id:
                 self._update_installment(inv.installment_id, line.payment_amount)
             if inv.investment_installment_id:
-                self._update_investment_installment(inv.investment_installment_id, line.payment_amount)
+                self._update_investment_installment(inv.investment_installment_id, line.payment_amount,
+                                                    invoice=inv)
             line.payment_amount_paid = line.payment_amount
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -383,7 +384,8 @@ class MidlandPayment(models.Model):
             if inv.installment_id:
                 self._update_installment(inv.installment_id, payment_amount)
             if inv.investment_installment_id:
-                self._update_investment_installment(inv.investment_installment_id, payment_amount)
+                self._update_investment_installment(inv.investment_installment_id, payment_amount,
+                                                    invoice=inv)
 
     def _update_installment(self, install, payment_amount):
         plan_total = (install.amount or 0.0) + (install.tax_amount or 0.0)
@@ -394,9 +396,14 @@ class MidlandPayment(models.Model):
         else:
             install.write({'payment_status': 'in_payment', 'amount_paid': new_plan_paid, 'residual': remaining})
 
-    def _update_investment_installment(self, install, payment_amount):
+    def _update_investment_installment(self, install, payment_amount, invoice=None):
         plan_total = install.amount or 0.0
         new_plan_paid = (install.amount_paid or 0.0) + payment_amount
+        # a token adjustment line makes the invoice net of the plan amount; once
+        # the net invoice is fully paid, the whole plan line is settled (the
+        # difference was already received with the token)
+        if invoice and invoice.payment_state == 'paid' and invoice.amount_total < plan_total:
+            new_plan_paid = plan_total
         remaining = plan_total - new_plan_paid
         if remaining <= 0:
             install.write({'payment_status': 'paid', 'amount_paid': plan_total, 'residual': 0.0})

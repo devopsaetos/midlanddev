@@ -31,6 +31,18 @@ class TokenMoney(models.Model):
         ('investor', 'Investor'),
     ], default='member', required=True, tracking=True, string='Party Type')
     investor_id = fields.Many2one('res.investor', string='Investor', tracking=True)
+    investment_id = fields.Many2one('investment', string='Investment No', tracking=True)
+    no_of_units = fields.Integer(related='investment_id.no_of_units', string='No of Units')
+
+    @api.onchange('investment_id')
+    def _onchange_investment_id(self):
+        if self.investment_id:
+            if self.investment_id.partner_id:
+                self.investor_id = self.investment_id.partner_id
+            if self.investment_id.society_id:
+                self.society_id = self.investment_id.society_id
+            # total price of all the deal's units flows into the token
+            self.ttl_sale_amount = self.investment_id.total_amount
     is_existing = fields.Boolean('Existing Member?')
     change_member = fields.Selection([
         ('yes', 'Yes'),
@@ -147,7 +159,8 @@ class TokenMoney(models.Model):
 
     def write(self, vals):
         res = super(TokenMoney, self).write(vals)
-        if not self.token_line_ids:
+        # investor tokens carry no unit lines; units live on the Deal
+        if self.party_type != 'investor' and not self.token_line_ids:
             raise ValidationError(_("You can not save record before select any plot."))
         # if self.company_type == 'aop' and not self.cnic_line_ids:
         #     raise ValidationError(_("Please add information in Details tab."))
@@ -180,20 +193,23 @@ class TokenMoney(models.Model):
     def create_token_fees(self):
         if self.token_fees <= 0:
             return ''
-        if not self.token_line_ids:
-            raise ValidationError(_("You can not Generate token before select any Criteria."))
+        # investor tokens are an advance against a Deal; units and the
+        # installment plan live on the Deal, so those checks are member-only
+        if self.party_type != 'investor':
+            if not self.token_line_ids:
+                raise ValidationError(_("You can not Generate token before select any Criteria."))
 
-        if self.company_type == 'aop' and not self.cnic_line_ids:
-            raise ValidationError(_("Please add information in Details tab."))
+            if self.company_type == 'aop' and not self.cnic_line_ids:
+                raise ValidationError(_("Please add information in Details tab."))
 
-        plan = self.env['propose.plan'].search([('crm_id', '=', self.crm_id.id)])
+            plan = self.env['propose.plan'].search([('crm_id', '=', self.crm_id.id)])
 
-        if plan and plan.state == 'draft':
-            raise ValidationError(_("Installment plan must be locked before generating token."))
+            if plan and plan.state == 'draft':
+                raise ValidationError(_("Installment plan must be locked before generating token."))
 
-        # if not self.plan_locked and self.payment_type == 'installments':
-        if not plan and self.payment_type == 'installments':
-            raise ValidationError(_("You can not Generate token before create Installment Plan"))
+            # if not self.plan_locked and self.payment_type == 'installments':
+            if not plan and self.payment_type == 'installments':
+                raise ValidationError(_("You can not Generate token before create Installment Plan"))
         token = self.env.ref('real_estate.token_money')
         company = self.env.company
         if self.token_fees:
@@ -1048,16 +1064,17 @@ class TokenMoney(models.Model):
                     'ref': self.serial_number,
                     'partner_id': self._token_accounting_partner_id(),
                     'token_id': self.id,
-                    'type': 'entry',
+                    'move_type': 'entry',
                     'date': self.date,
-                    'state': 'draft',
                     'line_ids': [(0, 0, debit_vals), (0, 0, credit_vals)]
                 }
                 move = self.env['account.move'].create(vals)
                 move.action_post()
                 self.state = 'cancel'
                 self.validity_expire = False
-                self.token_line_ids[0].inventory_id.state = 'avalible_for_sale'
+                # investor tokens have no unit lines; their units live on the Deal
+                if self.token_line_ids:
+                    self.token_line_ids[0].inventory_id.state = 'avalible_for_sale'
 
     def unlink(self):
         for rec in self:
