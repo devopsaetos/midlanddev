@@ -180,7 +180,7 @@ class File(models.Model):
                                                tracking=True)
     initial_payment = fields.Float('Initial Payment', readonly=False, tracking=True)
     initial_payment_percentage = fields.Float('Initial Payment Percentage', readonly=False, tracking=True)
-    balance_amount = fields.Float('Balance Amount', compute='_compute_balance_amount', readonly=True)
+    balance_amount = fields.Float('Balance Amount', compute='_compute_balance_amount', store=True, readonly=True)
     remaining_payment = fields.Float(compute='_compute_remaining_amount', store=True, readonly=False)
     balloon_payment = fields.Float()
     balloon_payment_start = fields.Integer()
@@ -691,41 +691,49 @@ class File(models.Model):
             # when start_from is 0, first balloon fires at the first interval
             balloon_start = self.balloon_payment_start or self.balloon_payment_interval
 
+            # Running pool left for the regular monthly "Installment" lines
+            # once Booking/Confirmation/Balloon/Possession/Balloting are
+            # carved out — kept in a local var, NOT written back to
+            # self.balance_amount (a stored compute field that must keep
+            # reflecting the file's true outstanding balance, not this
+            # scratch total).
+            working_balance = self.balance_amount
+
             if self.predefine_plan_id:
                 for rec in self.predefine_plan_id.predefine_plan_line_ids:
                     if rec.product_id.id == rec.env.ref('real_estate.balloon_payment').id:
                         interval_limit = round(self.total_installment / self.balloon_payment_interval)
                         deduction = self.balloon_payment * self.balloon_payment_frequency
-                        if deduction > self.balance_amount:
+                        if deduction > working_balance:
                             raise ValidationError(_(
                                 'Balloon Payment in plan "%s" results in an amount (%.2f) larger than the '
                                 'remaining Balance Amount (%.2f). Please correct the Balloon Payment percentage/'
-                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, self.balance_amount))
-                        self.balance_amount = self.balance_amount - deduction
+                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, working_balance))
+                        working_balance = working_balance - deduction
                     if rec.product_id.id == rec.env.ref('real_estate.possession_amount_product').id:
                         deduction = self.possession_amount * self.possession_amount_frequency
-                        if deduction > self.balance_amount:
+                        if deduction > working_balance:
                             raise ValidationError(_(
                                 'Possession Amount in plan "%s" results in an amount (%.2f) larger than the '
                                 'remaining Balance Amount (%.2f). Please correct the Possession Amount percentage/'
-                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, self.balance_amount))
-                        self.balance_amount = self.balance_amount - deduction
+                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, working_balance))
+                        working_balance = working_balance - deduction
                     if rec.product_id.id == rec.env.ref('real_estate.confirmation_amount_product').id:
                         deduction = self.confirmation_amount * self.confirmation_amount_frequency
-                        if deduction > self.balance_amount:
+                        if deduction > working_balance:
                             raise ValidationError(_(
                                 'Confirmation Amount in plan "%s" results in an amount (%.2f) larger than the '
                                 'remaining Balance Amount (%.2f). Please correct the Confirmation Amount percentage/'
-                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, self.balance_amount))
-                        self.balance_amount = self.balance_amount - deduction
+                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, working_balance))
+                        working_balance = working_balance - deduction
                     if rec.product_id.id == rec.env.ref('real_estate.balloting_product').id:
                         deduction = self.primary_amount * self.primary_amount_frequency
-                        if deduction > self.balance_amount:
+                        if deduction > working_balance:
                             raise ValidationError(_(
                                 'Balloting Amount in plan "%s" results in an amount (%.2f) larger than the '
                                 'remaining Balance Amount (%.2f). Please correct the Balloting Amount percentage/'
-                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, self.balance_amount))
-                        self.balance_amount = self.balance_amount - deduction
+                                'value on that plan line.') % (self.predefine_plan_id.name, deduction, working_balance))
+                        working_balance = working_balance - deduction
                 if self.predefine_plan_id.include_in_plan == 'no':
                     for rec in range(1, (self.total_installment + self.balloon_payment_frequency +
                                          self.possession_amount_frequency + self.primary_amount_frequency)):
@@ -746,7 +754,7 @@ class File(models.Model):
                     for rec in range(1, self.total_installment):
                         dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
 
-            balance = self.balance_amount
+            balance = working_balance
             amount = 0
 
             if self.initial_payment and self.type == 'normal':
@@ -791,9 +799,9 @@ class File(models.Model):
             balloon_uses_slots = (not self.include_installment and self.predefine_plan_id
                                   and self.predefine_plan_id.include_in_plan == 'yes'
                                   and self.predefine_plan_id.treat_balloon_as == 'installment')
-            installment_amount = round(self.balance_amount / (
+            installment_amount = round(working_balance / (
                     self.total_installment - self.balloon_payment_frequency)) if balloon_uses_slots else round(
-                self.balance_amount / self.total_installment)
+                working_balance / self.total_installment)
 
             expected_installments = self.total_installment
 
@@ -968,9 +976,9 @@ class File(models.Model):
                         installment_number = self.installment_plan_ids[-1].installment_number + 1
                         paid_installments = (
                                                     self.total_installment - self.investment_id.remaining_installments) * round(
-                            self.balance_amount / self.total_installment)
+                            working_balance / self.total_installment)
                         amount = round(
-                            (self.balance_amount - paid_installments) / self.investment_id.remaining_installments)
+                            (working_balance - paid_installments) / self.investment_id.remaining_installments)
                         self.installment_plan_ids.create({
                             'date': rec,
                             'installment_number': installment_number,
@@ -1307,8 +1315,9 @@ class File(models.Model):
 
     @api.constrains('balance_amount')
     def _check_balance_amount(self):
-        if self.balance_amount and self.balance_amount < 0:
-            raise ValidationError('Balance Amount cannot be less than zero')
+        for rec in self:
+            if rec.balance_amount and rec.balance_amount < 0:
+                raise ValidationError('Balance Amount cannot be less than zero')
 
     @api.onchange('discount_amount', 'discount_type', 'ttl_sale_amount')
     def _net_sale_amount(self):

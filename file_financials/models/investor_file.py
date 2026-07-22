@@ -388,33 +388,41 @@ class InvestorFileExt(models.Model):
                 is_balloting_included = False
                 is_final_payment_included = False
 
+                # Running pool left for the regular monthly "Installment" lines
+                # once Booking/Confirmation/Balloon/Possession/Balloting are
+                # carved out — kept in a local var, NOT written back to
+                # self.balance_amount (a stored compute field that must keep
+                # reflecting the deal's true outstanding balance, not this
+                # scratch total).
+                working_balance = self.balance_amount
+
                 if self.predefine_plan_id:
                     for rec in self.predefine_plan_id.predefine_plan_line_ids:
                         if rec.product_id.id == self.env.ref('real_estate.balloon_payment').id:
                             interval_limit = round(self.total_installment / self.balloon_payment_interval)
-                            self.balance_amount = self.balance_amount - (self.balloon_payment *
-                                                                         self.balloon_payment_frequency)
+                            working_balance = working_balance - (self.balloon_payment *
+                                                                 self.balloon_payment_frequency)
                             if rec.include_installment:
                                 is_balloon_included = True
                         if rec.product_id.id == self.env.ref('real_estate.possession_amount_product').id:
-                            self.balance_amount = self.balance_amount - (self.possession_amount *
-                                                                         self.possession_amount_frequency)
+                            working_balance = working_balance - (self.possession_amount *
+                                                                 self.possession_amount_frequency)
                             if rec.include_installment:
                                 is_possession_included = True
 
                         # As defined for other products, also set for 'Additional Product'
                         if rec.product_id.id == self.env.ref('real_estate.additional_balloon').id:
-                            self.balance_amount = self.balance_amount - (self.add_balloon_amount *
-                                                                         self.add_balloon_frequency)
+                            working_balance = working_balance - (self.add_balloon_amount *
+                                                                 self.add_balloon_frequency)
                             if rec.include_installment:
                                 is_add_balloon_included = True
 
                         if rec.product_id.id == self.env.ref('real_estate.confirmation_amount_product').id:
-                            self.balance_amount = self.balance_amount - (self.confirmation_amount *
-                                                                         self.confirmation_amount_frequency)
+                            working_balance = working_balance - (self.confirmation_amount *
+                                                                 self.confirmation_amount_frequency)
                         if rec.product_id.id == self.env.ref('real_estate.balloting_product').id:
-                            self.balance_amount = self.balance_amount - (self.primary_amount *
-                                                                         self.primary_amount_frequency)
+                            working_balance = working_balance - (self.primary_amount *
+                                                                 self.primary_amount_frequency)
                             if rec.include_installment:
                                 is_balloting_included = True
                     if self.predefine_plan_id.include_in_plan == 'no':
@@ -438,7 +446,7 @@ class InvestorFileExt(models.Model):
                         for rec in range(1, self.total_installment):
                             dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
 
-                balance = self.balance_amount
+                balance = working_balance
                 amount = 0
 
                 # if self.initial_payment and self.type == 'normal':
@@ -556,9 +564,9 @@ class InvestorFileExt(models.Model):
                                       and self.predefine_plan_id.include_in_plan == 'yes'
                                       and self.predefine_plan_id.treat_balloon_as == 'installment')
                 installment_amount = round(
-                    self.balance_amount / (self.total_installment - self.balloon_payment_frequency)
+                    working_balance / (self.total_installment - self.balloon_payment_frequency)
                 ) if balloon_uses_slots else round(
-                    self.balance_amount / self.total_installment)
+                    working_balance / self.total_installment)
 
                 # with include_installment the balloon is a separate line and every
                 # month still gets its own installment line
@@ -830,8 +838,8 @@ class InvestorFileExt(models.Model):
                         if self.investment_id.options == 'down' or self.investment_id.investment_plan_ids and self.investment_id.remaining_installments > 0:
                             installment_number = self.installment_plan_ids[-1].installment_number + 1
                             paid_installments = (self.total_installment - (self.investment_id.remaining_installments or 1)) * round(
-                                self.balance_amount / self.total_installment)
-                            amount = round((self.balance_amount - paid_installments) / (self.investment_id.remaining_installments or 1))
+                                working_balance / self.total_installment)
+                            amount = round((working_balance - paid_installments) / (self.investment_id.remaining_installments or 1))
                             self.installment_plan_ids.create({
                                 # 'date': rec,
                                 'date': dates[i],

@@ -30,6 +30,7 @@ class MidlandInvoice(models.Model):
 
     # ── Customer ──────────────────────────────────────────────────────────────
     member_id = fields.Many2one('res.member', string='Customer', tracking=True)
+    dealer_id = fields.Many2one('res.investor', string='Dealer', tracking=True)
     partner_id = fields.Many2one(
         'res.partner', string='Accounting Partner',
         compute='_compute_partner_id', store=True, readonly=False,
@@ -127,6 +128,13 @@ class MidlandInvoice(models.Model):
         string='Amount Due', compute='_compute_amount_residual', store=True,
         currency_field='currency_id',
     )
+    rebate_total = fields.Monetary(
+        string='Total Rebate', compute='_compute_rebate_total', store=True,
+        currency_field='currency_id',
+        help='Sum of the Rebate amounts on the invoice lines. Funded by the '
+             'dealer rebate rather than cash — reduces the cash needed to '
+             'settle this invoice under the Investor/Dealer Booking flow.',
+    )
 
     # ── Payment status ────────────────────────────────────────────────────────
     payment_state = fields.Selection([
@@ -141,6 +149,10 @@ class MidlandInvoice(models.Model):
     # ── JV link (secondary — created on post) ─────────────────────────────────
     jv_id = fields.Many2one('account.move', string='Journal Entry', readonly=True, copy=False)
 
+    # ── Payments made against this invoice ──────────────────────────────────
+    payment_line_ids = fields.One2many('midland.payment.line', 'invoice_id', string='Payment Lines')
+    payment_count = fields.Integer(string='Payments', compute='_compute_payment_count')
+
     # ── Tracks which mode was active when this invoice was posted ─────────────
     entry_mode = fields.Boolean(
         string='Entry Created', readonly=True, copy=False,
@@ -150,12 +162,19 @@ class MidlandInvoice(models.Model):
 
     # ── Compute ───────────────────────────────────────────────────────────────
 
-    @api.depends('member_id')
+    @api.depends('payment_line_ids.payment_id')
+    def _compute_payment_count(self):
+        for rec in self:
+            rec.payment_count = len(rec.payment_line_ids.payment_id)
+
+    @api.depends('member_id', 'dealer_id')
     def _compute_partner_id(self):
         for rec in self:
-            if rec.member_id and rec.member_id.partner_id:
+            if rec.dealer_id and rec.dealer_id.partner_id:
+                rec.partner_id = rec.dealer_id.partner_id
+            elif rec.member_id and rec.member_id.partner_id:
                 rec.partner_id = rec.member_id.partner_id
-            elif not rec.member_id:
+            elif not rec.member_id and not rec.dealer_id:
                 rec.partner_id = False
 
     @api.depends('invoice_line_ids.price_subtotal', 'invoice_line_ids.tax_ids',
@@ -180,6 +199,21 @@ class MidlandInvoice(models.Model):
     def _compute_amount_residual(self):
         for rec in self:
             rec.amount_residual = rec.amount_total - rec.amount_paid
+
+    @api.depends('invoice_line_ids.rebate_amount', 'installment_id.dealer_share',
+                 'investment_installment_id.dealer_share')
+    def _compute_rebate_total(self):
+        for rec in self:
+            if rec.installment_id and rec.installment_id.dealer_share:
+                # File/member flow — File's "Rebate" tab (installment.plan),
+                # populated by Investor File > Compute Rebate.
+                rec.rebate_total = rec.installment_id.dealer_share
+            elif rec.investment_installment_id and rec.investment_installment_id.dealer_share:
+                # Investor/dealer flow — Investment Plan line, populated by
+                # Investment > Compute Rebate (compute_rebate_amount_process).
+                rec.rebate_total = rec.investment_installment_id.dealer_share
+            else:
+                rec.rebate_total = sum(rec.invoice_line_ids.mapped('rebate_amount'))
 
     # ── CRUD ──────────────────────────────────────────────────────────────────
 
@@ -285,10 +319,28 @@ class MidlandInvoice(models.Model):
             'res_id': self.jv_id.id,
         }
 
+    def action_view_payments(self):
+        self.ensure_one()
+        payments = self.payment_line_ids.payment_id
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Payments'),
+            'res_model': 'midland.payment',
+            'domain': [('id', 'in', payments.ids)],
+            'context': {},
+        }
+        if len(payments) == 1:
+            action.update({'view_mode': 'form', 'res_id': payments.id})
+        else:
+            action['view_mode'] = 'list,form'
+        return action
+
     def action_register_payment(self):
         self.ensure_one()
         payment = self.env['midland.payment'].create({
+            'payment_for': 'investor' if self.dealer_id else 'member',
             'member_id': self.member_id.id,
+            'dealer_id': self.dealer_id.id,
             'partner_id': self.partner_id.id if self.partner_id else False,
             'file_id': self.file_ids.id if self.file_ids else False,
             'investment_id': self.investment_id.id if self.investment_id else False,
@@ -334,6 +386,12 @@ class MidlandInvoiceLine(models.Model):
         string='Subtotal', compute='_compute_price_subtotal', store=True,
         currency_field='currency_id',
     )
+    rebate_amount = fields.Monetary(
+        string='Rebate', currency_field='currency_id',
+        help='Dealer rebate on this line. Does not change the Subtotal — it '
+             'reduces the cash owed and is settled via the Advance from '
+             'Dealer / Rebate Expense accounts instead of cash.',
+    )
 
     @api.depends('quantity', 'price_unit')
     def _compute_price_subtotal(self):
@@ -346,3 +404,9 @@ class MidlandInvoiceLine(models.Model):
             if line.product_id:
                 line.name = line.product_id.name
                 line.account_id = line.product_id.property_account_income_id
+                dealer_share = (
+                    line.invoice_id.installment_id.dealer_share
+                    or line.invoice_id.investment_installment_id.dealer_share
+                )
+                if dealer_share:
+                    line.rebate_amount = dealer_share

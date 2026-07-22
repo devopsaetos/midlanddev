@@ -98,7 +98,7 @@ class InvestmentExt(models.Model):
                 invoice_lines.append(token_line)
 
             inv = self.env['midland.invoice'].create({
-                'partner_id': rec.partner_id.partner_id.id if rec.partner_id.partner_id else False,
+                'dealer_id': rec.partner_id.id,
                 'invoice_date': plan.date or fields.Date.today(),
                 'property_invoice_type': 'investment_installment',
                 'investment_installment_id': plan.id,
@@ -158,7 +158,7 @@ class InvestmentExt(models.Model):
                     invoice_lines.append(token_line)
 
                 inv = self.env['midland.invoice'].create({
-                    'partner_id': investment_rec.partner_id.partner_id.id if investment_rec.partner_id.partner_id else False,
+                    'dealer_id': investment_rec.partner_id.id,
                     'invoice_date': plan.date,
                     'property_invoice_type': 'investment_installment',
                     'investment_installment_id': plan.id,

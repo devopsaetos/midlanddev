@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Form View ─────────────────────────────────────────────────────── -->
+    <record id="dealer_confirmation_view_form" model="ir.ui.view">
+        <field name="name">dealer.confirmation.form</field>
+        <field name="model">dealer.confirmation</field>
+        <field name="arch" type="xml">
+            <form string="Dealer Confirmation">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                            confirm="Post the Confirmation collection journal entry for the files below?"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_view_jv" string="View Journal Entry" type="object"
+                            invisible="not jv_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="dealer_id" readonly="state != 'draft'"/>
+                            <field name="investment_id" readonly="state != 'draft'"/>
+                            <field name="journal_id" readonly="state != 'draft'"
+                                   domain="[('type', 'in', ['cash', 'bank'])]"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="company_id" readonly="state != 'draft'" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <!-- Files tab -->
+                        <page string="Files" name="files">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="file_id"
+                                           domain="[('investment_id', '=', parent.investment_id),
+                                                    ('membership_id', '!=', False),
+                                                    ('file_status', 'in', ('lock', 'approve')),
+                                                    ('investor_file.state', '=', 'issued')]"/>
+                                    <field name="confirmation_total" string="Total" sum="Total"/>
+                                    <field name="confirmation_paid" string="Paid" sum="Total"/>
+                                    <field name="rebate_amount" string="Rebate" sum="Total"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="confirmation_total"/>
+                                <field name="confirmation_paid"/>
+                                <field name="rebate_amount"/>
+                                <field name="bank_amount"/>
+                            </group>
+                        </page>
+
+                        <!-- Dealer's Journal tab -->
+                        <page string="Dealer's Journal" name="journal_entry" invisible="not jv_id">
+                            <group>
+                                <field name="jv_id" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── List View ─────────────────────────────────────────────────────── -->
+    <record id="dealer_confirmation_view_list" model="ir.ui.view">
+        <field name="name">dealer.confirmation.list</field>
+        <field name="model">dealer.confirmation</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-success="state == 'confirmed'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="dealer_id"/>
+                <field name="investment_id"/>
+                <field name="confirmation_total" sum="Total"/>
+                <field name="confirmation_paid" sum="Total"/>
+                <field name="rebate_amount" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ── Action ────────────────────────────────────────────────────────── -->
+    <record id="action_dealer_confirmation" model="ir.actions.act_window">
+        <field name="name">Dealer Confirmation</field>
+        <field name="res_model">dealer.confirmation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -23,11 +23,16 @@ class MidlandPayment(models.Model):
     ], default='draft', required=True, tracking=True, copy=False)
 
     # ── Left panel ────────────────────────────────────────────────────────────
+    payment_for = fields.Selection([
+        ('member', 'Member'),
+        ('investor', 'Investor'),
+    ], default='member', required=True, string='Payment For', tracking=True)
     file_id = fields.Many2one('file', string='File', tracking=True)
     payment_nature = fields.Selection([
         ('normal', 'Normal Payment'),
         ('on_account', 'On Account'),
     ], default='normal', string='Payment Nature', tracking=True)
+    dealer_id = fields.Many2one('res.investor', string='Dealer', tracking=True)
     investment_id = fields.Many2one('investment', string='Investment', tracking=True)
     is_sub_dealer_payment = fields.Boolean(string='Sub Dealer Payment', tracking=True)
     member_id = fields.Many2one('res.member', string='Customer', tracking=True)
@@ -59,6 +64,13 @@ class MidlandPayment(models.Model):
         string='Net Payment', compute='_compute_net_payment',
         store=True, currency_field='currency_id',
     )
+    bank_amount = fields.Monetary(
+        string='Bank Amount', compute='_compute_bank_amount',
+        currency_field='currency_id',
+        help='Actual amount that will hit the Bank/Cash account once '
+             'confirmed — Net Payment minus any Confirmation dealer rebate '
+             'netted against Dealer Clearance Advance instead of cash.',
+    )
 
     # ── Right panel ───────────────────────────────────────────────────────────
     date = fields.Date(string='Date', default=fields.Date.today, tracking=True)
@@ -88,15 +100,37 @@ class MidlandPayment(models.Model):
 
     # ── Compute ───────────────────────────────────────────────────────────────
 
-    @api.depends('member_id')
+    @api.depends('payment_for', 'member_id', 'dealer_id')
     def _compute_partner_id(self):
         for rec in self:
-            rec.partner_id = rec.member_id.partner_id if rec.member_id else False
+            if rec.payment_for == 'investor':
+                rec.partner_id = rec.dealer_id.partner_id if rec.dealer_id else False
+            else:
+                rec.partner_id = rec.member_id.partner_id if rec.member_id else False
 
     @api.depends('payment_amount', 'wht_amount')
     def _compute_net_payment(self):
         for rec in self:
             rec.net_payment = rec.payment_amount - rec.wht_amount
+
+    @api.depends('net_payment', 'invoice_line_ids.invoice_id.rebate_total',
+                 'invoice_line_ids.invoice_id.amount_paid')
+    def _compute_bank_amount(self):
+        for rec in self:
+            confirmation_rebate = sum(
+                rec._invoice_confirmation_rebate_amount(line.invoice_id)
+                for line in rec.invoice_line_ids if line.invoice_id
+            )
+            rec.bank_amount = rec.net_payment - confirmation_rebate
+
+    @api.onchange('payment_for')
+    def _onchange_payment_for(self):
+        if self.payment_for == 'member':
+            self.investment_id = False
+            self.dealer_id = False
+        else:
+            self.file_id = False
+            self.member_id = False
 
     @api.onchange('file_id')
     def _onchange_file_id(self):
@@ -108,6 +142,15 @@ class MidlandPayment(models.Model):
     def _onchange_member_id(self):
         if self.member_id:
             self.partner_id = self.member_id.partner_id
+
+    @api.onchange('dealer_id')
+    def _onchange_dealer_id(self):
+        if self.investment_id and self.investment_id.partner_id != self.dealer_id:
+            self.investment_id = False
+
+    @api.onchange('invoice_line_ids', 'invoice_line_ids.payment_amount')
+    def _onchange_invoice_line_ids(self):
+        self.payment_amount = sum(self.invoice_line_ids.mapped('payment_amount'))
 
     # ── CRUD ──────────────────────────────────────────────────────────────────
 
@@ -126,6 +169,41 @@ class MidlandPayment(models.Model):
              ('company_ids', 'in', company.ids)],
             limit=1
         )
+
+    def _invoice_rebate_amount(self, inv):
+        """Dealer rebate funded for `inv` under the Investor/Dealer Booking
+        rebate flow (0.0 if that flow doesn't apply). Only returned once per
+        invoice — guarded on `amount_paid` so a rebate already settled by an
+        earlier payment isn't counted again."""
+        self.ensure_one()
+        # Booking invoices raised from the investor/dealer flow
+        # (investment_ext.py) are always tagged property_invoice_type =
+        # 'investment_installment' — the real Booking marker there is the
+        # linked Investment Plan line's own installment_type.
+        is_booking = (
+            inv.property_invoice_type == 'down'
+            or (inv.investment_installment_id and inv.investment_installment_id.installment_type == 'down')
+        )
+        if (self.payment_for == 'investor' and is_booking
+                and inv.rebate_total > 0 and not inv.amount_paid):
+            return inv.rebate_total
+        return 0.0
+
+    def _invoice_confirmation_rebate_amount(self, inv):
+        """Dealer rebate to net out of the cash owed when a Confirmation
+        invoice is paid — by Member or Investor, independent of the Booking
+        rebate flow above. 0.0 if this isn't a Confirmation line or has no
+        rebate. Only returned once per invoice (guarded on `amount_paid`)."""
+        self.ensure_one()
+        is_confirmation = (
+            inv.property_invoice_type == 'confirmation_amount'
+            or (inv.installment_id and inv.installment_id.installment_type == 'confirmation_amount')
+            or (inv.investment_installment_id
+                and inv.investment_installment_id.installment_type == 'confirmation_amount')
+        )
+        if is_confirmation and inv.rebate_total > 0 and not inv.amount_paid:
+            return inv.rebate_total
+        return 0.0
 
     def action_confirm(self):
         create_entry = self.env['ir.config_parameter'].sudo().get_param(
@@ -148,9 +226,14 @@ class MidlandPayment(models.Model):
                         net_pay, rec.payment_amount, rec.wht_amount or 0.0)
                 )
 
-            partner = rec.partner_id or (rec.member_id.partner_id if rec.member_id else False)
-            if not partner:
-                raise ValidationError(_('Please set a customer.'))
+            if rec.payment_for == 'investor':
+                partner = rec.partner_id or (rec.dealer_id.partner_id if rec.dealer_id else False)
+                if not partner:
+                    raise ValidationError(_('Please set a dealer.'))
+            else:
+                partner = rec.partner_id or (rec.member_id.partner_id if rec.member_id else False)
+                if not partner:
+                    raise ValidationError(_('Please set a customer.'))
 
             debit_account = (
                 rec.journal_id.default_account_id
@@ -265,6 +348,9 @@ class MidlandPayment(models.Model):
                 raise ValidationError(
                     _('Invoice "%s" has no lines. Cannot create payment entry.') % inv.name
                 )
+            if rec._invoice_rebate_amount(inv) > 0:
+                # Rebate lines route to Advance from Dealer, not per-line Revenue.
+                continue
             missing = [
                 (inv_line.name or inv_line.product_id.name or '?')
                 for inv_line in inv.invoice_line_ids
@@ -287,10 +373,63 @@ class MidlandPayment(models.Model):
         })]
 
         total_allocated = 0.0
+        total_rebate = 0.0
+        total_confirmation_rebate = 0.0
+        bank_correction = 0.0
         for line in rec.invoice_line_ids:
             inv = line.invoice_id
             if not inv or not inv.invoice_line_ids:
                 continue
+
+            total_confirmation_rebate += rec._invoice_confirmation_rebate_amount(inv)
+
+            rebate = rec._invoice_rebate_amount(inv)
+            if rebate > 0:
+                rebate_account = rec.company_id.rebate_expense_account_id
+                if not rebate_account:
+                    raise ValidationError(
+                        _('Please configure the "Rebate Expense Account" '
+                          '(Settings → Invoicing → Midland Invoicing).')
+                    )
+                advance_account = rec.company_id.advance_from_dealer_account_id
+                if not advance_account:
+                    raise ValidationError(
+                        _('Please configure the "Advance from Dealer Account" '
+                          '(Settings → Invoicing → Midland Invoicing).')
+                    )
+
+                # Debit: Rebate Expense (before its matching credit below, so
+                # the JV reads Bank Dr / Rebate Expense Dr / Advance Cr)
+                jv_lines.append((0, 0, {
+                    'account_id': rebate_account.id,
+                    'partner_id': partner.id,
+                    'name': _('Dealer Rebate - %s') % rec.name,
+                    'debit': round(rebate, 2),
+                    'credit': 0.0,
+                }))
+                total_rebate += rebate
+
+                # Credit: Advance from Dealer — the invoice's own full
+                # value, derived from the invoice itself (not line.payment_amount,
+                # which may not have been reduced by the rebate yet if the
+                # invoice was picked before Payment For/Dealer were set).
+                # `not inv.amount_paid` was already required by
+                # _invoice_rebate_amount, so amount_residual == amount_total here.
+                cash_amount = round(inv.amount_total - rebate, 2)
+                credit_amount = round(inv.amount_total, 2)
+                jv_lines.append((0, 0, {
+                    'account_id': advance_account.id,
+                    'partner_id': partner.id,
+                    'name': _('Advance (Booking Rebate) - %s') % inv.name,
+                    'debit': 0.0,
+                    'credit': credit_amount,
+                }))
+                total_allocated += credit_amount
+                # Correct the header Bank debit for whatever this line's
+                # payment_amount actually held vs. the true cash owed
+                bank_correction += round(line.payment_amount - cash_amount, 2)
+                continue
+
             ratio = line.payment_amount / inv.amount_total if inv.amount_total else 0.0
             for inv_line in inv.invoice_line_ids:
                 revenue_account = inv_line.account_id
@@ -308,8 +447,43 @@ class MidlandPayment(models.Model):
                 }))
                 total_allocated += credit_amount
 
-        # Rounding correction on last line
-        diff = rec.net_payment - total_allocated
+        # Fix the header Bank debit for any Booking-rebate line whose
+        # payment_amount wasn't actually reduced by the rebate beforehand
+        if bank_correction:
+            bank_line = dict(jv_lines[0][2])
+            bank_line['debit'] = round(bank_line['debit'] - bank_correction, 2)
+            jv_lines[0] = (0, 0, bank_line)
+
+        # Confirmation rebate — the customer only owes cash for (invoice
+        # total − dealer rebate); the shortfall clears against the same
+        # "Dealer Clearance Advance" liability the Dealer Confirmation flow
+        # credits. Revenue/advance-to-customer crediting above is unaffected
+        # — it still recognizes the invoice's full value.
+        if total_confirmation_rebate > 0:
+            clearance_account = rec.company_id.dealer_clearance_advance_account_id
+            if not clearance_account:
+                raise ValidationError(
+                    _('Please configure the "Dealer Clearance Advance Account" '
+                      '(Settings → Invoicing → Midland Invoicing).')
+                )
+            bank_line = dict(jv_lines[0][2])
+            bank_line['debit'] = round(bank_line['debit'] - total_confirmation_rebate, 2)
+            jv_lines[0] = (0, 0, bank_line)
+            jv_lines.insert(1, (0, 0, {
+                'account_id': clearance_account.id,
+                'partner_id': partner.id,
+                'name': _('Dealer Clearance - %s') % rec.name,
+                'debit': round(total_confirmation_rebate, 2),
+                'credit': 0.0,
+            }))
+
+        # Rounding correction on last credit line — jv_lines[-1] is always a
+        # credit line here (each loop iteration ends by appending one,
+        # whether the Advance from Dealer credit or a Revenue credit).
+        # bank_correction is subtracted here because Booking-rebate lines
+        # already self-balance exactly (cash_amount + rebate == credit_amount
+        # by construction) — only non-Booking lines can leave rounding slack.
+        diff = (rec.net_payment - bank_correction + total_rebate) - total_allocated
         if diff and len(jv_lines) > 1:
             last = dict(jv_lines[-1][2])
             last['credit'] = round(last['credit'] + diff, 2)
@@ -352,17 +526,22 @@ class MidlandPayment(models.Model):
             inv = line.invoice_id
             if not inv:
                 continue
-            new_paid = inv.amount_paid + line.payment_amount
+            rebate = rec._invoice_rebate_amount(inv)
+            # For Booking-rebate lines, the invoice's own total is always
+            # what gets settled (cash_amount + rebate == inv.amount_total),
+            # regardless of what line.payment_amount happened to hold.
+            paid_amount = round(inv.amount_total, 2) if rebate > 0 else line.payment_amount
+            new_paid = inv.amount_paid + paid_amount
             if new_paid >= inv.amount_total:
                 inv.write({'amount_paid': inv.amount_total, 'payment_state': 'paid'})
             else:
                 inv.write({'amount_paid': new_paid, 'payment_state': 'partial'})
             if inv.installment_id:
-                self._update_installment(inv.installment_id, line.payment_amount)
+                self._update_installment(inv.installment_id, paid_amount)
             if inv.investment_installment_id:
-                self._update_investment_installment(inv.investment_installment_id, line.payment_amount,
+                self._update_investment_installment(inv.investment_installment_id, paid_amount,
                                                     invoice=inv)
-            line.payment_amount_paid = line.payment_amount
+            line.payment_amount_paid = paid_amount
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -549,6 +728,10 @@ class MidlandPaymentLine(models.Model):
         related='invoice_id.amount_residual', string='Amount Due',
         currency_field='currency_id', store=True,
     )
+    rebate_amount = fields.Monetary(
+        related='invoice_id.rebate_total', string='Rebate',
+        currency_field='currency_id', readonly=True,
+    )
     payment_amount = fields.Monetary(
         string='Payment Amount', currency_field='currency_id',
     )
@@ -559,4 +742,8 @@ class MidlandPaymentLine(models.Model):
     @api.onchange('invoice_id')
     def _onchange_invoice_id(self):
         if self.invoice_id:
-            self.payment_amount = self.invoice_id.amount_residual
+            rebate = (
+                self.payment_id._invoice_rebate_amount(self.invoice_id)
+                if self.payment_id else 0.0
+            )
+            self.payment_amount = self.invoice_id.amount_residual - rebate

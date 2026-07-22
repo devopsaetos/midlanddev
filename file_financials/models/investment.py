@@ -588,6 +588,23 @@ class InvestmentExt(models.Model):
         if self.total_amount:
             _inv_ref = self.env.ref('real_estate.investment')
             first_plan = self.investment_plan_ids.filtered(lambda l: l.installment_number == 1)
+
+            if first_plan and first_plan.invoice_created:
+                # Booking invoice already exists — either this button was
+                # already clicked once, or the invoice was generated through
+                # the installment-invoice flow instead. Don't recreate it or
+                # repeat the one-time side effects below (auto-payment,
+                # history, inventory reservation) — just make sure the
+                # deal's state catches up so Create Open File can show.
+                if self.state != 'payment':
+                    self.write({
+                        'amount_received': True,
+                        'state': 'payment',
+                        'payment_states': 'open',
+                    })
+                self.compute_rebate_amount_process()
+                return
+
             invoice_lines = [(0, 0, {
                 'product_id': _inv_ref.id,
                 'name': _inv_ref.name,
@@ -640,13 +657,27 @@ class InvestmentExt(models.Model):
                         'invoice_id': inv.jv_id.id if inv.jv_id else False,
                     })
 
+            # Compute the dealer's Booking rebate before the auto-payment below,
+            # so its rebate JV (Bank Dr / Rebate Expense Dr / Advance from
+            # Dealer Cr) has a real investment_installment_id.dealer_share to
+            # read — otherwise it would fall through to a plain revenue entry.
+            self.compute_rebate_amount_process()
+
+            # Dealer's rebate on the Booking line — funded by the dealer rather
+            # than cash, so it's netted out of what we ask for in cash below.
+            dealer_rebate = 0.0
+            if first_plan and first_plan.installment_type == 'down':
+                dealer_rebate = first_plan.dealer_share or 0.0
+
             payment_type = self.env.company.payment_type
             if payment_type:
                 if payment_type == 'osp':
                     # the token portion was already received with the token itself
-                    net_amount = self.down_payment - token_fees
+                    net_amount = self.down_payment - token_fees - dealer_rebate
                     if net_amount > 0:
                         payment = self.env['midland.payment'].create({
+                            'payment_for': 'investor',
+                            'dealer_id': self.partner_id.id,
                             'partner_id': self.partner_id.partner_id.id,
                             'investment_id': self.id,
                             'payment_amount': net_amount,
@@ -706,7 +737,12 @@ class InvestmentExt(models.Model):
             self.state = 'payment'
             self.payment_states = 'open'
         self.compute_rebate_amount_process()
-        self.create_dealer_booking_rebate_bill()
+        # NOTE: create_dealer_booking_rebate_bill() used to post a separate
+        # dealer rebate credit note here — that's now handled by the
+        # midland.payment JV (Bank Dr / Rebate Expense Dr / Advance from
+        # Dealer Cr) above, so calling it too would both double-post the
+        # rebate and crash (it creates account.move with the removed 'type'
+        # field instead of 'move_type').
 
     def create_installment_plan(self):
         if self.payment_type == 'installments' and not self.down_payment:

@@ -16,6 +16,7 @@
         'views/res_config_settings_views.xml',
         'views/midland_invoice_views.xml',
         'views/midland_payment_views.xml',
+        'views/dealer_confirmation_views.xml',
         'views/file_ext_views.xml',
         'views/investment_ext_views.xml',
         'views/menuitems.xml',
