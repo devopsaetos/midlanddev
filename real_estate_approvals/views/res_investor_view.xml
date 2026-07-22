@@ -18,6 +18,18 @@
                 <xpath expr="//button[@name='approve']" position="after">
                     <field name="latest_approval_status" invisible="1"/>
                     <field name="approval_request_count" invisible="1"/>
+                    <field name="is_current_user_approver" invisible="1"/>
+                    <button name="action_approve_request"
+                            type="object"
+                            string="Approve Request"
+                            class="oe_highlight btn-success"
+                            invisible="not is_current_user_approver"/>
+                    <button name="action_refuse_request"
+                            type="object"
+                            string="Refuse Request"
+                            class="btn-danger"
+                            invisible="not is_current_user_approver"
+                            confirm="Refuse this approval request? The investor will be sent back to Draft."/>
                 </xpath>
 
                 <xpath expr="//div[@name='button_box']" position="inside">

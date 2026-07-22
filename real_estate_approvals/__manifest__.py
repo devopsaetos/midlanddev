@@ -27,6 +27,7 @@ Connects the custom res.investor workflow with the Odoo Enterprise Approvals app
         'security/ir.model.access.csv',
         'data/approval_category_data.xml',
         'views/res_investor_view.xml',
+        'views/menu.xml',
     ],
     'license': 'LGPL-3',
     'installable': True,

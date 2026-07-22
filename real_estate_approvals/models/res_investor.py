@@ -24,6 +24,10 @@ class ResInvestor(models.Model):
         compute='_compute_latest_approval_status',
         store=False,
     )
+    is_current_user_approver = fields.Boolean(
+        compute='_compute_is_current_user_approver',
+        help='True when the current user is a pending approver on the latest approval request.',
+    )
 
     @api.depends('approval_request_ids')
     def _compute_approval_request_count(self):
@@ -35,6 +39,23 @@ class ResInvestor(models.Model):
         for rec in self:
             latest = rec.approval_request_ids.sorted('id', reverse=True)[:1]
             rec.latest_approval_status = latest.request_status if latest else False
+
+    @api.depends(
+        'approval_request_ids.request_status',
+        'approval_request_ids.approver_ids.user_id',
+        'approval_request_ids.approver_ids.status',
+    )
+    def _compute_is_current_user_approver(self):
+        current_uid = self.env.uid
+        for rec in self:
+            latest = rec.approval_request_ids.sorted('id', reverse=True)[:1]
+            if not latest or latest.request_status != 'pending':
+                rec.is_current_user_approver = False
+                continue
+            pending_for_me = latest.approver_ids.filtered(
+                lambda a: a.user_id.id == current_uid and a.status in ('new', 'pending')
+            )
+            rec.is_current_user_approver = bool(pending_for_me)
 
     def _get_investor_approval_category(self):
         category = self.env.ref(
@@ -103,3 +124,36 @@ class ResInvestor(models.Model):
             'domain': [('investor_id', '=', self.id)],
             'context': {'default_investor_id': self.id},
         }
+
+    def _get_pending_request(self):
+        self.ensure_one()
+        latest = self.approval_request_ids.sorted('id', reverse=True)[:1]
+        if not latest or latest.request_status != 'pending':
+            raise UserError(_('No pending approval request found for this investor.'))
+        return latest
+
+    def action_approve_request(self):
+        self.ensure_one()
+        request = self._get_pending_request()
+        my_approver = request.approver_ids.filtered(
+            lambda a: a.user_id.id == self.env.uid and a.status in ('new', 'pending')
+        )
+        if not my_approver:
+            raise UserError(_(
+                'You are not listed as a pending approver on this request.'
+            ))
+        request.action_approve()
+        return True
+
+    def action_refuse_request(self):
+        self.ensure_one()
+        request = self._get_pending_request()
+        my_approver = request.approver_ids.filtered(
+            lambda a: a.user_id.id == self.env.uid and a.status in ('new', 'pending')
+        )
+        if not my_approver:
+            raise UserError(_(
+                'You are not listed as a pending approver on this request.'
+            ))
+        request.action_refuse()
+        return True
