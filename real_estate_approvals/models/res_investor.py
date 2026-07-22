@@ -37,7 +37,7 @@ class ResInvestor(models.Model):
     @api.depends('approval_request_ids.request_status')
     def _compute_latest_approval_status(self):
         for rec in self:
-            latest = rec.approval_request_ids.sorted('id', reverse=True)[:1]
+            latest = rec.approval_request_ids.sorted('create_date', reverse=True)[:1]
             rec.latest_approval_status = latest.request_status if latest else False
 
     @api.depends(
@@ -48,7 +48,7 @@ class ResInvestor(models.Model):
     def _compute_is_current_user_approver(self):
         current_uid = self.env.uid
         for rec in self:
-            latest = rec.approval_request_ids.sorted('id', reverse=True)[:1]
+            latest = rec.approval_request_ids.sorted('create_date', reverse=True)[:1]
             if not latest or latest.request_status != 'pending':
                 rec.is_current_user_approver = False
                 continue
@@ -127,7 +127,7 @@ class ResInvestor(models.Model):
 
     def _get_pending_request(self):
         self.ensure_one()
-        latest = self.approval_request_ids.sorted('id', reverse=True)[:1]
+        latest = self.approval_request_ids.sorted('create_date', reverse=True)[:1]
         if not latest or latest.request_status != 'pending':
             raise UserError(_('No pending approval request found for this investor.'))
         return latest
