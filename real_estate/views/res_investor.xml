@@ -104,6 +104,13 @@
                                         readonly="state != 'draft'"
                                 />
                                 <field
+                                        name="linkedin"
+                                        string="LinkedIn"
+                                        widget="url"
+                                        placeholder='https://linkedin.com/in/...'
+                                        readonly="state != 'draft'"
+                                />
+                                <field
                                         name="mobile"
                                         readonly="state != 'draft'" required="company_type == 'person'"
                                         placeholder='+923008765432'

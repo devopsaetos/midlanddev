@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="group_investor_approver" model="res.groups">
+            <field name="name">Investor Approver</field>
+            <field name="comment">Users allowed to approve Investor Registration approval requests raised from the Real Estate module.</field>
+            <field name="implied_ids" eval="[(4, ref('approvals.group_approval_user'))]"/>
+        </record>
+    </data>
+</odoo>
