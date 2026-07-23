@@ -7,6 +7,8 @@
         <field name="arch" type="xml">
             <xpath expr="//button[@name='receive_payment']" position="after">
                 <button class="btn btn-primary" name="update_booking_amount_on_open_files" type="object" string="Update Booking On Files"/>
+                <button name="%(file_financials.action_report_deal_registration)d" type="action"
+                        string="Investor Deal" class="btn-secondary" style="margin-left:10px"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <field name="rebate_invoice_ids" widget="many2many_tags" readonly="1" force_save="1" invisible="1"
@@ -235,6 +237,21 @@
                 </group>
             </xpath>
             -->
+        </field>
+    </record>
+
+    <!-- land_development's standalone investment form has no inherit_id of its
+         own, so it doesn't pick up the header button added above via xpath —
+         patch it separately here. -->
+    <record model="ir.ui.view" id="land_development_investment_form_view_ext">
+        <field name="name">land_development_investment_form_view_ext</field>
+        <field name="model">investment</field>
+        <field name="inherit_id" ref="land_development.investment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='create_open_file']" position="after">
+                <button name="%(file_financials.action_report_deal_registration)d" type="action"
+                        string="Investor Deal" class="btn-secondary" style="margin-left:10px"/>
+            </xpath>
         </field>
     </record>
 

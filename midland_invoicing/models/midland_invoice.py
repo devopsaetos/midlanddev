@@ -160,7 +160,61 @@ class MidlandInvoice(models.Model):
              'False = posted with Create Entry for Invoices OFF (no JV at invoice time).',
     )
 
+    # ── Receipt display (File flow vs Investment flow) ────────────────────────
+    receipt_ref = fields.Char(string='File/Investment No.', compute='_compute_receipt_display')
+    receipt_category = fields.Char(string='Category', compute='_compute_receipt_display')
+    receipt_product = fields.Char(string='Product', compute='_compute_receipt_display')
+    receipt_unit_no = fields.Char(string='Unit Number', compute='_compute_receipt_display')
+    receipt_payment_type = fields.Char(string='Payment Type', compute='_compute_receipt_display')
+
     # ── Compute ───────────────────────────────────────────────────────────────
+
+    @api.depends(
+        'file_ids.name', 'file_ids.category_id', 'file_ids.unit_number', 'file_ids.payment_type',
+        'dealer_id.ref', 'investment_id.sequence_no',
+        'investment_id.reservation_type', 'investment_id.payment_type',
+        'investment_id.inventory_ids.name', 'investment_id.inventory_ids.category_id',
+        'investment_id.investment_line_ids.category_id',
+        'invoice_line_ids.product_id',
+    )
+    def _compute_receipt_display(self):
+        # Member/File payments carry file_ids; Investor/Dealer payments carry
+        # investment_id (+ dealer_id) instead — a single receipt can be for
+        # either, and (unlike file_id on the payment) this is always the
+        # invoice's own source record, so it's correct even when one payment
+        # covers lines from different invoices.
+        payment_type_labels = {'installments': 'Installment', 'lump_sum': 'Lump Sum'}
+        for rec in self:
+            # Product always comes straight from the invoice's own lines
+            # (product.realestate) — the actual thing being invoiced, not a
+            # derived category from the File/Investment.
+            rec.receipt_product = ', '.join(filter(None, rec.invoice_line_ids.mapped('product_id.name')))
+            if rec.dealer_id:
+                # Dealer's own Investor Code, not the deal's sequence number.
+                rec.receipt_ref = rec.dealer_id.ref or rec.dealer_id.investor_id or ''
+                inv = rec.investment_id
+                if inv and inv.reservation_type == 'unit' and inv.inventory_ids:
+                    rec.receipt_category = ', '.join(inv.inventory_ids.mapped('category_id.name'))
+                    rec.receipt_unit_no = ', '.join(inv.inventory_ids.mapped('name'))
+                elif inv:
+                    rec.receipt_category = ', '.join(filter(
+                        None, inv.investment_line_ids.mapped('category_id.name')))
+                    rec.receipt_unit_no = ''
+                else:
+                    rec.receipt_category = ''
+                    rec.receipt_unit_no = ''
+                rec.receipt_payment_type = payment_type_labels.get(inv.payment_type, '') if inv else ''
+            elif rec.file_ids:
+                f = rec.file_ids
+                rec.receipt_ref = f.name
+                rec.receipt_category = f.category_id.name or ''
+                rec.receipt_unit_no = f.unit_number or ''
+                rec.receipt_payment_type = payment_type_labels.get(f.payment_type, '')
+            else:
+                rec.receipt_ref = ''
+                rec.receipt_category = ''
+                rec.receipt_unit_no = ''
+                rec.receipt_payment_type = ''
 
     @api.depends('payment_line_ids.payment_id')
     def _compute_payment_count(self):

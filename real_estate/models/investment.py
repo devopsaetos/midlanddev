@@ -63,7 +63,8 @@ class Investment(models.Model):
     down_payment = fields.Float('Down Payment', required=True, tracking=True)
     balance_amount = fields.Float(compute='_compute_balance_amount', store=True, tracking=True)
     amount_paid = fields.Float()
-    total_installment = fields.Integer('No. of Installments', related='predefine_plan_id.total_installment', store=True)
+    total_installment = fields.Integer(
+        'No. of Installments', compute='_compute_total_installment', store=True, readonly=False)
     remaining_installments = fields.Integer('Remaining Installments', compute='_compute_remaining_installments')
     interval_id = fields.Many2one('payment.interval', required=True)
     grace_period = fields.Integer()
@@ -197,6 +198,17 @@ class Investment(models.Model):
     def _compute_no_of_invoices(self):
         self.no_of_invoices = len(
             self.env['account.move'].search([('investment_id', '=', self.id), ('move_type', '=', 'out_invoice')]))
+
+    @api.depends('predefine_plan_id.total_installment')
+    def _compute_total_installment(self):
+        # Only default from the predefined plan when one is picked — Full
+        # Payment deals (options == 'full') typically have no predefine_plan_id
+        # at all, so this must not overwrite whatever the user manually typed
+        # (a plain `related` field here would reset it to 0 on every save,
+        # since the related path has nothing to read/write through).
+        for rec in self:
+            if rec.predefine_plan_id:
+                rec.total_installment = rec.predefine_plan_id.total_installment
 
     @api.depends('investment_plan_ids')
     def _compute_remaining_installments(self):

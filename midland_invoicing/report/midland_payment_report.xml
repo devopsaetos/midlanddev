@@ -56,7 +56,7 @@
                                     Name:
                                 </td>
                                 <td style="padding-left:35px;">
-                                    <span t-field="o.member_id.name"/>
+                                    <span t-field="o.partner_id.name"/>
                                 </td>
                             </tr>
                             <tr>
@@ -99,40 +99,40 @@
             <table style="width:100%; border-collapse:collapse;" border="1">
                 <thead>
                     <tr style="background:#40a4d5; color:white; font-weight:normal;">
-                        <th style="padding:5px; font-weight:normal;">File No.</th>
+                        <th style="padding:5px; font-weight:normal;">
+                            <t t-if="o.payment_for == 'investor'">Investor No.</t>
+                            <t t-else="">File No.</t>
+                        </th>
                         <th style="padding:5px; font-weight:normal;">Category</th>
                         <th style="padding:5px; font-weight:normal;">Product</th>
                         <th style="padding:5px; font-weight:normal;">Unit Number</th>
                         <th style="padding:5px; font-weight:normal;">Due Date</th>
                         <th style="padding:5px; font-weight:normal;">Payment Type</th>
-                        <th style="padding:5px; font-weight:normal;">LPS</th>
                         <th style="padding:5px; font-weight:normal;">Total</th>
                         <th style="padding:5px; font-weight:normal;">Paid</th>
                         <th style="padding:5px; font-weight:normal;">Discount</th>
-                        <th style="padding:5px; font-weight:normal;">Due (Advance)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr t-foreach="o.invoice_line_ids" t-as="line">
                         <td style="padding:5px;">
-                            <span t-field="o.file_id.name"/>
+                            <span t-field="line.invoice_id.receipt_ref"/>
                         </td>
                         <td style="padding:5px;">
-                            <span t-field="o.file_id.category_id.name"/>
+                            <span t-field="line.invoice_id.receipt_category"/>
                         </td>
                         <td style="padding:5px;">
-                            <span t-field="o.file_id.unit_category_type_id.name"/>
+                            <span t-field="line.invoice_id.receipt_product"/>
                         </td>
                         <td style="padding:5px;">
-                            <span t-field="o.file_id.unit_number"/>
+                            <span t-field="line.invoice_id.receipt_unit_no"/>
                         </td>
                         <td style="padding:5px; text-align:center;">
                             <span t-field="line.due_date"/>
                         </td>
                         <td style="padding:5px; text-align:center;">
-                            <span t-field="o.file_id.payment_type"/>
+                            <span t-field="line.invoice_id.receipt_payment_type"/>
                         </td>
-                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
                         <td style="padding:5px; text-align:right;">Rs.
                             <t t-esc="'{:,.2f}'.format(line.total)"/>
                         </td>
@@ -140,15 +140,11 @@
                             <t t-esc="'{:,.2f}'.format(line.payment_amount_paid)"/>
                         </td>
                         <td style="padding:5px; text-align:right;">Rs. 0.00</td>
-                        <td style="padding:5px; text-align:right;">Rs.
-                            <t t-esc="'{:,.2f}'.format(line.amount_due)"/>
-                        </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr style="font-weight:bold;">
                         <td colspan="6" style="padding:5px;">Total</td>
-                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
                         <td style="padding:5px; text-align:right;">Rs.
                             <t t-esc="'{:,.2f}'.format(sum(line.total for line in o.invoice_line_ids))"/>
                         </td>
@@ -156,9 +152,6 @@
                             <t t-esc="'{:,.2f}'.format(sum(line.payment_amount_paid for line in o.invoice_line_ids))"/>
                         </td>
                         <td style="padding:5px; text-align:right;">Rs. 0.00</td>
-                        <td style="padding:5px; text-align:right;">Rs.
-                            <t t-esc="'{:,.2f}'.format(sum(line.amount_due for line in o.invoice_line_ids))"/>
-                        </td>
                     </tr>
                 </tfoot>
             </table>

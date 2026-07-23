@@ -150,6 +150,16 @@ class FileExtension(models.Model):
                 recs.factor_amount = factor
             else:
                 if recs.price_list_id:
+                    # Reset before re-matching so switching to a Unit/Product
+                    # with no matching price list line doesn't leave the
+                    # previous selection's price lingering, and track the
+                    # match locally (NOT via recs.sale_amount) so a match
+                    # found on an earlier line — or a stale stored value from
+                    # a previous compute — never blocks re-evaluating against
+                    # the currently selected Unit/Product.
+                    recs.sale_amount = 0.0
+                    recs.ttl_sale_amount = 0.0
+                    matched = False
                     for rec in recs.price_list_id.pricelist_line:
                         if recs.price_list_id.price_list_type == 'unit':
                             if (rec.size_id == recs.size_id
@@ -157,86 +167,82 @@ class FileExtension(models.Model):
                                     and rec.sector_id == recs.sector_id
                                     and rec.unit_inventory_id == recs.inventory_id
                                     and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.ttl_sale_amount:
-                                    recs.ttl_sale_amount = recs.ttl_sale_amount
-                                else:
-                                    recs.sale_amount = rec.price
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.sale_amount = rec.price
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
                             elif (rec.size_id == recs.size_id
                                   and rec.category_id == recs.category_id
                                   and rec.sector_id == recs.sector_id
                                   and rec.unit_inventory_id == recs.inventory_id
                                   and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.ttl_sale_amount:
-                                    recs.ttl_sale_amount = recs.ttl_sale_amount
-                                else:
-                                    recs.sale_amount = rec.price
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.sale_amount = rec.price
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
                         if recs.price_list_id.price_list_type == 'sq_ft' and recs.pricing_policy == 'area':
                             if (rec.size_id == recs.size_id and rec.category_id == recs.category_id
                                     and rec.sector_id == recs.sector_id
                                     and rec.unit_inventory_id == recs.inventory_id
                                     and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.rate_sq_ft:
-                                    recs.sale_amount = recs.rate_sq_ft * recs.covered_area
-                                    recs.ttl_sale_amount = recs.sale_amount
-                                else:
-                                    recs.rate_sq_ft = rec.price
-                                    recs.sale_amount = recs.rate_sq_ft * rec.area
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.rate_sq_ft = rec.price
+                                recs.sale_amount = recs.rate_sq_ft * (recs.covered_area or rec.area)
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
                             elif (rec.category_id == recs.category_id
                                   and rec.sector_id == recs.sector_id
                                   and rec.unit_inventory_id == recs.inventory_id
                                   and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.rate_sq_ft:
-                                    recs.sale_amount = recs.rate_sq_ft * recs.covered_area
-                                    recs.ttl_sale_amount = recs.sale_amount
-                                else:
-                                    recs.rate_sq_ft = rec.price
-                                    recs.sale_amount = recs.rate_sq_ft * rec.area
-                                    recs.ttl_sale_amount = recs.sale_amount
-                        else:
-                            if (rec.category_id == recs.category_id
-                                    and rec.sector_id == recs.sector_id
-                                    and rec.unit_category_type_id == recs.unit_category_type_id):
-                                if recs.ttl_sale_amount:
-                                    recs.ttl_sale_amount = recs.ttl_sale_amount
-                                    recs.sale_amount = recs.ttl_sale_amount
-                                else:
-                                    recs.sale_amount = rec.price
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.rate_sq_ft = rec.price
+                                recs.sale_amount = recs.rate_sq_ft * (recs.covered_area or rec.area)
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
+                        # Fallback — applies whenever the type-specific branches
+                        # above haven't already matched a line this pass (covers
+                        # price_list_type == 'generic', and 'unit'/'sq_ft'
+                        # lists where no line matches this exact unit). Blank
+                        # fields on the price list line are treated as
+                        # wildcards, since a "Generic" line is meant to apply
+                        # broadly rather than requiring every criterion set.
+                        if not matched:
+                            if ((not rec.category_id or rec.category_id == recs.category_id)
+                                    and (not rec.sector_id or rec.sector_id == recs.sector_id)
+                                    and (not rec.unit_category_type_id
+                                         or rec.unit_category_type_id == recs.unit_category_type_id)):
+                                recs.sale_amount = rec.price
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
+
+                    # Running totals — NOT gated on recs.ttl_sale_amount's own
+                    # (stale) truthiness, which broke whenever sale_amount
+                    # legitimately computed to 0 (a falsy value indistinguishable
+                    # from "not yet set" under the old per-branch checks).
                     factor = 0
+                    crm_factor = 0
                     for rec in recs.preference_ids:
                         if recs.crm_id or recs.token_id:
                             rec.total = (recs.sale_amount * rec.value) / 100
-                            if recs.ttl_sale_amount and rec.approved:
-                                recs.ttl_sale_amount = recs.ttl_sale_amount + rec.total
-                            else:
-                                recs.ttl_sale_amount = recs.sale_amount
-                            recs.factor_amount = round(rec.total) if rec.approved else 0
+                            if rec.approved:
+                                crm_factor += rec.total
+                            recs.factor_amount = round(crm_factor) if rec.approved else 0
                         elif rec.approved and rec.basis == 'fix':
                             factor = factor + rec.value
                             recs.factor_amount = factor
-                            if recs.ttl_sale_amount:
-                                recs.ttl_sale_amount = recs.ttl_sale_amount
-                            else:
-                                recs.ttl_sale_amount = recs.sale_amount + factor
                         elif rec.approved and rec.basis == 'percentage':
                             factor = factor + (recs.sale_amount * rec.value) / 100
                             recs.factor_amount = factor
-                            if recs.ttl_sale_amount and rec.approved:
-                                recs.ttl_sale_amount = recs.sale_amount + factor
-                            else:
-                                recs.ttl_sale_amount = recs.sale_amount
                         else:
                             recs.factor_amount = 0.0
-                            recs.ttl_sale_amount = recs.sale_amount
+
+                    if recs.crm_id or recs.token_id:
+                        recs.ttl_sale_amount = recs.sale_amount + crm_factor
+                    elif recs.preference_ids:
+                        recs.ttl_sale_amount = recs.sale_amount + factor
                 else:
                     recs.sale_amount = 0.0
+                    recs.ttl_sale_amount = 0.0
                     recs.factor_amount = 0.0
 
     @api.onchange('predefine_plan_id', 'custom_sale_amount', 'sale_amount')
@@ -349,6 +355,11 @@ class FileExtension(models.Model):
         return i, total_dates, dates
 
     def create_installment_plan(self):
+        # balance_amount only recomputes when net_sale_amount/initial_payment/
+        # balloting_amount actually change; force it fresh here so a plan
+        # regenerated after those were fixed elsewhere (e.g. Sale Amount was
+        # corrected) doesn't build off a stale stored value.
+        self._compute_balance_amount()
         if self.balance_amount == 0 and self.balloting_amount == 0:
             raise ValidationError('You cannot create plan with zero "Balance Amount".')
 
@@ -383,25 +394,33 @@ class FileExtension(models.Model):
             is_possession_included = False
             is_balloting_included = False
 
+            # Running pool left for the regular monthly "Installment" lines
+            # once Booking/Confirmation/Balloon/Possession/Balloting are
+            # carved out — kept in a local var, NOT written back to
+            # self.balance_amount (a stored compute field that must keep
+            # reflecting the file's true outstanding balance, not this
+            # scratch total).
+            working_balance = self.balance_amount
+
             if self.predefine_plan_id:
                 for rec in self.predefine_plan_id.predefine_plan_line_ids:
                     if rec.product_id.id == self.env.ref('real_estate.balloon_payment').id:
                         interval_limit = round(self.total_installment / self.balloon_payment_interval)
-                        self.balance_amount = self.balance_amount - (self.balloon_payment *
-                                                                     self.balloon_payment_frequency)
+                        working_balance = working_balance - (self.balloon_payment *
+                                                             self.balloon_payment_frequency)
                         if rec.include_installment:
                             is_balloon_included = True
                     if rec.product_id.id == self.env.ref('real_estate.possession_amount_product').id:
-                        self.balance_amount = self.balance_amount - (self.possession_amount *
-                                                                     self.possession_amount_frequency)
+                        working_balance = working_balance - (self.possession_amount *
+                                                             self.possession_amount_frequency)
                         if rec.include_installment:
                             is_possession_included = True
                     if rec.product_id.id == self.env.ref('real_estate.confirmation_amount_product').id:
-                        self.balance_amount = self.balance_amount - (self.confirmation_amount *
-                                                                     self.confirmation_amount_frequency)
+                        working_balance = working_balance - (self.confirmation_amount *
+                                                             self.confirmation_amount_frequency)
                     if rec.product_id.id == self.env.ref('real_estate.balloting_product').id:
-                        self.balance_amount = self.balance_amount - (self.primary_amount *
-                                                                     self.primary_amount_frequency)
+                        working_balance = working_balance - (self.primary_amount *
+                                                             self.primary_amount_frequency)
                         if rec.include_installment:
                             is_balloting_included = True
                 if self.predefine_plan_id.include_in_plan == 'no':
@@ -425,7 +444,7 @@ class FileExtension(models.Model):
                     for rec in range(1, self.total_installment):
                         dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
 
-            balance = self.balance_amount
+            balance = working_balance
             amount = 0
 
             # Commented
@@ -483,9 +502,9 @@ class FileExtension(models.Model):
                                   and self.predefine_plan_id.include_in_plan == 'yes'
                                   and self.predefine_plan_id.treat_balloon_as == 'installment')
             installment_amount = round(
-                self.balance_amount / (self.total_installment - self.balloon_payment_frequency)
+                working_balance / (self.total_installment - self.balloon_payment_frequency)
             ) if balloon_uses_slots else round(
-                self.balance_amount / self.total_installment)
+                working_balance / self.total_installment)
 
             # with include_installment the balloon is a separate line and every
             # month still gets its own installment line
@@ -734,9 +753,9 @@ class FileExtension(models.Model):
                         installment_number = self.installment_plan_ids[-1].installment_number + 1
                         paid_installments = (
                                                     self.total_installment - self.investment_id.remaining_installments) * round(
-                            self.balance_amount / self.total_installment)
+                            working_balance / self.total_installment)
                         amount = round(
-                            (self.balance_amount - paid_installments) / self.investment_id.remaining_installments)
+                            (working_balance - paid_installments) / self.investment_id.remaining_installments)
                         self.installment_plan_ids.create({
                             # 'date': rec,
                             'date': dates[i],

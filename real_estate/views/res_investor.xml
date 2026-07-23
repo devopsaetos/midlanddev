@@ -75,8 +75,7 @@
                                        readonly="state != 'draft'"
                                        string="Dealer Type" required="1"/>
                                 <field name="marketing_company_id"
-                                       invisible="investor_type == 'marketing_company'" readonly="state != 'draft'"
-                                       required="investor_type == 'dealer'"
+                                       invisible="1" readonly="state != 'draft'"
                                        string="Marketing Company"
                                        options="{'no_open': True,'no_create': True}"
                                        domain="[]"
@@ -109,6 +108,7 @@
                                         widget="url"
                                         placeholder='https://linkedin.com/in/...'
                                         readonly="state != 'draft'"
+                                        invisible="1"
                                 />
                                 <field
                                         name="mobile"

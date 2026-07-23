@@ -34,6 +34,9 @@
         'views/file_verification.xml',
         'views/payment_verification.xml',
         'views/dealer_rebate.xml',
+        # Reports (must load before views/investment.xml, whose header
+        # button references this report action's xmlid)
+        'report/deal_registration_report.xml',
         'views/investment.xml',
         'views/menuitems.xml',
         'views/investment_platter.xml',

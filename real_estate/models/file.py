@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import qrcode
 import base64
 from io import BytesIO
@@ -12,6 +13,8 @@ import dateutil.parser
 from lxml import etree as ET
 import secrets
 from hashids import Hashids
+
+_logger = logging.getLogger(__name__)
 
 
 
@@ -452,6 +455,18 @@ class File(models.Model):
         if self.price_list_id.price_list_type == 'sq_ft' and self.pricing_policy == 'area' and self.inventory_id:
             self.rate_sq_ft = False
 
+        # Force Price List / Sale Amount to re-evaluate right away — don't
+        # rely on the framework's automatic depends-cascade alone, since
+        # unit_category_type_id/category_id above are set as side effects
+        # within this same onchange rather than by the user directly.
+        self._price_list()
+        self._sale_amount()
+
+    @api.onchange('price_list_id')
+    def _onchange_price_list_id(self):
+        # Covers a manual Price List change too, same reasoning as above.
+        self._sale_amount()
+
     @api.onchange('manual_installment_plan_ids')
     def _sale_amount_manually_cal(self):
         serial_number = 1
@@ -524,8 +539,17 @@ class File(models.Model):
 
     @api.onchange('society_id', 'phase_id', 'street_id', 'category_id', 'unit_category_type_id', 'sector_id')
     def _phase_domain(self):
-        # if self.inventory_id:
-        #     self.inventory_id = False
+        # Clear a stale Unit only if it no longer belongs to the newly
+        # picked Street — guarded (not unconditional) because this onchange
+        # also re-fires when _onchange_inventory sets self.street_id to
+        # match a just-picked Unit; in that case they already match, so
+        # nothing gets cleared and the Unit selection isn't undone.
+        if self.inventory_id and self.street_id and self.inventory_id.street_id != self.street_id:
+            self.inventory_id = False
+            # Force these to re-evaluate right away against the now-cleared
+            # Unit, rather than relying on the automatic depends-cascade.
+            self._price_list()
+            self._sale_amount()
         inventory_domain = []
         state_domain = [('state', '=', 'reserved')] if self.crm_id or self.token_id else \
             [('state', '=', 'avalible_for_sale')]
@@ -664,6 +688,11 @@ class File(models.Model):
         self.installment_created = False
 
     def create_installment_plan(self):
+        # balance_amount only recomputes when net_sale_amount/initial_payment/
+        # balloting_amount actually change; force it fresh here so a plan
+        # regenerated after those were fixed elsewhere (e.g. Sale Amount was
+        # corrected) doesn't build off a stale stored value.
+        self._compute_balance_amount()
         if self.balance_amount == 0 and self.balloting_amount == 0:
             raise ValidationError('You cannot create plan with zero "Balance Amount".')
 
@@ -1365,93 +1394,116 @@ class File(models.Model):
                 recs.factor_amount = factor
             else:
                 if recs.price_list_id:
+                    # Reset before re-matching so switching to a Unit/Product
+                    # with no matching price list line doesn't leave the
+                    # previous selection's price lingering, and track the
+                    # match locally (NOT via recs.sale_amount) so a match
+                    # found on an earlier line — or a stale stored value from
+                    # a previous compute — never blocks re-evaluating against
+                    # the currently selected Unit/Product.
+                    recs.sale_amount = 0.0
+                    recs.ttl_sale_amount = 0.0
+                    matched = False
+                    _logger.info(
+                        "SALE_AMOUNT_DEBUG file=%s price_list=%s(type=%s) "
+                        "file.category=%s file.sector=%s file.unit_category_type=%s(id=%s)",
+                        recs.id, recs.price_list_id.name, recs.price_list_id.price_list_type,
+                        recs.category_id.name, recs.sector_id.name,
+                        recs.unit_category_type_id.name, recs.unit_category_type_id.id,
+                    )
                     for rec in recs.price_list_id.pricelist_line:
+                        _logger.info(
+                            "  line id=%s category=%s sector=%s unit_category_type=%s(id=%s) price=%s",
+                            rec.id, rec.category_id.name, rec.sector_id.name,
+                            rec.unit_category_type_id.name, rec.unit_category_type_id.id, rec.price,
+                        )
                         if recs.price_list_id.price_list_type == 'unit':
                             if (rec.size_id == recs.size_id
                                     and rec.category_id == recs.category_id
                                     and rec.sector_id == recs.sector_id
                                     and rec.unit_inventory_id == recs.inventory_id
                                     and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.ttl_sale_amount:
-                                    recs.ttl_sale_amount = recs.ttl_sale_amount
-                                else:
-                                    recs.sale_amount = rec.price
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.sale_amount = rec.price
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
                             elif (rec.size_id == recs.size_id
                                   and rec.category_id == recs.category_id
                                   and rec.sector_id == recs.sector_id
                                   and rec.unit_inventory_id == recs.inventory_id
                                   and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.ttl_sale_amount:
-                                    recs.ttl_sale_amount = recs.ttl_sale_amount
-                                else:
-                                    recs.sale_amount = rec.price
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.sale_amount = rec.price
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
                         if recs.price_list_id.price_list_type == 'sq_ft' and recs.pricing_policy == 'area':
                             if (rec.size_id == recs.size_id and rec.category_id == recs.category_id
                                     and rec.sector_id == recs.sector_id
                                     and rec.unit_inventory_id == recs.inventory_id
                                     and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.rate_sq_ft:
-                                    recs.sale_amount = recs.rate_sq_ft * recs.covered_area
-                                    recs.ttl_sale_amount = recs.sale_amount
-                                else:
-                                    recs.rate_sq_ft = rec.price
-                                    recs.sale_amount = recs.rate_sq_ft * rec.area
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.rate_sq_ft = rec.price
+                                recs.sale_amount = recs.rate_sq_ft * (recs.covered_area or rec.area)
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
                             elif (rec.category_id == recs.category_id
                                   and rec.sector_id == recs.sector_id
                                   and rec.unit_inventory_id == recs.inventory_id
                                   and rec.starting_date <= recs.booking_date <= rec.end_date):
-                                if recs.rate_sq_ft:
-                                    recs.sale_amount = recs.rate_sq_ft * recs.covered_area
-                                    recs.ttl_sale_amount = recs.sale_amount
-                                else:
-                                    recs.rate_sq_ft = rec.price
-                                    recs.sale_amount = recs.rate_sq_ft * rec.area
-                                    recs.ttl_sale_amount = recs.sale_amount
-                        else:
-                            if (rec.category_id == recs.category_id
-                                    and rec.sector_id == recs.sector_id
-                                    and rec.unit_category_type_id == recs.unit_category_type_id):
-                                if recs.ttl_sale_amount:
-                                    recs.ttl_sale_amount = recs.ttl_sale_amount
-                                    recs.sale_amount = recs.ttl_sale_amount
-                                else:
-                                    recs.sale_amount = rec.price
-                                    recs.ttl_sale_amount = recs.sale_amount
+                                recs.rate_sq_ft = rec.price
+                                recs.sale_amount = recs.rate_sq_ft * (recs.covered_area or rec.area)
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
 
+                        # Fallback — applies whenever the type-specific branches
+                        # above haven't already matched a line this pass (covers
+                        # price_list_type == 'generic', and 'unit'/'sq_ft'
+                        # lists where no line matches this exact unit). Blank
+                        # fields on the price list line are treated as
+                        # wildcards, since a "Generic" line is meant to apply
+                        # broadly rather than requiring every criterion set.
+                        if not matched:
+                            if ((not rec.category_id or rec.category_id == recs.category_id)
+                                    and (not rec.sector_id or rec.sector_id == recs.sector_id)
+                                    and (not rec.unit_category_type_id
+                                         or rec.unit_category_type_id == recs.unit_category_type_id)):
+                                recs.sale_amount = rec.price
+                                recs.ttl_sale_amount = recs.sale_amount
+                                matched = True
+
+                    _logger.info(
+                        "SALE_AMOUNT_DEBUG result matched=%s sale_amount=%s",
+                        matched, recs.sale_amount,
+                    )
+
+                    # Running totals — NOT gated on recs.ttl_sale_amount's own
+                    # (stale) truthiness, which broke whenever sale_amount
+                    # legitimately computed to 0 (a falsy value indistinguishable
+                    # from "not yet set" under the old per-branch checks).
                     factor = 0
+                    crm_factor = 0
                     for rec in recs.preference_ids:
                         if recs.crm_id or recs.token_id:
                             rec.total = (recs.sale_amount * rec.value) / 100
-                            if recs.ttl_sale_amount and rec.approved:
-                                recs.ttl_sale_amount = recs.ttl_sale_amount + rec.total
-                            else:
-                                recs.ttl_sale_amount = recs.sale_amount
-                            recs.factor_amount = round(rec.total) if rec.approved else 0
+                            if rec.approved:
+                                crm_factor += rec.total
+                            recs.factor_amount = round(crm_factor) if rec.approved else 0
                         elif rec.approved and rec.basis == 'fix':
                             factor = factor + rec.value
                             recs.factor_amount = factor
-                            if recs.ttl_sale_amount:
-                                recs.ttl_sale_amount = recs.ttl_sale_amount
-                            else:
-                                recs.ttl_sale_amount = recs.sale_amount + factor
                         elif rec.approved and rec.basis == 'percentage':
                             factor = factor + (recs.sale_amount * rec.value) / 100
                             recs.factor_amount = factor
-                            if recs.ttl_sale_amount and rec.approved:
-                                recs.ttl_sale_amount = recs.sale_amount + factor
-                            else:
-                                recs.ttl_sale_amount = recs.sale_amount
                         else:
                             recs.factor_amount = 0.0
-                            recs.ttl_sale_amount = recs.sale_amount
+
+                    if recs.crm_id or recs.token_id:
+                        recs.ttl_sale_amount = recs.sale_amount + crm_factor
+                    elif recs.preference_ids:
+                        recs.ttl_sale_amount = recs.sale_amount + factor
                 else:
                     recs.sale_amount = 0.0
+                    recs.ttl_sale_amount = 0.0
                     recs.factor_amount = 0.0
 
     @api.depends('unit_category_type_id', 'category_id', 'booking_date', 'sector_id')

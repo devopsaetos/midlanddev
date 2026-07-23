@@ -30,4 +30,15 @@ class RebateOnAllotmentExt(models.Model):
     def compute_rebate_amount(self):
         for rec in self:
             if rec.investment_id and rec.total_rebate > 0:
-                rec.rebate_amount = rec.total_rebate if rec.calculation_basis == 'fix' else rec.investment_id.total_amount * (rec.total_rebate / 100)
+                if rec.calculation_basis == 'fix':
+                    rec.rebate_amount = rec.total_rebate
+                else:
+                    # Percentage rebates apply against THIS line's own stage
+                    # amount (Booking or Confirmation) — not the deal's whole
+                    # total_amount, which inflated every line by the full
+                    # unit count.
+                    base_amount = (rec.investment_id.down_payment if rec.transaction_type == 'booking'
+                                   else rec.investment_id.confirmation_amount)
+                    rec.rebate_amount = base_amount * (rec.total_rebate / 100)
+            else:
+                rec.rebate_amount = 0

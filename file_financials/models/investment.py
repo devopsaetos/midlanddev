@@ -455,17 +455,15 @@ class InvestmentExt(models.Model):
             # recs.rebate_amount = recs.net_of_rebate + recs.separate_rebate
             # if recs.rebate_settlement == 'on_deal_close':
             if recs.rebate_id and recs.rebate_on_allotment_ids:
-                for line in recs.rebate_on_allotment_ids:
-                    if line.agent_type == 'dealer':
-                        if line.calculation_basis == 'percentage':
-                            dealer_rebate += recs.total_amount * (line.total_rebate / 100)
-                        if line.calculation_basis == 'fix':
-                            dealer_rebate += line.total_rebate
-                    if line.agent_type == 'marketing_company':
-                        if line.calculation_basis == 'percentage':
-                            marketing_rebate += recs.total_amount * (line.total_rebate / 100)
-                        if line.calculation_basis == 'fix':
-                            marketing_rebate += line.total_rebate
+                # rebate_on_allotment_ids.rebate_amount is the source of truth
+                # per line (scoped to that line's Booking/Confirmation amount)
+                # — sum it here instead of re-deriving against total_amount,
+                # so the header totals never drift from the line list.
+                recs.rebate_on_allotment_ids.compute_rebate_amount()
+                dealer_rebate = sum(recs.rebate_on_allotment_ids.filtered(
+                    lambda l: l.agent_type == 'dealer').mapped('rebate_amount'))
+                marketing_rebate = sum(recs.rebate_on_allotment_ids.filtered(
+                    lambda l: l.agent_type == 'marketing_company').mapped('rebate_amount'))
             recs.deal_rebate_amount = deal_rebate
             recs.sale_rebate_amount = files_rebate
             recs.rebate_amount = deal_rebate + files_rebate
@@ -510,19 +508,28 @@ class InvestmentExt(models.Model):
 
     def compute_rebate_amount_process(self):
         for rec in self:
+            # Refresh the Rebate tab's own per-line amounts and header totals
+            # (Total/Dealer/Marketing Rebate) too — they used to only update
+            # once, on picking the rebate template, using the old wrong
+            # total_amount-based formula, and never tracked this button.
+            rec.calculate_rebate()
             for lines in rec.investment_plan_ids:
                 if lines.installment_type == 'down':
                     marketing_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'marketing_company' and l.transaction_type == 'booking')
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'dealer' and l.transaction_type == 'booking')
+                    # Percentage rebates apply against THIS installment line's
+                    # own amount (e.g. the Booking amount) — not the deal's
+                    # total_amount across all units, which double-counted the
+                    # rebate base for every installment line on the deal.
                     lines.marketing_share = sum(
-                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * rec.no_of_units
                         for l in marketing_lines
                     )
                     lines.dealer_share = sum(
-                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * rec.no_of_units
                         for l in dealer_lines
                     )
@@ -533,12 +540,12 @@ class InvestmentExt(models.Model):
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'dealer' and l.transaction_type == 'confirmation')
                     lines.marketing_share = sum(
-                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * rec.no_of_units
                         for l in marketing_lines
                     )
                     lines.dealer_share = sum(
-                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * rec.no_of_units
                         for l in dealer_lines
                     )

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_report_deal_registration" model="ir.actions.report">
+            <field name="name">Dealer Registration Form (Deal)</field>
+            <field name="model">investment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">file_financials.report_deal_registration_document</field>
+            <field name="report_file">file_financials.report_deal_registration_document</field>
+            <field name="print_report_name">'Dealer Registration Form - %s' % (object.sequence_no)</field>
+            <field name="binding_model_id" ref="real_estate.model_investment"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="real_estate.paperformat_dealer_registration"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════
+             PAGE 2 — Deal Details (Property Info, Installment Details,
+             Inventory) for the investment behind the Dealer Registration.
+        ═══════════════════════════════════════════════════════════ -->
+        <template id="report_deal_details_page">
+            <div class="page">
+
+                <div class="text-center" style="margin-bottom:15px;">
+                    <h2 style="display:inline-block;
+                               background-color:#40a4d5;
+                               color:white;
+                               padding:10px 40px;
+                               margin:0;
+                               letter-spacing:3px;">
+                        DEAL DETAILS
+                    </h2>
+                </div>
+                <div class="text-center" style="margin-bottom:15px; font-size:13px; color:#8c8c8c;">
+                    <span t-esc="doc.sequence_no"/>
+                </div>
+
+                <hr style="border-top:2px solid #40a4d5;"/>
+
+                <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Property Info</div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="row">
+                            <div class="col-5"><strong>Company:</strong></div>
+                            <div class="col-7" t-field="doc.company_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-5"><strong>Society:</strong></div>
+                            <div class="col-7" t-field="doc.society_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-5"><strong>Phase:</strong></div>
+                            <div class="col-7" t-field="doc.phase_id"/>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="row" t-if="doc.project_type == 'skyscraper'">
+                            <div class="col-5"><strong>Floor:</strong></div>
+                            <div class="col-7" t-field="doc.sector_id"/>
+                        </div>
+                        <div class="row" t-else="">
+                            <div class="col-5"><strong>Sector:</strong></div>
+                            <div class="col-7" t-field="doc.sector_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-5"><strong>Category:</strong></div>
+                            <div class="col-7" t-field="doc.category_id"/>
+                        </div>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Installment Details</div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="row">
+                            <div class="col-6"><strong>Launch Type:</strong></div>
+                            <div class="col-6" t-field="doc.launch_type_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Platter:</strong></div>
+                            <div class="col-6" t-field="doc.platter_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Plan Type:</strong></div>
+                            <div class="col-6" t-field="doc.plan_type"/>
+                        </div>
+                        <div class="row" t-if="doc.plan_type == 'predefine'">
+                            <div class="col-6"><strong>Plan Name:</strong></div>
+                            <div class="col-6" t-field="doc.predefine_plan_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Payment Type:</strong></div>
+                            <div class="col-6" t-field="doc.payment_type"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Interval:</strong></div>
+                            <div class="col-6" t-field="doc.interval_id"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>No. of Installments:</strong></div>
+                            <div class="col-6" t-field="doc.total_installment"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Installment Start Date:</strong></div>
+                            <div class="col-6" t-field="doc.start_date"/>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="row">
+                            <div class="col-6"><strong>Total Deal Amount:</strong></div>
+                            <div class="col-6" t-esc="'{:,.2f}'.format(doc.total_amount)"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Booking Payment:</strong></div>
+                            <div class="col-6" t-esc="'{:,.2f}'.format(doc.down_payment)"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Balance Amount:</strong></div>
+                            <div class="col-6" t-esc="'{:,.2f}'.format(doc.balance_amount)"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>No. Of Units:</strong></div>
+                            <div class="col-6" t-field="doc.no_of_units"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Mode Of Payments:</strong></div>
+                            <div class="col-6" t-field="doc.mode_of_payments"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Payment States:</strong></div>
+                            <div class="col-6" t-field="doc.payment_states"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6"><strong>Files to Show:</strong></div>
+                            <div class="col-6" t-field="doc.files_to_show"/>
+                        </div>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <div style="color:#40a4d5; font-weight:bold; margin-bottom:8px;">Inventory</div>
+                <table style="width:100%; border-collapse:collapse; font-size:10px;" border="1">
+                    <thead>
+                        <tr style="background:#40a4d5; color:white;">
+                            <th style="padding:4px;">
+                                <t t-if="doc.project_type == 'skyscraper'">Floor</t>
+                                <t t-else="">Sector</t>
+                            </th>
+                            <th style="padding:4px;">Street</th>
+                            <th style="padding:4px;">Category</th>
+                            <th style="padding:4px;">Product</th>
+                            <th style="padding:4px;">Size</th>
+                            <th style="padding:4px;">Plot No.</th>
+                            <th style="padding:4px; text-align:right;">List Price</th>
+                            <th style="padding:4px; text-align:right;">Investor Unit Price</th>
+                            <th style="padding:4px; text-align:right;">Deal Price</th>
+                            <th style="padding:4px;">Token</th>
+                            <th style="padding:4px;">File Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="doc.inventory_ids if doc.reservation_type == 'unit' else doc.investment_line_ids" t-as="line">
+                            <td style="padding:4px;"><span t-field="line.sector_id"/></td>
+                            <td style="padding:4px;"><span t-field="line.street_id"/></td>
+                            <td style="padding:4px;"><span t-field="line.category_id"/></td>
+                            <td style="padding:4px;"><span t-field="line.unit_category_type_id"/></td>
+                            <td style="padding:4px;"><span t-field="line.size_id"/></td>
+                            <td style="padding:4px;" t-esc="line.name if doc.reservation_type == 'unit' else (line.inventory_id.name if line.inventory_id else '')"/>
+                            <td style="padding:4px; text-align:right;" t-esc="'{:,.2f}'.format(line.list_price or 0.0)"/>
+                            <td style="padding:4px; text-align:right;"
+                                t-esc="'{:,.2f}'.format((line.investor_unit_price if doc.reservation_type == 'unit' else line.investor_price) or 0.0)"/>
+                            <td style="padding:4px; text-align:right;" t-esc="'{:,.2f}'.format(line.deal_price or 0.0)"/>
+                            <td style="padding:4px;">
+                                <span t-if="doc.reservation_type == 'unit'" t-field="line.token_id"/>
+                            </td>
+                            <td style="padding:4px;">
+                                <span t-if="doc.reservation_type == 'unit'" t-field="line.state"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </template>
+
+        <template id="report_deal_registration_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.basic_layout">
+                        <div class="footer">
+                            <div class="row" style="font-size:11px; color:#191970; border-top:1px solid #ddd; padding-top:6px; margin:0;">
+                                <div class="col-6">
+                                    Printed By: <span t-esc="env.user.name"/>
+                                </div>
+                                <div class="col-6 text-end">
+                                    Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                </div>
+                            </div>
+                        </div>
+                        <t t-call="real_estate.report_dealer_registration_page">
+                            <t t-set="dealer" t-value="doc.partner_id"/>
+                        </t>
+                        <div style="page-break-before: always;"/>
+                        <t t-call="file_financials.report_deal_details_page"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>
