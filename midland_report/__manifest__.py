@@ -1,6 +1,6 @@
 {
     'name': 'Midland Membership Form Report',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'summary': 'Membership Form & Installment Plan PDF report for Real Estate Files',
     'description': """
 Adds a "Print Report" button on the File form (Real Estate) which generates

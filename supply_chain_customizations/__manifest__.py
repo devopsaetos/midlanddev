@@ -4,7 +4,7 @@
     'summary': """To customize supply chain""",
     'description': """To customize supply chain""",
     'author': "Hassan Raza",
-    'version': '19.0.0.0.1',
+    'version': '19.0.0.0.2',
     'depends': ['purchase', 'maintenance'],
     'data': [
         'security/ir.model.access.csv',
