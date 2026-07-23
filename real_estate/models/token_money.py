@@ -97,10 +97,17 @@ class TokenMoney(models.Model):
     def _compute_no_of_invoices(self):
         self.no_of_invoices = len(self.env['midland.invoice'].search([('token_id', '=', self.id)]))
 
-    @api.depends('ttl_sale_amount', 'token_fees')
+    @api.depends('ttl_sale_amount', 'token_fees', 'investment_id')
     def _compute_balance_amount(self):
         for rec in self:
-            rec.balance_amount = rec.ttl_sale_amount - rec.token_fees
+            if not rec.investment_id:
+                # No Deal yet — ttl_sale_amount only ever gets populated by
+                # the investment_id onchange, so it's 0 here; subtracting
+                # token_fees from it produced a confusing negative "Balance"
+                # for a token collected before any Deal exists.
+                rec.balance_amount = 0.0
+            else:
+                rec.balance_amount = rec.ttl_sale_amount - rec.token_fees
 
     def open_invoices(self):
         return {

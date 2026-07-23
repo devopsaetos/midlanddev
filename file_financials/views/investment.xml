@@ -27,7 +27,8 @@
                        readonly="state in 'payment'"/>
                 <field name="token_id" string="Investor Token"
                        options="{'no_create': True}"
-                       domain="[('party_type', '=', 'investor'), ('investor_id', '=', partner_id), ('state', '=', 'paid')]"
+                       domain="[('party_type', '=', 'investor'), ('investor_id', '=', partner_id), ('state', '=', 'paid'),
+                                '|', ('investment_id', '=', False), ('investment_id', '=', id)]"
                        readonly="state in 'payment'"/>
             </xpath>
             <xpath expr="//field[@name='project_type']" position="attributes">
