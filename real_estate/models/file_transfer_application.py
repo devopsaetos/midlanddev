@@ -156,23 +156,26 @@ class TransferApplication(models.Model):
             # Assign a new unique token if the token is still 'New'
             record.secret_token = secrets.token_hex(10)
 
+    @api.depends('file_id.installment_plan_ids.invoice_created', 'file_id.installment_plan_ids.payment_status',
+                 'file_id.installment_plan_ids.amount_paid')
     def _compute_installment_amount(self):
-        rec = self.file_id.installment_plan_ids.filtered(lambda s : s.installment_type != 'down' and s.invoice_created == True and s.payment_status == 'paid')
-        if rec:
-            self.total_installments_paid = sum(rec.mapped('amount_paid'))
-            self.installments_paid = len(rec)
-        else:
-            self.total_installments_paid = 0
-            self.installments_paid = 0
+        for rec in self:
+            # Every installment line counts here (Booking, Confirmation, Balloon,
+            # the 36 regular ones, ...) - "Installments Paid"/"Total Installments
+            # Paid" is meant to reflect everything actually paid on the file, not
+            # just the regular numbered installments.
+            lines = rec.file_id.installment_plan_ids.filtered(
+                lambda s: s.invoice_created == True and s.payment_status == 'paid')
+            rec.total_installments_paid = sum(lines.mapped('amount_paid'))
+            rec.installments_paid = len(lines)
 
+    @api.depends('file_id.installment_plan_ids.payment_status', 'file_id.installment_plan_ids.amount')
     def _compute_due_installment_amount(self):
-        rec = self.file_id.installment_plan_ids.filtered(lambda s : s.installment_type != 'down' and s.payment_status == 'not_paid' or s.payment_status == False)
-        if rec:
-            self.total_installments_due = sum(rec.mapped('amount'))
-            self.installments_due = len(rec)
-        else:
-            self.total_installments_due = 0
-            self.installments_due = 0
+        for rec in self:
+            lines = rec.file_id.installment_plan_ids.filtered(
+                lambda s: s.payment_status == 'not_paid' or s.payment_status == False)
+            rec.total_installments_due = sum(lines.mapped('amount'))
+            rec.installments_due = len(lines)
 
     def _document_count(self):
         for each in self:
@@ -319,22 +322,22 @@ class TransferApplication(models.Model):
 
         for rec in taxes:
             if rec.seller_required_tax_ids:
+                # one invoice line per unique product, its amount summed across
+                # that product's own tax lines only - previously this rebuilt
+                # `prod` inside the loop instead of appending, so only the last
+                # product survived, and its amount summed every product's tax
+                # lines together instead of just its own.
                 seller_products = rec.seller_required_tax_ids.mapped('product_id')
-                seller_unique_prods = []
-                for x in seller_products:
-                    if x not in seller_unique_prods:
-                        seller_unique_prods.append(x.id)
-                for lines in rec.seller_required_tax_ids:
-                    for product in rec.env['product.product'].browse(seller_unique_prods):
-                        if product == lines.product_id:
-                            amount = sum(rec.seller_required_tax_ids.search([('required_taxes_seller_id', '=', taxes.id),
-                                                                            ('product_id', 'in',seller_unique_prods)]).mapped('amount'))
-                            prod = [(0, 0, {
-                                'product_id': product.id,
-                                'name': product.name,
-                                'account_id': product.property_account_income_id.id,
-                                'price_unit': amount
-                            })]
+                prod = []
+                for product in seller_products:
+                    amount = sum(rec.seller_required_tax_ids.filtered(
+                        lambda l: l.product_id == product).mapped('amount'))
+                    prod.append((0, 0, {
+                        'product_id': product.id,
+                        'name': product.name,
+                        'account_id': product.property_account_income_id.id,
+                        'price_unit': amount
+                    }))
 
                 invoice = self.env['account.move'].create({
                     'transfer_application_id': self.id,
@@ -348,23 +351,20 @@ class TransferApplication(models.Model):
                 })
                 invoice.file_ids = self.file_id.id
                 invoice.action_post()
+                self.tax_invoice_created = True
 
             if rec.buyer_required_tax_ids:
                 buyer_products = rec.buyer_required_tax_ids.mapped('product_id')
-                buyer_unique_prods = []
-                for x in buyer_products:
-                    if x not in buyer_unique_prods:
-                        buyer_unique_prods.append(x.id)
-                for lines in rec.buyer_required_tax_ids:
-                    for product in self.env['product.product'].browse(buyer_unique_prods):
-                        if product == lines.product_id:
-                            amount = sum(rec.buyer_required_tax_ids.search([('required_taxes_buyer_id','=',taxes.id),('product_id','in',buyer_unique_prods)]).mapped('amount'))
-                            prod= [(0, 0, {
-                                'product_id': product.id,
-                                'name': product.name,
-                                'account_id': product.property_account_income_id.id,
-                                'price_unit': amount
-                            })]
+                prod = []
+                for product in buyer_products:
+                    amount = sum(rec.buyer_required_tax_ids.filtered(
+                        lambda l: l.product_id == product).mapped('amount'))
+                    prod.append((0, 0, {
+                        'product_id': product.id,
+                        'name': product.name,
+                        'account_id': product.property_account_income_id.id,
+                        'price_unit': amount
+                    }))
 
                 invoice = self.env['account.move'].create({
                     'transfer_application_id': self.id,
@@ -378,14 +378,15 @@ class TransferApplication(models.Model):
                 })
                 invoice.file_ids = self.file_id.id
                 invoice.action_post()
+                self.tax_invoice_created = True
+
             if rec.other_charges_ids:
-                for lines in rec.other_charges_ids:
-                    prod = [(0, 0, {
-                            'product_id': lines.product_id.id,
-                            'name': lines.product_id.name,
-                            'account_id': lines.product_id.property_account_income_id.id,
-                            'price_unit': lines.amount
-                            })]
+                prod = [(0, 0, {
+                        'product_id': lines.product_id.id,
+                        'name': lines.product_id.name,
+                        'account_id': lines.product_id.property_account_income_id.id,
+                        'price_unit': lines.amount
+                        }) for lines in rec.other_charges_ids]
 
                 invoice = self.env['account.move'].create({
                     'transfer_application_id': self.id,
@@ -399,7 +400,6 @@ class TransferApplication(models.Model):
                 })
                 invoice.file_ids = self.file_id.id
                 invoice.action_post()
-
                 self.tax_invoice_created = True
 
     def generate_invoice(self):
@@ -680,7 +680,7 @@ class TransferApplication(models.Model):
                     raise ValidationError('Please attach all the required documents.')
                 if self.wave_transfer_fee == 'no' and self.no_of_invoices < 1:
                     raise ValidationError(_('Please create transfer fee invoice first.'))
-                if self.wave_transfer_fee == 'yes' and self.wave_transfer_amount <= self.env.company.transfer_fee and self.no_of_invoices < 1:
+                if self.wave_transfer_fee == 'yes' and self.wave_transfer_amount < self.env.company.transfer_fee and self.no_of_invoices < 1:
                     raise ValidationError(_('Please create transfer fee invoice first.'))
                 if not self.transfer_witness_ids:
                     raise ValidationError(_('Please add witness'))
