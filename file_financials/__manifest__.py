@@ -9,8 +9,8 @@
         This module is developed to manage financials changes of Files.
     """,
 
-    'author': "Siddiq Chauhdry",
-    'website': "https://www.siddiqchauhdry.com",
+    'author': "Ateeb Shahid",
+    'website': "",
     'category': 'Real Estate',
     'version': '19.0.1.0.4',
 
