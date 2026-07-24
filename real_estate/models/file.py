@@ -436,6 +436,16 @@ class File(models.Model):
         # Recompute payment amounts from plan lines using existing logic
         self._balloon_payment()
 
+    @api.onchange('membership_id')
+    def _onchange_membership_id_tracking_id(self):
+        # Tracking ID otherwise defaults to '*' and only gets a real value
+        # from an ir.sequence at create() time — showing the Member Number
+        # here as soon as a Member is picked gives it a meaningful value
+        # immediately, and create()'s sequence fallback only fires when this
+        # is still '*', so it won't be overwritten afterward.
+        if self.membership_id:
+            self.tracking_id = self.membership_id.ref
+
     @api.onchange('inventory_id')
     def _onchange_inventory(self):
         self.preference_ids.unlink()

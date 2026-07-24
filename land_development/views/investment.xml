@@ -63,6 +63,7 @@
                             <field name="partner_id" string="Investor Name"
                                    options="{'no_create': True, 'no_open': True}"
                                    readonly="state in ('payment',)"/>
+                            <field name="investor_code" string="Investor Code"/>
                             <label for="grace_period"/>
                             <div class="o_row">
                                 <field name="grace_period" readonly="state in ('payment',)"/>

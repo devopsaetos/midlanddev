@@ -56,6 +56,7 @@ class Investment(models.Model):
     sector_id = fields.Many2one('sector', 'Sector', tracking=True)
     category_id = fields.Many2one('plot.category', 'Category', tracking=True)
     partner_id = fields.Many2one('res.investor', string='Investor', required=True, tracking=True)
+    investor_code = fields.Char(related='partner_id.ref', string='Investor Code', readonly=True)
     booking_date = fields.Date('Booking date', required=True, tracking=True)
     start_date = fields.Date('Start date', required=True, tracking=True)
     total_amount = fields.Float('Total amount', compute='compute_deal_price', store=True, readonly=True,
