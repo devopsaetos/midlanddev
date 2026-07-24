@@ -1,6 +1,6 @@
 {
     'name': 'Construction Budget',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Project and task-level budget planning for construction projects',
     'author': 'NCP',

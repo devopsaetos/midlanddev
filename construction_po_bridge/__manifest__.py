@@ -1,6 +1,6 @@
 {
     'name': 'Construction PO Bridge',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Links Purchase Orders and Vendor Bills to construction tasks and cost sheets',
     'author': 'NCP',

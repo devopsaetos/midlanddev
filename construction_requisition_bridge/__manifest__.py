@@ -1,6 +1,6 @@
 {
     'name': 'Construction Requisition Bridge',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Links Purchase Requisitions to construction projects, tasks, and cost sheets',
     'author': 'NCP',

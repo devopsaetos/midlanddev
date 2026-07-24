@@ -12,7 +12,7 @@
     'author': "Wahab Ali Malik || Syed Hamza || Mudassir Ali Zaidi || Axiom Team",
     'website': "https://www.axiomworld.net",
     'category': 'Sales/Real Estate',
-    'version': '19.0.1.0.5',
+    'version': '19.0.1.0.6',
     'license': 'OEEL-1',
     'pre_init_hook': 'pre_init_hook',
 

@@ -1,6 +1,6 @@
 {
     'name': 'Real Estate — Approvals Bridge',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'summary': 'Route res.investor state transitions through the Enterprise Approvals app',
     'description': """
 Real Estate Approvals Bridge

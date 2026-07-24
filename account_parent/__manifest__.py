@@ -26,7 +26,7 @@ This module
     'license': 'OPL-1',
     'website': 'http://o4odoo.com',
     'category': 'Accounting',
-    'version': '19.0.1.1.1',
+    'version': '19.0.1.1.2',
     'depends': ['account'],
     'data': [
         'security/account_parent_security.xml',

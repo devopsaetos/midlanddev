@@ -12,7 +12,7 @@
     'author': "Wahab Ali Malik || Syed Hamza || Axiom Team",
     'website': "http://www.axm.app",
     'category': 'Real Estate',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'license': 'OEEL-1',
 
     'depends': ['real_estate'],

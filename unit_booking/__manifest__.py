@@ -8,7 +8,7 @@
     'author': "Syed Hamza ||Mudassir Ali Zaidi|| Axiom World",
     'website': "http://www.axiomworld.net",
     'category': 'Real Estate',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
 
     # any module necessary for this one to work correctly
     'depends': ['real_estate', 'account_asset'],
