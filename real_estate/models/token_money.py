@@ -49,8 +49,10 @@ class TokenMoney(models.Model):
         ('no', 'No'),
     ], default='no', help="Set this option to yes if you want to create a new member.", tracking=True)
     contact_name = fields.Char('Name ', related='partner_id.name', store=True, readonly=False)
-    name = fields.Char(related='partner_id.name', store=True, tracking=True)
+    # name = fields.Char(related='partner_id.name', store=True, tracking=True)
     partner_id = fields.Many2one('res.member', string='Member Name', tracking=True)
+    member_number = fields.Char('Member Number', related='partner_id.ref', store=True, readonly=True)
+    file_id = fields.Many2one('file', string='File')
     email = fields.Char('Email', store=True, related='partner_id.email', readonly=False, tracking=True)
     cnic = fields.Char('CNIC', store=True, related='partner_id.cnic', readonly=False, tracking=True)
     cnic_line_ids = fields.One2many('res.cnic', 'token_id', store=True, related='partner_id.cnic_line_ids')
@@ -137,11 +139,22 @@ class TokenMoney(models.Model):
         # self.partner_id = False
         # self.contact_name = ''
 
+    @api.onchange('partner_id')
+    def _onchange_partner_id_existing(self):
+        # Member Name is now picked directly from res.member (no more manual
+        # Existing Member?/Change Member toggle) - keep is_existing in sync so
+        # create()'s "auto-create a new member" branch is skipped for a
+        # picked member, and so the is_existing-gated lookups in create_file()/
+        # open_file() keep matching this record correctly.
+        if self.partner_id:
+            self.is_existing = True
+
     @api.model_create_multi
     def create(self, vals_list):
         for val in vals_list:
             if val.get('serial_number', _('New')) == _('New'):
-                val['serial_number'] = self.env['ir.sequence'].next_by_code("token.money") or _('New')
+                seq_code = 'token.money.investor' if val.get('party_type') == 'investor' else 'token.money'
+                val['serial_number'] = self.env['ir.sequence'].next_by_code(seq_code) or _('New')
 
         res = super(TokenMoney, self).create(vals_list)
 
@@ -158,7 +171,7 @@ class TokenMoney(models.Model):
                     'cnic': rec.cnic,
                     'email': rec.email,
                     'city': False,
-                    # 'token_id': rec.id
+                    'token_id': rec.id,
                 })
                 rec.partner_id = partner.id
 
@@ -166,9 +179,6 @@ class TokenMoney(models.Model):
 
     def write(self, vals):
         res = super(TokenMoney, self).write(vals)
-        # investor tokens carry no unit lines; units live on the Deal
-        if self.party_type != 'investor' and not self.token_line_ids:
-            raise ValidationError(_("You can not save record before select any plot."))
         # if self.company_type == 'aop' and not self.cnic_line_ids:
         #     raise ValidationError(_("Please add information in Details tab."))
         return res
@@ -203,9 +213,6 @@ class TokenMoney(models.Model):
         # investor tokens are an advance against a Deal; units and the
         # installment plan live on the Deal, so those checks are member-only
         if self.party_type != 'investor':
-            if not self.token_line_ids:
-                raise ValidationError(_("You can not Generate token before select any Criteria."))
-
             if self.company_type == 'aop' and not self.cnic_line_ids:
                 raise ValidationError(_("Please add information in Details tab."))
 
@@ -388,7 +395,11 @@ class TokenMoney(models.Model):
             raise ValidationError(_(
                 "Investor tokens are converted via 'Create Open File', not 'Create File' - "
                 "investors get an Investor File, not a Member File."))
-        self.state = 'adjusted'
+        # state stays 'paid' here (not flipped to 'adjusted' yet) - same as an
+        # investor's Deal: the token isn't actually credited against anything
+        # until the Booking installment invoice is generated and
+        # file._settle_token_on_plan() (midland_invoicing/models/file_ext.py)
+        # knocks it off and flips the state itself.
 
         if self.project_type == 'skyscraper':
             if self.crm_id:
@@ -1046,9 +1057,14 @@ class TokenMoney(models.Model):
             }
 
     def cancel_token(self):
-        # file = self.env['file'].search([('token_id', '=', self.id)])
-        # if file:
-        #     raise ValidationError('File is already created so token cannot be cancelled.')
+        # create_file() no longer flips state to 'adjusted' the moment a file is
+        # created (that now only happens once the Booking invoice actually nets
+        # the token off - see file_ext._settle_token_on_plan()), so a file can
+        # exist while state is still 'paid'. Guard on the file itself instead of
+        # relying on state alone, or a File's token could get cancelled out from
+        # under it.
+        if self.env['file'].search_count([('token_id', '=', self.id)]):
+            raise ValidationError(_('File is already created so token cannot be cancelled.'))
         if self.token_generated == True and self.state != 'cancel':
             token_cancel = self.env.ref('real_estate.token_cancel')
             if self.token_paid:

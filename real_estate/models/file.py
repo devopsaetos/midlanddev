@@ -58,7 +58,7 @@ class File(models.Model):
         ('installments', 'Installment'),
         ('lump_sum', 'Lump Sum')
     ], string='Payment Type', tracking=True)
-    membership_id = fields.Many2one('res.member', string='Member No',
+    membership_id = fields.Many2one('res.member', string='Member Name',
                                     tracking=True)
     member_company_type = fields.Selection([('person', 'Individual'),
                                             ('company', 'Company'),
@@ -427,7 +427,7 @@ class File(models.Model):
             rec.balloon_payment = 0.0
             rec.possession_amount = 0.0
             rec.confirmation_amount = 0.0
-            rec.primary_amount = 0.0
+            rec.r = 0.0
             rec.installment_amount = 0.0
             if rec.plan_type == 'predefine' and rec.predefine_plan_id:
                 rec.plan_description = rec.predefine_plan_id.name
@@ -797,16 +797,26 @@ class File(models.Model):
             amount = 0
 
             if self.initial_payment and self.type == 'normal':
+                booking_tax = round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0
+                booking_total = self.initial_payment + booking_tax
+                # a token already paid is an advance against the Booking installment,
+                # same as investment.receive_payment() nets it off the Deal's first
+                # plan line - credit it here so the Booking line shows the true
+                # outstanding amount instead of the full price on top of the token.
+                token_amount = 0.0
+                if self.token_id and self.token_id.token_paid:
+                    token_amount = min(self.token_id.token_fees, booking_total)
                 self.installment_plan_ids.create({
                     'date': self.booking_date + relativedelta(days=+self.grace_period),
                     'installment_type': 'down',
                     'installment_name': 'Booking',
                     'installment_number': 1,
                     'amount': self.initial_payment,
-                    'tax_amount': round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0,
-                    'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100,
-                                                             2) if tax_id else self.initial_payment,
-                    'payment_status': 'not_paid',
+                    'tax_amount': booking_tax,
+                    'amount_paid': token_amount,
+                    'residual': max(booking_total - token_amount, 0.0),
+                    'payment_status': 'paid' if token_amount and token_amount >= booking_total else (
+                        'in_payment' if token_amount else 'not_paid'),
                     'file_id': self.id
                 })
 
@@ -1332,7 +1342,8 @@ class File(models.Model):
         self.initial_payment = round(
             sum(val.total for val in self.file_payment_ids if val.product_id.is_include_net_amount))
 
-    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount')
+    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount', 'confirmation_amount',
+                 'confirmation_amount_frequency')
     def _compute_balance_amount(self):
         amount = 0
         add_ballotting = False
@@ -1348,7 +1359,14 @@ class File(models.Model):
         #         else:
         #             amount = amount + [self.sale_amount * rec.value / 100][0]
         for rec in self:
-            rec.balance_amount = round(rec.net_sale_amount - rec.initial_payment - rec.balloting_amount)
+            # Confirmation is carved out of the sale price same as Booking/Balloting
+            # (create_installment_plan()'s working_balance already deducts it before
+            # sizing the regular installments) - Balance Amount was missing this
+            # carve-out, so it overstated what's actually left once Confirmation
+            # is invoiced.
+            confirmation_total = rec.confirmation_amount * rec.confirmation_amount_frequency
+            rec.balance_amount = round(
+                rec.net_sale_amount - rec.initial_payment - rec.balloting_amount - confirmation_total)
         # if self.balance_amount and self.balance_amount < 0:
         #     raise ValidationError('Balance Amount cannot be less than zero')
 

@@ -62,43 +62,47 @@ class CrmLeadExt(models.Model):
     def token_money(self):
         # if not self.plan_locked:
         #     raise ValidationError(_('Please create installment plan before creating token.'))
-        data = []
-        for rec in self.crm_lead_line:
-            if rec:
-                data.append((0,0,{
-                        'phase_id': rec.phase_id.id,
-                        'sector_id': rec.sector_id.id,
-                        'street_id': rec.street_id.id,
-                        'inventory_id': rec.inventory_id.id,
-                        'category_id': rec.category_id.id,
-                        'unit_category_type_id': rec.unit_category_type_id.id,
-                        'size_id': rec.size_id.id,
-                        'unit_class_id': rec.unit_class_id.id,
-                }))
-        context = {
-                    'default_from_crm': True,
-                    'default_plan_locked': self.plan_locked,
-                    'default_crm_id': self.id,
-                    'default_party_type': self.party_type,
-                    'default_investor_id': self.investor_id.id,
-                    'default_is_existing': self.is_existing,
-                    'default_company_type': self.partner_id.company_type,
-                    'default_partner_id': self.partner_id.id if self.is_existing else False,
-                    'default_contact_name': self.contact_name,
-                    'default_cp_phone_no': self.phone,
-                    'default_phone_no': self.phone,
-                    'default_email': self.email_from,
-                    'default_society_id': self.society_id.id,
-                    'default_token_line_ids': data,
-                  }
+        token = self.env['token.money'].search([('crm_id', '=', self.id)], limit=1)
+        if not token:
+            data = []
+            for rec in self.crm_lead_line:
+                if rec:
+                    data.append((0, 0, {
+                            'phase_id': rec.phase_id.id,
+                            'sector_id': rec.sector_id.id,
+                            'street_id': rec.street_id.id,
+                            'inventory_id': rec.inventory_id.id,
+                            'category_id': rec.category_id.id,
+                            'unit_category_type_id': rec.unit_category_type_id.id,
+                            'size_id': rec.size_id.id,
+                            'unit_class_id': rec.unit_class_id.id,
+                    }))
+            # One-click token creation, mirroring investment.generate_token(): the record is
+            # created straight away from the lead's own data, no blank form to fill and save first.
+            token = self.env['token.money'].create({
+                'from_crm': True,
+                'plan_locked': self.plan_locked,
+                'crm_id': self.id,
+                'party_type': self.party_type,
+                'investor_id': self.investor_id.id,
+                'is_existing': self.is_existing,
+                'company_type': self.partner_id.company_type,
+                'partner_id': self.partner_id.id if self.is_existing else False,
+                'contact_name': self.contact_name,
+                'cp_phone_no': self.phone,
+                'phone_no': self.phone,
+                'email': self.email_from,
+                'society_id': self.society_id.id,
+                'token_line_ids': data,
+                'date': fields.Date.today(),
+            })
         return {
             'res_model': 'token.money',
             'type': 'ir.actions.act_window',
-            'context': context,
             # 'domain': [('customer_id', '=', self.customer_id)],
             'view_mode': 'form',
             'view_type': 'form',
-            'res_id': self.env['token.money'].search([('crm_id', '=', self.id)]).id,
+            'res_id': token.id,
             'view_id': self.env.ref("real_estate.validate_token_form").id if self.project_type == 'housing_society' else self.env.ref('land_development.validate_token_form').id,
             'target': 'self'
         }

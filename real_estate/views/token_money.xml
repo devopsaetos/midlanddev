@@ -113,13 +113,14 @@
                             <field name="no_of_units" invisible="party_type != 'investor'"/>
 <!--                            <field name="is_existing"-->
 <!--                                   readonly="(token_generated == True or token_generated == True)"/>-->
-                            <field name="is_existing" invisible="party_type == 'investor'"/>
-                            <field name="change_member" invisible="party_type == 'investor'"/>
+                            <field name="is_existing" invisible="1"/>
+                            <!--<field name="change_member" invisible="party_type == 'investor'"/>-->
                             <field name="create_open_file" invisible="state != 'draft'"/>
-                            <field name="contact_name" invisible="is_existing == True or party_type == 'investor'" required="is_existing != True and party_type != 'investor'" readonly="token_generated == True"/>
-                            <field name="name" invisible="1"/>
-<!--                            <field name="partner_id" domain="[('project_type','=','housing_society'),('is_member','=',True)]" invisible="is_existing != True" required="is_existing == True" readonly="token_generated == True"-->
-<!--                                   options="{'no_create': True, 'no_open': True}"/>-->
+                            <!--<field name="contact_name" invisible="is_existing == True or party_type == 'investor'" required="is_existing != True and party_type != 'investor'" readonly="token_generated == True"/>-->
+<!--                            <field name="name" invisible="1"/>-->
+                            <field name="partner_id" string="Name"/>
+                            <field name="member_number" invisible="party_type == 'investor'"/>
+                            <field name="file_id" invisible="party_type == 'investor'"/>
                             <!--                            <field name="company_type" string="Member Type"-->
                             <!--                                   readonly="(token_generated == True or is_existing == True)" required="is_existing != True"-->
                             <!--                            />-->
@@ -249,7 +250,7 @@
     <record model="ir.actions.act_window" id="real_estate.token_action">
         <field name="name">Token</field>
         <field name="res_model">token.money</field>
-        <field name="domain">[('project_type','=','housing_society')]</field>
+        <field name="domain">[('project_type','=','housing_society'), ('party_type','=','member')]</field>
         <field name="context">{'default_from_crm':0, 'current_view': 'realestate', 'default_project_type':
             'housing_society'}
         </field>
@@ -297,6 +298,19 @@
                 ]"
         />
     </record>
+
+    <!-- Portfolio Management parent menu is disabled for housing_society (see menuitems.xml);
+    keeping this in step with the sibling investors/investment/investor_file menuitems, which
+    are commented out for the same reason. Uncomment together if Portfolio Management is enabled. -->
+    <!--
+    <menuitem
+            id="real_estate.investor_token_menu"
+            name="Investor Token"
+            action="real_estate.investor_token_action"
+            sequence='3'
+            parent="real_estate.menu_investment_parent"
+    />
+    -->
     <!--    Record Rule for Multi Company-->
         <record id="real_estate.token_money_rule" model="ir.rule">
             <field name="name">token_money multi-company</field>

@@ -99,6 +99,15 @@
             <field name="company_id" eval="False"/>
         </record>
 
+        <!-- Sequences for Investor Token Number -->
+        <record id="seq_token_number_investor" model="ir.sequence">
+            <field name="name">Investor Token Number</field>
+            <field name="code">token.money.investor</field>
+            <field name="prefix">ITKN/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
         <!-- Sequences for Investors -->
         <record id="seq_investment_number" model="ir.sequence">
             <field name="name">Deal Number</field>

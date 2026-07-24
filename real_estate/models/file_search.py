@@ -18,49 +18,30 @@ class FileSearch(models.TransientModel):
     return_line = fields.One2many('return.line', 'return_id', 'Initial Request')
     reason = fields.Char(string='Reason')
 
-    def key(self, priority):
-        priority_dict = {
-            1: 'name',
-            2: 'membership_id',
-            3: 'tracking_id',
-            4: 'membership_id.cnic',
-            5: 'unit_number',
-        }
-        return priority_dict[priority]
-
-    def value(self, priority):
-        priority_dict = {
-            1: self.file_id.name,
-            2: self.membership_id.ref,
-            3: self.tracking_id,
-            4: self.cnic,
-            5: self.unit_number,
-        }
-        return priority_dict[priority].strip()
-
     def search_related_file(self):
         self.return_line.unlink()
 
-        priority_list = [self.file_id, self.membership_id, self.tracking_id, self.cnic, self.unit_number]
-        priority = 0
-        record = []
+        # Every filled field narrows the search together (AND) instead of only
+        # the single highest-priority one being used and the rest silently
+        # ignored - previously File Number and Member No couldn't be combined,
+        # and membership_id was compared against its .ref string rather than
+        # its id, so a Member No search rarely matched anything at all.
+        domain = []
+        if self.file_id:
+            domain.append(('id', '=', self.file_id.id))
+        if self.membership_id:
+            domain.append(('membership_id', '=', self.membership_id.id))
+        if self.tracking_id:
+            domain.append(('tracking_id', '=', self.tracking_id.strip()))
+        if self.cnic:
+            domain.append(('membership_id.cnic', '=', self.cnic.strip()))
+        if self.unit_number:
+            domain.append(('unit_number', '=', self.unit_number.strip()))
 
-        if not any(priority_list):
+        if not domain:
             raise ValidationError(_('Must populate one of the above field for search.'))
 
-        for rec in priority_list:
-            if not rec:
-                priority = priority + 1
-            elif rec:
-                priority = priority + 1
-                break
-
-        if priority == 6:
-            member_id = self.env['res.member'].search([('cnic', '=', self.cnic)])
-            if member_id:
-                record = self.env['file'].search([('membership_id', '=', member_id.id)])
-        else:
-            record = self.env['file'].search([(self.key(priority), '=', self.value(priority))])
+        record = self.env['file'].search(domain)
 
         if record:
             for rec in record:
@@ -197,23 +178,26 @@ class ReturnLine(models.TransientModel):
     traferer_tax_setup_ids = fields.Many2many('tax.setup.lines', 'tax_requirements_return_rel', 'transfer_id', 'return_id')
     traferee_tax_setup_ids = fields.Many2many('tax.setup.lines')
 
+    @api.depends('file_id.installment_plan_ids.invoice_created', 'file_id.installment_plan_ids.payment_status',
+                 'file_id.installment_plan_ids.amount_paid')
     def _compute_installment_amount(self):
-        rec = self.file_id.installment_plan_ids.filtered(lambda s: s.installment_type != 'down' and s.invoice_created == True and s.payment_status == 'paid')
-        if rec:
-            self.total_installments_paid = sum(rec.mapped('amount_paid'))
-            self.installments_paid = len(rec)
-        else:
-            self.total_installments_paid = 0
-            self.installments_paid = 0
+        for rec in self:
+            # Every installment line counts here (Booking, Confirmation, Balloon,
+            # the 36 regular ones, ...) - "Installments Paid"/"Total Installments
+            # Paid" is meant to reflect everything actually paid on the file, not
+            # just the regular numbered installments.
+            lines = rec.file_id.installment_plan_ids.filtered(
+                lambda s: s.invoice_created == True and s.payment_status == 'paid')
+            rec.total_installments_paid = sum(lines.mapped('amount_paid'))
+            rec.installments_paid = len(lines)
 
+    @api.depends('file_id.installment_plan_ids.payment_status', 'file_id.installment_plan_ids.amount')
     def _compute_due_installment_amount(self):
-        rec = self.file_id.installment_plan_ids.filtered(lambda s: s.installment_type != 'down' and s.payment_status == 'not_paid' or s.payment_status == False)
-        if rec:
-            self.total_installments_due = sum(rec.mapped('amount'))
-            self.installments_due = len(rec)
-        else:
-            self.total_installments_due = 0
-            self.installments_due = 0
+        for rec in self:
+            lines = rec.file_id.installment_plan_ids.filtered(
+                lambda s: s.payment_status == 'not_paid' or s.payment_status == False)
+            rec.total_installments_due = sum(lines.mapped('amount'))
+            rec.installments_due = len(lines)
 
     @api.onchange('transaction_type')
     def transection_detail(self):
