@@ -427,7 +427,7 @@ class File(models.Model):
             rec.balloon_payment = 0.0
             rec.possession_amount = 0.0
             rec.confirmation_amount = 0.0
-            rec.r = 0.0
+            rec.primary_amount = 0.0
             rec.installment_amount = 0.0
             if rec.plan_type == 'predefine' and rec.predefine_plan_id:
                 rec.plan_description = rec.predefine_plan_id.name
