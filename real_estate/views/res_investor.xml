@@ -65,10 +65,10 @@
                                        required="investor_type == 'sub_dealer'"
                                        options="{'no_open': True,'no_create': True}"
                                 />
-                                <field name="investment_category"
+                                <!-- <field name="investment_category"
                                        required="1"
                                        options="{'no_open': True,'no_create': True}"
-                                />
+                                /> -->
                             </group>
                             <group>
                                 <field name="company_type"
