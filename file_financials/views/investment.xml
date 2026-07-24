@@ -25,7 +25,6 @@
                 <field name="partner_id" string="Investor Name"
                        options="{'no_create': True, 'no_open': True}"
                        readonly="state in 'payment'"/>
-                <field name="investor_code" string="Investor Code"/>
                 <field name="token_id" string="Investor Token"
                        options="{'no_create': True}"
                        domain="[('party_type', '=', 'investor'), ('investor_id', '=', partner_id), ('state', '=', 'paid'),
