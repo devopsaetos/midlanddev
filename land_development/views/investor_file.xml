@@ -150,11 +150,15 @@
                                             <group name="installment_plan" string="Installment Plan">
                                                 <field name="token_generated" invisible="1"/>
                                                 <field name="plan_description" invisible="1"/>
-                                                <field name="payment_type"
-                                                       readonly="reset_installment_plan == 'no'"
-                                                />
+                                                <field name="plan_type" invisible="state != 'open'"
+                                                       required="1"/>
+                                                <field name="predefine_plan_id" string="Plan Name"
+                                                       options="{'no_create': True, 'no_open': True}"
+                                                       invisible="plan_type != 'predefine' or plan_type == False"
+                                                       required="plan_type == 'predefine'"
+                                                       readonly="state != 'open'"/>
+                                                <field name="payment_type"/>
                                                 <field name="interval_id"
-                                                       readonly="reset_installment_plan == 'no'"
                                                        options="{'no_create': True}"
                                                 />
                                                 <field name="starting_date"
@@ -162,7 +166,7 @@
                                                        readonly="reset_installment_plan == 'no'"
                                                 />
                                                 <field name="total_installment"
-                                                       readonly="reset_installment_plan == 'no'"
+                                                       readonly="reset_installment_plan == 'no' and payment_type != 'lump_sum'"
                                                 />
                                                 <field name="payment_states" readonly="1" string="Payment Status"/>
                                             </group>

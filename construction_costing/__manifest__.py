@@ -1,6 +1,6 @@
 {
     'name': 'Construction Costing',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Construction job costing and cost sheet management',
     'author': 'NCP',

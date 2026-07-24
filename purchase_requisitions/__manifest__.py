@@ -3,7 +3,7 @@
 
 {
     'name': 'Product/Material Purchase Requisitions by Employees/Users in Odoo',
-    'version': '19.0.0.2',
+    'version': '19.0.0.3',
     'category': 'Purchases',
     'summary': 'This plugin helps to manage Purchase Requisition',
     'description': """

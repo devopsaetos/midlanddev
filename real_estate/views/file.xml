@@ -158,7 +158,9 @@
                             <field name="street_id"
                                    options="{'no_create': True, 'no_open': True}" readonly="file_status != 'draft'"/>
                             <field name="inventory_id" string="Unit No."
-                                   domain="[('project_type','in',[project_type, False])]"
+                                   domain="[('project_type','in',[project_type, False]),
+                                            ('street_id','=',street_id),
+                                            ('state','=','avalible_for_sale')]"
                                    options="{'no_create': True, 'no_open': True}" readonly="file_status != 'draft'"/>
                             <field name="unit_number" string="Plot No." readonly="file_status != 'draft'"
                                    invisible="property_info_criteria != True"/>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Midland Invoicing',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Real Estate',
     'author': 'Midland',
     'license': 'OEEL-1',
@@ -16,6 +16,7 @@
         'views/res_config_settings_views.xml',
         'views/midland_invoice_views.xml',
         'views/midland_payment_views.xml',
+        'views/dealer_confirmation_views.xml',
         'views/file_ext_views.xml',
         'views/investment_ext_views.xml',
         'views/menuitems.xml',

@@ -56,6 +56,7 @@ class Investment(models.Model):
     sector_id = fields.Many2one('sector', 'Sector', tracking=True)
     category_id = fields.Many2one('plot.category', 'Category', tracking=True)
     partner_id = fields.Many2one('res.investor', string='Investor', required=True, tracking=True)
+    investor_code = fields.Char(related='partner_id.ref', string='Investor Code', readonly=True)
     booking_date = fields.Date('Booking date', required=True, tracking=True)
     start_date = fields.Date('Start date', required=True, tracking=True)
     total_amount = fields.Float('Total amount', compute='compute_deal_price', store=True, readonly=True,
@@ -63,7 +64,8 @@ class Investment(models.Model):
     down_payment = fields.Float('Down Payment', required=True, tracking=True)
     balance_amount = fields.Float(compute='_compute_balance_amount', store=True, tracking=True)
     amount_paid = fields.Float()
-    total_installment = fields.Integer('No. of Installments', related='predefine_plan_id.total_installment', store=True)
+    total_installment = fields.Integer(
+        'No. of Installments', compute='_compute_total_installment', store=True, readonly=False)
     remaining_installments = fields.Integer('Remaining Installments', compute='_compute_remaining_installments')
     interval_id = fields.Many2one('payment.interval', required=True)
     grace_period = fields.Integer()
@@ -198,6 +200,17 @@ class Investment(models.Model):
         self.no_of_invoices = len(
             self.env['account.move'].search([('investment_id', '=', self.id), ('move_type', '=', 'out_invoice')]))
 
+    @api.depends('predefine_plan_id.total_installment')
+    def _compute_total_installment(self):
+        # Only default from the predefined plan when one is picked — Full
+        # Payment deals (options == 'full') typically have no predefine_plan_id
+        # at all, so this must not overwrite whatever the user manually typed
+        # (a plain `related` field here would reset it to 0 on every save,
+        # since the related path has nothing to read/write through).
+        for rec in self:
+            if rec.predefine_plan_id:
+                rec.total_installment = rec.predefine_plan_id.total_installment
+
     @api.depends('investment_plan_ids')
     def _compute_remaining_installments(self):
         for rec in self:
@@ -275,6 +288,22 @@ class Investment(models.Model):
         result = super(Investment, self).create(vals_list)
         return result
 
+    @api.constrains('token_id')
+    def _check_token_unique(self):
+        for rec in self:
+            if rec.token_id:
+                other = self.search([('token_id', '=', rec.token_id.id), ('id', '!=', rec.id)], limit=1)
+                if other:
+                    raise ValidationError(_(
+                        'Token %s is already used on Deal %s.') % (rec.token_id.serial_number, other.sequence_no))
+                if rec.token_id.party_type != 'investor':
+                    raise ValidationError(_('Only investor tokens can be attached to a Deal.'))
+                if rec.token_id.investor_id and rec.partner_id and rec.token_id.investor_id != rec.partner_id:
+                    raise ValidationError(_(
+                        'Token %s belongs to investor %s, not %s.') % (
+                        rec.token_id.serial_number, rec.token_id.investor_id.investor_id,
+                        rec.partner_id.investor_id))
+
     def generate_token(self):
         self.ensure_one()
         if not self.token_id:
@@ -285,8 +314,10 @@ class Investment(models.Model):
             self.token_id = self.env['token.money'].create({
                 'party_type': 'investor',
                 'investor_id': self.partner_id.id,
+                'investment_id': self.id,
                 'society_id': self.society_id.id,
                 'date': fields.Date.today(),
+                'ttl_sale_amount': self.total_amount,
             }).id
         return {
             'type': 'ir.actions.act_window',

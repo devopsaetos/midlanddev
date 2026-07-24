@@ -30,6 +30,12 @@
                             invisible="entry_mode or state == 'draft'"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_view_payments" type="object"
+                                icon="fa-money" invisible="payment_count == 0">
+                            <field name="payment_count" widget="statinfo" string="Payments"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -38,6 +44,8 @@
                     <group>
                         <group string="Customer Info">
                             <field name="member_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="dealer_id"
                                    readonly="state != 'draft'"/>
                             <field name="partner_id"
                                    readonly="state != 'draft'"/>
@@ -84,6 +92,7 @@
                                     <field name="price_unit"/>
                                     <field name="tax_ids" widget="many2many_tags"/>
                                     <field name="price_subtotal" sum="Subtotal"/>
+                                    <field name="rebate_amount" sum="Rebate"/>
                                 </list>
                             </field>
                             <group class="oe_subtotal_footer oe_right">
@@ -101,6 +110,9 @@
                                        widget="monetary"
                                        options="{'currency_field': 'currency_id'}"/>
                                 <field name="amount_residual"
+                                       widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                                <field name="rebate_total"
                                        widget="monetary"
                                        options="{'currency_field': 'currency_id'}"/>
                                 <field name="amount_paid"
@@ -176,6 +188,7 @@
                 <field name="name"/>
                 <field name="invoice_date"/>
                 <field name="member_id"/>
+                <field name="dealer_id"/>
                 <field name="property_invoice_type"/>
                 <field name="investor_file_id"/>
 

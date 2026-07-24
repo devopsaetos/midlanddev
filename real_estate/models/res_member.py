@@ -57,6 +57,7 @@ class ResMember(models.Model):
                                domain="[('country_id', '=?', country_id)]", tracking=True)
     country_id = fields.Many2one('res.country', string='Country', ondelete='restrict', tracking=True)
     email = fields.Char(tracking=True)
+    linkedin = fields.Char(string="LinkedIn", tracking=True)
     phone = fields.Char(tracking=True)
     mobile = fields.Char(tracking=True)
     emirates_id = fields.Char(string='Emirates ID', tracking=True)

@@ -3,3 +3,5 @@ access_midland_invoice_user,midland.invoice user,model_midland_invoice,base.grou
 access_midland_invoice_line_user,midland.invoice.line user,model_midland_invoice_line,base.group_user,1,1,1,1
 access_midland_payment_user,midland.payment user,model_midland_payment,base.group_user,1,1,1,1
 access_midland_payment_line_user,midland.payment.line user,model_midland_payment_line,base.group_user,1,1,1,1
+access_dealer_confirmation_user,dealer.confirmation user,model_dealer_confirmation,base.group_user,1,1,1,1
+access_dealer_confirmation_line_user,dealer.confirmation.line user,model_dealer_confirmation_line,base.group_user,1,1,1,1

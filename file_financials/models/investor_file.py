@@ -33,8 +33,11 @@ class InvestorFileExt(models.Model):
     balloting_amount = fields.Float(readonly=False, tracking=True)
     balloting_amount_percentage = fields.Float(string='Final Payment Percentage', readonly=False,
                                                tracking=True)
-    initial_payment = fields.Float('Initial Payment', readonly=False, tracking=True)
+    initial_payment = fields.Float(
+        'Initial Payment', compute='_compute_initial_payment', store=True, readonly=False, tracking=True)
     initial_payment_percentage = fields.Float('Initial Payment Percentage', readonly=False, tracking=True)
+    total_installment = fields.Integer(
+        'No of Installment', compute='_compute_total_installment', store=True, readonly=False, tracking=True)
     balance_amount = fields.Float('Balance Amount', compute='_compute_balance_amount', readonly=True)
     remaining_payment = fields.Float(compute='_compute_remaining_amount', store=True, readonly=False)
     balloon_payment = fields.Float()
@@ -220,18 +223,79 @@ class InvestorFileExt(models.Model):
                 rec.balloting_amount_percentage = 0.00
                 rec.balloting_amount = 0.00
 
-    @api.onchange('plan_type', 'predefine_plan_id')
+    @api.depends('plan_type', 'predefine_plan_id', 'predefine_plan_id.predefine_plan_line_ids',
+                 'predefine_plan_id.predefine_plan_line_ids.value', 'predefine_plan_id.predefine_plan_line_ids.basis',
+                 'sale_amount')
+    def _compute_initial_payment(self):
+        # A real @api.depends compute, not just an onchange: this must hold
+        # regardless of what the browser/widget does with the Plan Name
+        # field, since Initial Payment was observed reverting to the full
+        # Sale Amount purely from re-picking Plan Name (even to the same
+        # plan) with no reliable onchange-only fix — this recomputes
+        # server-side on every write that touches the dependency, which
+        # onchange cannot guarantee.
+        downpayment_product_id = self.env.ref('real_estate.downpayment_product').id
+        for rec in self:
+            if rec.plan_type == 'predefine' and rec.predefine_plan_id:
+                down_line = rec.predefine_plan_id.predefine_plan_line_ids.filtered(
+                    lambda l: l.product_id.id == downpayment_product_id)
+                if down_line:
+                    line = down_line[0]
+                    rec.initial_payment = round(
+                        rec.sale_amount * (line.value / 100) if line.basis == 'percentage' else line.value)
+                else:
+                    rec.initial_payment = 0.0
+
+    @api.depends('plan_type', 'predefine_plan_id', 'predefine_plan_id.total_installment')
+    def _compute_total_installment(self):
+        # Same reasoning as _compute_initial_payment above — this was an
+        # onchange-only assignment (in onchange_plan_type) and, unlike
+        # Interval (now a plain non-readonly field), No. of Installment
+        # stayed view-readonly, so its onchange-set value was observed not
+        # surviving save (showing 0 after Save despite Plan Name/Interval
+        # being correct). A real compute guarantees it server-side.
+        for rec in self:
+            if rec.plan_type == 'predefine' and rec.predefine_plan_id:
+                rec.total_installment = rec.predefine_plan_id.total_installment
+
+    @api.onchange('plan_type', 'predefine_plan_id', 'payment_type')
     def onchange_plan_type(self):
         for rec in self:
             if rec.plan_type == 'predefine' and rec.predefine_plan_id:
                 rec.plan_description = rec.predefine_plan_id.name
                 rec.interval_id = rec.predefine_plan_id.interval_id.id
-                rec.total_installment = rec.predefine_plan_id.total_installment
+                # Payment Type has no compute/onchange of its own, so without
+                # re-deriving here, switching it (even back to its original
+                # value) can leave Interval stale from whatever the form
+                # happened to hold in memory.
+                rec._balloon_payment()
+            elif rec.payment_type == 'installments' and not rec.interval_id:
+                # Custom (non-predefine) plans have no plan to copy the
+                # interval from — default to Monthly so Payment Interval
+                # isn't left blank just because Payment Type was picked.
+                monthly = self.env['payment.interval'].search([('name', '=', 'Monthly')], limit=1)
+                if monthly:
+                    rec.interval_id = monthly.id
 
     @api.onchange('predefine_plan_id', 'sale_amount')
     def _balloon_payment(self):
         for recs in self:
             if recs.predefine_plan_id:
+                # Reset every amount this loop can set before recomputing —
+                # each block below only fires for a product actually present
+                # on the plan, so without this reset, an amount from a
+                # previous plan (or a previous onchange firing) that no
+                # longer has a matching line survives untouched instead of
+                # going back to 0. (Initial Payment is NOT reset/set here
+                # anymore — it's an @api.depends compute above, since this
+                # onchange alone wasn't reliably re-running.)
+                recs.installment_amount = 0.0
+                recs.balloting_amount = 0.0
+                recs.balloon_payment = 0.0
+                recs.add_balloon_amount = 0.0
+                recs.possession_amount = 0.0
+                recs.confirmation_amount = 0.0
+                recs.primary_amount = 0.0
                 # for setting the starting date of installment plan after confirmation
                 if self.env.ref('real_estate.confirmation_amount_product').id \
                         in recs.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
@@ -244,10 +308,6 @@ class InvestorFileExt(models.Model):
                     # if recs.predefine_plan_id.confirmation_period_type == 'years':
                     #     recs.starting_date = recs.booking_date + relativedelta(years=+recs.predefine_plan_id.confirmation_amount_period + 1)
                 for pre_plan in recs.predefine_plan_id.predefine_plan_line_ids:
-                    if self.env.ref('real_estate.downpayment_product').id == pre_plan.product_id.id:
-                        recs.initial_payment = round(recs.sale_amount * (
-                                pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
-
                     if self.env.ref('real_estate.installment_product').id == pre_plan.product_id.id:
                         recs.installment_amount = round(recs.sale_amount * (
                                 pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
@@ -352,6 +412,11 @@ class InvestorFileExt(models.Model):
         return i, total_dates, dates
 
     def create_installment_plan(self):
+        # balance_amount only recomputes when net_sale_amount/initial_payment/
+        # balloting_amount actually change; force it fresh here so a plan
+        # regenerated after those were fixed elsewhere (e.g. Sale Amount was
+        # corrected) doesn't build off a stale stored value.
+        self._compute_balance_amount()
         if self.installment_tax_ids:
             tax_id = self.installment_tax_ids
         else:
@@ -388,33 +453,41 @@ class InvestorFileExt(models.Model):
                 is_balloting_included = False
                 is_final_payment_included = False
 
+                # Running pool left for the regular monthly "Installment" lines
+                # once Booking/Confirmation/Balloon/Possession/Balloting are
+                # carved out — kept in a local var, NOT written back to
+                # self.balance_amount (a stored compute field that must keep
+                # reflecting the deal's true outstanding balance, not this
+                # scratch total).
+                working_balance = self.balance_amount
+
                 if self.predefine_plan_id:
                     for rec in self.predefine_plan_id.predefine_plan_line_ids:
                         if rec.product_id.id == self.env.ref('real_estate.balloon_payment').id:
                             interval_limit = round(self.total_installment / self.balloon_payment_interval)
-                            self.balance_amount = self.balance_amount - (self.balloon_payment *
-                                                                         self.balloon_payment_frequency)
+                            working_balance = working_balance - (self.balloon_payment *
+                                                                 self.balloon_payment_frequency)
                             if rec.include_installment:
                                 is_balloon_included = True
                         if rec.product_id.id == self.env.ref('real_estate.possession_amount_product').id:
-                            self.balance_amount = self.balance_amount - (self.possession_amount *
-                                                                         self.possession_amount_frequency)
+                            working_balance = working_balance - (self.possession_amount *
+                                                                 self.possession_amount_frequency)
                             if rec.include_installment:
                                 is_possession_included = True
 
                         # As defined for other products, also set for 'Additional Product'
                         if rec.product_id.id == self.env.ref('real_estate.additional_balloon').id:
-                            self.balance_amount = self.balance_amount - (self.add_balloon_amount *
-                                                                         self.add_balloon_frequency)
+                            working_balance = working_balance - (self.add_balloon_amount *
+                                                                 self.add_balloon_frequency)
                             if rec.include_installment:
                                 is_add_balloon_included = True
 
                         if rec.product_id.id == self.env.ref('real_estate.confirmation_amount_product').id:
-                            self.balance_amount = self.balance_amount - (self.confirmation_amount *
-                                                                         self.confirmation_amount_frequency)
+                            working_balance = working_balance - (self.confirmation_amount *
+                                                                 self.confirmation_amount_frequency)
                         if rec.product_id.id == self.env.ref('real_estate.balloting_product').id:
-                            self.balance_amount = self.balance_amount - (self.primary_amount *
-                                                                         self.primary_amount_frequency)
+                            working_balance = working_balance - (self.primary_amount *
+                                                                 self.primary_amount_frequency)
                             if rec.include_installment:
                                 is_balloting_included = True
                     if self.predefine_plan_id.include_in_plan == 'no':
@@ -438,7 +511,7 @@ class InvestorFileExt(models.Model):
                         for rec in range(1, self.total_installment):
                             dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
 
-                balance = self.balance_amount
+                balance = working_balance
                 amount = 0
 
                 # if self.initial_payment and self.type == 'normal':
@@ -556,9 +629,9 @@ class InvestorFileExt(models.Model):
                                       and self.predefine_plan_id.include_in_plan == 'yes'
                                       and self.predefine_plan_id.treat_balloon_as == 'installment')
                 installment_amount = round(
-                    self.balance_amount / (self.total_installment - self.balloon_payment_frequency)
+                    working_balance / (self.total_installment - self.balloon_payment_frequency)
                 ) if balloon_uses_slots else round(
-                    self.balance_amount / self.total_installment)
+                    working_balance / self.total_installment)
 
                 # with include_installment the balloon is a separate line and every
                 # month still gets its own installment line
@@ -830,8 +903,8 @@ class InvestorFileExt(models.Model):
                         if self.investment_id.options == 'down' or self.investment_id.investment_plan_ids and self.investment_id.remaining_installments > 0:
                             installment_number = self.installment_plan_ids[-1].installment_number + 1
                             paid_installments = (self.total_installment - (self.investment_id.remaining_installments or 1)) * round(
-                                self.balance_amount / self.total_installment)
-                            amount = round((self.balance_amount - paid_installments) / (self.investment_id.remaining_installments or 1))
+                                working_balance / self.total_installment)
+                            amount = round((working_balance - paid_installments) / (self.investment_id.remaining_installments or 1))
                             self.installment_plan_ids.create({
                                 # 'date': rec,
                                 'date': dates[i],
@@ -842,6 +915,29 @@ class InvestorFileExt(models.Model):
                                 'amount': amount,
                                 'tax_amount': round((amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
                                 'residual': amount + round((amount * tax_id[0].amount) / 100, 2) if tax_id else amount,
+                                'investor_file_id': self.id
+                            })
+                            installment_count += 1
+                            installment_number = installment_number + 1
+                            i += 1
+                        else:
+                            # Full Payment deals (investment_id.options != 'down')
+                            # with nothing pending at the Investment level
+                            # (remaining_installments == 0) have no proration
+                            # source above to build the line from — without this
+                            # fallback neither branch here ran, `i` never
+                            # advanced, and the while loop spun forever
+                            # creating zero lines and no error.
+                            self.installment_plan_ids.create({
+                                'date': dates[i],
+                                'installment_number': installment_number,
+                                'installment_type': 'installment',
+                                'installment_name': 'Installment' + ' ' + str(installment_count),
+                                'payment_status': 'not_paid',
+                                'amount': installment_amount,
+                                'tax_amount': round((installment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
+                                'residual': installment_amount + round(
+                                    (installment_amount * tax_id[0].amount) / 100, 2) if tax_id else installment_amount,
                                 'investor_file_id': self.id
                             })
                             installment_count += 1
@@ -1001,6 +1097,13 @@ class InvestorFileExt(models.Model):
 
     def check_booking_clearance(self):
         for record in self:
+            # A file with no plan at all has no Booking line either, so the
+            # residual check below is silently skipped (booking_line is
+            # empty) and the file could be issued having never gone through
+            # Create Installment Plan — mirrors the guard `file.lock()` has
+            # for the Member flow (real_estate/models/file.py).
+            if not record.installment_plan_ids and record.payment_type != 'lump_sum' and record.balance_amount != 0:
+                raise ValidationError(_('Please create installment plan first.'))
             booking_line = self.env['installment.plan'].search([('investor_file_id', '=', record.id), ('installment_type', '=', 'down')])
             if booking_line and booking_line.residual > 1:
                 error = "Please Clear the Booking Amount for the reserved Inventory to Issue the File"

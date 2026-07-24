@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_investor_form_approvals" model="ir.ui.view">
+            <field name="name">res.investor.form.approvals</field>
+            <field name="model">res.investor</field>
+            <field name="inherit_id" ref="real_estate.investor_registration_form_view"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//button[@name='in_process']" position="attributes">
+                    <attribute name="string">Request Approval</attribute>
+                </xpath>
+
+                <xpath expr="//button[@name='approve']" position="attributes">
+                    <attribute name="invisible">state != 'in_process' or latest_approval_status != 'approved'</attribute>
+                </xpath>
+
+                <xpath expr="//button[@name='approve']" position="after">
+                    <field name="latest_approval_status" invisible="1"/>
+                    <field name="approval_request_count" invisible="1"/>
+                    <field name="is_current_user_approver" invisible="1"/>
+                    <button name="action_approve_request"
+                            type="object"
+                            string="Approve Request"
+                            class="oe_highlight btn-success"
+                            invisible="not is_current_user_approver"/>
+                    <button name="action_refuse_request"
+                            type="object"
+                            string="Refuse Request"
+                            class="btn-danger"
+                            invisible="not is_current_user_approver"
+                            confirm="Refuse this approval request? The investor will be sent back to Draft."/>
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button
+                        name="action_view_approval_requests"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-check-square-o"
+                        invisible="approval_request_count == 0">
+                        <field name="approval_request_count" widget="statinfo" string="Approvals"/>
+                    </button>
+                </xpath>
+
+                <xpath expr="//notebook" position="inside">
+                    <page string="Approvals" name="approvals">
+                        <field name="approval_request_ids" readonly="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="category_id"/>
+                                <field name="request_owner_id"/>
+                                <field name="date_confirmed"/>
+                                <field name="request_status"
+                                       widget="badge"
+                                       decoration-success="request_status == 'approved'"
+                                       decoration-danger="request_status == 'refused'"
+                                       decoration-warning="request_status == 'pending'"/>
+                            </list>
+                        </field>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

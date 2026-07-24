@@ -11,7 +11,7 @@
     'author': "Wahab Ali Malik || Axiom Team",
     'website': "https://www.axiomworld.net",
     'category': 'Invoicing',
-    'version': '1.1',
+    'version': '1.2',
     'depends': ['account'],
     'data': [
         'security/multi_invoice_logs_security.xml',

@@ -11,6 +11,18 @@
                              help="If enabled: posting a Midland Invoice creates Dr Receivable / Cr Revenue JV. Payment creates Dr Bank / Cr Receivable and reconciles. If disabled: no JV at invoice time — single Dr Bank / Cr Revenue entry at payment only.">
                         <field name="midland_create_invoice_entry"/>
                     </setting>
+                    <setting string="Rebate Expense Account"
+                             help="Debited with the dealer rebate amount on Booking payments settled through the Investor/Dealer rebate flow.">
+                        <field name="rebate_expense_account_id"/>
+                    </setting>
+                    <setting string="Advance from Dealer Account"
+                             help="Credited (cash collected + rebate) instead of Revenue on Booking payments settled through the Investor/Dealer rebate flow.">
+                        <field name="advance_from_dealer_account_id"/>
+                    </setting>
+                    <setting string="Dealer Clearance Advance Account"
+                             help="Credited with the dealer rebate amount when a Dealer Confirmation is posted (Confirmation-stage counterpart of Advance from Dealer).">
+                        <field name="dealer_clearance_advance_account_id"/>
+                    </setting>
                 </block>
             </xpath>
         </field>

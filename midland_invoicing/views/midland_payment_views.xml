@@ -37,18 +37,27 @@
                     <group>
                         <!-- Left column -->
                         <group string="Payment Information">
-                            <field name="file_id"
+                            <field name="payment_for"
                                    readonly="state != 'draft'"/>
+                            <field name="file_id"
+                                   readonly="state != 'draft'"
+                                   invisible="payment_for != 'member'"/>
                             <field name="payment_nature"
                                    readonly="state != 'draft'"/>
+                            <field name="dealer_id"
+                                   readonly="state != 'draft'"
+                                   invisible="payment_for != 'investor'"/>
                             <field name="investment_id"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="payment_for != 'investor'"
+                                   domain="[('partner_id', '=', dealer_id)]"/>
                             <field name="is_sub_dealer_payment"
                                    readonly="state != 'draft'"/>
                             <field name="member_id"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="payment_for != 'member'"/>
                             <field name="partner_id"
-                                   readonly="state != 'draft'" groups="base.group_no_one"/>
+                                   readonly="state != 'draft'" invisible="1"/>
                             <field name="journal_id"
                                    readonly="state != 'draft'"/>
                             <field name="mode_of_payments"
@@ -58,8 +67,10 @@
                             <field name="payment_amount"
                                    readonly="state != 'draft'"/>
                             <field name="wht_amount"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="1"/>
                             <field name="net_payment" readonly="1"/>
+                            <field name="bank_amount" readonly="1"/>
                         </group>
 
                         <!-- Right column -->
@@ -67,22 +78,27 @@
                             <field name="date"
                                    readonly="state != 'draft'"/>
                             <field name="branch_id"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="1"/>
                             <field name="payment_amount_calculation"
                                    readonly="state != 'draft'"/>
                             <field name="allow_wo_lps"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="1"/>
                             <field name="waive_lps"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="1"/>
                             <field name="override_wht"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="1"/>
                             <field name="wht"
                                    readonly="state != 'draft'"
-                                   invisible="not override_wht"/>
+                                   invisible="1"/>
                             <field name="remarks"
                                    readonly="state != 'draft'"/>
                             <field name="recovery_reference"
-                                   readonly="state != 'draft'"/>
+                                   readonly="state != 'draft'"
+                                   invisible="1"/>
                             <field name="company_id"
                                    readonly="state != 'draft'" groups="base.group_multi_company"/>
                         </group>
@@ -95,7 +111,9 @@
                                    readonly="state != 'draft'">
                                 <list editable="bottom">
                                     <field name="invoice_id"
-                                           domain="[('state','=','posted'),('payment_state','!=','paid')]"/>
+                                           domain="[('state','=','posted'),('payment_state','!=','paid'),
+                                                    '|', ('investment_id','=', parent.investment_id),
+                                                         ('investment_id','=', False)]"/>
                                     <field name="number" readonly="1"/>
                                     <field name="invoice_date" readonly="1"/>
                                     <field name="due_date"/>
@@ -104,6 +122,9 @@
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"/>
                                     <field name="amount_due" readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="rebate_amount" readonly="1"
                                            widget="monetary"
                                            options="{'currency_field': 'currency_id'}"/>
                                     <field name="payment_amount"
@@ -148,7 +169,9 @@
                 <field name="name"/>
                 <field name="date"/>
                 <field name="member_id"/>
+                <field name="dealer_id"/>
                 <field name="file_id"/>
+                <field name="investment_id"/>
                 <field name="payment_nature"/>
                 <field name="journal_id"/>
                 <field name="mode_of_payments"/>

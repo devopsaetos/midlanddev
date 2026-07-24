@@ -217,6 +217,10 @@
                                                     context="{'gravatar_image': True}"
                                             />
                                         </div>
+                                        <label for="linkedin" string="LinkedIn"/>
+                                        <div>
+                                            <field name="linkedin" widget="url" placeholder="https://linkedin.com/in/..."/>
+                                        </div>
                                         <label
                                                 for="country_code_mobile_id"
                                                 string="Primary Mobile"/>

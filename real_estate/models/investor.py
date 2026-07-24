@@ -64,6 +64,7 @@ class ResInvestor(models.Model):
 
     # Contact info
     email = fields.Char(string="Email", tracking=True)
+    linkedin = fields.Char(string="LinkedIn", tracking=True)
     ntn = fields.Char(string="NTN Number", tracking=True)
     mobile = fields.Char(string="Mobile", tracking=True)
     phone = fields.Char(string="Phone", tracking=True)

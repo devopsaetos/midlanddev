@@ -30,6 +30,7 @@ class MidlandInvoice(models.Model):
 
     # ── Customer ──────────────────────────────────────────────────────────────
     member_id = fields.Many2one('res.member', string='Customer', tracking=True)
+    dealer_id = fields.Many2one('res.investor', string='Dealer', tracking=True)
     partner_id = fields.Many2one(
         'res.partner', string='Accounting Partner',
         compute='_compute_partner_id', store=True, readonly=False,
@@ -127,6 +128,13 @@ class MidlandInvoice(models.Model):
         string='Amount Due', compute='_compute_amount_residual', store=True,
         currency_field='currency_id',
     )
+    rebate_total = fields.Monetary(
+        string='Total Rebate', compute='_compute_rebate_total', store=True,
+        currency_field='currency_id',
+        help='Sum of the Rebate amounts on the invoice lines. Funded by the '
+             'dealer rebate rather than cash — reduces the cash needed to '
+             'settle this invoice under the Investor/Dealer Booking flow.',
+    )
 
     # ── Payment status ────────────────────────────────────────────────────────
     payment_state = fields.Selection([
@@ -141,6 +149,10 @@ class MidlandInvoice(models.Model):
     # ── JV link (secondary — created on post) ─────────────────────────────────
     jv_id = fields.Many2one('account.move', string='Journal Entry', readonly=True, copy=False)
 
+    # ── Payments made against this invoice ──────────────────────────────────
+    payment_line_ids = fields.One2many('midland.payment.line', 'invoice_id', string='Payment Lines')
+    payment_count = fields.Integer(string='Payments', compute='_compute_payment_count')
+
     # ── Tracks which mode was active when this invoice was posted ─────────────
     entry_mode = fields.Boolean(
         string='Entry Created', readonly=True, copy=False,
@@ -148,14 +160,75 @@ class MidlandInvoice(models.Model):
              'False = posted with Create Entry for Invoices OFF (no JV at invoice time).',
     )
 
+    # ── Receipt display (File flow vs Investment flow) ────────────────────────
+    receipt_ref = fields.Char(string='File/Investment No.', compute='_compute_receipt_display')
+    receipt_category = fields.Char(string='Category', compute='_compute_receipt_display')
+    receipt_product = fields.Char(string='Product', compute='_compute_receipt_display')
+    receipt_unit_no = fields.Char(string='Unit Number', compute='_compute_receipt_display')
+    receipt_payment_type = fields.Char(string='Payment Type', compute='_compute_receipt_display')
+
     # ── Compute ───────────────────────────────────────────────────────────────
 
-    @api.depends('member_id')
+    @api.depends(
+        'file_ids.name', 'file_ids.category_id', 'file_ids.unit_number', 'file_ids.payment_type',
+        'dealer_id.ref', 'investment_id.sequence_no',
+        'investment_id.reservation_type', 'investment_id.payment_type',
+        'investment_id.inventory_ids.name', 'investment_id.inventory_ids.category_id',
+        'investment_id.investment_line_ids.category_id',
+        'invoice_line_ids.product_id',
+    )
+    def _compute_receipt_display(self):
+        # Member/File payments carry file_ids; Investor/Dealer payments carry
+        # investment_id (+ dealer_id) instead — a single receipt can be for
+        # either, and (unlike file_id on the payment) this is always the
+        # invoice's own source record, so it's correct even when one payment
+        # covers lines from different invoices.
+        payment_type_labels = {'installments': 'Installment', 'lump_sum': 'Lump Sum'}
+        for rec in self:
+            # Product always comes straight from the invoice's own lines
+            # (product.realestate) — the actual thing being invoiced, not a
+            # derived category from the File/Investment.
+            rec.receipt_product = ', '.join(filter(None, rec.invoice_line_ids.mapped('product_id.name')))
+            if rec.dealer_id:
+                # Dealer's own Investor Code, not the deal's sequence number.
+                rec.receipt_ref = rec.dealer_id.ref or rec.dealer_id.investor_id or ''
+                inv = rec.investment_id
+                if inv and inv.reservation_type == 'unit' and inv.inventory_ids:
+                    rec.receipt_category = ', '.join(inv.inventory_ids.mapped('category_id.name'))
+                    rec.receipt_unit_no = ', '.join(inv.inventory_ids.mapped('name'))
+                elif inv:
+                    rec.receipt_category = ', '.join(filter(
+                        None, inv.investment_line_ids.mapped('category_id.name')))
+                    rec.receipt_unit_no = ''
+                else:
+                    rec.receipt_category = ''
+                    rec.receipt_unit_no = ''
+                rec.receipt_payment_type = payment_type_labels.get(inv.payment_type, '') if inv else ''
+            elif rec.file_ids:
+                f = rec.file_ids
+                rec.receipt_ref = f.name
+                rec.receipt_category = f.category_id.name or ''
+                rec.receipt_unit_no = f.unit_number or ''
+                rec.receipt_payment_type = payment_type_labels.get(f.payment_type, '')
+            else:
+                rec.receipt_ref = ''
+                rec.receipt_category = ''
+                rec.receipt_unit_no = ''
+                rec.receipt_payment_type = ''
+
+    @api.depends('payment_line_ids.payment_id')
+    def _compute_payment_count(self):
+        for rec in self:
+            rec.payment_count = len(rec.payment_line_ids.payment_id)
+
+    @api.depends('member_id', 'dealer_id')
     def _compute_partner_id(self):
         for rec in self:
-            if rec.member_id and rec.member_id.partner_id:
+            if rec.dealer_id and rec.dealer_id.partner_id:
+                rec.partner_id = rec.dealer_id.partner_id
+            elif rec.member_id and rec.member_id.partner_id:
                 rec.partner_id = rec.member_id.partner_id
-            elif not rec.member_id:
+            elif not rec.member_id and not rec.dealer_id:
                 rec.partner_id = False
 
     @api.depends('invoice_line_ids.price_subtotal', 'invoice_line_ids.tax_ids',
@@ -180,6 +253,21 @@ class MidlandInvoice(models.Model):
     def _compute_amount_residual(self):
         for rec in self:
             rec.amount_residual = rec.amount_total - rec.amount_paid
+
+    @api.depends('invoice_line_ids.rebate_amount', 'installment_id.dealer_share',
+                 'investment_installment_id.dealer_share')
+    def _compute_rebate_total(self):
+        for rec in self:
+            if rec.installment_id and rec.installment_id.dealer_share:
+                # File/member flow — File's "Rebate" tab (installment.plan),
+                # populated by Investor File > Compute Rebate.
+                rec.rebate_total = rec.installment_id.dealer_share
+            elif rec.investment_installment_id and rec.investment_installment_id.dealer_share:
+                # Investor/dealer flow — Investment Plan line, populated by
+                # Investment > Compute Rebate (compute_rebate_amount_process).
+                rec.rebate_total = rec.investment_installment_id.dealer_share
+            else:
+                rec.rebate_total = sum(rec.invoice_line_ids.mapped('rebate_amount'))
 
     # ── CRUD ──────────────────────────────────────────────────────────────────
 
@@ -260,6 +348,9 @@ class MidlandInvoice(models.Model):
                 if rec.jv_id.state == 'posted':
                     rec.jv_id.button_cancel()
             rec.state = 'cancelled'
+            # free the linked plan line so it can be invoiced again
+            if rec.investment_installment_id and rec.investment_installment_id.invoice_created:
+                rec.investment_installment_id.write({'invoice_created': False, 'invoice_id': False})
 
     def action_reset_to_draft(self):
         for rec in self:
@@ -282,10 +373,28 @@ class MidlandInvoice(models.Model):
             'res_id': self.jv_id.id,
         }
 
+    def action_view_payments(self):
+        self.ensure_one()
+        payments = self.payment_line_ids.payment_id
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Payments'),
+            'res_model': 'midland.payment',
+            'domain': [('id', 'in', payments.ids)],
+            'context': {},
+        }
+        if len(payments) == 1:
+            action.update({'view_mode': 'form', 'res_id': payments.id})
+        else:
+            action['view_mode'] = 'list,form'
+        return action
+
     def action_register_payment(self):
         self.ensure_one()
         payment = self.env['midland.payment'].create({
+            'payment_for': 'investor' if self.dealer_id else 'member',
             'member_id': self.member_id.id,
+            'dealer_id': self.dealer_id.id,
             'partner_id': self.partner_id.id if self.partner_id else False,
             'file_id': self.file_ids.id if self.file_ids else False,
             'investment_id': self.investment_id.id if self.investment_id else False,
@@ -331,6 +440,12 @@ class MidlandInvoiceLine(models.Model):
         string='Subtotal', compute='_compute_price_subtotal', store=True,
         currency_field='currency_id',
     )
+    rebate_amount = fields.Monetary(
+        string='Rebate', currency_field='currency_id',
+        help='Dealer rebate on this line. Does not change the Subtotal — it '
+             'reduces the cash owed and is settled via the Advance from '
+             'Dealer / Rebate Expense accounts instead of cash.',
+    )
 
     @api.depends('quantity', 'price_unit')
     def _compute_price_subtotal(self):
@@ -343,3 +458,9 @@ class MidlandInvoiceLine(models.Model):
             if line.product_id:
                 line.name = line.product_id.name
                 line.account_id = line.product_id.property_account_income_id
+                dealer_share = (
+                    line.invoice_id.installment_id.dealer_share
+                    or line.invoice_id.investment_installment_id.dealer_share
+                )
+                if dealer_share:
+                    line.rebate_amount = dealer_share

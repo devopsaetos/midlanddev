@@ -1,6 +1,6 @@
 {
     'name': 'Construction Stock Bridge',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Links Issue Requisitions and Stock Transactions to construction projects, tasks, and cost sheets',
     'author': 'NCP',

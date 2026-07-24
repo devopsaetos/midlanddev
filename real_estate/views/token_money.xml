@@ -105,6 +105,12 @@
                             <field name="investor_id" invisible="party_type != 'investor'"
                                    required="party_type == 'investor'" readonly="token_generated == True"
                                    options="{'no_create': True}"/>
+                            <field name="investment_id" string="Investment No"
+                                   invisible="party_type != 'investor'"
+                                   readonly="token_generated == True"
+                                   domain="[('partner_id', '=', investor_id)]"
+                                   options="{'no_create': True}"/>
+                            <field name="no_of_units" invisible="party_type != 'investor'"/>
 <!--                            <field name="is_existing"-->
 <!--                                   readonly="(token_generated == True or token_generated == True)"/>-->
                             <field name="is_existing" invisible="party_type == 'investor'"/>

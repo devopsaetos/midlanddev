@@ -45,6 +45,9 @@ access_street,street,model_street,group_rsms_user,1,1,1,1
 access_street_type,street.type,model_street_type,group_rsms_user,1,1,1,1
 access_token_money,token.money,model_token_money,group_rsms_user,1,1,1,1
 access_token_money_line,token.money.line,model_token_money_line,group_rsms_user,1,1,1,1
+access_validity_increase,validity.increase,model_validity_increase,group_rsms_user,1,1,1,1
+access_token_refund,token.refund,model_token_refund,group_rsms_user,1,1,1,1
+access_token_refund_line,token.refund.line,model_token_refund_line,group_rsms_user,1,1,1,1
 access_society,society,model_society,group_rsms_user,1,1,1,1
 access_source,source,model_source,group_rsms_user,1,1,1,1
 access_unit_size,unit.size,model_unit_size,group_rsms_user,1,1,1,1

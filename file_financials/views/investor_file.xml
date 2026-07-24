@@ -65,14 +65,14 @@
                             type="object"
                             string="Create Installment Plan"
                             class="oe_highlight"
-                            invisible="state != 'open' or installment_created == True"/>
+                            invisible="installment_created == True or state in ('issued', 'cancel')"/>
                     <button
                             name="reset_open_file_installment_plan"
                             groups="real_estate.group_rsms_manager"
                             type="object"
                             string="Reset Installment Plan"
                             class="oe_highlight"
-                            invisible="state != 'open' or not installment_created"
+                            invisible="not installment_created or state in ('issued', 'cancel')"
                     />
                     <field name="installment_plan_ids" nolabel="1" force_save="1" readonly="1">
                         <list editable="bottom" decoration-info="invoice_created == True" limit="500">

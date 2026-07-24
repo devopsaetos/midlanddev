@@ -15,4 +15,10 @@
               parent="menu_midland_invoicing_root"
               action="action_midland_payment"
               sequence="20"/>
+
+    <menuitem id="menu_midland_invoicing_dealer_confirmation"
+              name="Dealer Confirmation"
+              parent="menu_midland_invoicing_root"
+              action="action_dealer_confirmation"
+              sequence="30"/>
 </odoo>

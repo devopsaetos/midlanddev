@@ -65,18 +65,17 @@
                                        required="investor_type == 'sub_dealer'"
                                        options="{'no_open': True,'no_create': True}"
                                 />
-                                <field name="investment_category"
+                                <!-- <field name="investment_category"
                                        required="1"
                                        options="{'no_open': True,'no_create': True}"
-                                />
+                                /> -->
                             </group>
                             <group>
                                 <field name="company_type"
                                        readonly="state != 'draft'"
                                        string="Dealer Type" required="1"/>
                                 <field name="marketing_company_id"
-                                       invisible="investor_type == 'marketing_company'" readonly="state != 'draft'"
-                                       required="investor_type == 'dealer'"
+                                       invisible="1" readonly="state != 'draft'"
                                        string="Marketing Company"
                                        options="{'no_open': True,'no_create': True}"
                                        domain="[]"
@@ -89,9 +88,10 @@
                         </group>
                         <group invisible="company_type not in 'person'">
                             <group name='general_info' string="General Info">
-                                <field name="owner_name" required="company_type not in 'person'"/>
+                                <field name="owner_name" required="1"/>
                                 <field name='relation_name' string="Spouse/Father"
-                                       invisible="company_type != 'person'" readonly="state != 'draft'"/>
+                                       invisible="company_type != 'person'" readonly="state != 'draft'"
+                                       required="company_type == 'person'"/>
                                 <field name="ntn" string="NTN Number"/>
                             </group>
                             <group name='contact_info' invisible="company_type not in 'person'"
@@ -102,6 +102,14 @@
                                         widget="email"
                                         placeholder='for_example123@mail.com'
                                         readonly="state != 'draft'"
+                                />
+                                <field
+                                        name="linkedin"
+                                        string="LinkedIn"
+                                        widget="url"
+                                        placeholder='https://linkedin.com/in/...'
+                                        readonly="state != 'draft'"
+                                        invisible="1"
                                 />
                                 <field
                                         name="mobile"
@@ -123,7 +131,7 @@
                                 <label for="street" string="Address"/>
                                 <div class="o_address_format">
                                     <field name="street" placeholder="Street..." class="o_address_street"
-                                           readonly="state != 'draft'"/>
+                                           readonly="state != 'draft'" required="1"/>
                                     <field name="street2" placeholder="Street 2..." class="o_address_street"
                                            readonly="state != 'draft'"/>
                                     <field name="city_id" placeholder="City" class="o_address_city"
@@ -175,7 +183,8 @@
                                         data-inputmask="'mask': '99999-9999999-9'"
                                         name='cnic' string="CNIC Number"
                                         invisible="identification_type not in ('cnic','parent_cnic')"
-                                        readonly="state != 'draft'"/>
+                                        readonly="state != 'draft'"
+                                        required="identification_type in ('cnic','parent_cnic')"/>
                                 <field
                                         widget="mask"
                                         data-inputmask="'mask': '999999-999999-9'"
@@ -212,6 +221,7 @@
                                        style="width:100px; height:100"
                                        invisible="identification_type not in ('cnic','parent_cnic','ni_cop')"
                                        readonly="state != 'draft'"
+                                       required="identification_type in ('cnic','parent_cnic','ni_cop')"
                                 />
                                 <field name='passport_front'
                                        invisible="identification_type != 'passport'" readonly="state != 'draft'"

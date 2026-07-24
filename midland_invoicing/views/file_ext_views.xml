@@ -28,6 +28,12 @@
                         invisible="file_status not in ('draft', 'lock') or midland_invoice_count &gt; 0"/>
             </field>
 
+            <!-- Some other module's view re-exposes this in the header —
+                 force it back to hidden regardless of load order -->
+            <xpath expr="//header//field[@name='type']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
         </field>
     </record>
 
