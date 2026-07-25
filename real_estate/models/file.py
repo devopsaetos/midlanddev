@@ -1342,8 +1342,7 @@ class File(models.Model):
         self.initial_payment = round(
             sum(val.total for val in self.file_payment_ids if val.product_id.is_include_net_amount))
 
-    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount', 'confirmation_amount',
-                 'confirmation_amount_frequency')
+    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount')
     def _compute_balance_amount(self):
         amount = 0
         add_ballotting = False
@@ -1359,14 +1358,7 @@ class File(models.Model):
         #         else:
         #             amount = amount + [self.sale_amount * rec.value / 100][0]
         for rec in self:
-            # Confirmation is carved out of the sale price same as Booking/Balloting
-            # (create_installment_plan()'s working_balance already deducts it before
-            # sizing the regular installments) - Balance Amount was missing this
-            # carve-out, so it overstated what's actually left once Confirmation
-            # is invoiced.
-            confirmation_total = rec.confirmation_amount * rec.confirmation_amount_frequency
-            rec.balance_amount = round(
-                rec.net_sale_amount - rec.initial_payment - rec.balloting_amount - confirmation_total)
+            rec.balance_amount = round(rec.net_sale_amount - rec.initial_payment - rec.balloting_amount)
         # if self.balance_amount and self.balance_amount < 0:
         #     raise ValidationError('Balance Amount cannot be less than zero')
 
