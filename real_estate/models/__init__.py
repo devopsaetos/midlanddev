@@ -27,6 +27,7 @@ from . import location
 from . import demarcated_area
 from . import unit_size
 from . import plot_category
+from . import unit_bucket
 from . import plot_inventory
 from . import sector
 from . import society

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record model="ir.ui.view" id="real_estate.unit_bucket_form">
+            <field name="name">real_estate unit_bucket_form</field>
+            <field name="model">unit.bucket</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+<!--                        <div class="oe_button_box" name="button_box">-->
+<!--                            <button name="action_view_units" type="object"-->
+<!--                                    class="oe_stat_button" icon="fa-list">-->
+<!--                                <field name="total_units" string="Units" widget="statinfo"/>-->
+<!--                            </button>-->
+<!--                        </div>-->
+                        <group>
+                            <group>
+                                <field name="project_type" invisible="1"/>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Bucket Inventory">
+                                <field name="plot_inventory_ids" nolabel="1">
+                                    <list editable="bottom" create="false">
+                                        <field name="serial_number"/>
+                                        <field name="name" string="Plot Number"/>
+                                        <field name="project_type"/>
+                                        <field name="society_id"/>
+                                        <field name="street_id"/>
+                                        <field name="bucket_id"/>
+                                        <field name="category_id" string="Category"/>
+                                        <field name="unit_category_type_id" string="Product"/>
+                                        <field name="size_id" string="Size"/>
+                                        <field name="unit_class_id" string="Type"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="real_estate.unit_bucket_tree">
+            <field name="name">real_estate unit_bucket_tree</field>
+            <field name="model">unit.bucket</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="total_units"/>
+                </list>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="real_estate.action_unit_bucket">
+            <field name="name">Bucket</field>
+            <field name="res_model">unit.bucket</field>
+
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a Bucket.
+              </p>
+            </field>
+            <field name="domain">
+                [
+                    ('project_type','=','housing_society')
+                ]
+            </field>
+            <field name="context">{ 'current_view': 'realestate', 'default_project_type':'housing_society'}</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <menuitem
+            id="real_estate.unit_bucket"
+            name="Bucket"
+            parent="real_estate.menu_inventory"
+            action="real_estate.action_unit_bucket"
+            sequence='5'
+        />
+</odoo>

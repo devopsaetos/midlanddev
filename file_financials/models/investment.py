@@ -750,7 +750,6 @@ class InvestmentExt(models.Model):
         # Dealer Cr) above, so calling it too would both double-post the
         # rebate and crash (it creates account.move with the removed 'type'
         # field instead of 'move_type').
-
     def create_installment_plan(self):
         if self.payment_type == 'installments' and not self.down_payment:
             raise ValidationError('Please enter booking payment amount.')

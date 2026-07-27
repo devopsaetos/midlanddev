@@ -54,6 +54,7 @@
                                 <field name="phase_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
                                 <field name="sector_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
                                 <field name="street_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
+                                <field name="bucket_id" options="{'no_create': True, 'no_open': True}" readonly='0'/>
 <!--                                <field name="location_id" options="{'no_create': True, 'no_open': True}" readonly='1'/>-->
                                 <field name="category_id" string="Category" options="{'no_create': True, 'no_open': True}" readonly='0'/>
                                 <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}" readonly='0'/>
@@ -137,6 +138,7 @@
                     <field name="phase_id"/>
                     <field name="sector_id"/>
                     <field name="street_id"/>
+                    <field name="bucket_id"/>
                     <field name="location_id" invisible="1"/>
                     <field name="category_id"/>
                     <field name="unit_category_type_id" string="Product"/>
@@ -170,9 +172,11 @@
                     <field name="standard_area" string="Total Area (sft)"/>
                     <field name="actual_area"/>
                     <field name="street"/>
+                    <field name="bucket_id"/>
                     <field name="category_id"/>
                     <field name="possession_status"/>
                     <group name="group_by">
+                        <filter name="group_by_bucket" string="Bucket" context="{'group_by': 'bucket_id'}"/>
                         <filter name="group_by_street" string="Street" context="{'group_by': 'street_id'}"/>
                         <filter name="group_by_sector" string="Sector" context="{'group_by': 'sector_id'}"/>
                         <filter name="group_by_category" string="Category" context="{'group_by': 'category_id'}"/>

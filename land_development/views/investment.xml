@@ -166,18 +166,29 @@
                         <page string="Inventory" invisible="reservation_type != 'unit'">
                             <field name="inventory_ids" readonly="state in ('reserved','payment')">
                                 <list editable="bottom">
+                                    <!-- Odoo's list view keys columns by field name, so declaring
+                                         sector_id twice (once as "Sector", once as "Floor") to
+                                         swap labels by project_type doesn't render reliably - one
+                                         copy ends up blank regardless of its own invisible. Single
+                                         column, dynamic domain only; label stays "Floor" either way. -->
                                     <field name="sector_id" readonly="1"
                                            string="Floor"
-                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           domain="[('project_type','=',parent.project_type)]"
                                            options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="street_id" readonly="1"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           invisible="parent.project_type == 'skyscraper'"/>
+                                    <field name="bucket_id" readonly="1"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           invisible="parent.project_type == 'skyscraper'"/>
                                     <field name="category_id" readonly="1"
-                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           domain="[('project_type','=',parent.project_type)]"
                                            required="1"
                                            options="{'no_create': True, 'no_open': True}"/>
                                     <field name="unit_category_type_id" readonly="1" string="Product"
-                                           domain="[('project_type','in',['skyscraper', False])]"
+                                           domain="[('project_type','=',parent.project_type)]"
                                            options="{'no_create': True, 'no_open': True}"/>
-                                    <field name="size_id" readonly="1" domain="[('project_type','in',['skyscraper', False])]"
+                                    <field name="size_id" readonly="1" domain="[('project_type','=',parent.project_type)]"
                                            options="{'no_create': True, 'no_open': True}"/>
                                     <field name="id" string="Inventory" invisible="1"/>
                                     <field name="name" string="Shop #" readonly="1"/>

@@ -9,12 +9,19 @@
                     <header>
                         <field name="state" widget="statusbar" statusbar_visible="draft,in_process,approve"/>
                         <field name="is_invoice_generation" invisible="1"/>
+                        <field name="edit_unlocked" invisible="1"/>
                         <button name="in_process" type="object" class="oe_highlight" string="In Process"
                                 invisible="state != 'draft'"/>
                         <button name="approve" type="object" class="oe_highlight" string="Approve"
                                 invisible="state != 'in_process'"/>
                         <button name="%(action_report_dealer_registration)d" type="action"
                                 string="Print Registration Form" class="btn-secondary"/>
+                        <button name="action_open_edit_mode" type="object" string="Edit"
+                                class="btn-primary" invisible="not id or edit_unlocked"
+                                groups="real_estate.group_can_create_record"/>
+                        <button name="action_save_and_lock" type="object" string="Save"
+                                class="btn-primary" invisible="id and not edit_unlocked"
+                                groups="real_estate.group_can_create_record"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -43,7 +50,7 @@
                                 widget='image'
                                 class="oe_avatar"
                                 style="width:100px; height:100px"
-                                readonly="state == 'approve'"
+                                readonly="id and not edit_unlocked"
                         />
 
                         <div class="oe_title">
@@ -52,7 +59,7 @@
                                        required="1"
                                        default_focus="1"
                                        placeholder="Investor Name"
-                                       readonly="state != 'draft'"/>
+                                       readonly="id and not edit_unlocked"/>
                             </h1>
                         </div>
 
@@ -61,7 +68,7 @@
                                 <field name="ref" readonly="1"/>
                                 <field name="investor_type" required="1"/>
                                 <field name="main_investor_id"
-                                       invisible="investor_type != 'sub_dealer'" readonly="state != 'draft'"
+                                       invisible="investor_type != 'sub_dealer'" readonly="id and not edit_unlocked"
                                        required="investor_type == 'sub_dealer'"
                                        options="{'no_open': True,'no_create': True}"
                                 />
@@ -72,10 +79,10 @@
                             </group>
                             <group>
                                 <field name="company_type"
-                                       readonly="state != 'draft'"
+                                       readonly="id and not edit_unlocked"
                                        string="Dealer Type" required="1"/>
                                 <field name="marketing_company_id"
-                                       invisible="1" readonly="state != 'draft'"
+                                       invisible="1" readonly="id and not edit_unlocked"
                                        string="Marketing Company"
                                        options="{'no_open': True,'no_create': True}"
                                        domain="[]"
@@ -88,9 +95,10 @@
                         </group>
                         <group invisible="company_type not in 'person'">
                             <group name='general_info' string="General Info">
-                                <field name="owner_name" required="1"/>
+                                <field name="owner_name" invisible="company_type != 'person'"
+                                       required="company_type == 'person'"/>
                                 <field name='relation_name' string="Spouse/Father"
-                                       invisible="company_type != 'person'" readonly="state != 'draft'"
+                                       invisible="company_type != 'person'" readonly="id and not edit_unlocked"
                                        required="company_type == 'person'"/>
                                 <field name="ntn" string="NTN Number"/>
                             </group>
@@ -101,19 +109,19 @@
                                         string="Email"
                                         widget="email"
                                         placeholder='for_example123@mail.com'
-                                        readonly="state != 'draft'"
+                                        readonly="id and not edit_unlocked"
                                 />
                                 <field
                                         name="linkedin"
                                         string="LinkedIn"
                                         widget="url"
                                         placeholder='https://linkedin.com/in/...'
-                                        readonly="state != 'draft'"
+                                        readonly="id and not edit_unlocked"
                                         invisible="1"
                                 />
                                 <field
                                         name="mobile"
-                                        readonly="state != 'draft'" required="company_type == 'person'"
+                                        readonly="id and not edit_unlocked" required="company_type == 'person'"
                                         placeholder='+923008765432'
                                         widget="mask"
                                         data-inputmask="'mask': '+99-999-9999999'"
@@ -123,7 +131,7 @@
                                         widget="mask"
                                         data-inputmask="'mask': '9999999999'"
                                         placeholder='042987654'
-                                        class="o_phone_number" readonly="state != 'draft'"/>
+                                        class="o_phone_number" readonly="id and not edit_unlocked"/>
                             </group>
                         </group>
                         <group>
@@ -131,77 +139,77 @@
                                 <label for="street" string="Address"/>
                                 <div class="o_address_format">
                                     <field name="street" placeholder="Street..." class="o_address_street"
-                                           readonly="state != 'draft'" required="1"/>
+                                           readonly="id and not edit_unlocked" required="1"/>
                                     <field name="street2" placeholder="Street 2..." class="o_address_street"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                     <field name="city_id" placeholder="City" class="o_address_city"
-                                           options="{'no_open': True}" readonly="state != 'draft'"/>
+                                           options="{'no_open': True}" readonly="id and not edit_unlocked"/>
                                     <field name="state_id" string="Province" class="o_address_state"
                                            placeholder="State" options="{'no_open': True}"
                                            context="{'country_id': country_id, 'zip': zip}"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                     <field name="zip" placeholder="ZIP" class="o_address_zip"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                     <field name="country_id" placeholder="Country" class="o_address_country"
                                            options="{'no_open': True, 'no_create': True}"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                 </div>
                             </group>
                             <group name='corespondence_address' string="Correspondence Address">
                                 <label for="corespondence_street" string="Address"/>
                                 <div class="o_address_format">
                                     <field name="corespondence_street" placeholder="Street..."
-                                           class="o_address_street" force_save="1" readonly="state != 'draft'"/>
+                                           class="o_address_street" force_save="1" readonly="id and not edit_unlocked"/>
                                     <field name="corespondence_street2" placeholder="Street 2..."
-                                           class="o_address_street" force_save="1" readonly="state != 'draft'"/>
+                                           class="o_address_street" force_save="1" readonly="id and not edit_unlocked"/>
                                     <field name="corespondence_city_id" options="{'no_open': True}"
                                            placeholder="City" class="o_address_city" force_save="1"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                     <field name="corespondence_state_id" string="Province"
                                            class="o_address_state" placeholder="State"
                                            options="{'no_open': True}"
                                            context="{'country_id': country_id, 'zip': zip}" force_save="1"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                     <field name="corespondence_zip" placeholder="ZIP" class="o_address_zip"
-                                           force_save="1" readonly="state != 'draft'"/>
+                                           force_save="1" readonly="id and not edit_unlocked"/>
                                     <field name="corespondence_country_id" placeholder="Country"
                                            class="o_address_country"
                                            options="{'no_open': True, 'no_create': True}" force_save="1"
-                                           readonly="state != 'draft'"/>
+                                           readonly="id and not edit_unlocked"/>
                                 </div>
-                                <field name="is_same" string="Same As Primary ?" readonly="state != 'draft'"/>
+                                <field name="is_same" string="Same As Primary ?" readonly="id and not edit_unlocked"/>
                             </group>
                         </group>
                         <group name="id_info" invisible="company_type not in 'person'">
                             <group string="Identification Info">
                                 <field name='identification_type'
-                                       readonly="state != 'draft'"/>
+                                       readonly="id and not edit_unlocked"/>
                                 <field name='relation_name' string="Mother/Father"
-                                       invisible="identification_type != 'parent_cnic'" readonly="state != 'draft'"/>
+                                       invisible="identification_type != 'parent_cnic'" readonly="id and not edit_unlocked"/>
                                 <field
                                         widget="mask"
                                         data-inputmask="'mask': '99999-9999999-9'"
                                         name='cnic' string="CNIC Number"
-                                        invisible="identification_type not in ('cnic','parent_cnic')"
-                                        readonly="state != 'draft'"
-                                        required="identification_type in ('cnic','parent_cnic')"/>
+                                        invisible="company_type != 'person' or identification_type not in ('cnic','parent_cnic')"
+                                        readonly="id and not edit_unlocked"
+                                        required="company_type == 'person' and identification_type in ('cnic','parent_cnic')"/>
                                 <field
                                         widget="mask"
                                         data-inputmask="'mask': '999999-999999-9'"
                                         name='nicop'
-                                        invisible="identification_type != 'ni_cop'" readonly="state != 'draft'"/>
+                                        invisible="identification_type != 'ni_cop'" readonly="id and not edit_unlocked"/>
                                 <field name='cnic_expiry_date'
                                        string="CNIC Expiry Date"
                                        invisible="identification_type not in ('cnic','parent_cnic')"
-                                       readonly="state != 'draft'"/>
+                                       readonly="id and not edit_unlocked"/>
                                 <field name='passport'
-                                       invisible="identification_type != 'passport'" readonly="state != 'draft'"/>
+                                       invisible="identification_type != 'passport'" readonly="id and not edit_unlocked"/>
                                 <field name='passport_expiry_date'
-                                       invisible="identification_type != 'passport'" readonly="state != 'draft'"/>
+                                       invisible="identification_type != 'passport'" readonly="id and not edit_unlocked"/>
                                 <field name='form_b'
                                        widget="mask"
                                        data-inputmask="'mask': '99999-9999999-9'"
-                                       invisible="identification_type != 'form_b'" readonly="state != 'draft'"
+                                       invisible="identification_type != 'form_b'" readonly="id and not edit_unlocked"
                                 />
                             </group>
                             <group string="Authorized Person">
@@ -220,16 +228,16 @@
                                        widget='image'
                                        style="width:100px; height:100"
                                        invisible="identification_type not in ('cnic','parent_cnic','ni_cop')"
-                                       readonly="state != 'draft'"
+                                       readonly="id and not edit_unlocked"
                                        required="identification_type in ('cnic','parent_cnic','ni_cop')"
                                 />
                                 <field name='passport_front'
-                                       invisible="identification_type != 'passport'" readonly="state != 'draft'"
+                                       invisible="identification_type != 'passport'" readonly="id and not edit_unlocked"
                                        widget='image'
                                        style="width:100px; height:100px"
                                 />
                                 <field name='form_b_front'
-                                       invisible="identification_type != 'form_b'" readonly="state != 'draft'"
+                                       invisible="identification_type != 'form_b'" readonly="id and not edit_unlocked"
                                        widget='image'
                                        style="width:100px; height:100px"
                                 />
@@ -240,7 +248,7 @@
                                        widget='image'
                                        style="width:100px; height:100"
                                        invisible="identification_type not in ('cnic','parent_cnic','ni_cop')"
-                                       readonly="state != 'draft'"
+                                       readonly="id and not edit_unlocked"
                                 />
                             </group>
                         </group>

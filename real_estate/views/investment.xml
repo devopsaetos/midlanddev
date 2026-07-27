@@ -196,6 +196,8 @@
                                            options="{'no_create': True, 'no_open': True}"/>
                                     <field name="street_id" readonly="1"
                                            options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="bucket_id" readonly="1"
+                                           options="{'no_create': True, 'no_open': True}"/>
                                     <field name="category_id" readonly="1"
                                            domain="[('project_type','=','housing_society')]"
                                            required="1"

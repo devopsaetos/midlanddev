@@ -171,16 +171,13 @@
             </xpath>
             <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
                    position="attributes">
+                <!-- Odoo's list view keys columns by field name, so declaring
+                     sector_id twice (once as "Sector", once as "Floor") to
+                     swap labels by project_type doesn't render reliably - one
+                     copy ends up blank regardless of its own invisible. Single
+                     column, dynamic domain only; label stays "Sector" either way. -->
                 <attribute name="required">0</attribute>
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
-                <attribute name="invisible">parent.project_type == 'skyscraper'</attribute>
-            </xpath>
-            <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
-                   position="after">
-                <field name="sector_id" string="Floor"
-                       domain="[('project_type','=',parent.project_type)]"
-                       options="{'no_create': True, 'no_open': True}"
-                       invisible="parent.project_type != 'skyscraper'"/>
             </xpath>
             <xpath expr="//field[@name='investment_line_ids']/list/field[@name='category_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
@@ -193,13 +190,6 @@
             </xpath>
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='sector_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
-                <attribute name="invisible">parent.project_type == 'skyscraper'</attribute>
-            </xpath>
-            <xpath expr="//field[@name='inventory_ids']/list/field[@name='sector_id']" position="after">
-                <field name="sector_id" string="Floor" readonly="1"
-                       domain="[('project_type','=',parent.project_type)]"
-                       options="{'no_create': True, 'no_open': True}"
-                       invisible="parent.project_type != 'skyscraper'"/>
             </xpath>
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='category_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>

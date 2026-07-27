@@ -31,6 +31,7 @@ class TokenMoney(models.Model):
         ('investor', 'Investor'),
     ], default='member', required=True, tracking=True, string='Party Type')
     investor_id = fields.Many2one('res.investor', string='Investor', tracking=True)
+    investor_code = fields.Char(related='investor_id.ref', string='Investor Code')
     investment_id = fields.Many2one('investment', string='Investment No', tracking=True)
     no_of_units = fields.Integer(related='investment_id.no_of_units', string='No of Units')
 

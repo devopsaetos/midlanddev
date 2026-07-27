@@ -61,6 +61,10 @@ class ResInvestor(models.Model):
         ('approve', 'Approve'),
     ], default='draft', tracking=True)
     is_invoice_generation = fields.Boolean(default=False)
+    # Most fields are readonly="state != 'draft'" - once the record moves past
+    # Draft they lock for the workflow's sake. The Edit button flips this to
+    # allow a one-off correction regardless of state; Save flips it back.
+    edit_unlocked = fields.Boolean(default=False, copy=False)
 
     # Contact info
     email = fields.Char(string="Email", tracking=True)
@@ -198,6 +202,25 @@ class ResInvestor(models.Model):
                 if rec.partner_id:
                     rec.partner_id.sudo().write({'name': vals['investor_id']})
         return res
+
+    def action_open_edit_mode(self):
+        self.ensure_one()
+        self.edit_unlocked = True
+
+    def action_save_and_lock(self):
+        # type="object" buttons save any pending edits before calling the
+        # method, so by the time this runs the correction is already
+        # persisted - this just re-locks the form. Fields already rendered as
+        # editable widgets don't reliably flip back to readonly from an
+        # in-place reactive update alone, so force a fresh render - but via a
+        # full client-side page reload (not an act_window reopen), since
+        # reopening the record instead runs it through onchange(), which
+        # cascades into Enterprise's approval_request_ids and crashes on
+        # approvals' _compute_request_status (a pre-existing bug in the
+        # approvals module, unrelated to this button).
+        self.ensure_one()
+        self.edit_unlocked = False
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     def unlink(self):
         """Investors still referenced by other records (e.g. Investment.partner_id)
