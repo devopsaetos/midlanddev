@@ -28,6 +28,12 @@
                         invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
             </field>
 
+            <!-- Payments tab: receive_payment()'s midland.payment rows have no
+                 account.payment counterpart, so they need their own column -->
+            <xpath expr="//field[@name='investment_payment_view_ids']/list/field[@name='payment_id']" position="after">
+                <field name="midland_payment_id" string="Payment" invisible="not midland_payment_id"/>
+            </xpath>
+
         </field>
     </record>
 
@@ -57,6 +63,12 @@
                         class="oe_highlight"
                         invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
             </field>
+
+            <!-- Payments tab: receive_payment()'s midland.payment rows have no
+                 account.payment counterpart, so they need their own column -->
+            <xpath expr="//field[@name='investment_payment_view_ids']/list/field[@name='payment_id']" position="after">
+                <field name="midland_payment_id" string="Payment" invisible="not midland_payment_id"/>
+            </xpath>
 
         </field>
     </record>

@@ -117,48 +117,28 @@ class PlotInventory(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get('serial_number', _('New')) == _('New'):
-                # phase_id = self.env['society'].search([('id', '=', vals['phase_id'])])
-                sector_id = self.env['sector'].search([('id', '=', vals['sector_id'])])
-                street_id = self.env['street'].search([('id', '=', vals['street_id'])])
-                category_id = self.env['plot.category'].search([('id', '=', vals['category_id'])])
-                unit_category_type_id = self.env['unit.category.type'].search([('id', '=', vals['unit_category_type_id'])])
-                # size_id = self.env['unit.size'].search([('id', '=', vals['size_id'])])
-
-                record = self.env['ir.sequence'].search([('code', '=', 'plot.inventory.%s.%s.%s' % (
-                sector_id.code, category_id.code, unit_category_type_id.code))])
-                if record and not street_id:
-                    vals['serial_number'] = self.env['ir.sequence'].next_by_code(record.code) or _('New')
-                elif record and street_id:
-                    new_record = self.env['ir.sequence'].create({
-                        'name': '%s %s %s %s' % (
-                        sector_id.code, street_id.code, category_id.code, unit_category_type_id.code),
-                        'code': 'plot.inventory.%s.%s.%s.%s' % (
-                            sector_id.code, street_id.code, category_id.code, unit_category_type_id.code),
-                        'prefix': "%s-%s/%s-%s/" % (
-                        sector_id.code, street_id.code, category_id.code, unit_category_type_id.code),
-                        'padding': 3,
-                        'company_id': False
-                    })
-
-                    vals['serial_number'] = self.env['ir.sequence'].next_by_code(new_record.code) or _('New')
-                else:
-                    new_record = self.env['ir.sequence'].create({
-                        'name': '%s %s %s' % (sector_id.code, category_id.code, unit_category_type_id.code),
-                        'code': 'plot.inventory.%s.%s.%s' % (
-                        sector_id.code, category_id.code, unit_category_type_id.code),
-                        'prefix': "%s-/%s-%s/" % (sector_id.code, category_id.code, unit_category_type_id.code),
-                        'padding': 3,
-                        'company_id': False
-                    })
-
-                    vals['serial_number'] = self.env['ir.sequence'].next_by_code(new_record.code) or _('New')
+                # Serial Number = Society code - Bucket code - Plot number,
+                # e.g. "CVS-B1-21". Bucket is optional on a plot, so it's
+                # dropped from the code when not set rather than leaving a
+                # dangling separator.
+                society = self.env['society'].browse(vals.get('society_id'))
+                bucket = self.env['unit.bucket'].browse(vals.get('bucket_id'))
+                plot_number = vals.get('name') or ''
+                parts = [p for p in (society.code, bucket.code, plot_number) if p]
+                vals['serial_number'] = '-'.join(parts) or _('New')
 
         return super().create(vals_list)
 
-    @api.constrains('name')
+    @api.constrains('name', 'bucket_id')
     def duplicate_data(self):
+        # Different blocks/buckets commonly reuse the same plot numbering
+        # (e.g. a Haveli block and a commercial road both starting at "1") -
+        # only flag a genuine duplicate within the SAME bucket, not globally
+        # across the whole society/system.
         for rec in self:
-            data = self.search([('name', '=', rec.name), ('id', '!=', rec.id)])
+            domain = [('name', '=', rec.name), ('id', '!=', rec.id)]
+            domain.append(('bucket_id', '=', rec.bucket_id.id if rec.bucket_id else False))
+            data = self.search(domain)
             if data:
                 raise ValidationError(_('Plot Inventory Is Already Present'))
 

@@ -90,18 +90,21 @@ class InvestmentExt(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        # down_payment is otherwise only ever refreshed by the
+        # Booking Payment and every other schedule field (Confirmation/
+        # Balloting/Possession/Balloon amounts, Interval, No. of Installments,
+        # balloon timing...) are otherwise only ever refreshed by the
         # change_booking_and_confirmation() onchange during live editing,
         # which doesn't reliably cascade up from a field edited on a line
-        # nested inside inventory_ids/investment_line_ids. Recompute it
+        # nested inside inventory_ids/investment_line_ids. Recompute them
         # directly on every save for multi-plan deals so the stored/displayed
-        # value is correct even if that onchange never fired client-side.
+        # values are correct even if that onchange never fired client-side.
         if not self.env.context.get('skip_down_payment_recompute'):
             for rec in self:
                 if rec.multiple_plans:
-                    total = rec._compute_groups_down_payment_total()
-                    if total and total != rec.down_payment:
-                        rec.with_context(skip_down_payment_recompute=True).down_payment = total
+                    updates = rec._compute_combined_schedule_fields()
+                    updates = {k: v for k, v in updates.items() if v != rec[k]}
+                    if updates:
+                        rec.with_context(skip_down_payment_recompute=True).write(updates)
         return res
 
     @api.model_create_multi
@@ -109,9 +112,10 @@ class InvestmentExt(models.Model):
         records = super().create(vals_list)
         for rec in records:
             if rec.multiple_plans:
-                total = rec._compute_groups_down_payment_total()
-                if total and total != rec.down_payment:
-                    rec.with_context(skip_down_payment_recompute=True).down_payment = total
+                updates = rec._compute_combined_schedule_fields()
+                updates = {k: v for k, v in updates.items() if v != rec[k]}
+                if updates:
+                    rec.with_context(skip_down_payment_recompute=True).write(updates)
         return records
 
     def reserve_inventory(self):
@@ -905,17 +909,18 @@ class InvestmentExt(models.Model):
         }]
 
     def create_installment_plan(self):
-        # down_payment is otherwise only ever refreshed by the
-        # change_booking_and_confirmation() onchange during live editing -
-        # editing a field on a line nested inside inventory_ids/
-        # investment_line_ids doesn't reliably cascade that onchange up to
-        # the parent record, so a deal can sit at down_payment == 0 despite
-        # every line already having its own plan. Recompute the real total
-        # directly here instead of trusting that onchange having run.
+        # down_payment (and every other schedule field) is otherwise only
+        # ever refreshed by the change_booking_and_confirmation() onchange
+        # during live editing - editing a field on a line nested inside
+        # inventory_ids/investment_line_ids doesn't reliably cascade that
+        # onchange up to the parent record, so a deal can sit at
+        # down_payment == 0 despite every line already having its own plan.
+        # Recompute the real values directly here instead of trusting that
+        # onchange having run.
         if self.multiple_plans:
-            total_down_payment = self._compute_groups_down_payment_total()
-            if total_down_payment:
-                self.down_payment = total_down_payment
+            updates = self._compute_combined_schedule_fields()
+            if updates:
+                self.write(updates)
         if self.payment_type == 'installments' and not self.down_payment:
             raise ValidationError('Please enter booking payment amount.')
         if self.multiple_plans and self.payment_type == 'lump_sum':

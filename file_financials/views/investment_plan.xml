@@ -27,7 +27,7 @@
             <field name="arch" type="xml">
                 <list create="false" default_order="investment_id asc, group_sequence asc, installment_number asc">
                     <field name="investment_id" invisible="0" readonly="1" force_save="1"/>
-                    <field name="plan_group_name" invisible="0" readonly="1" force_save="1" string="Plan"/>
+<!--                    <field name="plan_group_name" invisible="0" readonly="1" force_save="1" string="Plan"/>-->
                     <field name="installment_name" invisible="0" readonly="1" force_save="1"/>
                     <field name="installment_type" invisible="1" readonly="1" force_save="1"/>
                     <field name="invoice" invisible="1" readonly="1" force_save="1"/>

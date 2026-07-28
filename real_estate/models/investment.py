@@ -931,6 +931,55 @@ class Investment(models.Model):
                 total += self.down_payment
         return total
 
+    def _compute_combined_schedule_fields(self):
+        """Full header-field equivalent of _compute_groups_down_payment_total()
+        - not just Booking Payment, but every amount (Confirmation/Balloting/
+        Possession/Primary/Balloon) AND the schedule's structure (interval,
+        installment count, balloon/confirmation/possession timing), all
+        computed directly from _get_installment_plan_groups() rather than
+        trusting change_booking_and_confirmation()'s onchange to have run.
+        Returns {} when this deal isn't a single combined-plan group (nothing
+        to safely derive), so callers should only apply the result when it's
+        non-empty."""
+        self.ensure_one()
+        groups = self._get_installment_plan_groups()
+        if len(groups) != 1:
+            return {}
+        group = groups[0]
+        group_plan = group['predefine_plan_id']
+        if not group_plan:
+            return {}
+        lines = group['lines']
+        if lines and lines._name == 'plot.inventory':
+            no_of_units = len(lines) or self.no_of_units
+        else:
+            no_of_units = sum(lines.mapped('no_of_units')) or self.no_of_units
+        params = group_plan.get_schedule_params(group['sub_total'], no_of_units)
+        if group.get('amount_overrides'):
+            params.update(group['amount_overrides'])
+        return {
+            'interval_id': params['interval_id'],
+            'grace_period': params['grace_period'],
+            'grace_period_type': params['grace_period_type'],
+            'total_installment': params['total_installment'],
+            'down_payment': params['down_payment'],
+            'confirmation_amount': params['confirmation_amount'],
+            'confirmation_amount_interval': params['confirmation_amount_interval'],
+            'confirmation_amount_frequency': params['confirmation_amount_frequency'],
+            'balloting_amount': params['balloting_amount'],
+            'possession_amount': params['possession_amount'],
+            'possession_amount_interval': params['possession_amount_interval'],
+            'possession_amount_frequency': params['possession_amount_frequency'],
+            'primary_amount': params['primary_amount'],
+            'primary_amount_interval': params['primary_amount_interval'],
+            'primary_amount_frequency': params['primary_amount_frequency'],
+            'balloon_payment': params['balloon_payment'],
+            'balloon_payment_interval': params['balloon_payment_interval'],
+            'balloon_payment_frequency': params['balloon_payment_frequency'],
+            'balloon_payment_start': params['balloon_payment_start'],
+            'include_installment': params['include_installment'],
+        }
+
     def create_installment_plan(self):
         if not self.down_payment:
             raise ValidationError(_('Please enter down payment amount.'))
