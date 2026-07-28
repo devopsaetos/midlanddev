@@ -529,7 +529,14 @@ class InvestorFileExt(models.Model):
                 #     })
                 if self.initial_payment and self.type == 'normal':
                     if not self.installment_plan_ids or self.installment_plan_ids[0].payment_status not in ('in_payment', 'paid'):
-                        if self.investment_id.investment_plan_ids and self.investment_id.investment_plan_ids[0].payment_status in ('in_payment', 'paid'):
+                        # A bucket deal has one Booking row per plan-group -
+                        # only that group's own Booking status should unlock
+                        # this file's Booking row, not any group's.
+                        file_plan_id = self.predefine_plan_id.id or self.investment_id.predefine_plan_id.id
+                        booking_lines = self.investment_id.investment_plan_ids.filtered(
+                            lambda l: l.installment_type == 'down' and
+                            (l.predefine_plan_id.id or self.investment_id.predefine_plan_id.id) == file_plan_id)
+                        if booking_lines and all(l.payment_status in ('in_payment', 'paid') for l in booking_lines):
                             self.installment_plan_ids.create({
                                 'date': self.booking_date + relativedelta(days=+self.grace_period),
                                 'payment_date': self.booking_date,
@@ -1003,7 +1010,11 @@ class InvestorFileExt(models.Model):
         if self.payment_type == 'lump_sum':
             if self.predefine_plan_id and len(self.predefine_plan_id.predefine_plan_line_ids) or self.env.ref('real_estate.lump_sum_product').id in \
                     self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-                if self.investment_id.investment_plan_ids and self.investment_id.investment_plan_ids[0].payment_status == 'paid':
+                file_plan_id = self.predefine_plan_id.id or self.investment_id.predefine_plan_id.id
+                booking_lines = self.investment_id.investment_plan_ids.filtered(
+                    lambda l: l.installment_type == 'down' and
+                    (l.predefine_plan_id.id or self.investment_id.predefine_plan_id.id) == file_plan_id)
+                if booking_lines and all(l.payment_status == 'paid' for l in booking_lines):
                     self.installment_plan_ids.create({
                         'date': self.booking_date,
                         'payment_date': self.booking_date,

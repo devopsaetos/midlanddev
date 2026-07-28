@@ -84,6 +84,7 @@
                                         />
                                         <!--                                         attrs="{'column_invisible':[('parent.status','!=','submitted')]}"-->
                                         <field name="street_id" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="bucket_id" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="nop"/>
                                         <field name="category_id" domain="[('project_type', 'in', ['housing_society', False])]"
                                                options="{'no_create': True, 'no_open': True}"/>

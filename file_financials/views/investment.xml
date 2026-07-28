@@ -93,9 +93,12 @@
             <xpath expr="//field[@name='interval_id']" position="before">
                 <field name="payment_type" required="1" force_save="1"/>
             </xpath>
-            <!--            <xpath expr="//field[@name='predefine_plan_id']" position="attributes">-->
-            <!--                <attribute name="attrs">{'invisible': [('multiple_plans','=',True)]}</attribute>-->
-            <!--            </xpath>-->
+            <xpath expr="//field[@name='predefine_plan_id'][1]" position="attributes">
+                <attribute name="required">header_plan_required</attribute>
+            </xpath>
+            <xpath expr="//field[@name='predefine_plan_id'][1]" position="after">
+                <field name="header_plan_required" invisible="1"/>
+            </xpath>
             <xpath expr="//sheet/notebook[last()]" position="inside">
                 <page name="rebate_calculation" string="Rebate">
                     <sheet>
@@ -171,16 +174,13 @@
             </xpath>
             <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
                    position="attributes">
+                <!-- Odoo's list view keys columns by field name, so declaring
+                     sector_id twice (once as "Sector", once as "Floor") to
+                     swap labels by project_type doesn't render reliably - one
+                     copy ends up blank regardless of its own invisible. Single
+                     column, dynamic domain only; label stays "Sector" either way. -->
                 <attribute name="required">0</attribute>
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
-                <attribute name="invisible">parent.project_type == 'skyscraper'</attribute>
-            </xpath>
-            <xpath expr="//form/sheet/notebook/page[1]/field[@name='investment_line_ids']/list/field[@name='sector_id']"
-                   position="after">
-                <field name="sector_id" string="Floor"
-                       domain="[('project_type','=',parent.project_type)]"
-                       options="{'no_create': True, 'no_open': True}"
-                       invisible="parent.project_type != 'skyscraper'"/>
             </xpath>
             <xpath expr="//field[@name='investment_line_ids']/list/field[@name='category_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
@@ -188,24 +188,29 @@
             <xpath expr="//field[@name='investment_line_ids']/list/field[@name='unit_category_type_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
             </xpath>
+            <xpath expr="//field[@name='investment_line_ids']/list/field[@name='unit_category_type_id']" position="after">
+                <field name="predefine_plan_id" string="Plan"
+                       invisible="parent.plan_type != 'predefine'"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="own_plan" invisible="1" force_save="1"/>
+            </xpath>
             <xpath expr="//field[@name='investment_line_ids']/list/field[@name='size_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
             </xpath>
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='sector_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
-                <attribute name="invisible">parent.project_type == 'skyscraper'</attribute>
-            </xpath>
-            <xpath expr="//field[@name='inventory_ids']/list/field[@name='sector_id']" position="after">
-                <field name="sector_id" string="Floor" readonly="1"
-                       domain="[('project_type','=',parent.project_type)]"
-                       options="{'no_create': True, 'no_open': True}"
-                       invisible="parent.project_type != 'skyscraper'"/>
             </xpath>
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='category_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
             </xpath>
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='unit_category_type_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>
+            </xpath>
+            <xpath expr="//field[@name='inventory_ids']/list/field[@name='unit_category_type_id']" position="after">
+                <field name="predefine_plan_id" string="Plan"
+                       invisible="parent.plan_type != 'predefine'"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="own_plan" invisible="1" force_save="1"/>
             </xpath>
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='size_id']" position="attributes">
                 <attribute name="domain">[('project_type','=',parent.project_type)]</attribute>

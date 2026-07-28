@@ -76,6 +76,7 @@
         'views/predefined_remarks.xml',
         'views/demarcated_area.xml',
         'views/plot_category.xml',
+        'views/unit_bucket.xml',
         'views/letters_report.xml',
         'views/file_attachment.xml',
         'wizard/create_inventory.xml',

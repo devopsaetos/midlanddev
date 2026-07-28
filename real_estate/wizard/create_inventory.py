@@ -92,6 +92,7 @@ class InventoryCreation(models.Model):
                     "phase_id": self.phase_id.id,
                     "sector_id": self.sector_id.id,
                     "street_id": line.street_id.id,
+                    "bucket_id": line.bucket_id.id,
                     "category_id": line.category_id.id,
                     "size_id": line.size_id.id,
                     "unit_category_type_id": line.unit_category_type_id.id,
@@ -110,6 +111,7 @@ class InventoryLine(models.Model):
 
     is_select = fields.Boolean(default=False)
     street_id = fields.Many2one('street')
+    bucket_id = fields.Many2one('unit.bucket')
     nop = fields.Integer('NOP')
     category_id = fields.Many2one('plot.category', 'Category', required=True)
     unit_category_type_id = fields.Many2one('unit.category.type', 'Product', required=True)

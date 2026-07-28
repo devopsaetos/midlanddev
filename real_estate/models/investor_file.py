@@ -52,6 +52,7 @@ class InvestorFile(models.Model):
     phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]", store=True, readonly=False)
     sector_id = fields.Many2one('sector', store=True, readonly=False, tracking=True)
     street_id = fields.Many2one('street', store=True, readonly=False, tracking=True)
+    bucket_id = fields.Many2one('unit.bucket', string='Bucket', store=True, readonly=False, tracking=True)
     inventory_id = fields.Many2one('plot.inventory', 'Plot No', tracking=True)
     unit_number = fields.Char(related='inventory_id.name', store=True, readonly=False, tracking=True)
     coverd_area = fields.Float('Covered Area', related="inventory_id.standard_area", readonly=False,

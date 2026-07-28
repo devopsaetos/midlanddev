@@ -252,12 +252,12 @@
                             <field name="factor_amount"/>
                             <field name="discount_type"/>
                             <field name="discount_amount"/>
-                            <field name="balance_amount"/>
+                            <field name="balance_amount" invisible="1"/>
                         </group>
                         <group>
-                            <field name="total_installment"/>
-                            <field name="installments_paid" readonly="1"/>
-                            <field name="total_installments_paid" readonly="1"/>
+                            <field name="total_installment" invisible="1"/>
+                            <field name="installments_paid" readonly="1" invisible="1"/>
+                            <field name="total_installments_paid" readonly="1" invisible="1"/>
                             <field name="total_installments_due" readonly="1"/>
                             <field name="installments_due" readonly="1"/>
                         </group>

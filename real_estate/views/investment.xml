@@ -196,6 +196,8 @@
                                            options="{'no_create': True, 'no_open': True}"/>
                                     <field name="street_id" readonly="1"
                                            options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="bucket_id" readonly="1"
+                                           options="{'no_create': True, 'no_open': True}"/>
                                     <field name="category_id" readonly="1"
                                            domain="[('project_type','=','housing_society')]"
                                            required="1"
@@ -247,7 +249,8 @@
                                     invisible="(installment_created == False or generate_invoices_for_installment != False)"/>
                             <field name="investment_plan_ids" readonly="1">
                                 <list editable="bottom" decoration-info="invoice_created == True"
-                                      default_order="installment_number asc" limit="500">
+                                      default_order="group_sequence asc, installment_number asc" limit="500">
+                                    <field name="plan_group_name" string="Plan"/>
                                     <field name="installment_number" string="Sr. No"/>
                                     <field name="installment_type" invisible="1"/>
                                     <field name="installment_name" invisible="0"/>

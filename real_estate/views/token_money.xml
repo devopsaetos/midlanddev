@@ -105,6 +105,7 @@
                             <field name="investor_id" invisible="party_type != 'investor'"
                                    required="party_type == 'investor'" readonly="token_generated == True"
                                    options="{'no_create': True}"/>
+                            <field name="investor_code" string="Investor Code" invisible="party_type != 'investor'"/>
                             <field name="investment_id" string="Investment No"
                                    invisible="party_type != 'investor'"
                                    readonly="token_generated == True"

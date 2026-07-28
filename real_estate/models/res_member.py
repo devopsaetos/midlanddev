@@ -71,6 +71,9 @@ class ResMember(models.Model):
     no_of_project_files = fields.Integer(compute='_compute_no_of_project_files')
     tracking_id = fields.Char(compute='_compute_tracking_id', search="_search_tracking_id")
     token_generated = fields.Boolean(related='token_id.token_generated', readonly=True)
+    # Almost every field on this form is readonly="id" (locked once saved) -
+    # the "Edit" button sets this to unlock them for a one-off correction.
+    edit_unlocked = fields.Boolean(default=False, copy=False)
 
     # Address related fields
     city_id = fields.Many2one('city', string='City')
@@ -909,6 +912,31 @@ class ResMember(models.Model):
         if not self.is_same:
             self.corespondence_street = self.corespondence_street2 = self.corespondence_zip = " "
             self.corespondence_city_id = self.corespondence_state_id = self.corespondence_country_id = False
+
+    def action_open_edit_mode(self):
+        # Nearly every field on this form is readonly="id" (locked the moment
+        # the record is saved, for every user - fields_view_get() below never
+        # actually runs anymore in Odoo 19, there's no such hook any more, so
+        # it can't be the thing gating this). Flipping this stored flag is
+        # what the view's readonly conditions were changed to also check, so
+        # the button unlocks the form in place for a one-off correction.
+        self.ensure_one()
+        self.edit_unlocked = True
+
+    def action_save_and_lock(self):
+        # type="object" buttons save any pending edits before calling the
+        # method, so by the time this runs the correction is already
+        # persisted - this just re-locks the form. Fields already rendered as
+        # editable widgets don't reliably flip back to readonly from an
+        # in-place reactive update alone, so force a fresh render - but via a
+        # full client-side page reload (not an act_window reopen), since
+        # reopening the record instead runs it through onchange(), which on
+        # res.investor cascades into Enterprise's approval_request_ids and
+        # crashes on approvals' _compute_request_status (a pre-existing bug
+        # in the approvals module, unrelated to this button).
+        self.ensure_one()
+        self.edit_unlocked = False
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     @api.model
     def fields_view_get(self, view_id=None, view_type=False, toolbar=False, submenu=False):

@@ -185,34 +185,28 @@
                                 <field name="is_balloting" readonly="file_status != 'draft'"/> -->
                             </group>
                         </group>
-                        <group>
-                            <group name="plot_preference" string="Plot Preference" class="col-5">
-                                <!--                                <notebook>-->
-                                <!--                                    <page name="plot_preference" string="Details">-->
-                                <field name="preference_ids" nolabel="1"
-                                       readonly="file_status != 'draft'">
-                                    <list editable="bottom" class="custom_column">
-                                        <field name="factor_id" options="{'no_create': True, 'no_open': True}"/>
-                                        <field name="basis"/>
-                                        <field name="value"/>
-                                        <field name="total"/>
-                                        <field name="approved" class="oe_text_alignment"/>
-                                    </list>
-                                </field>
-                                <!--                                    </page>-->
-                                <!--                                </notebook>-->
-                            </group>
-                            <group string="Nominee" class="pull-right">
-                                <field name="kin_name" readonly="1"/>
-                                <field name="kin_mobile" readonly="1" widget="mask"
-                                       data-inputmask="'mask': '+99-999-9999999'"
-                                       placeholder="+92-300-2132132"/>
-                                <field name="kin_cnic" readonly="1"/>
-                                <field name="kin_member_relation" readonly="1"/>
-                                <field name="other_relation" readonly="1"
-                                       invisible="kin_member_relation != 'other'"
-                                       required="kin_member_relation == 'other'"/>
-                            </group>
+                        <group name="plot_preference" string="Plot Preference">
+                            <field name="preference_ids" nolabel="1" colspan="2"
+                                   readonly="file_status != 'draft'">
+                                <list editable="bottom" class="custom_column">
+                                    <field name="factor_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="basis"/>
+                                    <field name="value"/>
+                                    <field name="total"/>
+                                    <field name="approved" class="oe_text_alignment"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Nominee">
+                            <field name="kin_name" readonly="1"/>
+                            <field name="kin_mobile" readonly="1" widget="mask"
+                                   data-inputmask="'mask': '+99-999-9999999'"
+                                   placeholder="+92-300-2132132"/>
+                            <field name="kin_cnic" readonly="1"/>
+                            <field name="kin_member_relation" readonly="1"/>
+                            <field name="other_relation" readonly="1"
+                                   invisible="kin_member_relation != 'other'"
+                                   required="kin_member_relation == 'other'"/>
                         </group>
                         <notebook colspan="4">
                             <page name="file" string="File" autofocus="autofocus">

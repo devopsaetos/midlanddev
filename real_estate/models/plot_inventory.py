@@ -32,6 +32,7 @@ class PlotInventory(models.Model):
     phase_id = fields.Many2one('society', 'Phase', required=True, tracking=True)
     sector_id = fields.Many2one('sector', tracking=True)
     street_id = fields.Many2one('street', tracking=True)
+    bucket_id = fields.Many2one('unit.bucket', string='Bucket', tracking=True)
     location_id = fields.Many2one('location')
     size_id = fields.Many2one('unit.size', 'Size', tracking=True)
     demarcation_id = fields.Many2one('demarcated.area', 'Demarcation')

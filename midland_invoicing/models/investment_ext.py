@@ -74,8 +74,15 @@ class InvestmentExt(models.Model):
         for rec in self:
             already_invoiced = rec.midland_invoice_ids.filtered(
                 lambda i: i.state != 'cancelled').mapped('investment_installment_id').ids
+            # Booking rows must only ever be invoiced through receive_payment()
+            # (token settlement, dealer rebate, auto-payment, deal state
+            # transition, inventory reservation all happen there) - picking
+            # one up here would post a bare 'investment_installment' invoice
+            # for it and leave all of that undone, or double-invoice it if
+            # receive_payment() runs around the same time.
             plans = rec.investment_plan_ids.filtered(
                 lambda l: l.id not in already_invoiced and not l.invoice_created
+                and l.installment_type != 'down'
             ).sorted('date')
 
             if not plans:
@@ -124,10 +131,15 @@ class InvestmentExt(models.Model):
     @api.model
     def _cron_generate_due_investment_installment_invoices(self):
         today = fields.Date.today()
+        # Booking rows are excluded - they must only ever be invoiced through
+        # receive_payment() (see action_generate_installment_invoices() above
+        # for why), and their date == booking_date is always <= today, so
+        # every deal's Booking row would otherwise race receive_payment() here.
         due_plans = self.env['investment.plan'].search([
             ('date', '<=', today),
             ('invoice_created', '=', False),
             ('investment_id', '!=', False),
+            ('installment_type', '!=', 'down'),
         ])
 
         from collections import defaultdict
