@@ -154,6 +154,7 @@ class ImportData(models.TransientModel):
         'phase': 'phase_id',
         'sector': 'sector_id',
         'street': 'street_id',
+        'bucket': 'bucket_id',
         'location': 'location_id',
         'category': 'category_id',
         'unit category type': 'unit_category_type_id',
@@ -235,6 +236,8 @@ class ImportData(models.TransientModel):
                 }
                 if 'name' in data:
                     vals['name'] = str(data['name']).strip() if data.get('name') else False
+                if 'bucket_id' in data:
+                    vals['bucket_id'] = self._find_by_name('unit.bucket', data.get('bucket_id'), row_no=row_no)
                 if 'location_id' in data:
                     vals['location_id'] = self._find_by_name('location', data.get('location_id'), row_no=row_no)
                 if 'size_id' in data:

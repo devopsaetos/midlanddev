@@ -11,6 +11,7 @@ class PlotInventory(models.Model):
 
     investor_file_id = fields.Many2one('investor.file', string='Investor File', tracking=True)
     file_id = fields.Many2one('file', string='File No.', tracking=True)
+    state = fields.Selection(selection_add=[('not_for_sale', 'Not For Sale')])
 
     # Mirrors investment.line.own_plan/predefine_plan_id (investment_lines.py) -
     # same per-line/per-unit plan-group key, but for deals reserved unit-by-unit
