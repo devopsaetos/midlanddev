@@ -53,6 +53,26 @@ class InvestmentExt(models.Model):
 
     multiple_plans = fields.Boolean(default=False, string="Multiple Plans")
     platter_id = fields.Many2one('investment.platter', string="Platter")
+    header_plan_required = fields.Boolean(compute='_compute_header_plan_required')
+
+    @api.depends('plan_type', 'multiple_plans', 'reservation_type',
+                 'investment_line_ids.predefine_plan_id', 'inventory_ids.predefine_plan_id')
+    def _compute_header_plan_required(self):
+        # The header Plan Name is only a FALLBACK for lines/units that don't
+        # pick their own plan (see _get_installment_plan_groups()) - once
+        # every line already has its own predefine plan, the header one has
+        # nothing left to apply to and shouldn't block saving.
+        for rec in self:
+            if rec.plan_type != 'predefine':
+                rec.header_plan_required = False
+                continue
+            if rec.multiple_plans and rec.reservation_type == 'bulk' and rec.investment_line_ids:
+                lines = rec.investment_line_ids
+            elif rec.multiple_plans and rec.reservation_type == 'unit' and rec.inventory_ids:
+                lines = rec.inventory_ids
+            else:
+                lines = rec.env['investment.line']
+            rec.header_plan_required = not (lines and all(l.predefine_plan_id for l in lines))
     payment_type = fields.Selection([('installments', 'Installment'), ('lump_sum', 'Lump Sum')], string='Payment Type',
                                     tracking=True)
 
@@ -67,6 +87,32 @@ class InvestmentExt(models.Model):
         selection=[('yes', 'Yes'), ('no', 'no')],
         default="yes",
         tracking=True)
+
+    def write(self, vals):
+        res = super().write(vals)
+        # down_payment is otherwise only ever refreshed by the
+        # change_booking_and_confirmation() onchange during live editing,
+        # which doesn't reliably cascade up from a field edited on a line
+        # nested inside inventory_ids/investment_line_ids. Recompute it
+        # directly on every save for multi-plan deals so the stored/displayed
+        # value is correct even if that onchange never fired client-side.
+        if not self.env.context.get('skip_down_payment_recompute'):
+            for rec in self:
+                if rec.multiple_plans:
+                    total = rec._compute_groups_down_payment_total()
+                    if total and total != rec.down_payment:
+                        rec.with_context(skip_down_payment_recompute=True).down_payment = total
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec in records:
+            if rec.multiple_plans:
+                total = rec._compute_groups_down_payment_total()
+                if total and total != rec.down_payment:
+                    rec.with_context(skip_down_payment_recompute=True).down_payment = total
+        return records
 
     def reserve_inventory(self):
         # real_estate's base reserve_inventory() sets line.partner_id = self.partner_id.id,
@@ -178,17 +224,31 @@ class InvestmentExt(models.Model):
                 line.own_plan = False
                 line.predefine_plan_id = False
 
-    @api.onchange('investment_line_ids', 'total_amount', 'multiple_plans')
+    @api.onchange('investment_line_ids', 'inventory_ids', 'total_amount', 'multiple_plans')
     def change_booking_and_confirmation(self):
-        if self.investment_line_ids and self.multiple_plans and self.reservation_type == 'bulk':
+        if self.reservation_type == 'bulk':
+            lines = self.investment_line_ids
+        elif self.reservation_type == 'unit':
+            lines = self.inventory_ids
+        else:
+            lines = self.env['investment.line']
+
+        # Picking a plan on any individual line/unit IS what makes this a
+        # multi-plan deal - the user shouldn't also have to remember to flip
+        # the "Multiple Plans" checkbox separately for it to take effect.
+        if lines.filtered(lambda l: l.predefine_plan_id):
+            self.multiple_plans = True
+
+        if lines and self.multiple_plans:
             booking_amount = 0
             confirmation_amount = 0
             balloting_amount = 0
             posession_amount = 0
             final_amount = 0
             balloon_amount = 0
-            for line in self.investment_line_ids:
-                line.own_plan = True
+            for line in lines:
+                if line.predefine_plan_id:
+                    line.own_plan = True
                 booking_amount += line.booking_value
                 confirmation_amount += line.confirmation_value
                 balloting_amount += line.balloting_value
@@ -233,6 +293,7 @@ class InvestmentExt(models.Model):
                         'phase_id': self.phase_id.id,
                         'sector_id': lines.sector_id.id,
                         'street_id': lines.street_id.id,
+                        'bucket_id': lines.bucket_id.id,
                         'category_id': lines.category_id.id,
                         'unit_category_type_id': lines.unit_category_type_id.id,
                         'size_id': lines.size_id.id,
@@ -242,12 +303,12 @@ class InvestmentExt(models.Model):
                         # 'payment_type': 'installments' if self.options == 'down' else 'lump_sum',
                         'payment_type': self.payment_type,
                         'plan_type': self.plan_type,
-                        'predefine_plan_id': lines.predefine_plan_id.id if lines.own_plan else self.predefine_plan_id.id,
-                        'interval_id': lines.predefine_plan_id.interval_id.id if lines.own_plan else self.interval_id.id,
+                        'predefine_plan_id': lines.predefine_plan_id.id or self.predefine_plan_id.id,
+                        'interval_id': lines.predefine_plan_id.interval_id.id if lines.predefine_plan_id else self.interval_id.id,
                         # 'starting_date': self.start_date,
                         'booking_date':self.booking_date,
                         'starting_date':self.installment_starting_date or self.start_date,
-                        'total_installment': lines.predefine_plan_id.total_installment if lines.own_plan else self.total_installment,
+                        'total_installment': lines.predefine_plan_id.total_installment if lines.predefine_plan_id else self.total_installment,
                         'payment_states': 'open',
                         'sale_amount': lines.investor_price,
                         'ttl_sale_amount': lines.investor_price,
@@ -269,6 +330,7 @@ class InvestmentExt(models.Model):
                     'phase_id': self.phase_id.id,
                     'sector_id': inv.sector_id.id,
                     'street_id': inv.street_id.id,
+                    'bucket_id': inv.bucket_id.id,
                     'category_id': inv.category_id.id,
                     'unit_category_type_id': inv.unit_category_type_id.id,
                     'size_id': inv.size_id.id,
@@ -276,11 +338,13 @@ class InvestmentExt(models.Model):
                     'inventory_id': inv.id,
                     # 'payment_type': 'installments' if self.options == 'down' else 'lump_sum',
                     'plan_type': self.plan_type,
-                    'predefine_plan_id': self.predefine_plan_id.id if self.predefine_plan_id else None,
+                    'predefine_plan_id': (inv.predefine_plan_id.id or self.predefine_plan_id.id) or None,
                     'payment_type': self.payment_type,
-                    'interval_id': self.interval_id.id if self.options == 'down' else False,
+                    'interval_id': ((inv.predefine_plan_id.interval_id.id if inv.predefine_plan_id else self.interval_id.id)
+                                    if self.options == 'down' else False),
                     'starting_date': self.start_date,
-                    'total_installment': self.total_installment if self.options == 'down' else 0,
+                    'total_installment': ((inv.predefine_plan_id.total_installment if inv.predefine_plan_id else self.total_installment)
+                                          if self.options == 'down' else 0),
                     'payment_states': 'open',
                     'sale_amount': inv.investor_unit_price,
                     'ttl_sale_amount': inv.investor_unit_price,
@@ -475,7 +539,11 @@ class InvestmentExt(models.Model):
         if not self.deal_rebate_amount > 0:
             raise ValidationError('Sorry, Cannot Create Rebate Invoice for Zero (0) Amount')
         if self.rebate_settlement == 'on_deal_close':
-            if self.investment_plan_ids[0].installment_type == 'down' and self.investment_plan_ids[0].payment_status != 'paid':
+            # A multi-bucket deal can have one Booking row per plan-group -
+            # require ALL of them paid, not just whichever one happened to be
+            # first in the recordset.
+            booking_lines = self.investment_plan_ids.filtered(lambda l: l.installment_type == 'down')
+            if booking_lines and any(l.payment_status != 'paid' for l in booking_lines):
                 raise ValidationError('Please Pay your Booking Payment First...')
         if self.rebate_on_allotment_ids and not self.deal_rebate_invoice_created:
             rebate_type = self.rebate_on_allotment_ids[0].mapped('settlement_option')
@@ -515,6 +583,13 @@ class InvestmentExt(models.Model):
             rec.calculate_rebate()
             for lines in rec.investment_plan_ids:
                 if lines.installment_type == 'down':
+                    # Fixed-basis rebates are per-unit — use THIS row's own
+                    # group's unit count (via investment_line_ids), not the
+                    # deal's total no_of_units, or a multi-bucket deal with N
+                    # Booking rows applies the fixed amount N times over.
+                    # Legacy rows (empty investment_line_ids) fall back to the
+                    # deal total exactly as before.
+                    group_units = sum(lines.investment_line_ids.mapped('no_of_units')) or rec.no_of_units
                     marketing_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'marketing_company' and l.transaction_type == 'booking')
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
@@ -525,28 +600,29 @@ class InvestmentExt(models.Model):
                     # rebate base for every installment line on the deal.
                     lines.marketing_share = sum(
                         (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
-                        else l.total_rebate * rec.no_of_units
+                        else l.total_rebate * group_units
                         for l in marketing_lines
                     )
                     lines.dealer_share = sum(
                         (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
-                        else l.total_rebate * rec.no_of_units
+                        else l.total_rebate * group_units
                         for l in dealer_lines
                     )
                     lines.rebate_amount = lines.marketing_share + lines.dealer_share
                 if lines.installment_type == 'confirmation_amount':
+                    group_units = sum(lines.investment_line_ids.mapped('no_of_units')) or rec.no_of_units
                     marketing_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'marketing_company' and l.transaction_type == 'confirmation')
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'dealer' and l.transaction_type == 'confirmation')
                     lines.marketing_share = sum(
                         (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
-                        else l.total_rebate * rec.no_of_units
+                        else l.total_rebate * group_units
                         for l in marketing_lines
                     )
                     lines.dealer_share = sum(
                         (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
-                        else l.total_rebate * rec.no_of_units
+                        else l.total_rebate * group_units
                         for l in dealer_lines
                     )
                     lines.rebate_amount = lines.marketing_share + lines.dealer_share
@@ -561,8 +637,12 @@ class InvestmentExt(models.Model):
             confirmation_plan_line.calculate_rebate_given_for_confirmation()
 
     def create_dealer_booking_rebate_bill(self):
-        if self.investment_plan_ids.filtered(lambda ins: ins.installment_type == 'down' and ins.dealer_share > 0):
-            dealer_share = self.investment_plan_ids.filtered(lambda ins: ins.installment_type == 'down').dealer_share
+        # One combined credit note for the deal's total dealer share across
+        # every Booking row (no 1:1 constraint on account.move the way there
+        # is on midland.invoice, so no need for one credit note per group).
+        booking_lines = self.investment_plan_ids.filtered(lambda ins: ins.installment_type == 'down')
+        if booking_lines.filtered(lambda ins: ins.dealer_share > 0):
+            dealer_share = sum(booking_lines.mapped('dealer_share'))
             if dealer_share > 0:
                 date = fields.Date.today()
                 invoice_type = 'out_refund'
@@ -584,33 +664,58 @@ class InvestmentExt(models.Model):
                     })],
                 })
                 rebate_invoice.action_post()
-                self.investment_plan_ids.filtered(lambda ins: ins.installment_type == 'down').move_ids = [(4, rebate_invoice.id)]
-            self.investment_plan_ids.filtered(lambda ins: ins.installment_type == 'down').calculate_rebate_given_for_confirmation()
+                booking_lines.move_ids = [(4, rebate_invoice.id)]
+            booking_lines.calculate_rebate_given_for_confirmation()
 
     def receive_payment(self):
         if not self.investment_plan_ids:
             raise ValidationError(_('Create Installment Plan first.'))
         if self.token_id and not self.token_id.token_paid:
             raise ValidationError(_('Please pay fees against this Token: %s .') % self.token_id.serial_number)
-        if self.total_amount:
-            _inv_ref = self.env.ref('real_estate.investment')
-            first_plan = self.investment_plan_ids.filtered(lambda l: l.installment_number == 1)
+        if not self.total_amount:
+            self.compute_rebate_amount_process()
+            return
 
-            if first_plan and first_plan.invoice_created:
-                # Booking invoice already exists — either this button was
-                # already clicked once, or the invoice was generated through
-                # the installment-invoice flow instead. Don't recreate it or
-                # repeat the one-time side effects below (auto-payment,
-                # history, inventory reservation) — just make sure the
-                # deal's state catches up so Create Open File can show.
-                if self.state != 'payment':
-                    self.write({
-                        'amount_received': True,
-                        'state': 'payment',
-                        'payment_states': 'open',
-                    })
-                self.compute_rebate_amount_process()
-                return
+        _inv_ref = self.env.ref('real_estate.investment')
+        # A multi-bucket deal has one Booking row per plan-group -
+        # midland.invoice.investment_installment_id is a strict 1:1 link to a
+        # single investment.plan row, so this creates one midland.invoice per
+        # Booking row instead of one shared invoice.
+        booking_lines = self.investment_plan_ids.filtered(lambda l: l.installment_type == 'down')
+
+        if booking_lines and all(l.invoice_created for l in booking_lines):
+            # Booking invoice(s) already exist — either this button was
+            # already clicked once, or the invoice was generated through
+            # the installment-invoice flow instead. Don't recreate them or
+            # repeat the one-time side effects below (auto-payment,
+            # history, inventory reservation) — just make sure the
+            # deal's state catches up so Create Open File can show.
+            if self.state != 'payment':
+                self.write({
+                    'amount_received': True,
+                    'state': 'payment',
+                    'payment_states': 'open',
+                })
+            self.compute_rebate_amount_process()
+            return
+
+        # The token is a single deal-wide advance, not per-bucket - split it
+        # proportionally across each group's own Booking share, remainder to
+        # the last group (avoids rounding leaving a fraction unaccounted for).
+        token_fees_total = self.token_id.token_fees if (self.token_id and self.token_id.state == 'paid') else 0
+        pending_lines = booking_lines.filtered(lambda l: not l.invoice_created)
+        booking_total = sum(pending_lines.mapped('amount')) or self.down_payment
+
+        invoices = self.env['midland.invoice']
+        remaining_token = token_fees_total
+        for index, booking_line in enumerate(pending_lines):
+            is_last = index == len(pending_lines) - 1
+            if is_last:
+                token_fees = remaining_token
+            else:
+                line_share = (booking_line.amount / booking_total) if booking_total else 0
+                token_fees = round(token_fees_total * line_share)
+            remaining_token -= token_fees
 
             invoice_lines = [(0, 0, {
                 'product_id': _inv_ref.id,
@@ -620,12 +725,10 @@ class InvestmentExt(models.Model):
                 # investment's own company, never the ambient env.company.
                 'account_id': _inv_ref.with_company(self.company_id or self.env.company).property_account_income_id.id,
                 'quantity': 1.0,
-                'price_unit': self.down_payment if self.options == 'down' else self.total_amount,
+                'price_unit': booking_line.amount,
             })]
-            token_fees = 0
-            if self.token_id and self.token_id.state == 'paid':
+            if token_fees:
                 # the investor already paid the token; knock it off the booking
-                token_fees = self.token_id.token_fees
                 _token_ref = self.env.ref('real_estate.token_adjustment')
                 invoice_lines.append((0, 0, {
                     'product_id': _token_ref.id,
@@ -640,109 +743,92 @@ class InvestmentExt(models.Model):
                 'invoice_date': self.booking_date,
                 'property_invoice_type': 'investment',
                 'investment_id': self.id,
-                'investment_installment_id': first_plan.id if first_plan else False,
+                'investment_installment_id': booking_line.id,
                 'invoice_line_ids': invoice_lines,
             })
             inv.action_post()
-            if token_fees:
-                self.token_id.state = 'adjusted'
-                if first_plan:
-                    # the token was received in advance; settle its share of the
-                    # Booking plan line so only the net amount stays receivable
-                    new_paid = (first_plan.amount_paid or 0.0) + token_fees
-                    remaining = (first_plan.amount or 0.0) - new_paid
-                    first_plan.write({
-                        'amount_paid': min(new_paid, first_plan.amount),
-                        'residual': max(remaining, 0.0),
-                        'payment_status': 'paid' if remaining <= 0 else 'in_payment',
-                    })
+            invoices |= inv
 
-            for rec in self.investment_plan_ids:
-                if rec.installment_number == 1 and rec.invoice_created != True:
-                    rec.write({
-                        'invoice_created': True,
-                        'invoice_id': inv.jv_id.id if inv.jv_id else False,
-                    })
-
-            # Compute the dealer's Booking rebate before the auto-payment below,
-            # so its rebate JV (Bank Dr / Rebate Expense Dr / Advance from
-            # Dealer Cr) has a real investment_installment_id.dealer_share to
-            # read — otherwise it would fall through to a plain revenue entry.
-            self.compute_rebate_amount_process()
-
-            # Dealer's rebate on the Booking line — funded by the dealer rather
-            # than cash, so it's netted out of what we ask for in cash below.
-            dealer_rebate = 0.0
-            if first_plan and first_plan.installment_type == 'down':
-                dealer_rebate = first_plan.dealer_share or 0.0
-
-            payment_type = self.env.company.payment_type
-            if payment_type:
-                if payment_type == 'osp':
-                    # the token portion was already received with the token itself
-                    net_amount = self.down_payment - token_fees - dealer_rebate
-                    if net_amount > 0:
-                        payment = self.env['midland.payment'].create({
-                            'payment_for': 'investor',
-                            'dealer_id': self.partner_id.id,
-                            'partner_id': self.partner_id.partner_id.id,
-                            'investment_id': self.id,
-                            'payment_amount': net_amount,
-                            'currency_id': self.env.company.currency_id.id,
-                            'journal_id': self.journal_id.id or self.env.company.account_journal_id.id,
-                            'company_id': self.env.company.id,
-                            'remarks': inv.name,
-                            'invoice_line_ids': [(0, 0, {
-                                'invoice_id': inv.id,
-                                'payment_amount': net_amount,
-                            })],
-                        })
-                        payment.action_confirm()
-
-            self.amount_received = True
-            for rec in self:
-                # if rec.investment_line_ids and rec.state != 'reserved':
-                #     for line in rec.investment_line_ids:
-                #         for unit in range(0, line.no_of_units):
-                #             inventory = rec.env['plot.inventory'].search([
-                #                 ('society_id', '=', rec.society_id.id),
-                #                 ('phase_id', '=', rec.phase_id.id),
-                #                 ('sector_id', '=', line.sector_id.id),
-                #                 ('category_id', '=', line.category_id.id),
-                #                 ('unit_category_type_id', '=', line.unit_category_type_id.id),
-                #                 ('state', '=', 'avalible_for_sale'),
-                #             ], limit=1)
-                #             if inventory:
-                #                 inventory.state = 'investor'
-                #                 inventory.investment_id = self.id
-                #                 inventory.partner_id = self.partner_id.id
-                #                 inventory.investor_unit_price = line.investor_price
-                #             else:
-                #                 raise ValidationError("Inventory you are trying to reserve is not available.")
-                if rec.inventory_ids and rec.state != 'reserved':
-                    for line in rec.inventory_ids:
-                        if line:
-                            line.state = 'investor'
-                            line.investment_id = self.id
-                            # line.deal_price = line.deal_price
-                if rec.reservation_type != 'unit' and not rec.investment_line_ids:
-                    raise ValidationError('Please add inventory details.')
-                if rec.reservation_type == 'unit' and not rec.inventory_ids:
-                    raise ValidationError('Please add inventory details.')
-
-            self.investment_history_ids.create({
-                'installment_number': 1,
-                'date': fields.Date.today(),
-                'transaction_type': 'investor',
-                'amount': 0,
-                'new_amount': round(self.balance_amount / self.total_installment) if self.total_installment > 0 else 0,
-                'old_balance': self.total_amount,
-                'new_balance': round(self.balance_amount),
-                'payment_received': 0,
-                'investment_id': self.id,
+            booking_line.write({
+                'invoice_created': True,
+                'invoice_id': inv.jv_id.id if inv.jv_id else False,
             })
-            self.state = 'payment'
-            self.payment_states = 'open'
+
+            if token_fees:
+                # the token was received in advance; settle its share of this
+                # group's Booking line so only the net amount stays receivable
+                new_paid = (booking_line.amount_paid or 0.0) + token_fees
+                remaining = (booking_line.amount or 0.0) - new_paid
+                booking_line.write({
+                    'amount_paid': min(new_paid, booking_line.amount),
+                    'residual': max(remaining, 0.0),
+                    'payment_status': 'paid' if remaining <= 0 else 'in_payment',
+                })
+
+        if token_fees_total:
+            self.token_id.state = 'adjusted'
+
+        # Compute the dealer's Booking rebate before the auto-payment below,
+        # so its rebate JV (Bank Dr / Rebate Expense Dr / Advance from
+        # Dealer Cr) has a real investment_installment_id.dealer_share to
+        # read — otherwise it would fall through to a plain revenue entry.
+        self.compute_rebate_amount_process()
+
+        payment_type = self.env.company.payment_type
+        if payment_type and payment_type == 'osp' and invoices:
+            # Dealer's rebate on each group's Booking line — funded by the
+            # dealer rather than cash, so it's netted out of what we ask for
+            # in cash below. Wrapped in one midland.payment with one
+            # invoice_line per group's invoice (payment_type== 'osp' auto-payment).
+            payment_lines = []
+            total_net = 0.0
+            for inv in invoices:
+                dealer_rebate = inv.investment_installment_id.dealer_share or 0.0
+                net_amount = inv.amount_total - dealer_rebate
+                if net_amount > 0:
+                    payment_lines.append((0, 0, {'invoice_id': inv.id, 'payment_amount': net_amount}))
+                    total_net += net_amount
+            if payment_lines:
+                payment = self.env['midland.payment'].create({
+                    'payment_for': 'investor',
+                    'dealer_id': self.partner_id.id,
+                    'partner_id': self.partner_id.partner_id.id,
+                    'investment_id': self.id,
+                    'payment_amount': total_net,
+                    'currency_id': self.env.company.currency_id.id,
+                    'journal_id': self.journal_id.id or self.env.company.account_journal_id.id,
+                    'company_id': self.env.company.id,
+                    'remarks': ', '.join(invoices.mapped('name')),
+                    'invoice_line_ids': payment_lines,
+                })
+                payment.action_confirm()
+
+        self.amount_received = True
+        for rec in self:
+            if rec.inventory_ids and rec.state != 'reserved':
+                for line in rec.inventory_ids:
+                    if line:
+                        line.state = 'investor'
+                        line.investment_id = self.id
+                        # line.deal_price = line.deal_price
+            if rec.reservation_type != 'unit' and not rec.investment_line_ids:
+                raise ValidationError('Please add inventory details.')
+            if rec.reservation_type == 'unit' and not rec.inventory_ids:
+                raise ValidationError('Please add inventory details.')
+
+        self.investment_history_ids.create({
+            'installment_number': 1,
+            'date': fields.Date.today(),
+            'transaction_type': 'investor',
+            'amount': 0,
+            'new_amount': round(self.balance_amount / self.total_installment) if self.total_installment > 0 else 0,
+            'old_balance': self.total_amount,
+            'new_balance': round(self.balance_amount),
+            'payment_received': 0,
+            'investment_id': self.id,
+        })
+        self.state = 'payment'
+        self.payment_states = 'open'
         self.compute_rebate_amount_process()
         # NOTE: create_dealer_booking_rebate_bill() used to post a separate
         # dealer rebate credit note here — that's now handled by the
@@ -750,9 +836,91 @@ class InvestmentExt(models.Model):
         # Dealer Cr) above, so calling it too would both double-post the
         # rebate and crash (it creates account.move with the removed 'type'
         # field instead of 'move_type').
+
+    def _get_installment_plan_groups(self):
+        """A multi-bucket deal (units of different sizes, each with its own
+        predefine.plan - own_plan=True) still generates exactly ONE combined
+        schedule: one Booking row, one Confirmation row, one recurring series -
+        not a separate schedule per plan. Every distinct plan's own
+        product-by-product amounts (Booking/Confirmation/Balloon/Possession/
+        Balloting) are summed together; the schedule's structure (interval,
+        installment count, balloon timing - which products exist at all) is
+        borrowed from the first plan encountered, since every plan on a deal
+        is expected to share the same schedule shape and only differ in the
+        amounts. Source of the units depends on reservation_type: bulk deals
+        use investment_line_ids (investment.line), unit deals - where units
+        are hand-picked one by one instead of specified by count - use
+        inventory_ids (plot.inventory) instead. Only activates under
+        multiple_plans - deals that don't use it get exactly one group,
+        identical to the base implementation."""
+        self.ensure_one()
+        if not self.multiple_plans:
+            return super()._get_installment_plan_groups()
+        if self.reservation_type == 'bulk' and self.investment_line_ids:
+            source_lines = self.investment_line_ids
+        elif self.reservation_type == 'unit' and self.inventory_ids:
+            source_lines = self.inventory_ids
+        else:
+            return super()._get_installment_plan_groups()
+
+        own_plan_lines = source_lines.filtered(lambda l: l.predefine_plan_id)
+        if not own_plan_lines:
+            return super()._get_installment_plan_groups()
+        fallback_lines = source_lines - own_plan_lines
+
+        seen = {}
+        for line in own_plan_lines:
+            seen.setdefault(line.predefine_plan_id.id, self.env[source_lines._name])
+            seen[line.predefine_plan_id.id] |= line
+
+        amount_keys = ('down_payment', 'confirmation_amount', 'balloting_amount',
+                       'possession_amount', 'primary_amount', 'balloon_payment')
+        combined = {k: 0.0 for k in amount_keys}
+        combined_sub_total = 0.0
+        template_plan = None
+        for plan_id, lines in seen.items():
+            plan = self.env['predefine.plan'].browse(plan_id)
+            sub_total = sum(lines.mapped('deal_price'))
+            no_of_units = len(lines) if lines._name == 'plot.inventory' else (sum(lines.mapped('no_of_units')) or self.no_of_units)
+            params = plan.get_schedule_params(sub_total, no_of_units)
+            for key in amount_keys:
+                combined[key] += params[key]
+            combined_sub_total += sub_total
+            if template_plan is None:
+                template_plan = plan
+
+        if fallback_lines and self.predefine_plan_id:
+            fb_sub_total = sum(fallback_lines.mapped('deal_price'))
+            fb_no_of_units = len(fallback_lines) if fallback_lines._name == 'plot.inventory' else (sum(fallback_lines.mapped('no_of_units')) or self.no_of_units)
+            fb_params = self.predefine_plan_id.get_schedule_params(fb_sub_total, fb_no_of_units)
+            for key in amount_keys:
+                combined[key] += fb_params[key]
+            combined_sub_total += fb_sub_total
+
+        return [{
+            'predefine_plan_id': template_plan,
+            'lines': source_lines,
+            'sub_total': combined_sub_total,
+            'amount_overrides': combined,
+        }]
+
     def create_installment_plan(self):
+        # down_payment is otherwise only ever refreshed by the
+        # change_booking_and_confirmation() onchange during live editing -
+        # editing a field on a line nested inside inventory_ids/
+        # investment_line_ids doesn't reliably cascade that onchange up to
+        # the parent record, so a deal can sit at down_payment == 0 despite
+        # every line already having its own plan. Recompute the real total
+        # directly here instead of trusting that onchange having run.
+        if self.multiple_plans:
+            total_down_payment = self._compute_groups_down_payment_total()
+            if total_down_payment:
+                self.down_payment = total_down_payment
         if self.payment_type == 'installments' and not self.down_payment:
             raise ValidationError('Please enter booking payment amount.')
+        if self.multiple_plans and self.payment_type == 'lump_sum':
+            raise ValidationError(_(
+                "Lump Sum payment is not supported together with Multiple Plans / bucket deals."))
 
         if self.payment_type == 'installments':
             # Clear lines that are neither invoiced nor paid before regenerating,
@@ -762,402 +930,15 @@ class InvestmentExt(models.Model):
             if existing:
                 existing.unlink()
             self.installment_created = False
-
-            # refresh schedule parameters from the plan lines, so a plan edited
-            # after the investment was created still schedules correctly
-            if self.predefine_plan_id:
-                for pre_plan in self.predefine_plan_id.predefine_plan_line_ids:
-                    product_id = pre_plan.product_id.id
-                    if product_id == self.env.ref('real_estate.balloon_payment').id:
-                        self.balloon_payment_interval = pre_plan.interval
-                        self.balloon_payment_frequency = pre_plan.frequency
-                        self.balloon_payment_start = pre_plan.start_from
-                        self.include_installment = pre_plan.include_installment
-                    if product_id == self.env.ref('real_estate.additional_balloon').id:
-                        self.add_balloon_interval = pre_plan.interval
-                        self.add_balloon_frequency = pre_plan.frequency
-                    if product_id == self.env.ref('real_estate.possession_amount_product').id:
-                        self.possession_amount_interval = pre_plan.interval
-                        self.possession_amount_frequency = pre_plan.frequency
-                    if product_id == self.env.ref('real_estate.confirmation_amount_product').id:
-                        self.confirmation_amount_interval = pre_plan.interval
-                        self.confirmation_amount_frequency = pre_plan.frequency
-                    if product_id == self.env.ref('real_estate.balloting_product').id:
-                        self.primary_amount_interval = pre_plan.interval
-                        self.primary_amount_frequency = pre_plan.frequency
-
-            self.investment_plan_ids.create({
-                'date': self.booking_date,
-                'installment_type': 'down',
-                'installment_name': 'Booking',
-                'installment_number': 1,
-                'amount': self.down_payment,
-                'amount_paid': 0,
-                'balance_amount': self.down_payment,
-                'residual': self.down_payment,
-                'payment_status': 'not_paid',
-                'investment_id': self.id
-            })
-
-            # confirmation payment line
-
-            if self.predefine_plan_id \
-                    and self.env.ref('real_estate.confirmation_amount_product').id \
-                    in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-                installment_number = 3
-                # confirmation_date = self.start_date
-                confirmation_date = self.booking_date
-                if self.grace_period_type == 'days':
-                    confirmation_date = self.booking_date + relativedelta(days=+self.grace_period)
-                if self.grace_period_type == 'months':
-                    confirmation_date = self.booking_date + relativedelta(months=+self.grace_period)
-                if self.grace_period_type == 'years':
-                    confirmation_date = self.booking_date + relativedelta(years=+self.grace_period)
-                self.investment_plan_ids.create({
-                    # 'date': self.start_date + relativedelta(months=+self.predefine_plan_id.confirmation_amount_period),
-                    'date': confirmation_date,
-                    'installment_number': 2,
-                    'installment_type': 'confirmation_amount',
-                    'installment_name': 'Confirmation',
-                    'payment_status': 'not_paid',
-                    'amount_paid': 0,
-                    'balance_amount': self.confirmation_amount,
-                    'amount': self.confirmation_amount,
-                    'residual': self.confirmation_amount,
-                    'investment_id': self.id
-                })
-            else:
-                installment_number = 2
-
-            if self.balance_amount > 0:
-                # if all([self.installment_starting_date, self.interval_id, self.total_installment]):
-                #     start_date = self.installment_starting_date
-                if all([self.start_date, self.interval_id, self.total_installment]):
-                    start_date = self.start_date
-                    dates = [fields.Date.from_string(start_date)]
-
-                    interval = 0
-                    possession_interval = 0
-                    add_balloon_interval = 0
-                    primary_interval = 0
-                    # When no explicit "Start From" is configured on the Balloon Payment
-                    # plan line (start_from=0, the default), the recurring balloon check
-                    # below must be active from the first installment - otherwise it never
-                    # fires (0 is falsy) and every balloon slot silently becomes a regular
-                    # installment instead.
-                    start_balloon_payment = not self.balloon_payment_start
-                    installment_count = 1
-                    balloon_interval = self.balloon_payment_interval
-                    balance = self.balance_amount - self.balloting_amount
-
-                    if self.predefine_plan_id:
-                        for rec in self.predefine_plan_id.predefine_plan_line_ids:
-                            if rec.product_id.id == rec.env.ref('real_estate.balloon_payment').id:
-                                balance = balance - (self.balloon_payment *
-                                                     self.balloon_payment_frequency)
-
-                            if rec.product_id.id == rec.env.ref('real_estate.possession_amount_product').id:
-                                balance = balance - (self.possession_amount * self.possession_amount_frequency)
-
-                            if rec.product_id.id == rec.env.ref('real_estate.confirmation_amount_product').id:
-                                balance = balance - (self.confirmation_amount *
-                                                     self.confirmation_amount_frequency)
-
-                            if rec.product_id.id == rec.env.ref('real_estate.balloting_product').id:
-                                balance = balance - (self.primary_amount *
-                                                     self.primary_amount_frequency)
-
-                            # Used for "Additional Balloon" Product
-                            if rec.product_id.id == rec.env.ref('real_estate.additional_balloon').id:
-                                balance = balance - (self.add_balloon_amount *
-                                                     self.add_balloon_frequency)
-
-                        if self.predefine_plan_id.include_in_plan == 'no':
-                            # Used for total installment.plan dates calculation. Also included "additional balloon" frequency
-                            for rec in range(1, (self.total_installment + self.balloon_payment_frequency +
-                                                 self.possession_amount_frequency + self.primary_amount_frequency + self.add_balloon_frequency)):
-                                dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-                        else:
-                            for rec in range(1, self.total_installment):
-                                dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-                    else:
-                        for rec in range(1, self.total_installment):
-                            dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-
-                    # balloons replace installment slots only when the plan treats them as
-                    # installments; treated as balloons they come on top of the regular ones
-                    balloon_uses_slots = (not self.include_installment and self.predefine_plan_id
-                                          and self.predefine_plan_id.include_in_plan == 'yes'
-                                          and self.predefine_plan_id.treat_balloon_as == 'installment')
-                    installment_amount = round(balance / (
-                            self.total_installment - self.balloon_payment_frequency)) if balloon_uses_slots else round(
-                        balance / self.total_installment)
-
-                    # with include_installment the balloon is a separate line and every
-                    # month still gets its own installment line
-                    expected_installments = self.total_installment
-                    if balloon_uses_slots:
-                        expected_installments = self.total_installment - self.balloon_payment_frequency
-
-                    def _pending_plan_events():
-                        # regular installments and balloon/possession/balloting lines whose
-                        # slot falls beyond the generated dates still have to be scheduled
-                        if not self.predefine_plan_id:
-                            return False
-                        if installment_count <= expected_installments:
-                            return True
-                        plan_products = self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
-                        if (self.env.ref('real_estate.balloon_payment').id in plan_products
-                                and interval < self.balloon_payment_frequency):
-                            return True
-                        if (self.env.ref('real_estate.possession_amount_product').id in plan_products
-                                and possession_interval < self.possession_amount_frequency):
-                            return True
-                        if (self.env.ref('real_estate.additional_balloon').id in plan_products
-                                and add_balloon_interval < self.add_balloon_frequency):
-                            return True
-                        if (self.env.ref('real_estate.balloting_product').id in plan_products
-                                and primary_interval < self.primary_amount_frequency):
-                            return True
-                        return False
-
-                    date_index = 0
-                    while date_index < len(dates) or (_pending_plan_events()
-                                                      and len(dates) < self.total_installment + 120):
-                        if date_index >= len(dates):
-                            dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-                        rec = dates[date_index]
-                        date_index += 1
-                        if self.balloon_payment_start and not start_balloon_payment:
-                            if installment_number == self.balloon_payment_start:
-                                if balance:
-                                    amount = self.balloon_payment if balance > installment_amount else balance
-                                else:
-                                    amount = 0
-                                self.investment_plan_ids.create({
-                                    'date': rec,
-                                    'installment_number': installment_number,
-                                    'installment_type': 'balloon',
-                                    'installment_name': 'Installment' + ' ' + str(
-                                        installment_count) if self.predefine_plan_id.treat_balloon_as == 'installment' else 'Balloon',
-                                    'payment_status': 'not_paid',
-                                    'balance_amount': amount,
-                                    'residual': amount,
-                                    'amount': amount,
-                                    'investment_id': self.id
-                                })
-                                if self.predefine_plan_id.treat_balloon_as == 'installment':
-                                    installment_count += 1
-                                interval = interval + 1
-                                # with include_installment the balloon occupies an extra row,
-                                # so the next balloon slot shifts one number further
-                                balloon_interval += self.balloon_payment_start + (1 if self.include_installment else 0)
-                                start_balloon_payment = True
-                                installment_number = installment_number + 1
-                                if self.include_installment:
-                                    # the installment of this month is a separate line
-                                    # on the same date, so do not consume the date slot
-                                    date_index -= 1
-                                continue
-
-                        # for product 'Additional Balloon' used in predefined plan. Same as others defined previously
-                        if self.predefine_plan_id \
-                                and self.env.ref('real_estate.additional_balloon').id \
-                                in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-                            try:
-                                installment_number % self.add_balloon_interval == 0
-                            except Exception as e:
-                                raise ValidationError(_('%s Additional Balloon Interval should be greater than 0:' % (e)))
-                            else:
-                                if installment_number % self.add_balloon_interval == 0 \
-                                        and add_balloon_interval < self.add_balloon_frequency:
-                                    if balance:
-                                        amount = self.add_balloon_amount if balance > installment_amount else balance
-                                    else:
-                                        amount = 0
-                                    self.investment_plan_ids.create({
-                                        'date': rec,
-                                        'installment_number': installment_number,
-                                        'installment_type': 'balloon',
-                                        'installment_name': 'Balloon',
-                                        'payment_status': 'not_paid',
-                                        'amount_paid': 0,
-                                        'balance_amount': amount,
-                                        'residual': amount,
-                                        'amount': amount,
-                                        'investment_id': self.id
-                                    })
-                                    add_balloon_interval += 1
-                                    installment_number = installment_number + 1
-                                    continue
-
-                        if self.predefine_plan_id \
-                                and self.env.ref('real_estate.possession_amount_product').id \
-                                in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-                            try:
-                                installment_number % self.possession_amount_interval == 0
-                            except Exception as e:
-                                raise ValidationError(_('%s Possession Interval should be greater than 0:' % (e)))
-                            else:
-                                if installment_number % self.possession_amount_interval == 0 \
-                                        and possession_interval < self.possession_amount_frequency:
-                                    if balance:
-                                        amount = self.possession_amount if balance > installment_amount else balance
-                                    else:
-                                        amount = 0
-                                    self.investment_plan_ids.create({
-                                        'date': rec,
-                                        'installment_number': installment_number,
-                                        'installment_type': 'possession_amount',
-                                        'installment_name': 'Possession',
-                                        'payment_status': 'not_paid',
-                                        'amount_paid': 0,
-                                        'balance_amount': amount,
-                                        'residual': amount,
-                                        'amount': amount,
-                                        'investment_id': self.id
-                                    })
-                                    possession_interval += 1
-                                    installment_number = installment_number + 1
-                                    continue
-
-                        if self.predefine_plan_id \
-                                and self.env.ref('real_estate.balloting_product').id \
-                                in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-                            try:
-                                installment_number % self.primary_amount_interval == 0
-                            except Exception as e:
-                                raise ValidationError(_('%s Balloting Interval should be greater than 0:' % (e)))
-                            else:
-                                if installment_number % self.primary_amount_interval == 0 \
-                                        and primary_interval < self.primary_amount_frequency:
-                                    if balance:
-                                        amount = self.primary_amount if balance > installment_amount else balance
-                                    else:
-                                        amount = 0
-                                    self.investment_plan_ids.create({
-                                        'date': rec,
-                                        'installment_number': installment_number,
-                                        'installment_type': 'balloting_amount',
-                                        'installment_name': 'Balloting',
-                                        'payment_status': 'not_paid',
-                                        'amount_paid': 0,
-                                        'balance_amount': amount,
-                                        'residual': amount,
-                                        'amount': amount,
-                                        'investment_id': self.id
-                                    })
-                                    primary_interval += 1
-                                    installment_number = installment_number + 1
-                                    continue
-
-                        if (self.predefine_plan_id and self.env.ref(
-                                'real_estate.balloon_payment').id in self.predefine_plan_id.predefine_plan_line_ids.mapped(
-                            'product_id').ids and (installment_number % balloon_interval == 0
-                                                   and interval < self.balloon_payment_frequency and start_balloon_payment)):
-                            if balance:
-                                amount = self.balloon_payment if balance > installment_amount else balance
-                            else:
-                                amount = 0
-                            self.investment_plan_ids.create({
-                                'date': rec,
-                                'installment_number': installment_number,
-                                'installment_type': 'balloon',
-                                'installment_name': 'Installment' + ' ' + str(
-                                    installment_count) if self.predefine_plan_id.treat_balloon_as == 'installment' else 'Balloon',
-                                'payment_status': 'not_paid',
-                                'amount_paid': 0,
-                                'balance_amount': amount,
-                                'residual': amount,
-                                'amount': amount,
-                                'investment_id': self.id
-                            })
-                            if self.predefine_plan_id.treat_balloon_as == 'installment':
-                                installment_count += 1
-                            interval = interval + 1
-                            balloon_interval += self.balloon_payment_interval + (1 if self.include_installment else 0)
-                            installment_number = installment_number + 1
-                            if self.include_installment:
-                                # the installment of this month is a separate line
-                                # on the same date, so do not consume the date slot
-                                date_index -= 1
-                            continue
-                        else:
-                            if self.predefine_plan_id and installment_count > expected_installments:
-                                # all regular installment slots are filled; keep the slot
-                                # numbering and dates moving so later balloon/possession
-                                # slots land on their configured positions
-                                installment_number = installment_number + 1
-                                continue
-                            self.investment_plan_ids.create({
-                                'date': rec,
-                                'installment_type': 'installment',
-                                'installment_number': installment_number,
-                                'installment_name': 'Installment' + ' ' + str(installment_count),
-                                'amount': installment_amount,
-                                'balance_amount': installment_amount,
-                                'amount_paid': 0,
-                                'residual': installment_amount,
-                                'payment_status': 'not_paid',
-                                'investment_id': self.id
-                            })
-                            installment_count += 1
-                            installment_number = installment_number + 1
-                    # total = sum(self.investment_plan_ids.mapped('amount'))
-                    # if total < self.total_amount:
-                    #     price = self.total_amount - total
-                    #     self.investment_plan_ids.search([])[-1].update({
-                    #         'amount': round(self.balance_amount / self.total_installment) + price,
-                    #         'balance_amount': round(self.balance_amount / self.total_installment) + price,
-                    #         'residual': round(self.balance_amount / self.total_installment) + price,
-                    #     })
-                    # elif total > self.total_amount:
-                    #     price = total - self.total_amount
-                    #     self.investment_plan_ids.search([])[-1].update({
-                    #         'amount': round(self.balance_amount / self.total_installment) - price,
-                    #         'balance_amount': round(self.balance_amount / self.total_installment) - price,
-                    #         'residual': round(self.balance_amount / self.total_installment) - price,
-                    #     })
-                    # del installment_number
-
-                    plan = self.env['investment.plan'].search([('investment_id', '=', self.id)])
-                    if self.balloting_amount:
-                        plan.create({
-                            'date': dates[-1] + relativedelta(months=+self.interval_id.nom),
-                            'installment_type': 'final',
-                            'payment_status': 'not_paid',
-                            'installment_number': installment_number,
-                            'installment_name': 'Final',
-                            'amount_paid': 0,
-                            'amount': self.balloting_amount,
-                            'residual': self.balloting_amount,
-                            'balance_amount': self.balloting_amount,
-                            'investment_id': self.id
-                        })
-                        installment_count += 1
-
-                    total = sum(self.investment_plan_ids.mapped('amount'))
-                    last_line = self.investment_plan_ids[-1]
-                    if total < self.total_amount:
-                        price = self.total_amount - total
-                        last_line.update({
-                            'amount': last_line.amount + price,
-                            'residual': last_line.residual + price,
-                            'balance_amount': last_line.balance_amount + price,
-                        })
-                    elif total > self.total_amount:
-                        price = total - self.total_amount
-                        last_line.update({
-                            'amount': last_line.amount - price,
-                            'residual': last_line.residual - price,
-                            'balance_amount': last_line.balance_amount - price,
-                        })
-                    del installment_number
-
-                    self.installment_created = True
-                else:
-                    raise ValidationError(
-                        _("Installment Starting Date,Interval and total installments should be there."))
+            # Runs the shared per-group generator (real_estate/models/investment.py) -
+            # _get_installment_plan_groups() above decides how many groups this
+            # deal has and create_installment_plan() calls
+            # _create_installment_plan_for_group() once per group. No need to
+            # pre-sync balloon/possession/confirmation interval-frequency fields
+            # onto self here anymore: predefine.plan.get_schedule_params() (called
+            # per-group, including the single-group case) derives them fresh from
+            # the plan every time instead of relying on stale self.* values.
+            super().create_installment_plan()
 
             self.compute_rebate_amount_process()
         if self.plan_type == 'predefine' and self.payment_type == 'lump_sum' and self.env.ref('real_estate.lump_sum_product').id in \
@@ -1183,296 +964,36 @@ class InvestmentExt(models.Model):
                     'payment_status': 'not_paid',
                     'investment_id': self.id
                 })
-            # else:
-            #     if not self.down_payment:
-            #         raise ValidationError('Please enter some amount for Down Payment')
-            #     self.investment_plan_ids.create({
-            #         'date': self.booking_date,
-            #         'installment_type': 'down',
-            #         'installment_name': 'Booking',
-            #         'installment_number': 1,
-            #         'amount': self.down_payment,
-            #         'amount_paid': 0,
-            #         'balance_amount': self.down_payment,
-            #         'residual': self.down_payment,
-            #         'payment_status': 'not_paid',
-            #         'investment_id': self.id
-            #     })
-            #     if self.env.ref('real_estate.confirmation_amount_product').id in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-            #         installment_number = 3
-            #         # confirmation_date = self.start_date
-            #         confirmation_date = self.booking_date
-            #         if self.grace_period_type == 'days':
-            #             confirmation_date = self.booking_date + relativedelta(days=+self.grace_period)
-            #         if self.grace_period_type == 'months':
-            #             confirmation_date = self.booking_date + relativedelta(months=+self.grace_period)
-            #         if self.grace_period_type == 'years':
-            #             confirmation_date = self.booking_date + relativedelta(years=+self.grace_period)
-            #         self.investment_plan_ids.create({
-            #             # 'date': self.start_date + relativedelta(months=+self.predefine_plan_id.confirmation_amount_period),
-            #             'date': confirmation_date,
-            #             'installment_number': 2,
-            #             'installment_type': 'confirmation_amount',
-            #             'installment_name': 'Confirmation',
-            #             'payment_status': 'not_paid',
-            #             'amount_paid': 0,
-            #             'balance_amount': self.confirmation_amount,
-            #             'amount': self.confirmation_amount,
-            #             'residual': self.confirmation_amount,
-            #             'investment_id': self.id
-            #         })
-            #     else:
-            #         installment_number = 2
-            #
-            #     if self.balance_amount > 0:
-            #         # if all([self.installment_starting_date, self.interval_id, self.total_installment]):
-            #         #     start_date = self.installment_starting_date
-            #         if all([self.start_date, self.interval_id, self.total_installment]):
-            #             start_date = self.start_date
-            #             dates = [fields.Date.from_string(start_date)]
-            #
-            #             interval = 0
-            #             possession_interval = 0
-            #             primary_interval = 0
-            #             start_balloon_payment = False
-            #             installment_count = 1
-            #             balloon_interval = self.balloon_payment_interval
-            #             balance = self.balance_amount - self.balloting_amount
-            #
-            #             if self.predefine_plan_id:
-            #                 for rec in self.predefine_plan_id.predefine_plan_line_ids:
-            #                     if rec.product_id.id == rec.env.ref('real_estate.balloon_payment').id:
-            #                         balance = balance - (self.balloon_payment *
-            #                                              self.balloon_payment_frequency)
-            #
-            #                     if rec.product_id.id == rec.env.ref('real_estate.possession_amount_product').id:
-            #                         balance = balance - (self.possession_amount * self.possession_amount_frequency)
-            #
-            #                     if rec.product_id.id == rec.env.ref('real_estate.confirmation_amount_product').id:
-            #                         balance = balance - (self.confirmation_amount *
-            #                                              self.confirmation_amount_frequency)
-            #
-            #                     if rec.product_id.id == rec.env.ref('real_estate.balloting_product').id:
-            #                         balance = balance - (self.primary_amount *
-            #                                              self.primary_amount_frequency)
-            #
-            #                 if self.predefine_plan_id.include_in_plan == 'no':
-            #                     for rec in range(1, (self.total_installment + self.balloon_payment_frequency +
-            #                                          self.possession_amount_frequency + self.primary_amount_frequency)):
-            #                         dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-            #                 else:
-            #                     for rec in range(1, self.total_installment):
-            #                         dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-            #             else:
-            #                 for rec in range(1, self.total_installment):
-            #                     dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
-            #
-            #             installment_amount = round(balance / (
-            #                     self.total_installment - self.balloon_payment_frequency)) if not self.include_installment and self.predefine_plan_id and self.predefine_plan_id.include_in_plan == 'yes' else round(
-            #                 balance / self.total_installment)
-            #
-            #             for rec in dates:
-            #                 if self.balloon_payment_start and not start_balloon_payment:
-            #                     if installment_number == self.balloon_payment_start:
-            #                         if balance:
-            #                             amount = self.balloon_payment if balance > installment_amount else balance
-            #                         else:
-            #                             amount = 0
-            #                         self.investment_plan_ids.create({
-            #                             'date': rec,
-            #                             'installment_number': installment_number,
-            #                             'installment_type': 'balloon',
-            #                             'installment_name': 'Installment' + ' ' + str(
-            #                                 installment_count) if self.predefine_plan_id.treat_balloon_as == 'installment' else 'Balloon',
-            #                             'payment_status': 'not_paid',
-            #                             'balance_amount': amount + installment_amount if self.include_installment else amount,
-            #                             'residual': amount + installment_amount if self.include_installment else amount,
-            #                             'amount': amount + installment_amount if self.include_installment else amount,
-            #                             'investment_id': self.id
-            #                         })
-            #                         if self.predefine_plan_id.treat_balloon_as == 'installment':
-            #                             installment_count += 1
-            #                         interval = interval + 1
-            #                         balloon_interval += self.balloon_payment_start
-            #                         start_balloon_payment = True
-            #                         installment_number = installment_number + 1
-            #                         continue
-            #
-            #                 if self.plan_type == 'predefine' \
-            #                         and self.env.ref('real_estate.possession_amount_product').id \
-            #                         in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-            #                     try:
-            #                         installment_number % self.possession_amount_interval == 0
-            #                     except Exception as e:
-            #                         raise ValidationError(_('%s Possession Interval should be greater than 0:' % (e)))
-            #                     else:
-            #                         if installment_number % self.possession_amount_interval == 0 \
-            #                                 and possession_interval < self.possession_amount_frequency:
-            #                             if balance:
-            #                                 amount = self.possession_amount if balance > installment_amount else balance
-            #                             else:
-            #                                 amount = 0
-            #                             self.investment_plan_ids.create({
-            #                                 'date': rec,
-            #                                 'installment_number': installment_number,
-            #                                 'installment_type': 'possession_amount',
-            #                                 'installment_name': 'Possession',
-            #                                 'payment_status': 'not_paid',
-            #                                 'amount_paid': 0,
-            #                                 'balance_amount': amount,
-            #                                 'residual': amount,
-            #                                 'amount': amount,
-            #                                 'investment_id': self.id
-            #                             })
-            #                             possession_interval += 1
-            #                             installment_number = installment_number + 1
-            #                             continue
-            #
-            #                 if self.plan_type == 'predefine' \
-            #                         and self.env.ref('real_estate.balloting_product').id \
-            #                         in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-            #                     try:
-            #                         installment_number % self.primary_amount_interval == 0
-            #                     except Exception as e:
-            #                         raise ValidationError(_('%s Balloting Interval should be greater than 0:' % (e)))
-            #                     else:
-            #                         if installment_number % self.primary_amount_interval == 0 \
-            #                                 and primary_interval < self.primary_amount_frequency:
-            #                             if balance:
-            #                                 amount = self.primary_amount if balance > installment_amount else balance
-            #                             else:
-            #                                 amount = 0
-            #                             self.investment_plan_ids.create({
-            #                                 'date': rec,
-            #                                 'installment_number': installment_number,
-            #                                 'installment_type': 'balloting_amount',
-            #                                 'installment_name': 'Balloting',
-            #                                 'payment_status': 'not_paid',
-            #                                 'amount_paid': 0,
-            #                                 'balance_amount': amount,
-            #                                 'residual': amount,
-            #                                 'amount': amount,
-            #                                 'investment_id': self.id
-            #                             })
-            #                             primary_interval += 1
-            #                             installment_number = installment_number + 1
-            #                             continue
-            #
-            #                 if (self.plan_type == 'predefine' and self.env.ref(
-            #                         'real_estate.balloon_payment').id in self.predefine_plan_id.predefine_plan_line_ids.mapped(
-            #                     'product_id').ids and (installment_number % balloon_interval == 0
-            #                                            and interval < self.balloon_payment_frequency and start_balloon_payment)):
-            #                     if balance:
-            #                         amount = self.balloon_payment if balance > installment_amount else balance
-            #                     else:
-            #                         amount = 0
-            #                     self.investment_plan_ids.create({
-            #                         'date': rec,
-            #                         'installment_number': installment_number,
-            #                         'installment_type': 'balloon',
-            #                         'installment_name': 'Installment' + ' ' + str(
-            #                             installment_count) if self.predefine_plan_id.treat_balloon_as == 'installment' else 'Balloon',
-            #                         'payment_status': 'not_paid',
-            #                         'amount_paid': 0,
-            #                         'balance_amount': amount + installment_amount if self.include_installment else amount,
-            #                         'residual': amount + installment_amount if self.include_installment else amount,
-            #                         'amount': amount + installment_amount if self.include_installment else amount,
-            #                         'investment_id': self.id
-            #                     })
-            #                     if self.predefine_plan_id.treat_balloon_as == 'installment':
-            #                         installment_count += 1
-            #                     interval = interval + 1
-            #                     balloon_interval += self.balloon_payment_interval
-            #                     installment_number = installment_number + 1
-            #                     continue
-            #                 else:
-            #                     self.investment_plan_ids.create({
-            #                         'date': rec,
-            #                         'installment_type': 'installment',
-            #                         'installment_number': installment_number,
-            #                         'installment_name': 'Installment' + ' ' + str(installment_count),
-            #                         'amount': installment_amount,
-            #                         'balance_amount': installment_amount,
-            #                         'amount_paid': 0,
-            #                         'residual': installment_amount,
-            #                         'payment_status': 'not_paid',
-            #                         'investment_id': self.id
-            #                     })
-            #                     installment_count += 1
-            #                     installment_number = installment_number + 1
-            #             # total = sum(self.investment_plan_ids.mapped('amount'))
-            #             # if total < self.total_amount:
-            #             #     price = self.total_amount - total
-            #             #     self.investment_plan_ids.search([])[-1].update({
-            #             #         'amount': round(self.balance_amount / self.total_installment) + price,
-            #             #         'balance_amount': round(self.balance_amount / self.total_installment) + price,
-            #             #         'residual': round(self.balance_amount / self.total_installment) + price,
-            #             #     })
-            #             # elif total > self.total_amount:
-            #             #     price = total - self.total_amount
-            #             #     self.investment_plan_ids.search([])[-1].update({
-            #             #         'amount': round(self.balance_amount / self.total_installment) - price,
-            #             #         'balance_amount': round(self.balance_amount / self.total_installment) - price,
-            #             #         'residual': round(self.balance_amount / self.total_installment) - price,
-            #             #     })
-            #             # del installment_number
-            #
-            #             plan = self.env['investment.plan'].search([('investment_id', '=', self.id)])
-            #             if self.balloting_amount:
-            #                 plan.create({
-            #                     'date': dates[-1] + relativedelta(months=+self.interval_id.nom),
-            #                     'installment_type': 'final',
-            #                     'payment_status': 'not_paid',
-            #                     'installment_number': installment_number,
-            #                     'installment_name': 'Final',
-            #                     'amount_paid': 0,
-            #                     'amount': self.balloting_amount,
-            #                     'residual': self.balloting_amount,
-            #                     'balance_amount': self.balloting_amount,
-            #                     'investment_id': self.id
-            #                 })
-            #                 installment_count += 1
-            #
-            #             total = sum(self.investment_plan_ids.mapped('amount'))
-            #             if total < self.total_amount:
-            #                 price = self.total_amount - total
-            #                 self.investment_plan_ids.search([])[-1].update({
-            #                     'amount': self.investment_plan_ids.search([])[-1].amount + price,
-            #                     'residual': self.investment_plan_ids.search([])[-1].residual + price,
-            #                     'balance_amount': self.investment_plan_ids.search([])[-1].balance_amount + price,
-            #                 })
-            #             elif total > self.total_amount:
-            #                 price = total - self.total_amount
-            #                 self.investment_plan_ids.search([])[-1].update({
-            #                     'amount': self.investment_plan_ids.search([])[-1].amount - price,
-            #                     'residual': self.investment_plan_ids.search([])[-1].residual - price,
-            #                     'balance_amount': self.investment_plan_ids.search([])[-1].balance_amount - price,
-            #                 })
-            #             del installment_number
-            #
-            #             self.installment_created = True
-            #         else:
-            #             raise ValidationError(
-            #                 _("Installment Starting Date,Interval and total installments should be there."))
-
-            self.compute_rebate_amount_process()
 
     def update_booking_amount_on_open_files(self):
         for rec in self:
-            booking_line = rec.investment_plan_ids.filtered(lambda l: l.installment_type == 'down')
-            if booking_line and booking_line.amount_paid > 0:
+            # A multi-bucket deal has one Booking row per plan-group, each
+            # only allowed to offset investor.file/installment.plan rows
+            # spawned from that SAME group's units - otherwise one size's
+            # booking cash could bleed into a different size's per-unit
+            # schedule.
+            booking_lines = rec.investment_plan_ids.filtered(
+                lambda l: l.installment_type == 'down' and l.amount_paid > 0)
+            if booking_lines:
                 open_files = self.env['investor.file'].search([('investment_id', '=', rec.id), ('state', '!=', 'cancel')])
                 for file in open_files:
                     file.update_rebate_values_for_booking()
                 if rec.company_id.id != 1:
                     rec.set_net_payment_data()
-                    booking_line = rec.investment_plan_ids.filtered(lambda l: l.installment_type == 'down')
-                    if booking_line:
+                    for booking_line in rec.investment_plan_ids.filtered(
+                            lambda l: l.installment_type == 'down' and l.amount_paid > 0):
                         # booking_balance = booking_line.amount_paid - booking_line.dealer_share
                         booking_balance = booking_line.net_payment
-                        # if rec.reservation_type == 'bulk':
+                        # predefine_plan_id is empty on rows that predate this
+                        # grouping feature - rec.predefine_plan_id (the deal's
+                        # header plan, already what investor.file.predefine_plan_id
+                        # was populated from at create_open_file() time for those
+                        # older deals) keeps them matching correctly.
+                        group_plan_id = booking_line.predefine_plan_id.id or rec.predefine_plan_id.id
                         all_installments = self.env['installment.plan'].search(
-                            [('investor_file_id.investment_id', '=', rec.id), ('payment_status', 'in', ['not_paid', 'in_payment']),
+                            [('investor_file_id.investment_id', '=', rec.id),
+                             ('investor_file_id.predefine_plan_id', '=', group_plan_id),
+                             ('payment_status', 'in', ['not_paid', 'in_payment']),
                              ('installment_type', '=', 'down'), ('residual', '>', 0)])
                         adjustment_amount = booking_balance
                         if all_installments:

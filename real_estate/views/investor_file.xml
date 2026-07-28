@@ -62,6 +62,8 @@
                                 />
                                 <field name="street_id" options="{'no_create': True, 'no_open': True}"
                                        readonly="1"/>
+                                <field name="bucket_id" options="{'no_create': True, 'no_open': True}"
+                                       readonly="1"/>
                                 <field name="inventory_id" string="Unit No."
                                        domain="[('project_type','=','housing_society')]"
                                        readonly="1"
@@ -202,6 +204,8 @@
                     <field name="investment_id" string="Deal No."/>
                     <field name="booking_date"/>
                     <field name="inventory_id"/>
+                    <field name="bucket_id"/>
+                    <field name="unit_category_type_id" string="Product"/>
                     <field name="sector_id"/>
                     <field name="phase_id"/>
                     <field name="society_id"/>
@@ -224,6 +228,7 @@
                     <field name="society_id"/>
                     <field name="phase_id"/>
                     <field name="sector_id"/>
+                    <field name="bucket_id"/>
                     <field name="booking_date"/>
                     <field name="payment_type"/>
                     <field name="category_id"/>
@@ -242,6 +247,8 @@
                                 context="{'group_by':'state'}"/>
                         <filter name='group_by_society' string="Society" domain="[]"
                                 context="{'group_by':'society_id'}"/>
+                        <filter name='group_by_bucket' string="Bucket" domain="[]"
+                                context="{'group_by':'bucket_id'}"/>
                     </group>
                 </search>
             </field>
