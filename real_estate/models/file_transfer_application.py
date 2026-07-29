@@ -78,6 +78,7 @@ class TransferApplication(models.Model):
     sector_id = fields.Many2one('sector', related='file_id.sector_id')
     category_id = fields.Many2one('plot.category', string='Plot Category', related='file_id.category_id')
     street_id = fields.Many2one('street', related='file_id.street_id')
+    bucket_id = fields.Many2one('unit.bucket', string='Bucket', related='file_id.bucket_id')
     inventory_id = fields.Many2one('plot.inventory', related='file_id.inventory_id')
     unit_number = fields.Char(related='inventory_id.name')
     size_id = fields.Many2one('unit.size', 'Unit Size', related='file_id.size_id')

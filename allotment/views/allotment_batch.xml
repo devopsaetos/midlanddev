@@ -42,6 +42,7 @@
                                         <field name="preference_ids" widget="many2many_tags"/>
                                         <field name="sector_id" readonly="not sector_id"/>
                                         <field name="street_id" readonly="not street_id"/>
+                                        <field name="bucket_id" readonly="not bucket_id"/>
                                         <field name="inventory_id"
                                                domain="[('state','=','avalible_for_sale'),
                                                         ('project_type','=','housing_society'),

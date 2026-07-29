@@ -1885,9 +1885,9 @@ class InvestmentPlan(models.Model):
                     ('invoice_ids.name', '=', rec.invoice_id.name)
                 ], limit=1, order='id desc')
 
-                rec.payment_date = dateutil.parser.parse(str(date.date)) if date else ''
+                rec.payment_date = dateutil.parser.parse(str(date.date)) if date else False
             else:
-                rec.payment_date = ''
+                rec.payment_date = False
 
     @api.depends('invoice_id', 'invoice_id.amount_residual')
     def _invoice_id_data(self):

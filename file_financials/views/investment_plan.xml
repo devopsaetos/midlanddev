@@ -27,25 +27,26 @@
             <field name="arch" type="xml">
                 <list create="false" default_order="investment_id asc, group_sequence asc, installment_number asc">
                     <field name="investment_id" invisible="0" readonly="1" force_save="1"/>
+                    <field name="group_sequence" column_invisible="1" readonly="1" force_save="1"/>
 <!--                    <field name="plan_group_name" invisible="0" readonly="1" force_save="1" string="Plan"/>-->
                     <field name="installment_name" invisible="0" readonly="1" force_save="1"/>
-                    <field name="installment_type" invisible="1" readonly="1" force_save="1"/>
-                    <field name="invoice" invisible="1" readonly="1" force_save="1"/>
+                    <field name="installment_type" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="invoice" column_invisible="1" readonly="1" force_save="1"/>
                     <field name="date" invisible="0" readonly="1" force_save="1"/>
                     <field name="amount" invisible="0" readonly="1" force_save="1" string="Amount"/>
                     <field name="amount_paid" invisible="0" readonly="1" force_save="1" string="Amount Paid"/>
                     <field name="residual" invisible="0" readonly="1" force_save="1" string="Remaining Amount"/>
-                    <field name="installment_number" invisible="1" readonly="1" force_save="1"/>
-                    <field name="invoice_created" invisible="1" readonly="1" force_save="1"/>
-                    <field name="invoice_id" invisible="1" readonly="1" force_save="1"/>
+                    <field name="installment_number" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="invoice_created" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="invoice_id" column_invisible="1" readonly="1" force_save="1"/>
                     <field name="payment_date" invisible="0" readonly="1" force_save="1" string="Payment date"/>
                     <field name="state" invisible="0" readonly="1" force_save="1" string="Invoice Status"/>
                     <field name="payment_status" invisible="0" readonly="1" force_save="1" string="Status"/>
-                    <field name="property_invoice_type" invisible="1" readonly="1" force_save="1"/>
-                    <field name="file_adjusted_amount" invisible="1" readonly="1" force_save="1"/>
-                    <field name="adjustment_amount" invisible="1" readonly="1" force_save="1"/>
-                    <field name="balance_amount" invisible="1" readonly="1" force_save="1"/>
-                    <field name="double_check_paid_amount" invisible="1" readonly="1" force_save="1"/>
+                    <field name="property_invoice_type" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="file_adjusted_amount" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="adjustment_amount" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="balance_amount" column_invisible="1" readonly="1" force_save="1"/>
+                    <field name="double_check_paid_amount" column_invisible="1" readonly="1" force_save="1"/>
                     <field name="company_id" invisible="0" readonly="1" force_save="1"/>
 
                 </list>

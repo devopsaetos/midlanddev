@@ -205,7 +205,7 @@
                 {
                     'current_view': 'realestate',
                     'default_project_type':'housing_society',
-                    'search_default_group_by_street': 1
+                    'search_default_group_by_bucket': 1
                 }
             </field>
         </record>

@@ -35,6 +35,7 @@
                             <group>
                                 <field name="sector_id" options="{'no_create':True}"/>
                                 <field name="street_id" options="{'no_create':True}"/>
+                                <field name="bucket_id" options="{'no_create':True}"/>
                                 <field name="inventory_id" options="{'no_create':True}"/>
                                 <field name="size_id"/>
                                 <field name="unit_number"/>
@@ -75,6 +76,7 @@
                     <field name="unit_category_type_id"/>
                     <field name="sector_id"/>
                     <field name="street_id"/>
+                    <field name="bucket_id"/>
                     <field name="inventory_id"/>
                     <field name="size_id"/>
                     <field name="unit_number"/>

@@ -73,6 +73,27 @@ class InvestmentExt(models.Model):
             else:
                 lines = rec.env['investment.line']
             rec.header_plan_required = not (lines and all(l.predefine_plan_id for l in lines))
+
+    single_product = fields.Boolean(compute='_compute_single_product')
+
+    @api.depends('reservation_type', 'investment_line_ids.unit_category_type_id',
+                 'inventory_ids.unit_category_type_id')
+    def _compute_single_product(self):
+        # Once the deal's lines/units span more than one Product (5 Marla +
+        # 3 Marla + ...), a single header-level plan can no longer represent
+        # them all - each product needs its own plan, so the header Plan Name
+        # selector should get out of the way rather than imply one plan
+        # covers everything.
+        for rec in self:
+            if rec.reservation_type == 'bulk':
+                lines = rec.investment_line_ids
+            elif rec.reservation_type == 'unit':
+                lines = rec.inventory_ids
+            else:
+                lines = rec.env['investment.line']
+            products = set(lines.filtered('unit_category_type_id').mapped('unit_category_type_id').ids)
+            rec.single_product = len(products) <= 1
+
     payment_type = fields.Selection([('installments', 'Installment'), ('lump_sum', 'Lump Sum')], string='Payment Type',
                                     tracking=True)
 
