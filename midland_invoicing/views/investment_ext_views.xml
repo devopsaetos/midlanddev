@@ -8,6 +8,13 @@
         <field name="inherit_id" ref="real_estate.investment_view_form"/>
         <field name="arch" type="xml">
 
+            <!-- Old account.move-based "Invoices" button — superseded by the
+                 midland.invoice smart button below, this deal type no longer
+                 creates account.move invoices directly. -->
+            <button name="open_invoices" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
+
             <!-- Smart button in button_box -->
             <div name="button_box" position="inside">
                 <button name="action_view_midland_invoices"
@@ -43,6 +50,13 @@
         <field name="model">investment</field>
         <field name="inherit_id" ref="land_development.investment_view_form"/>
         <field name="arch" type="xml">
+
+            <!-- Old account.move-based "Invoices" button — superseded by the
+                 midland.invoice smart button below, this deal type no longer
+                 creates account.move invoices directly. -->
+            <button name="open_invoices" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </button>
 
             <!-- Smart button in button_box -->
             <div name="button_box" position="inside">
