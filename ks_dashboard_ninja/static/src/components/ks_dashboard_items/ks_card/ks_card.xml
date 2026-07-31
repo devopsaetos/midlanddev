@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ks_dashboard_ninja.ks_card">
+        <!-- INFO: Wrapper for the Card -->
+        <div t-ref="rootRef" class="h-100 ks_card_container">
+            <div class="w-100 h-100 d-flex flex-column">
+                <!-- Main Content: Ratios Grid -->
+                <div t-if="props.data.sources.length" class="flex-grow-1 p-3 d-flex flex-column">
+                    <div class="card border-0 h-100 d-flex flex-column">
+                        <div class="card-body flex-grow-1">
+                            <!-- Ratios Grid - 3 columns -->
+                            <div class="row g-3 mb-4" t-ref="sectionsRef">
+                                <t t-foreach="props.data.sources" t-as="source" t-key="source_index">
+                                    <t t-foreach="source.sequenced_aggregates" t-as="sequenced_aggregate" t-key="sequenced_aggregate_index">
+                                        <div class="col-md-4" t-on-click="(ev) => this.openDrillDownPopover(ev, source)">
+                                            <div class="p-2">
+                                                <div class="text-muted small mb-1">
+                                                    <span t-esc="getSectionName(source, sequenced_aggregate)"/>
+                                                </div>
+                                                <div class="fw-bold text-dark">
+                                                    <span t-esc="formatter(source, sequenced_aggregate)"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </t>
+                            </div>
+                            
+                            <!-- Evaluated Formulas Data -->
+                            <t t-if="props.data.formula_sources.length">
+                                <div class="border-top pt-3 mt-3">
+                                    <h5 class="mb-3 text-dark">Formulas</h5>
+                                    <div class="row g-3">
+                                        <t t-foreach="props.data.formula_sources" t-as="formula_data" t-key="formula_data_index">
+                                            <div class="col-md-4">
+
+                                                <div class="p-2" t-foreach="formula_data.sequenced_aggregates" t-as="sequenced_aggregate" t-key="sequenced_aggregate_index">
+                                                    <div class="text-muted small mb-1">
+                                                        <span t-esc="formula_data.model_data.name"/>
+                                                    </div>
+                                                    <div class="fw-bold text-dark" t-esc="getSequencedAggregateValue(sequenced_aggregate)"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <t t-else="">
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="text-center text-muted">
+                            <i class="fa fa-chart-line fa-3x mb-3"/>
+                            <p>No data available</p>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- List View with Editable Bottom -->
+        <record id="view_ks_date_filter_list" model="ir.ui.view">
+            <field name="name">ks.date.filter.list</field>
+            <field name="model">ks.date.filter</field>
+            <field name="arch" type="xml">
+                <list string="Date Filters" editable="top">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="calc_type"/>
+                    <field name="time_period" readonly="calc_type == 'custom'"/>
+                    <field name="start_at" readonly="calc_type == 'custom'"/>
+                    <field name="end_at" readonly="calc_type == 'custom'"/>
+                    <field name="datetime_start" readonly="calc_type != 'custom'"/>
+                    <field name="datetime_end" readonly="calc_type != 'custom'"/>
+                    <button name="action_calc_datetime" type="object" string="Calculate" class="btn btn-secondary" invisible="calc_type == 'custom'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Action Window -->
+        <record id="action_ks_date_filter" model="ir.actions.act_window">
+            <field name="name">Date Filters</field>
+            <field name="res_model">ks.date.filter</field>
+            <field name="view_mode">list</field>
+            <field name="help" type="html">
+                <h1>Create your first Date Filter!</h1>
+                <p>
+                    Date filters allow you to define custom date ranges for dashboard items.
+                    You can set static dates or calculate them dynamically based on time periods.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem name="Date Filters"  id="menu_ks_date_filter" parent="ks_dashboard_ninja.configuration_menu"
+                  action="action_ks_date_filter" groups="ks_dashboard_ninja_group_manager" sequence="20"/>
+    </data>
+</odoo>
+

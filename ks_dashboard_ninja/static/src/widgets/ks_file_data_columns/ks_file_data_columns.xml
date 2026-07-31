@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="ks_dashboard_ninja.ks_file_data_columns">
+        <div class="ks_file_data_columns_widget">
+            <t t-if="hasColumnsData">
+                <div class="table-responsive">
+                    <table class="o_list_table table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="o_column_sortable w-50 fw-bolder" t-esc="'Column Name'"/>
+                                <th class="o_column_sortable w-50 fw-bolder" t-esc="'Column Type'"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="columnsData" t-as="columnIndex" t-key="columnIndex">
+                                <tr>
+                                    <td>
+                                        <span t-esc="state.fileData.columns_data[columnIndex].field_description"/>
+                                    </td>
+                                    <td>
+                                        <Dropdown>
+                                            <t t-set-slot="content">
+                                                <DropdownItem t-foreach="availableColumnsData" t-as="type" t-key="type" onSelected="() => this.typeChange(columnIndex, type)" t-esc="availableColumnsData[type]"/>
+                                            </t>
+                                            <div class="bg-transparent cursor-pointer" t-esc="availableColumnsData[state.fileData.columns_data[columnIndex].ttype]"/>
+                                        </Dropdown>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
+

@@ -1,0 +1,62 @@
+.ks-grouped-list-view {
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    
+    // Remove scrollbar from main container
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    
+    > div:first-child {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ks_list_item_table {
+        overflow-y: auto !important;
+        overflow-x: auto !important;
+        min-height: 0 !important;
+        flex: 1 1 auto;
+        @include custom-scrollbar;
+    }
+
+    .ks-list-pagination-pinned {
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+        background-color: $color-white;
+        border-top: 1px solid #F0F0F0;
+        position: relative;
+        z-index: 10;
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        margin-top: 0 !important;
+        
+        .total-items {
+            font-weight: 500;
+            font-size: 14px;
+            color: $color-727378;
+        }
+    }
+
+    .page-numbers {
+        position: relative;
+        font-weight: 500;
+        font-size: 14px;
+        color: $color-727378;
+        
+        span {
+            &:last-child {
+                margin-left: 8px;
+            }
+        }
+    }
+}
+

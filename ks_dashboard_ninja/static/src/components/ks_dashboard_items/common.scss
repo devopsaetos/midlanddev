@@ -1,0 +1,12 @@
+.ks-popover-scrollable {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    @include custom-scrollbar;
+
+    // Smooth scrolling
+    scroll-behavior: smooth;
+
+    // Prevent horizontal overflow
+    word-wrap: break-word;
+}
