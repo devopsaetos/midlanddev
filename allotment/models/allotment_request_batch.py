@@ -21,6 +21,7 @@ class AllotmentRequestBatch(models.Model):
 
     sector_id = fields.Many2one('sector', string='Sector')
     street_id = fields.Many2one('street', string='Street')
+    bucket_id = fields.Many2one('unit.bucket', string='Bucket')
 
     approved_date = fields.Date('Aprroved Date', readonly=True, tracking=True)
     approved_responsibe_id = fields.Many2one('res.users', 'Aprroved By', readonly=True)

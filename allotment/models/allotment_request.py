@@ -26,6 +26,7 @@ class AllotmentRequest(models.Model):
 
     sector_id = fields.Many2one('sector', string='Sector', required=True, )
     street_id = fields.Many2one('street', required=True, string='Street')
+    bucket_id = fields.Many2one('unit.bucket', string='Bucket')
     inventory_id = fields.Many2one('plot.inventory', required=True, string='File Unit')
     size_id = fields.Many2one('unit.size', 'Size', related="inventory_id.size_id")
     unit_number = fields.Char(related='inventory_id.name', readonly=True)

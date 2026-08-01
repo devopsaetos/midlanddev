@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ============================================ -->
+        <!-- ks.number.format Views -->
+        <!-- ============================================ -->
+
+        <!-- List View for ks.number.format -->
+        <record id="view_ks_number_format_list" model="ir.ui.view">
+            <field name="name">ks.number.format.list</field>
+            <field name="model">ks.number.format</field>
+            <field name="arch" type="xml">
+                <list string="Number Formats" create="1" delete="1">
+                    <field name="name" string="Name"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form View for ks.number.format -->
+        <record id="view_ks_number_format_form" model="ir.ui.view">
+            <field name="name">ks.number.format.form</field>
+            <field name="model">ks.number.format</field>
+            <field name="arch" type="xml">
+                <form string="Number Format">
+                    <sheet>
+                        <group>
+                            <field name="name" string="Name"/>
+                        </group>
+                        <notebook>
+                            <page string="Format Lines">
+                                <field name="number_format_line_ids">
+                                    <list string="Number Format Lines" editable="bottom">
+                                        <field name="power_of_ten" string="Power of Ten"/>
+                                        <field name="suffix" string="Suffix"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action Window for ks.number.format -->
+        <record id="action_ks_number_format" model="ir.actions.act_window">
+            <field name="name">Number Formats</field>
+            <field name="res_model">ks.number.format</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <h1>Create your first Number Format!</h1>
+                <p>
+                    Number formats allow you to define custom number formatting for dashboard items.
+                    Define format lines with power of ten and suffixes (e.g., 3 for 10³ = 1,000 with suffix K, 6 for 10⁶ = 1,000,000 with suffix M).
+                </p>
+            </field>
+        </record>
+
+                <!-- Menu Item -->
+        <menuitem name="Number Formats"  id="menu_ks_number_formats" parent="ks_dashboard_ninja.configuration_menu"
+                  action="action_ks_number_format" groups="ks_dashboard_ninja_group_manager" sequence="20"/>
+
+    </data>
+</odoo>
+

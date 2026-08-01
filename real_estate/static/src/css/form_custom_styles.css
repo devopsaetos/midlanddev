@@ -63,3 +63,18 @@
 .o_info_popup .o_form_sheet_bg > .o_form_sheet {
     min-height: unset!important;
 }
+
+/* Installment Plan list has many columns - letting Odoo compress them to fit
+   truncates the header text with "...". Force full-width, non-wrapping
+   headers/cells instead and let the table scroll horizontally, so every
+   column name always shows in full. */
+.o_investment_plan_full_headers .o_list_renderer {
+    overflow-x: auto;
+}
+.o_investment_plan_full_headers table.o_list_table thead th,
+.o_investment_plan_full_headers table.o_list_table tbody td {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    max-width: none !important;
+}

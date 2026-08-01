@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="ks_dashboard_ninja.ks_item_preview" owl="1">
+        <div class="container-fluid">
+            <div t-if="state.frontendData" class="card shadow w-100 h-400 p-0 m-0 w-100 ks_border_radius">
+                <KsItem t-props="componentProps" t-key="state.render"/>
+            </div>
+            <t t-if="state.frontendData.errors?.length">
+                <div class="alert alert-danger mt-3 mb-3" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fa fa-exclamation-triangle me-2"/>
+                        Missing Source's Fields Data
+                    </h5>
+                    <t t-foreach="state.frontendData.errors" t-as="error" t-key="error_index">
+                        <div class="mb-2">
+                            <strong t-esc="error.name + ': '"/>
+                            <span class="mb-0 mt-1" t-esc="error.error_data?.msg || 'Unknown error'"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

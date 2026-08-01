@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Common Form View with fields used for Drill Down Feature-->
+    <record id="view_ks_item_source_common_form" model="ir.ui.view">
+        <field name="name">ks.item.source.common.form</field>
+        <field name="model">ks.item.source</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false" class="ks_dashboard_ninja encapsulated-form-view ks_create_chart_body">
+                <div invisible="1" name="invisible_fields">
+                    <field name="model_name" invisible="1"/>
+                    <field name="model_id" invisible="1"/>
+                    <field name="item_id" invisible="1"/>
+                    <field name="groupby_field_ttype" invisible="1"/>
+                </div>
+                <div class="row encapsulated-r-g-48">
+                    <div class="encapsulated-input-group">
+                        <div class="chart-form-detail row">
+                            <div class="col-6 d-flex flex-column gap-2" name="name_item_source">
+                                <label for="name" string="Name" class="o_form_label"/>
+                                <field name="name" class="form-control form-input-box bg-white w-100" placeholder="Enter name"/>
+                            </div>
+                            <div class="col-6 d-flex flex-column gap-2">
+                                <label for="type" string="Type" class="o_form_label"/>
+                                <field name="type" placeholder="Enter Type" class="form-control form-input-box form-input-filled" force_save="1"/>
+                            </div>
+                            <div class="col-6 d-flex flex-column gap-2" invisible="type != 'xy_chart'">
+                                <label for="xy_type" string="XY Type" class="o_form_label"/>
+                                <field name="xy_type" placeholder="Enter XY Type" class="form-control form-input-box encapsulated-form-arrow bg-white"/>
+                            </div>
+                        </div>
+                        <div class="encapsulated-tab-box">
+                            <notebook>
+                                <page string="Odoo Data" name="source_data_configuration">
+                                    <div class="row r-g-16" name="aggregate_and_measures">
+                                        <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Data Type/Measures</div>
+                                        <span class="text-muted" style="font-size: 13px;">
+                                            <i class="fa fa-exclamation-circle me-1 text-warning" title="Warning"/>
+                                            Keep the <b>Code</b> unique and alphabetic to be properly used in <b>Formula</b>; otherwise, same values will be overridden or error.
+                                            Negative values will be converted into positive.
+                                        </span>
+                                        <div class="col-12 d-flex flex-column gap-2">
+                                            <field name="ks_aggregate_ids">
+                                                <list editable="bottom">
+                                                    <field name="field_domain" column_invisible="1"/>
+                                                    <field name="aggregate_function_domain" column_invisible="1"/>
+                                                    <field name="code" string="Code"/>
+                                                    <field name="field_description" string="Description"/>
+                                                    <field name="field_id" string="Measure" domain="field_domain" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                                    <field name="aggregate_function_id" string="Measure Type" domain="aggregate_function_domain" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                                    <field name="operation" string="Operation" readonly="operation_readonly_domain" force_save="1"/>
+                                                    <field name="operation_value" string="Operation Value" readonly="operation_readonly_domain" force_save="1"/>
+                                                    <field name="show_currency" string="Show Currency"/>
+                                                </list>
+                                            </field>
+                                        </div>
+                                    </div>
+                                    <div class="row r-g-16" name="groups_orderby" invisible="type == 'card'">
+                                        <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Groups/Sort By</div>
+                                        <div class="col-12 d-flex gap-2" name="groups">
+                                            <div class="col-6 d-flex flex-column gap-2">
+                                                <label for="ks_groupby_id" string="Group By Field" class="o_form_label"/>
+                                                <field name="ks_groupby_id" placeholder="Select Group By" class="form-control form-input-box encapsulated-form-arrow" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                            </div>
+                                            <div class="col-6 d-flex flex-column gap-2" invisible="groupby_field_ttype not in ['date', 'datetime']">
+                                                <label for="groupby_date_granularity" string="Group By Date" class="o_form_label"/>
+                                                <field name="groupby_date_granularity" class="form-control form-input-box encapsulated-form-arrow bg-white" required="groupby_field_ttype in ['date', 'datetime']"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 d-flex flex-column" name="orderby">
+                                            <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Order By</div>
+                                            <span class="text-muted" style="font-size: 13px;">
+                                                <i class="fa fa-info-circle me-1" title="Information"/>
+                                                If <b>Order Field</b> is same as <b>Group By Field</b>, <b>Group by Ordering</b> should be checked, otherwise ordering will be based on <b>Measure Type</b>.
+                                            </span>
+                                            <field name="ks_orderby_ids">
+                                                <list editable="bottom">
+                                                    <field name="field_domain" column_invisible="1"/>
+                                                    <field name="field_description" column_invisible="1" force_save="1"/>
+                                                    <field name="aggregate_function_domain" column_invisible="1"/>
+                                                    <field name="field_id" string="Order Field" domain="field_domain" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                                    <field name="aggregate_function_id" string="Measure Type" domain="aggregate_function_domain" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" readonly="is_groupby_field" force_save="1" decoration-muted="is_groupby_field"/>
+                                                    <field name="ks_orderby_order" string="Sort Order"/>
+                                                    <field name="is_groupby_field" string="Group by Ordering"/>
+                                                </list>
+                                            </field>
+                                        </div>
+                                    </div>
+                                    <div class="row r-g-16" name="domain_section">
+                                        <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Domains/Date Filters/Groups Limit</div>
+                                        <div name="domain" class="col-12 mb-3" invisible="model_id == False">
+                                            <label for="ks_domain" string="Domain" class="o_form_label"/>
+                                            <field name="ks_domain" widget="domain" options="{'foldable': True, 'model': 'model_name'}"/>
+                                        </div>
+                                        <div name="groups_limit" class="col-12 d-flex flex-column gap-2">
+                                            <div class="col-12 mb-2">
+                                                <span class="text-muted" style="font-size: 13px;">
+                                                    <i class="fa fa-info-circle me-1" title="Information"/>
+                                                    Groups limit 0 will be considered as no limit. Groups limit must be a non-negative number (0 or greater).
+                                                </span>
+                                            </div>
+                                            <div class="col-6 d-flex flex-column gap-2">
+                                                <label for="groups_limit" string="Groups Limit" class="o_form_label"/>
+                                                <field name="groups_limit" placeholder="Enter Groups Limit" class="form-control form-input-box bg-white"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 d-flex flex-column gap-2">
+                                            <label for="user_filter_field_ids" string="%UID Filter Fields" class="o_form_label"/>
+                                            <field name="user_filter_field_ids" placeholder="Select User Filter Fields" widget="many2many_tags"
+                                                   class="form-input-box form-control encapsulated-form-arrow"
+                                                   options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                        </div>
+                                        <div class="col-6 d-flex flex-column gap-2">
+                                            <label for="company_filter_field_ids" string="%MY-COMPANY Filter Fields" class="o_form_label"/>
+                                            <field name="company_filter_field_ids" placeholder="Select Company Filter Fields" widget="many2many_tags"
+                                                   class="form-input-box form-control encapsulated-form-arrow"
+                                                   options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                        </div>
+                                        <div class="col-12 d-flex flex-column">
+                                            <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Date Filters</div>
+                                            <field name="date_filter_field_ids">
+                                                <list editable="bottom">
+                                                    <field name="date_field_id" string="Date Field" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                                    <field name="date_filter_id" string="Date Filter" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                                                </list>
+                                            </field>
+                                        </div>
+                                    </div>
+                                </page>
+                                <page string="XY Chart Display" name="source_xy_chart_display_settings" invisible="type != 'xy_chart'">
+                                    <div name="xy_chart_section" class="row r-g-16">
+                                        <div name="xy_chart_section" class="col-6 gap-2">
+                                            <div class="o_horizontal_separator mb-3 text-uppercase fw-bolder small">Line Chart Display</div>
+                                            <div class="col-6 d-flex flex-row gap-2 mb-2">
+                                                <label for="is_bullets" string="Enable Bullets" class="o_form_label"/>
+                                                <field name="is_bullets"/>
+                                            </div>
+                                            <div class="col-6 d-flex flex-row gap-2 mb-2">
+                                                <label for="is_area_chart" string="Enable Area Chart" class="o_form_label"/>
+                                                <field name="is_area_chart"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </page>
+                            </notebook>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Main Form View extending the Common Form View-->
+    <record id="view_ks_item_source_main_form" model="ir.ui.view">
+        <field name="name">ks.item.source.main.form</field>
+        <field name="model">ks.item.source</field>
+        <field name="inherit_id" ref="ks_dashboard_ninja.view_ks_item_source_common_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='name_item_source']" position="after">
+                <div class="col-6 d-flex flex-column gap-2">
+                    <label for="data_source" string="Data Source" class="o_form_label"/>
+                    <field name="data_source" class="form-control form-input-box encapsulated-form-arrow bg-white"/>
+                </div>
+                <div class="col-6 d-flex flex-column gap-2" invisible="data_source != 'odoo'">
+                    <label for="model_id" string="Model Name" class="o_form_label"/>
+                    <field name="model_id" placeholder="Select Model" class="form-control form-input-box encapsulated-form-arrow bg-white" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                    <div class="alert alert-info mt-2 mb-0" role="alert" invisible="not model_id">
+                        <i class="fa fa-info-circle me-2" title="Information"/>
+                        <strong>Info:</strong> Changing the model will reset the current source's fields.
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//page[@name='source_xy_chart_display_settings']" position="after">
+                <page string="Drill Down" name="action_settings">
+                    <div class="row r-g-16" invisible="type == 'card'">
+                        <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Drill Down Actions</div>
+                        <field name="drill_down_item_source_ids" string="Drill Down Item Source" context="{'form_view_ref': 'ks_dashboard_ninja.view_ks_item_source_common_form', 'default_model_id': model_id, 'default_type': type}">
+                            <list>
+                                <field name="handle_sequence" widget="handle"/>
+                                <field name="name"/>
+                            </list>
+                        </field>
+                    </div>
+                    <div name="action_form_list_view_section" class="row r-g-16">
+                        <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">View Configuration</div>
+                        <span class="text-muted" style="font-size: 13px;">
+                            <i class="fa fa-info-circle me-2" title="Information"/>
+                            When you click on the chart, the selected Form or List view will open. If no view is selected, the system will automatically open the model’s default Form or List view.
+                        </span>
+                        <div class="col-6 d-flex flex-column gap-2">
+                            <label for="list_view_id" string="List View" class="o_form_label"/>
+                            <field name="list_view_id" placeholder="Select List View" class="form-control encapsulated-form-arrow form-input-box bg-white" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                        </div>
+                        <div class="col-6 d-flex flex-column gap-2">
+                            <label for="form_view_id" string="Form View" class="o_form_label"/>
+                            <field name="form_view_id" placeholder="Select Form View" class="form-control encapsulated-form-arrow form-input-box bg-white" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                        </div>
+                    </div>
+                </page>
+                <page string="Excel/CSV" name="excel_csv">
+                    <div class="row r-g-16">
+                        <div class="o_horizontal_separator mb-3 text-uppercase fw-bolder small">File Management</div>
+                        <div class="col-12">
+                            <field name="import_error_log" widget="text" placeholder="Error logs will appear here if any issues occur during import" force_save="1"/>
+                        </div>
+                        <group>
+                            <group string="File Upload">
+                                <field name="file" filename="filename" options="{'accepted_file_extensions': '.csv,.xls,.xlsx', 'allowed_mime_type': 'text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet'}"/>
+                            </group>
+                            <group string="Actions">
+                                <button string="Sync Columns" type="object" name="action_sync_columns" help="Sync Columns to choose types (defaults to char)"/>
+                                <button string="Sync Model" type="object" name="action_sync_model" help="Recreates the model and its data if not present"/>
+                            </group>
+                        </group>
+                        <div class="col-12 mt-3">
+                            <div class="o_horizontal_separator mt-4 mb-3 text-uppercase fw-bolder small">Column Types</div>
+                            <div class="alert alert-info mt-2 mb-3" role="alert">
+                                <i class="fa fa-info-circle me-2" title="Information"/>
+                                <strong>Info:</strong> Always sync columns first after changing or uploading the file.
+                            </div>
+                            <field name="file_data" class="w-75" widget="ks_file_data_columns"/>
+                        </div>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

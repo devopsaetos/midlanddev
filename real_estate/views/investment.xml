@@ -249,22 +249,24 @@
                                     invisible="(installment_created == False or generate_invoices_for_installment != False)"/>
                             <field name="investment_plan_ids" readonly="1">
                                 <list editable="bottom" decoration-info="invoice_created == True"
+                                      class="o_investment_plan_full_headers"
                                       default_order="group_sequence asc, installment_number asc" limit="500">
 <!--                                    <field name="plan_group_name" string="Plan"/>-->
-                                    <field name="installment_number" string="Sr. No" invisible="1"/>
-                                    <field name="installment_type" invisible="1"/>
+                                    <field name="group_sequence" column_invisible="1"/>
+                                    <field name="installment_number" string="Sr. No"/>
+                                    <field name="installment_type" column_invisible="1"/>
                                     <field name="installment_name" invisible="0"/>
-                                    <field name="property_invoice_type" invisible="1"/>
+                                    <field name="property_invoice_type" column_invisible="1"/>
                                     <field name="date"/>
                                     <field name="amount" sum="Total"/>
                                     <field name="file_adjusted_amount" string="File Adjusted" sum="Total"/>
                                     <field name="adjustment_amount" string="Adjustment" sum="Total"/>
                                     <field name="balance_amount" sum="Total"/>
-                                    <field name="invoice_id" invisible="1"/>
+                                    <field name="invoice_id" column_invisible="1"/>
                                     <field name="amount_paid" sum="Amount Paid" readonly="0"/>
                                     <field name="payment_date" string="Payment date" readonly="0"/>
                                     <field name="residual" sum="Remaining Amount" readonly="0"/>
-                                    <field name="invoice" invisible="1"/>
+                                    <field name="invoice" column_invisible="1"/>
                                     <field name="payment_status" string="Status"/>
                                     <field name="state" string="Invoice Status" invisible="0"/>
                                     <field name="invoice_created" invisible="0"/>
@@ -293,6 +295,7 @@
                                 <list string="Payments">
                                     <field name="payment_date"/>
                                     <field name="payment_id" invisible="not payment_id"/>
+                                    <field name="product_id" string="Invoice Type"/>
                                     <field name="move_id" string="Invoice"/>
                                     <field name="payment_amount" string="Amount" sum="Amount"/>
                                     <field name="payment_amount_residual" string="Available Amount" sum="Balance"/>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Global Format: k, M, G, T, P, E -->
+        <record id="ks_number_format_global" model="ks.number.format">
+            <field name="name">Global Format</field>
+            <field name="number_format_line_ids" eval="[
+                (0, 0, {'power_of_ten': 3, 'suffix': 'k'}),
+                (0, 0, {'power_of_ten': 6, 'suffix': 'M'}),
+                (0, 0, {'power_of_ten': 9, 'suffix': 'G'}),
+                (0, 0, {'power_of_ten': 12, 'suffix': 'T'}),
+                (0, 0, {'power_of_ten': 15, 'suffix': 'P'}),
+                (0, 0, {'power_of_ten': 18, 'suffix': 'E'})
+            ]"/>
+        </record>
+
+        <!-- Indian Format: Th, Lakh, Cr, Arab -->
+        <record id="ks_number_format_indian" model="ks.number.format">
+            <field name="name">Indian Format</field>
+            <field name="number_format_line_ids" eval="[
+                (0, 0, {'power_of_ten': 3, 'suffix': 'Th'}),
+                (0, 0, {'power_of_ten': 5, 'suffix': 'Lakh'}),
+                (0, 0, {'power_of_ten': 7, 'suffix': 'Cr'}),
+                (0, 0, {'power_of_ten': 9, 'suffix': 'Arab'})
+            ]"/>
+        </record>
+
+        <!-- Colombian Format: M for all levels -->
+        <record id="ks_number_format_colombian" model="ks.number.format">
+            <field name="name">Colombian Format</field>
+            <field name="number_format_line_ids" eval="[
+                (0, 0, {'power_of_ten': 6, 'suffix': 'M'}),
+                (0, 0, {'power_of_ten': 9, 'suffix': 'M'}),
+                (0, 0, {'power_of_ten': 12, 'suffix': 'M'}),
+                (0, 0, {'power_of_ten': 15, 'suffix': 'M'}),
+                (0, 0, {'power_of_ten': 18, 'suffix': 'M'})
+            ]"/>
+        </record>
+
+    </data>
+</odoo>
+

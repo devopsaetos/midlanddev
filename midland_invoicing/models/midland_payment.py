@@ -585,9 +585,11 @@ class MidlandPayment(models.Model):
             new_plan_paid = plan_total
         remaining = plan_total - new_plan_paid
         if remaining <= 0:
-            install.write({'payment_status': 'paid', 'amount_paid': plan_total, 'residual': 0.0})
+            install.write({'payment_status': 'paid', 'amount_paid': plan_total, 'residual': 0.0,
+                            'balance_amount': 0.0})
         else:
-            install.write({'payment_status': 'in_payment', 'amount_paid': new_plan_paid, 'residual': remaining})
+            install.write({'payment_status': 'in_payment', 'amount_paid': new_plan_paid, 'residual': remaining,
+                            'balance_amount': remaining})
 
     def action_cancel(self):
         for rec in self:

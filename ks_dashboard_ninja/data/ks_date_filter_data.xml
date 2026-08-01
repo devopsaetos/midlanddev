@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Data will be restored after module update -->
+        <!-- Today -->
+        <record id="ks_date_filter_l_day" model="ks.date.filter">
+            <field name="name">Today</field>
+            <field name="sequence">1</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">day</field>
+            <field name="start_at">0</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- This Week -->
+        <record id="ks_date_filter_t_week" model="ks.date.filter">
+            <field name="name">This Week</field>
+            <field name="sequence">2</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">week</field>
+            <field name="start_at">0</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- This Month -->
+        <record id="ks_date_filter_t_month" model="ks.date.filter">
+            <field name="name">This Month</field>
+            <field name="sequence">3</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">month</field>
+            <field name="start_at">0</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- This Quarter -->
+        <record id="ks_date_filter_t_quarter" model="ks.date.filter">
+            <field name="name">This Quarter</field>
+            <field name="sequence">4</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">quarter</field>
+            <field name="start_at">0</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- This Year -->
+        <record id="ks_date_filter_t_year" model="ks.date.filter">
+            <field name="name">This Year</field>
+            <field name="sequence">5</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">year</field>
+            <field name="start_at">0</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- Next Day -->
+        <record id="ks_date_filter_n_day" model="ks.date.filter">
+            <field name="name">Next Day</field>
+            <field name="sequence">10</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">day</field>
+            <field name="start_at">1</field>
+            <field name="end_at">1</field>
+        </record>
+
+        <!-- Next Week -->
+        <record id="ks_date_filter_n_week" model="ks.date.filter">
+            <field name="name">Next Week</field>
+            <field name="sequence">11</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">week</field>
+            <field name="start_at">1</field>
+            <field name="end_at">1</field>
+        </record>
+
+        <!-- Next Month -->
+        <record id="ks_date_filter_n_month" model="ks.date.filter">
+            <field name="name">Next Month</field>
+            <field name="sequence">12</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">month</field>
+            <field name="start_at">1</field>
+            <field name="end_at">1</field>
+        </record>
+
+        <!-- Next Quarter -->
+        <record id="ks_date_filter_n_quarter" model="ks.date.filter">
+            <field name="name">Next Quarter</field>
+            <field name="sequence">13</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">quarter</field>
+            <field name="start_at">1</field>
+            <field name="end_at">1</field>
+        </record>
+
+        <!-- Next Year -->
+        <record id="ks_date_filter_n_year" model="ks.date.filter">
+            <field name="name">Next Year</field>
+            <field name="sequence">14</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">year</field>
+            <field name="start_at">1</field>
+            <field name="end_at">1</field>
+        </record>
+
+        <!-- Last Day -->
+        <record id="ks_date_filter_ls_day" model="ks.date.filter">
+            <field name="name">Last Day</field>
+            <field name="sequence">15</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">day</field>
+            <field name="start_at">-1</field>
+            <field name="end_at">-1</field>
+        </record>
+
+        <!-- Last Week -->
+        <record id="ks_date_filter_ls_week" model="ks.date.filter">
+            <field name="name">Last Week</field>
+            <field name="sequence">16</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">week</field>
+            <field name="start_at">-1</field>
+            <field name="end_at">-1</field>
+        </record>
+
+        <!-- Last Month -->
+        <record id="ks_date_filter_ls_month" model="ks.date.filter">
+            <field name="name">Last Month</field>
+            <field name="sequence">17</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">month</field>
+            <field name="start_at">-1</field>
+            <field name="end_at">-1</field>
+        </record>
+
+        <!-- Last Quarter -->
+        <record id="ks_date_filter_ls_quarter" model="ks.date.filter">
+            <field name="name">Last Quarter</field>
+            <field name="sequence">18</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">quarter</field>
+            <field name="start_at">-1</field>
+            <field name="end_at">-1</field>
+        </record>
+
+        <!-- Last Year -->
+        <record id="ks_date_filter_ls_year" model="ks.date.filter">
+            <field name="name">Last Year</field>
+            <field name="sequence">19</field>
+            <field name="calc_type">boundary</field>
+            <field name="time_period">year</field>
+            <field name="start_at">-1</field>
+            <field name="end_at">-1</field>
+        </record>
+
+        <!-- Last 7 days -->
+        <record id="ks_date_filter_l_week" model="ks.date.filter">
+            <field name="name">Last 7 days</field>
+            <field name="sequence">20</field>
+            <field name="calc_type">relative</field>
+            <field name="time_period">day</field>
+            <field name="start_at">-7</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- Last 30 days -->
+        <record id="ks_date_filter_l_month" model="ks.date.filter">
+            <field name="name">Last 30 days</field>
+            <field name="sequence">21</field>
+            <field name="calc_type">relative</field>
+            <field name="time_period">day</field>
+            <field name="start_at">-30</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- Last 90 days -->
+        <record id="ks_date_filter_l_quarter" model="ks.date.filter">
+            <field name="name">Last 90 days</field>
+            <field name="sequence">22</field>
+            <field name="calc_type">relative</field>
+            <field name="time_period">day</field>
+            <field name="start_at">-90</field>
+            <field name="end_at">0</field>
+        </record>
+
+        <!-- Last 365 days -->
+        <record id="ks_date_filter_l_year" model="ks.date.filter">
+            <field name="name">Last 365 days</field>
+            <field name="sequence">23</field>
+            <field name="calc_type">relative</field>
+            <field name="time_period">day</field>
+            <field name="start_at">-365</field>
+            <field name="end_at">0</field>
+        </record>
+
+    </data>
+</odoo>
+

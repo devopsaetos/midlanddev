@@ -194,6 +194,7 @@ class AllotmentLine(models.Model):
     preference_ids = fields.Many2many('preference', readonly=True)
     sector_id = fields.Many2one('sector', related='inventory_id.sector_id', string='Sector', store=True, readonly=False)
     street_id = fields.Many2one('street', related='inventory_id.street_id', string='Street', store=True, readonly=False)
+    bucket_id = fields.Many2one('unit.bucket', related='inventory_id.bucket_id', string='Bucket', store=True, readonly=False)
     inventory_id = fields.Many2one('plot.inventory',  string='File Unit')
     size_id = fields.Many2one('unit.size', 'Size', related="inventory_id.size_id")
     unit_number = fields.Char(related='inventory_id.name', readonly=True)

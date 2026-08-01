@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_form_wht" model="ir.ui.view">
+        <field name="name">Account Payment WHT Form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="override_wht" readonly="state != 'draft'"/>
+            </xpath>
+            <!--                -->
+            <xpath expr="//group[last()]" position="after">
+                <group string="Withholding Tax" invisible="payment_type not in ('inbound', 'outbound')">
+                    <field name="wht_ids_domain_ids" string="WHT Domain"
+
+                           readonly="state !=  'draft'"
+                           invisible="1"
+                           widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                    <field name="wht_payment_ids" widget="many2many_tags" readonly="state != 'draft'"
+                           domain="[('id', 'in', wht_ids_domain_ids)]"/>
+                    <field name="wht_amount" readonly="1"/>
+                    <field name="after_wh_payment_amount" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

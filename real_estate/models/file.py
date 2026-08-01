@@ -73,6 +73,7 @@ class File(models.Model):
                                tracking=True)
     sector_id = fields.Many2one('sector', readonly=False, tracking=True)
     street_id = fields.Many2one('street', readonly=False, tracking=True)
+    bucket_id = fields.Many2one('unit.bucket', string='Bucket', readonly=False, tracking=True)
     inventory_id = fields.Many2one('plot.inventory', 'Plot No', domain=lambda self: self._check_inventory_id(),
                                    tracking=True)
     unit_number = fields.Char(related='inventory_id.name', store=True, readonly=False, tracking=True)
@@ -453,7 +454,7 @@ class File(models.Model):
         if self.inventory_id:
             self.category_id = self.inventory_id.category_id.id
             self.unit_category_type_id = self.inventory_id.unit_category_type_id.id
-            self.street_id = self.inventory_id.street_id.id
+            self.bucket_id = self.inventory_id.bucket_id.id
 
         if self.inventory_id.preference_factor_ids and not self.token_id:
             self.preference_ids = [(0, 0, {
@@ -547,14 +548,14 @@ class File(models.Model):
         for rec in self.preference_ids:
             rec._compute_total_value()
 
-    @api.onchange('society_id', 'phase_id', 'street_id', 'category_id', 'unit_category_type_id', 'sector_id')
+    @api.onchange('society_id', 'phase_id', 'bucket_id', 'category_id', 'unit_category_type_id', 'sector_id')
     def _phase_domain(self):
         # Clear a stale Unit only if it no longer belongs to the newly
-        # picked Street — guarded (not unconditional) because this onchange
-        # also re-fires when _onchange_inventory sets self.street_id to
+        # picked Bucket — guarded (not unconditional) because this onchange
+        # also re-fires when _onchange_inventory sets self.bucket_id to
         # match a just-picked Unit; in that case they already match, so
         # nothing gets cleared and the Unit selection isn't undone.
-        if self.inventory_id and self.street_id and self.inventory_id.street_id != self.street_id:
+        if self.inventory_id and self.bucket_id and self.inventory_id.bucket_id != self.bucket_id:
             self.inventory_id = False
             # Force these to re-evaluate right away against the now-cleared
             # Unit, rather than relying on the automatic depends-cascade.
@@ -572,15 +573,14 @@ class File(models.Model):
 
         if not inventory_domain:
             inventory_domain.append(('id', '=', False))
-        if self.street_id:
+        if self.bucket_id:
             return {
-                'domain': {'inventory_id': [('street_id', '=', self.street_id.id), ('state', '=', 'avalible_for_sale')]}
+                'domain': {'inventory_id': [('bucket_id', '=', self.bucket_id.id), ('state', '=', 'avalible_for_sale')]}
             }
         else:
             return {'domain': {
                 'phase_id': [('is_society', '!=', True), ('society_id', '=', self.society_id.id)],
                 'sector_id': [('phase_id', '=', self.phase_id.id)],
-                'street_id': [('sector_id', '=', self.sector_id.id)],
                 'inventory_id': inventory_domain + state_domain
             }
             }

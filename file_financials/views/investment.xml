@@ -95,9 +95,11 @@
             </xpath>
             <xpath expr="//field[@name='predefine_plan_id'][1]" position="attributes">
                 <attribute name="required">header_plan_required</attribute>
+                <attribute name="invisible">plan_type != 'predefine' or plan_type == False or not single_product</attribute>
             </xpath>
             <xpath expr="//field[@name='predefine_plan_id'][1]" position="after">
                 <field name="header_plan_required" invisible="1"/>
+                <field name="single_product" invisible="1"/>
             </xpath>
             <xpath expr="//sheet/notebook[last()]" position="inside">
                 <page name="rebate_calculation" string="Rebate">

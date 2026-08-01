@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ks_dashboard_ninja.ks_list_chart">
+        <div class="ks-grouped-list-view d-flex flex-column h-100 border-none" t-ref="rootRef">
+            <!-- Table Section -->
+            <div t-if="props.data.sources.length" class="d-flex flex-column flex-grow-1">
+                <div class="table-responsive ks_list_item_table flex-grow-1" t-ref="tableRef">
+                    <table class="table table-hover">
+                        <thead t-call="ks_dashboard_ninja.list_table_header"/>
+                        <tbody class="ks_table_body" t-call="ks_dashboard_ninja.list_table_body"/>
+                    </table>
+                </div>
+                
+                <div t-if="!props.toDisable.pagination" class="text-muted d-flex justify-content-between align-items-center py-2">
+                    <div class="total-items" t-esc="totalGroupbyValues + ' Records'"/>
+                    <div class="page-numbers d-flex align-items-center gap-2">
+                        <span class="cursor-pointer" t-call="navigate_left_svg" t-on-click.stop="() => this.onPageUpdate(-1)"/>
+                        <span t-esc="'Page ' + currentPageCount + ' of ' + totalPagesCount"/>
+                        <span class="cursor-pointer" t-call="navigate_right_svg" t-on-click.stop="() => this.onPageUpdate(1)"/>
+                    </div>
+                </div>
+            </div>
+            <div t-else="" class="d-flex align-items-center justify-content-center h-100 flex-column">
+                <div class="text-center text-muted">
+                    <i class="fa fa-chart-line fa-3x mb-3"/>
+                    <p>No data available</p>
+                </div>
+                <button t-if="this.drillDownState?.drillDowns?.length" class="btn btn-secondary" t-on-click="() => this.popoverAction?.oneLevelUp()">
+                    <i class="fa fa-arrow-up me-2"/>Drill Up
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="ks_dashboard_ninja.list_table_header">
+        <tr>
+            <th/>
+            <t t-foreach="props.data.sources" t-as="source" t-key="source_index">
+                <t t-foreach="source.sequenced_aggregates" t-as="sequenced_aggregate" t-key="sequenced_aggregate_index">
+                    <th t-esc="getHeaderCell(sequenced_aggregate, source)"/>
+                </t>
+            </t>
+            <t t-foreach="props.data.formula_sources" t-as="formula_data" t-key="formula_data_index">
+                <t t-foreach="formula_data.sequenced_aggregates" t-as="sequenced_aggregate" t-key="sequenced_aggregate_index">
+                    <th t-esc="formula_data.model_data.name"/>
+                </t>
+            </t>
+        </tr>
+    </t>
+
+    <t t-name="ks_dashboard_ninja.list_table_body">
+        <tr t-foreach="props.data.groupby_data_values" t-as="groupby_data" t-key="groupby_data_index" class="ks_tr">
+            <td t-esc="groupby_data['__groupby_value']"/>
+
+            <t t-foreach="props.data.sources" t-as="source" t-key="source_index">
+                <t t-foreach="source.sequenced_aggregates" t-as="sequenced_aggregate" t-key="sequenced_aggregate_index">
+                    <td t-esc="getRowCell(sequenced_aggregate, groupby_data, source)" t-on-click.stop="(ev) => this.openDrillDownPopover(ev, sequenced_aggregate, groupby_data, source)"/>
+                </t>
+            </t>
+
+            <t t-foreach="props.data.formula_sources" t-as="formula_data" t-key="formula_data_index">
+                <t t-foreach="formula_data.sequenced_aggregates" t-as="sequenced_aggregate" t-key="sequenced_aggregate_index">
+                    <td t-esc="getSequencedAggregateValue(sequenced_aggregate, groupby_data)"/>
+                </t>
+            </t>
+        </tr>
+    </t>
+
+    <t t-name="navigate_right_svg">
+        <svg width="16" height="16" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.09131 7.83329L4.42464 4.49996L1.09131 1.16663" stroke="#727378" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </t>
+
+    <t t-name="navigate_left_svg">
+        <svg width="16" height="16" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.75781 7.83329L1.42448 4.49996L4.75781 1.16663" stroke="#727378" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </t>
+</templates>

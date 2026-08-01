@@ -47,6 +47,7 @@
                                 <field name="phase_id"/>
                                 <field name="sector_id"/>
                                 <field name="street_id"/>
+                                <field name="bucket_id"/>
                                 <field name="inventory_id" string="Unit"/>
                                 <field name="unit_number" string="Plot No."/>
                             </group>

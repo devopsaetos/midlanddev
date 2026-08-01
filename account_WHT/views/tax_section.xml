@@ -1,0 +1,44 @@
+<odoo>
+    <record id="tax_section_view_form" model="ir.ui.view">
+        <field name="name">tax.section.view.form</field>
+        <field name="model">tax.section</field>
+        <field name="arch" type="xml">
+            <form string="contact_type_form">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                        <field name="code"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="tax_section_view_tree" model="ir.ui.view">
+        <field name="name">tax.section.view.tree</field>
+        <field name="model">tax.section</field>
+        <field name="arch" type="xml">
+            <list string="tax_section_tree">
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="tax_section_action" model="ir.actions.act_window">
+        <field name="name">Tax Section</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">tax.section</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="tax_section_menu"
+              name="Tax Section"
+              parent="account.account_invoicing_menu"
+              action="tax_section_action"
+              sequence="4"/>
+</odoo>

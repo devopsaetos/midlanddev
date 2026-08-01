@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="ks_aggregate_count_distinct" model="ks.aggregate.function">
+            <field name="name">Count Distinct</field>
+            <field name="sql_name">count_distinct</field>
+        </record>
+
+        <record id="ks_aggregate_max" model="ks.aggregate.function">
+            <field name="name">Maximum</field>
+            <field name="sql_name">max</field>
+        </record>
+
+        <record id="ks_aggregate_min" model="ks.aggregate.function">
+            <field name="name">Minimum</field>
+            <field name="sql_name">min</field>
+        </record>
+
+        <record id="ks_aggregate_avg" model="ks.aggregate.function">
+            <field name="name">Average</field>
+            <field name="sql_name">avg</field>
+        </record>
+
+        <record id="ks_aggregate_sum" model="ks.aggregate.function">
+            <field name="name">Sum</field>
+            <field name="sql_name">sum</field>
+        </record>
+
+        <record id="ks_aggregate_count" model="ks.aggregate.function">
+            <field name="name">Count</field>
+            <field name="sql_name">count</field>
+        </record>
+
+        <record id="ks_aggregate_bool_and" model="ks.aggregate.function">
+            <field name="name">Bool And</field>
+            <field name="sql_name">bool_and</field>
+        </record>
+
+        <record id="ks_aggregate_bool_or" model="ks.aggregate.function">
+            <field name="name">Bool Or</field>
+            <field name="sql_name">bool_or</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_tax_collection" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.tax.collection</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_type']" position="after">
+                <div class="oe_edit_only d-inline-flex align-items-center ms-4">
+                    <field name="is_tax_collection_body" class="mb-0"/>
+                    <label for="is_tax_collection_body" string="Is Tax Collection Body?" class="mb-0 ms-1"/>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
