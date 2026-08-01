@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_wht_user,account.wht.user,model_account_wht,account.group_account_user,1,1,1,0
+access_account_wht_manager,account.wht.manager,model_account_wht,account.group_account_manager,1,1,1,1
+access_account_move_wht_user,account.move.wht.user,model_account_move_wht,account.group_account_user,1,1,1,0
+access_account_move_wht_manager,account.move.wht.manager,model_account_move_wht,account.group_account_manager,1,1,1,1
+access_account_move_tax_user,account.move.tax.user,model_account_move_tax,account.group_account_user,1,1,1,0
+access_account_move_tax_manager,account.move.tax.manager,model_account_move_tax,account.group_account_manager,1,1,1,1
+access_account_move_tax_lines_user,account.move.tax.lines.user,model_account_move_tax_lines,account.group_account_user,1,1,1,0
+access_account_move_tax_lines_manager,account.move.tax.lines.manager,model_account_move_tax_lines,account.group_account_manager,1,1,1,1
+access_wht_bill_wizard_user,wht.bill.wizard.user,model_wht_bill_wizard,account.group_account_user,1,1,1,1
+access_wht_bill_wizard_lines_user,wht.bill.wizard.lines.user,model_wht_bill_wizard_lines,account.group_account_user,1,1,1,1
+access_tax_section_user,tax.section.user,model_tax_section,account.group_account_user,1,1,1,0
+access_tax_section_manager,tax.section.manager,model_tax_section,account.group_account_manager,1,1,1,1
