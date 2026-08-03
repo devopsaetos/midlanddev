@@ -82,12 +82,8 @@ class DealerRebate(models.Model):
 
         if record:
             raise ValidationError(_("Rebate Policy is already exist in:: %s" % (record.mapped('name')[0])))
-        if self.effective_from < fields.Date.today():
-            raise ValidationError(_("Effective From can't be in past"))
         if self.effective_to:
-            if self.effective_to < fields.Date.today():
-                raise ValidationError(_("Effective To can't be in past"))
-            elif self.effective_to < self.effective_from:
+            if self.effective_to < self.effective_from:
                 raise ValidationError(_("Effective to can't be smaller than effective from"))
 
 
