@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 from .file_ext import _INSTALLMENT_PRODUCT
 
@@ -105,6 +105,7 @@ class InvestmentExt(models.Model):
                 'investment_id': rec.id,
                 'invoice_line_ids': invoice_lines,
             })
+            inv.action_post()
             plan.write({
                 'invoice_created': True,
                 'invoice_id': inv.jv_id.id if inv.jv_id else False,
@@ -165,6 +166,7 @@ class InvestmentExt(models.Model):
                     'investment_id': investment_rec.id,
                     'invoice_line_ids': invoice_lines,
                 })
+                inv.action_post()
                 plan.write({
                     'invoice_created': True,
                     'invoice_id': inv.jv_id.id if inv.jv_id else False,
@@ -182,3 +184,29 @@ class InvestmentExt(models.Model):
             'domain': [('investment_id', '=', self.id)],
             'context': {'default_investment_id': self.id},
         }
+
+
+class InvestmentPlanExt(models.Model):
+    _inherit = 'investment.plan'
+
+    def unlink(self):
+        # real_estate's base unlink() blocks deletion the moment
+        # invoice_created is True — under the midland.invoice flow that fires
+        # as soon as the due-installment cron drafts an invoice, long before
+        # anyone actually pays it, permanently locking Reset Installment Plan
+        # for the rest of the deal's life. Only block once money has actually
+        # moved (invoice paid/partially paid) — an unpaid draft invoice
+        # should not stop a reset.
+        paid_invoices = self.env['midland.invoice'].search([
+            ('investment_installment_id', 'in', self.ids),
+            ('state', '!=', 'cancelled'),
+            ('payment_state', '!=', 'not_paid'),
+        ])
+        if paid_invoices:
+            raise UserError(_(
+                'You cannot delete this record: invoice %s is already paid.'
+            ) % ', '.join(paid_invoices.mapped('name')))
+        for rec in self:
+            if rec.invoice_id and rec.invoice_id.payment_state not in (False, 'not_paid'):
+                raise UserError(_('You cannot delete this record: the invoice is already paid.'))
+        return models.Model.unlink(self)
