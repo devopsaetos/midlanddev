@@ -237,6 +237,22 @@ class InvestmentExt(models.Model):
                 'context': {'default_name': self.name},
             }
 
+    def action_open_assign_plan_wizard(self):
+        # investment_line_ids/inventory_ids become fully readonly once the
+        # deal is state='reserved' (see real_estate.investment_view_form), so
+        # a still-missing Plan on a row can no longer be picked from the main
+        # form at all - this wizard is the one place left to set it, touching
+        # only predefine_plan_id (and the values it drives) on those rows.
+        self.ensure_one()
+        return {
+            'name': _('Assign Plan'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'investment.assign.plan.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_investment_id': self.id},
+        }
+
     @api.onchange('multiple_plans')
     def change_values_in_investment_lines(self):
         if self.multiple_plans:
@@ -249,6 +265,24 @@ class InvestmentExt(models.Model):
                 line.own_plan = False
                 line.predefine_plan_id = False
 
+    def _auto_assign_predefine_plan(self, lines):
+        """A line/unit whose Product (unit_category_type_id) matches exactly
+        one 'per product' predefine.plan gets that plan filled in automatically,
+        instead of relying on the user picking it by hand on every row - which
+        is no longer possible at all once the deal reaches state 'reserved'
+        (investment_line_ids/inventory_ids become readonly at that point)."""
+        if self.plan_type != 'predefine':
+            return
+        for line in lines:
+            if line.predefine_plan_id or not line.unit_category_type_id:
+                continue
+            plan = self.env['predefine.plan'].search([
+                ('unit_category_type_id', '=', line.unit_category_type_id.id),
+                ('project_type', '=', self.project_type),
+            ])
+            if len(plan) == 1:
+                line.predefine_plan_id = plan.id
+
     @api.onchange('investment_line_ids', 'inventory_ids', 'total_amount', 'multiple_plans')
     def change_booking_and_confirmation(self):
         if self.reservation_type == 'bulk':
@@ -257,6 +291,8 @@ class InvestmentExt(models.Model):
             lines = self.inventory_ids
         else:
             lines = self.env['investment.line']
+
+        self._auto_assign_predefine_plan(lines)
 
         # Picking a plan on any individual line/unit IS what makes this a
         # multi-plan deal - the user shouldn't also have to remember to flip

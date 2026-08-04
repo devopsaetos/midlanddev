@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.assign_plan_wizard_form">
+            <field name="name">file_financials.assign_plan_wizard_form</field>
+            <field name="model">investment.assign.plan.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="investment_id" invisible="1"/>
+                        <p>
+                            These lines don't have a Plan assigned yet. Pick one for
+                            each row below - only lines missing a Plan are listed.
+                        </p>
+                        <field name="line_ids" nolabel="1" create="false" delete="false">
+                            <list editable="bottom">
+                                <field name="investment_line_id" readonly="1" invisible="1" force_save="1"/>
+                                <field name="plot_inventory_id" readonly="1" invisible="1" force_save="1"/>
+                                <field name="sector_id" readonly="1" force_save="1"/>
+                                <field name="street_id" readonly="1" force_save="1"/>
+                                <field name="unit_category_type_id" readonly="1" force_save="1"/>
+                                <field name="predefine_plan_id" options="{'no_create': True, 'no_open': True}"/>
+                            </list>
+                        </field>
+                    </sheet>
+                    <footer>
+                        <button string="Confirm" name="action_confirm" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="file_financials.action_assign_plan_wizard">
+            <field name="name">Assign Plan</field>
+            <field name="res_model">investment.assign.plan.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

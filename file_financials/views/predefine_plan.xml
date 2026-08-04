@@ -14,6 +14,11 @@
                         <field name="confirmation_period_type"/>
                     </div>
                 </xpath>
+                <xpath expr="//field[@name='unit_category_type_id']" position="attributes">
+                    <attribute name="string">Product</attribute>
+                    <attribute name="invisible">0</attribute>
+                    <attribute name="required">0</attribute>
+                </xpath>
             </field>
         </record>
 
