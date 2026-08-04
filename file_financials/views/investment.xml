@@ -9,6 +9,9 @@
                 <button class="btn btn-primary" name="update_booking_amount_on_open_files" type="object" string="Update Booking On Files"/>
                 <button name="%(file_financials.action_report_deal_registration)d" type="action"
                         string="Investor Deal" class="btn-secondary" style="margin-left:10px"/>
+                <button class="btn btn-primary" name="action_open_assign_plan_wizard" type="object"
+                        string="Assign Plan" style="margin-left:10px"
+                        invisible="state != 'reserved' or plan_type != 'predefine' or not header_plan_required"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <field name="rebate_invoice_ids" widget="many2many_tags" readonly="1" force_save="1" invisible="1"
@@ -193,6 +196,7 @@
             <xpath expr="//field[@name='investment_line_ids']/list/field[@name='unit_category_type_id']" position="after">
                 <field name="predefine_plan_id" string="Plan"
                        invisible="parent.plan_type != 'predefine'"
+                       domain="[('unit_category_type_id','=',unit_category_type_id),('project_type','=',parent.project_type)]"
                        options="{'no_create': True, 'no_open': True}"/>
                 <field name="own_plan" invisible="1" force_save="1"/>
             </xpath>
@@ -211,6 +215,7 @@
             <xpath expr="//field[@name='inventory_ids']/list/field[@name='unit_category_type_id']" position="after">
                 <field name="predefine_plan_id" string="Plan"
                        invisible="parent.plan_type != 'predefine'"
+                       domain="[('unit_category_type_id','=',unit_category_type_id),('project_type','=',parent.project_type)]"
                        options="{'no_create': True, 'no_open': True}"/>
                 <field name="own_plan" invisible="1" force_save="1"/>
             </xpath>

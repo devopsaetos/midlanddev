@@ -56,6 +56,7 @@
         'wizards/investment_rebate_wizard.xml',
         'wizards/file_confirmation_adjustment_wizard.xml',
         'wizards/unit_swapping_wizard.xml',
+        'wizards/assign_plan_wizard.xml',
         # Security
         'security/ir.model.access.csv',
         # Data
