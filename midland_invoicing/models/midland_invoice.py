@@ -336,11 +336,15 @@ class MidlandInvoice(models.Model):
                 # Link installment plan to JV so payment_status, amount_paid, residual sync
                 if rec.installment_id:
                     rec.installment_id.write({'invoice_id': jv.id, 'invoice_created': True})
+                if rec.investment_installment_id:
+                    rec.investment_installment_id.write({'invoice_id': jv.id, 'invoice_created': True})
             else:
                 # ── Mode: false — no JV at invoice time, just mark posted ─────
                 rec.write({'state': 'posted', 'entry_mode': False})
                 if rec.installment_id:
                     rec.installment_id.write({'invoice_created': True})
+                if rec.investment_installment_id:
+                    rec.investment_installment_id.write({'invoice_created': True})
 
     def action_cancel(self):
         for rec in self:
@@ -349,6 +353,8 @@ class MidlandInvoice(models.Model):
                     rec.jv_id.button_cancel()
             rec.state = 'cancelled'
             # free the linked plan line so it can be invoiced again
+            if rec.installment_id and rec.installment_id.invoice_created:
+                rec.installment_id.write({'invoice_created': False, 'invoice_id': False})
             if rec.investment_installment_id and rec.investment_installment_id.invoice_created:
                 rec.investment_installment_id.write({'invoice_created': False, 'invoice_id': False})
 
@@ -398,12 +404,24 @@ class MidlandInvoice(models.Model):
             'partner_id': self.partner_id.id if self.partner_id else False,
             'file_id': self.file_ids.id if self.file_ids else False,
             'investment_id': self.investment_id.id if self.investment_id else False,
-            'payment_amount': self.amount_residual,
             'currency_id': self.currency_id.id,
             'remarks': self.name,
+            # Same company_id gap as midland.invoice - defaults to
+            # self.env.company otherwise, not this invoice's own company.
+            'company_id': (self.company_id or self.env.company).id,
+        })
+        # Mirrors midland.payment.line._onchange_invoice_id() - which doesn't
+        # fire here since this line is created server-side via create(), not
+        # through the interactive UI. Net the Booking dealer rebate off the
+        # amount actually being requested, same as picking this invoice by
+        # hand in the payment form would.
+        rebate = payment._invoice_rebate_amount(self)
+        net_amount = self.amount_residual - rebate
+        payment.write({
+            'payment_amount': net_amount,
             'invoice_line_ids': [(0, 0, {
                 'invoice_id': self.id,
-                'payment_amount': self.amount_residual,
+                'payment_amount': net_amount,
             })],
         })
         return {

@@ -375,7 +375,6 @@ class MidlandPayment(models.Model):
         total_allocated = 0.0
         total_rebate = 0.0
         total_confirmation_rebate = 0.0
-        bank_correction = 0.0
         for line in rec.invoice_line_ids:
             inv = line.invoice_id
             if not inv or not inv.invoice_line_ids:
@@ -409,14 +408,13 @@ class MidlandPayment(models.Model):
                 }))
                 total_rebate += rebate
 
-                # Credit: Advance from Dealer — the invoice's own full
-                # value, derived from the invoice itself (not line.payment_amount,
-                # which may not have been reduced by the rebate yet if the
-                # invoice was picked before Payment For/Dealer were set).
-                # `not inv.amount_paid` was already required by
-                # _invoice_rebate_amount, so amount_residual == amount_total here.
-                cash_amount = round(inv.amount_total - rebate, 2)
-                credit_amount = round(inv.amount_total, 2)
+                # Credit: Advance from Dealer — only what's actually being
+                # settled THIS payment (the cash just paid + the rebate funded
+                # against it), not the invoice's full value - a Booking-rebate
+                # invoice can still be paid in genuine partial installments,
+                # same as any other invoice, once the one-time rebate has
+                # been applied on the first payment.
+                credit_amount = round(min(line.payment_amount + rebate, inv.amount_total), 2)
                 jv_lines.append((0, 0, {
                     'account_id': advance_account.id,
                     'partner_id': partner.id,
@@ -425,9 +423,6 @@ class MidlandPayment(models.Model):
                     'credit': credit_amount,
                 }))
                 total_allocated += credit_amount
-                # Correct the header Bank debit for whatever this line's
-                # payment_amount actually held vs. the true cash owed
-                bank_correction += round(line.payment_amount - cash_amount, 2)
                 continue
 
             ratio = line.payment_amount / inv.amount_total if inv.amount_total else 0.0
@@ -446,13 +441,6 @@ class MidlandPayment(models.Model):
                     'credit': credit_amount,
                 }))
                 total_allocated += credit_amount
-
-        # Fix the header Bank debit for any Booking-rebate line whose
-        # payment_amount wasn't actually reduced by the rebate beforehand
-        if bank_correction:
-            bank_line = dict(jv_lines[0][2])
-            bank_line['debit'] = round(bank_line['debit'] - bank_correction, 2)
-            jv_lines[0] = (0, 0, bank_line)
 
         # Confirmation rebate — the customer only owes cash for (invoice
         # total − dealer rebate); the shortfall clears against the same
@@ -480,10 +468,10 @@ class MidlandPayment(models.Model):
         # Rounding correction on last credit line — jv_lines[-1] is always a
         # credit line here (each loop iteration ends by appending one,
         # whether the Advance from Dealer credit or a Revenue credit).
-        # bank_correction is subtracted here because Booking-rebate lines
-        # already self-balance exactly (cash_amount + rebate == credit_amount
-        # by construction) — only non-Booking lines can leave rounding slack.
-        diff = (rec.net_payment - bank_correction + total_rebate) - total_allocated
+        # Booking-rebate lines already self-balance exactly (payment_amount +
+        # rebate == credit_amount by construction) — only non-Booking lines
+        # can leave rounding slack.
+        diff = (rec.net_payment + total_rebate) - total_allocated
         if diff and len(jv_lines) > 1:
             last = dict(jv_lines[-1][2])
             last['credit'] = round(last['credit'] + diff, 2)
@@ -527,10 +515,11 @@ class MidlandPayment(models.Model):
             if not inv:
                 continue
             rebate = rec._invoice_rebate_amount(inv)
-            # For Booking-rebate lines, the invoice's own total is always
-            # what gets settled (cash_amount + rebate == inv.amount_total),
-            # regardless of what line.payment_amount happened to hold.
-            paid_amount = round(inv.amount_total, 2) if rebate > 0 else line.payment_amount
+            # For Booking-rebate lines, what gets settled THIS payment is the
+            # cash actually paid plus the rebate funded against it - not
+            # necessarily the invoice's whole total, so a partial cash
+            # payment correctly leaves the rest as still due.
+            paid_amount = round(min(line.payment_amount + rebate, inv.amount_total), 2) if rebate > 0 else line.payment_amount
             new_paid = inv.amount_paid + paid_amount
             if new_paid >= inv.amount_total:
                 inv.write({'amount_paid': inv.amount_total, 'payment_state': 'paid'})
