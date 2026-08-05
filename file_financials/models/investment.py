@@ -234,6 +234,22 @@ class InvestmentExt(models.Model):
                 'context': {'default_name': self.name},
             }
 
+    def action_open_add_inventory_wizard(self):
+        # inventory_ids is fully readonly once state='reserved' (see
+        # real_estate.investment_view_form), so there's no way to add more
+        # units to the deal from the main form at all past that point -
+        # this wizard writes inventory_ids/plot.inventory directly, same
+        # trick as action_open_assign_plan_wizard below.
+        self.ensure_one()
+        return {
+            'name': _('Add Inventory'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'investment.add.inventory.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_investment_id': self.id},
+        }
+
     def action_open_assign_plan_wizard(self):
         # investment_line_ids/inventory_ids become fully readonly once the
         # deal is state='reserved' (see real_estate.investment_view_form), so
