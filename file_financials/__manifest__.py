@@ -57,6 +57,7 @@
         'wizards/file_confirmation_adjustment_wizard.xml',
         'wizards/unit_swapping_wizard.xml',
         'wizards/assign_plan_wizard.xml',
+        'wizards/add_inventory_wizard.xml',
         # Security
         'security/ir.model.access.csv',
         # Data

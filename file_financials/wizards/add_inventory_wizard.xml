@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.add_inventory_wizard_form">
+            <field name="name">file_financials.add_inventory_wizard_form</field>
+            <field name="model">investment.add.inventory.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="investment_id" invisible="1"/>
+                        <field name="phase_id" invisible="1"/>
+                        <p>
+                            Pick the units to add to this deal. Only units still
+                            Available For Sale in this Phase are shown.
+                        </p>
+                        <field name="line_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="inventory_id"
+                                       domain="[('state', '=', 'avalible_for_sale'), ('phase_id', '=', parent.phase_id)]"
+                                       options="{'no_create': True}"/>
+                                <field name="sector_id" readonly="1" force_save="1"/>
+                                <field name="category_id" readonly="1" force_save="1"/>
+                                <field name="unit_category_type_id" readonly="1" force_save="1"/>
+                                <field name="list_price" readonly="1" force_save="1"/>
+                                <field name="investor_unit_price"/>
+                            </list>
+                        </field>
+                    </sheet>
+                    <footer>
+                        <button string="Confirm" name="action_confirm" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="file_financials.action_add_inventory_wizard">
+            <field name="name">Add Inventory</field>
+            <field name="res_model">investment.add.inventory.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

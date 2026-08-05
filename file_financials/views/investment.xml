@@ -12,6 +12,9 @@
                 <button class="btn btn-primary" name="action_open_assign_plan_wizard" type="object"
                         string="Assign Plan" style="margin-left:10px"
                         invisible="state != 'reserved' or plan_type != 'predefine' or not header_plan_required"/>
+                <button class="btn btn-primary" name="action_open_add_inventory_wizard" type="object"
+                        string="Add Inventory" style="margin-left:10px"
+                        invisible="state != 'reserved' or reservation_type != 'unit'"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <field name="rebate_invoice_ids" widget="many2many_tags" readonly="1" force_save="1" invisible="1"
