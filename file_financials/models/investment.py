@@ -156,15 +156,12 @@ class InvestmentExt(models.Model):
         self.state = 'reserved'
 
     def set_net_payment_data(self):
-        # confirmation_lines = self.env['investment.plan'].search([('installment_name', '=', 'Confirmation'), ('investment_id', '=', rec.id), ('company_id.id', '=', 5)])
-        # if confirmation_lines:
-        #     for line in confirmation_lines:
-        #         line.compute_net_payment()
         for rec in self:
-            booking_lines = self.env['investment.plan'].search(
-                [('installment_type', '=', 'down'), ('investment_id', '=', rec.id), ('company_id.id', 'in', [5, 16])])
-            if booking_lines:
-                for line in booking_lines:
+            net_off_lines = self.env['investment.plan'].search(
+                [('installment_type', 'in', ['down', 'confirmation_amount']), ('investment_id', '=', rec.id),
+                 ('company_id.id', 'in', [5, 16])])
+            if net_off_lines:
+                for line in net_off_lines:
                     line.compute_net_receivable()
                     line.compute_net_payment()
 
@@ -655,17 +652,16 @@ class InvestmentExt(models.Model):
                         lambda l: l.agent_type == 'marketing_company' and l.transaction_type == 'booking')
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'dealer' and l.transaction_type == 'booking')
-                    # Percentage rebates apply against THIS installment line's
-                    # own amount (e.g. the Booking amount) — not the deal's
-                    # total_amount across all units, which double-counted the
-                    # rebate base for every installment line on the deal.
+                    # Percentage rebates (Booking and Confirmation alike) apply
+                    # against the deal's Total Deal Amount, not this
+                    # installment line's own amount.
                     lines.marketing_share = sum(
-                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * group_units
                         for l in marketing_lines
                     )
                     lines.dealer_share = sum(
-                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * group_units
                         for l in dealer_lines
                     )
@@ -677,12 +673,12 @@ class InvestmentExt(models.Model):
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
                         lambda l: l.agent_type == 'dealer' and l.transaction_type == 'confirmation')
                     lines.marketing_share = sum(
-                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * group_units
                         for l in marketing_lines
                     )
                     lines.dealer_share = sum(
-                        (l.total_rebate / 100) * lines.amount if l.calculation_basis == 'percentage'
+                        (l.total_rebate / 100) * rec.total_amount if l.calculation_basis == 'percentage'
                         else l.total_rebate * group_units
                         for l in dealer_lines
                     )

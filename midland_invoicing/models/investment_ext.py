@@ -103,6 +103,10 @@ class InvestmentExt(models.Model):
                 'property_invoice_type': 'investment_installment',
                 'investment_installment_id': plan.id,
                 'investment_id': rec.id,
+                # company_id otherwise defaults to self.env.company (whoever
+                # clicks the button), not the deal's own company - wrong for
+                # any deal outside the user's currently active company.
+                'company_id': (rec.company_id or self.env.company).id,
                 'invoice_line_ids': invoice_lines,
             })
             inv.action_post()
@@ -164,13 +168,31 @@ class InvestmentExt(models.Model):
                     'property_invoice_type': 'investment_installment',
                     'investment_installment_id': plan.id,
                     'investment_id': investment_rec.id,
+                    # Cron runs as one system user with one env.company -
+                    # each deal's own company must be set explicitly here,
+                    # or every investment's invoice lands under whichever
+                    # company the cron happens to default to.
+                    'company_id': (investment_rec.company_id or self.env.company).id,
                     'invoice_line_ids': invoice_lines,
                 })
-                inv.action_post()
-                plan.write({
-                    'invoice_created': True,
-                    'invoice_id': inv.jv_id.id if inv.jv_id else False,
-                })
+                # Left in draft — someone reviews/posts it manually from the
+                # Invoices smart button, same as the File cron already does.
+                # Don't touch invoice_id here: writing it even to its current
+                # (unchanged) False value forces residual/amount_paid/
+                # payment_status - all related/computed off invoice_id - to
+                # recompute against an empty invoice_id and blank out to
+                # 0/False, wiping the correct "Not Paid"/Amount Due display.
+                #
+                # The invoice line itself always bills the FULL installment
+                # amount (price_unit above) - only the displayed Amount Due
+                # (residual) is shown net of the dealer's rebate share, on
+                # Booking and Confirmation rows, so it's clear up front what
+                # actually still needs to be collected.
+                vals = {'invoice_created': True}
+                if plan.installment_type in ('down', 'confirmation_amount') and plan.dealer_share:
+                    vals['residual'] = max(plan.amount - plan.dealer_share, 0)
+                    vals['rebate_adjustment'] = plan.dealer_share
+                plan.write(vals)
                 investment_rec._settle_token_on_plan(plan, token_fees)
 
     # ── Smart button action ────────────────────────────────────────────────────

@@ -76,23 +76,11 @@ class InvestmentPlanExt(models.Model):
 
     def compute_net_payment(self):
         for rec in self:
-            # booking_paid = 0
-            # booking_rebate_adjusted = 0
-            if rec.installment_type == 'down' and rec.invoice_id and rec.company_id.id in [5, 16]:
-                # payment_lines = self.env['multi.invoice.payment'].search([('invoice_id', '=', rec.invoice_id.id), ('payment_id.state', '=', 'posted')])
-                # if payment_lines:
-                #     booking_paid = sum(x.payment_amount for x in payment_lines)
-                #     booking_rebate_adjusted = sum(
-                #         x.payment_difference for x in payment_lines.filtered(lambda l: l.payment_difference_handling == 'commission_adjustment' or l.payment_difference_handling ==
-                #                                                                        'reconcile'))
-                # else:
-                #     booking_paid = 0
-                #     booking_rebate_adjusted = 0
+            # Booking and Confirmation each net off their own dealer_share
+            # against what's actually been collected on that installment.
+            if rec.installment_type in ('down', 'confirmation_amount') and rec.invoice_id and rec.company_id.id in [5, 16]:
                 rec.rebate_adjustment = rec.dealer_share
                 rec.net_payment = rec.amount_paid - rec.dealer_share if rec.amount_paid - rec.dealer_share > 0 else 0
-            # if rec.installment_name == 'Confirmation' and rec.company_id.id == 5:
-            #     rec.rebate_adjustment = rec.dealer_share
-                # rec.net_payment = rec.amount - rec.dealer_share
 
     def calculate_rebate_given_for_confirmation(self):
         for rec in self.filtered(lambda l: l.installment_type == 'confirmation_amount'):

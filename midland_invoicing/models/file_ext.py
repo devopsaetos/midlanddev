@@ -112,6 +112,7 @@ class FileExt(models.Model):
                 'installment_id': conf_plan.id,
                 'file_ids': rec.id,
                 'currency_id': rec.currency_id.id,
+                'company_id': (rec.society_id.company_id or self.env.company).id,
                 'invoice_line_ids': [(0, 0, {
                     'product_id': pp.id,
                     'name': pp.name or 'Confirmation Amount',
@@ -158,11 +159,16 @@ class FileExt(models.Model):
                 'installment_id': plan.id,
                 'file_ids': rec.id,
                 'currency_id': rec.currency_id.id,
+                'company_id': (rec.society_id.company_id or self.env.company).id,
                 'invoice_line_ids': invoice_lines,
             })
+            # Left in draft, same as the cron - don't write invoice_id here:
+            # writing it to its current (unchanged) False value forces
+            # residual/amount_paid/payment_status - related/computed off
+            # invoice_id - to recompute against an empty invoice_id and
+            # blank out to 0/False.
             plan.write({
                 'invoice_created': True,
-                'invoice_id': inv.jv_id.id if inv.jv_id else False,
             })
             rec._settle_token_on_plan(plan, token_fees)
             if plan.installment_type == 'down' and rec.payment_states == 'draft':
@@ -223,11 +229,13 @@ class FileExt(models.Model):
                     'installment_id': plan.id,
                     'file_ids': file_rec.id,
                     'currency_id': file_rec.currency_id.id,
+                    'company_id': (file_rec.society_id.company_id or self.env.company).id,
                     'invoice_line_ids': invoice_lines,
                 })
+                # Don't write invoice_id here - see comment above in
+                # action_generate_installment_invoices.
                 plan.write({
                     'invoice_created': True,
-                    'invoice_id': inv.jv_id.id if inv.jv_id else False,
                 })
                 file_rec._settle_token_on_plan(plan, token_fees)
 
