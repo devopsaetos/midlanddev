@@ -28,7 +28,6 @@
                         </div>
                         <field name="id" invisible="1"/>
                         <field name="inv_line_add" invisible="1"/>
-                        <field name="qr_code" widget='image' class="oe_avatar" nolabel="1" style="margin-right:38px;"/>
                         <div class="oe_title" invisible="state == 'draft'">
                             <h1>
                                 <field name="name"/>
@@ -181,6 +180,7 @@
                         </notebook>
                     </sheet>
                     <div class="o_attachment_preview"/>
+                    <chatter/>
                 </form>
             </field>
         </record>
