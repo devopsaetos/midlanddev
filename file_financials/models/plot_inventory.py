@@ -11,6 +11,17 @@ class PlotInventory(models.Model):
 
     investor_file_id = fields.Many2one('investor.file', string='Investor File', tracking=True)
     file_id = fields.Many2one('file', string='File No.', tracking=True)
+    # partner_id (res.member) is never set on this Investor Deal flow - the
+    # deal's own partner_id is res.investor, a different model. This exposes
+    # that investor's name directly off investment_id, always in sync,
+    # instead of adding a manual write everywhere inventory_ids gets set.
+    investor_id = fields.Many2one(
+        'res.investor', string='Investor', related='investment_id.partner_id', store=True)
+    # Set once this unit's File has actually been issued/transferred to an
+    # end member (file_id) - the Investor stays the deal's owner throughout,
+    # the Member is who the file was issued/transferred to.
+    member_id = fields.Many2one(
+        'res.member', string='Member', related='file_id.membership_id', store=True)
     state = fields.Selection(selection_add=[('not_for_sale', 'Not For Sale')])
 
     # Mirrors investment.line.own_plan/predefine_plan_id (investment_lines.py) -
