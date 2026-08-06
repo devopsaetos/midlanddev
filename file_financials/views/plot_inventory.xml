@@ -10,6 +10,42 @@
                     <field name="investor_file_id" force_save="1" options="{'no_create': True,'no_edit': True,'no_create_edit': True, 'no_open': True}"/>
                     <field name="file_id" force_save="1" options="{'no_create': True,'no_edit': True,'no_create_edit': True, 'no_open': True}"/>
                 </xpath>
+                <xpath expr="//field[@name='investment_id']" position="after">
+                    <field name="investor_id" force_save="1" invisible="file_id"/>
+                    <field name="member_id" force_save="1" invisible="not file_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="file_financials.plot_inventory_tree_ext" model="ir.ui.view">
+            <field name="name">file_financials.plot_inventory_tree_ext</field>
+            <field name="model">plot.inventory</field>
+            <field name="inherit_id" ref="real_estate.plot_inventory_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="file_id" column_invisible="1"/>
+                    <field name="investment_id" string="Deal No."/>
+                    <field name="investor_id" string="Investor" invisible="file_id"/>
+                    <field name="member_id" string="Member" invisible="not file_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="file_financials.plot_inventory_search_ext" model="ir.ui.view">
+            <field name="name">file_financials.plot_inventory_search_ext</field>
+            <field name="model">plot.inventory</field>
+            <field name="inherit_id" ref="real_estate.plot_inventory_search"/>
+            <field name="arch" type="xml">
+                <field name="possession_status" position="after">
+                    <field name="investment_id" string="Deal No."/>
+                    <field name="investor_id" string="Investor"/>
+                    <field name="member_id" string="Member"/>
+                </field>
+                <filter name="group_by_state" position="after">
+                    <filter name="group_by_investor" string="Investor" context="{'group_by': 'investor_id'}"/>
+                    <filter name="group_by_member" string="Member" context="{'group_by': 'member_id'}"/>
+                    <filter name="group_by_deal" string="Deal No." context="{'group_by': 'investment_id'}"/>
+                </filter>
             </field>
         </record>
 
