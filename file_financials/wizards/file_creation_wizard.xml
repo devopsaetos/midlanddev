@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="file_financials.file_creation_wizard_form">
+            <field name="name">file_financials.file_creation_wizard_form</field>
+            <field name="model">investment.file.creation.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="investment_id" invisible="1"/>
+                        <p>
+                            Select the unit(s) to create an Open File for now. Only units
+                            still without an Open File are shown; a unit can only be
+                            selected if enough Booking payment has been received for it
+                            (and any other units checked at the same time) in its plan
+                            group.
+                        </p>
+                        <field name="line_ids" nolabel="1">
+                            <list editable="bottom" create="false" delete="false">
+                                <field name="is_checked" widget="boolean_toggle"/>
+                                <field name="name"/>
+                                <field name="sector_id" readonly="1" force_save="1"/>
+                                <field name="street_id" readonly="1" force_save="1"/>
+                                <field name="category_id" readonly="1" force_save="1"/>
+                                <field name="size_id" readonly="1" force_save="1"/>
+                                <field name="investor_unit_price" readonly="1" force_save="1"/>
+                                <field name="estimated_booking_share" readonly="1" force_save="1"/>
+                                <field name="inventory_id" invisible="1" force_save="1"/>
+                            </list>
+                        </field>
+                    </sheet>
+                    <footer>
+                        <button string="Create Open File" name="action_create_open_files"
+                                type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="file_financials.action_file_creation_wizard">
+            <field name="name">Create Open File</field>
+            <field name="res_model">investment.file.creation.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

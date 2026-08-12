@@ -362,6 +362,13 @@ class AccountPaymentExt(models.Model):
                     # investment_booking_payment_line.payment_due else investment_booking_payment_line.payment_amount
                     # rec.investment_id.update_investment_related_payment_data(payment_amount)
                     rec.investment_id.update_investment_related_payment_data()
+                # Same idea, for the deal's shared Confirmation invoice (property_
+                # invoice_type == 'investment_installment') - without this, a
+                # payment against it never reaches the individual open files'
+                # own Confirmation installment.plan rows.
+                if rec.investment_id and rec.multi_invoice_ids and rec.multi_invoice_ids.filtered(
+                        lambda l: l.invoice_id.property_invoice_type == 'investment_installment'):
+                    rec.investment_id.update_confirmation_amount_on_open_files()
                 if rec.file_id and rec.multi_invoice_ids:
                     rec.link_payment_to_file()
                     confirmation_line = rec.file_id.installment_plan_ids.filtered(lambda l: l.installment_type == 'confirmation_amount')

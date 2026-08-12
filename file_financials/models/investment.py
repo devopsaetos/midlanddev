@@ -234,6 +234,23 @@ class InvestmentExt(models.Model):
                 'context': {'default_name': self.name},
             }
 
+    def action_open_file_creation_wizard(self):
+        # bulk deals have no per-unit identity to select against (a line is
+        # "N units of a size", not N distinct records) - they keep the old
+        # all-at-once behavior. Unit deals go through the selective wizard
+        # instead of creating every remaining unit's file in one call.
+        self.ensure_one()
+        if self.reservation_type == 'bulk':
+            return self.create_open_file()
+        return {
+            'name': _('Create Open File'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'investment.file.creation.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_investment_id': self.id},
+        }
+
     def action_open_add_inventory_wizard(self):
         # inventory_ids is fully readonly once state='reserved' (see
         # real_estate.investment_view_form), so there's no way to add more
@@ -340,7 +357,7 @@ class InvestmentExt(models.Model):
         else:
             self._onchange_total_amount()
 
-    def create_open_file(self):
+    def create_open_file(self, inventory=None):
         # open files copy payment_type from the investment but interval/installments
         # from the options, so a mismatched pair produces broken open files that
         # cannot generate an installment plan
@@ -352,7 +369,13 @@ class InvestmentExt(models.Model):
             raise ValidationError(_(
                 "Investment option 'Down Payment' cannot be combined with payment type "
                 "'Lump Sum'. Set Payment Type to 'Installment', or use option 'Full Payment'."))
-        inventory = self.env['plot.inventory'].search([('investment_id', '=', self.id)])
+        # inventory may be passed in by the selective-creation wizard to
+        # restrict this run to just the chosen units - otherwise (and always
+        # for reservation_type=='bulk', which has no per-unit identity to
+        # restrict against) fall back to every unit that doesn't already
+        # have an open file, so repeat calls never recreate one.
+        inventory = inventory or self.env['plot.inventory'].search(
+            [('investment_id', '=', self.id), ('investor_file_id', '=', False)])
         prorate = self.down_payment / self.total_amount
         investor_file = self.env['investor.file']
         if self.reservation_type == 'bulk':
@@ -431,7 +454,15 @@ class InvestmentExt(models.Model):
                 open_file = investor_file.create(vals)
                 inv.investor_file_id = open_file.id
         self.update_booking_amount_on_open_files()
-        self.files_created = True
+        self.update_confirmation_amount_on_open_files()
+        if self.reservation_type == 'unit':
+            # only every unit having its own open file means there's nothing
+            # left to select in the creation wizard - bulk deals have no
+            # per-unit identity to check this way, so they stay all-or-nothing.
+            self.files_created = not self.env['plot.inventory'].search_count(
+                [('investment_id', '=', self.id), ('investor_file_id', '=', False)])
+        else:
+            self.files_created = True
 
     @api.depends('rebate_invoice_ids')
     def compute_invoiced_rebate(self):
@@ -1039,58 +1070,90 @@ class InvestmentExt(models.Model):
                     'investment_id': self.id
                 })
 
+    def _group_available_pool(self, booking_balance, installment_type='down'):
+        # booking_balance (the deal-level line's net_payment) is
+        # cumulative/monotonic - it reflects ALL cash ever received against
+        # the group's invoice, not just what's new since the last call. Every
+        # installment.plan row of this installment_type already credited
+        # (whether fully 'paid' or partially 'in_payment') has to be
+        # subtracted back out here, otherwise a second call re-spends the
+        # same cash on top of what an earlier call already gave out -
+        # harmless while every open file was always created in one batch,
+        # but a real over-credit once files get created incrementally across
+        # several calls.
+        #
+        # NOT filtered by investor_file_id.predefine_plan_id: a multi-plan
+        # deal's units keep their OWN individual predefine_plan_id
+        # (create_open_file()'s vals), but _get_installment_plan_groups()
+        # always collapses the whole deal into exactly ONE combined Booking/
+        # Confirmation row regardless - so a unit whose own plan differs from
+        # the row's plan_id still draws from the same single pool. Matching
+        # on that plan_id here would silently exclude such units from ever
+        # being topped up/marked paid, no matter how much cash comes in.
+        group_installments = self.env['installment.plan'].search(
+            [('investor_file_id.investment_id', '=', self.id),
+             ('installment_type', '=', installment_type)])
+        already_distributed = sum(group_installments.mapped('amount_paid'))
+        return group_installments, booking_balance - already_distributed
+
+    def _distribute_installment_pool(self, installment_type):
+        for rec in self:
+            # Even on a multi-plan deal, _get_installment_plan_groups() always
+            # collapses the whole deal into ONE combined row per type - units
+            # keep their own individual predefine_plan_id, but they all draw
+            # from this single deal-wide pool, not a per-plan-group one.
+            pool_lines = rec.investment_plan_ids.filtered(
+                lambda l: l.installment_type == installment_type and l.amount_paid > 0)
+            if not pool_lines or rec.company_id.id == 1:
+                continue
+            rec.set_net_payment_data()
+            for pool_line in pool_lines:
+                # investment.plan.compute_net_payment() only sets net_payment
+                # for company_id in (5, 16) - the gate is inside the compute
+                # itself, so calling it explicitly does not help for any other
+                # company. Recompute the same formula inline instead, so this
+                # works regardless of company.
+                pool = max(pool_line.amount_paid - pool_line.dealer_share, 0)
+                group_installments, adjustment_amount = rec._group_available_pool(
+                    pool, installment_type)
+                all_installments = group_installments.filtered(
+                    lambda l: l.payment_status in ('not_paid', 'in_payment') and l.residual > 0)
+                if not all_installments or adjustment_amount <= 0:
+                    continue
+                for lines in all_installments.sorted(
+                        key=lambda r: (r.investor_file_id.file_created, r.investor_file_id.issuance_request_created),
+                        reverse=True):
+                    if adjustment_amount <= 0:
+                        break
+                    diff = adjustment_amount - lines.residual
+                    if not diff < 0:
+                        lines.amount_paid += lines.residual
+                        adjustment_amount -= lines.residual
+                    else:
+                        lines.amount_paid += adjustment_amount
+                        adjustment_amount = 0
+                    lines.residual = lines.amount - lines.amount_paid
+                    if lines.residual == 0:
+                        lines.payment_status = 'paid'
+                    elif lines.amount_paid > 0:
+                        lines.payment_status = 'in_payment'
+                    lines.net_payment = lines.amount_paid - lines.dealer_share
+                    lines.compute_net_payment()
+
     def update_booking_amount_on_open_files(self):
         for rec in self:
-            # A multi-bucket deal has one Booking row per plan-group, each
-            # only allowed to offset investor.file/installment.plan rows
-            # spawned from that SAME group's units - otherwise one size's
-            # booking cash could bleed into a different size's per-unit
-            # schedule.
             booking_lines = rec.investment_plan_ids.filtered(
                 lambda l: l.installment_type == 'down' and l.amount_paid > 0)
-            if booking_lines:
-                open_files = self.env['investor.file'].search([('investment_id', '=', rec.id), ('state', '!=', 'cancel')])
-                for file in open_files:
-                    file.update_rebate_values_for_booking()
-                if rec.company_id.id != 1:
-                    rec.set_net_payment_data()
-                    for booking_line in rec.investment_plan_ids.filtered(
-                            lambda l: l.installment_type == 'down' and l.amount_paid > 0):
-                        # booking_balance = booking_line.amount_paid - booking_line.dealer_share
-                        booking_balance = booking_line.net_payment
-                        # predefine_plan_id is empty on rows that predate this
-                        # grouping feature - rec.predefine_plan_id (the deal's
-                        # header plan, already what investor.file.predefine_plan_id
-                        # was populated from at create_open_file() time for those
-                        # older deals) keeps them matching correctly.
-                        group_plan_id = booking_line.predefine_plan_id.id or rec.predefine_plan_id.id
-                        all_installments = self.env['installment.plan'].search(
-                            [('investor_file_id.investment_id', '=', rec.id),
-                             ('investor_file_id.predefine_plan_id', '=', group_plan_id),
-                             ('payment_status', 'in', ['not_paid', 'in_payment']),
-                             ('installment_type', '=', 'down'), ('residual', '>', 0)])
-                        adjustment_amount = booking_balance
-                        if all_installments:
-                            if adjustment_amount > 0:
-                                for lines in all_installments.sorted(
-                                        key=lambda r: (r.investor_file_id.file_created, r.investor_file_id.issuance_request_created),
-                                        reverse=True):
-                                    diff = adjustment_amount - lines.residual
-                                    if adjustment_amount > 0:
-                                        if not diff < 0:
-                                            lines.amount_paid += lines.residual
-                                            adjustment_amount -= lines.residual
-                                        else:
-                                            lines.amount_paid += adjustment_amount
-                                            adjustment_amount = 0
-                                        lines.residual = lines.amount - lines.amount_paid
-                                        if lines.residual == 0:
-                                            lines.payment_status = 'paid'
-                                        else:
-                                            if lines.amount_paid > 0:
-                                                lines.payment_status = 'in_payment'
-                                    lines.net_payment = lines.amount_paid - lines.dealer_share
-                                    lines.compute_net_payment()
+            if not booking_lines:
+                continue
+            open_files = self.env['investor.file'].search(
+                [('investment_id', '=', rec.id), ('state', '!=', 'cancel')])
+            for file in open_files:
+                file.update_rebate_values_for_booking()
+        self._distribute_installment_pool('down')
+
+    def update_confirmation_amount_on_open_files(self):
+        self._distribute_installment_pool('confirmation_amount')
 
     def update_booking_amount_on_open_files_remaining(self, amount):
         for rec in self:
