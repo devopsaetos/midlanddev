@@ -19,3 +19,5 @@ access_investment_assign_plan_wizard,investment.assign.plan.wizard,model_investm
 access_investment_assign_plan_wizard_line,investment.assign.plan.wizard.line,model_investment_assign_plan_wizard_line,base.group_user,1,1,1,1
 access_investment_add_inventory_wizard,investment.add.inventory.wizard,model_investment_add_inventory_wizard,base.group_user,1,1,1,1
 access_investment_add_inventory_wizard_line,investment.add.inventory.wizard.line,model_investment_add_inventory_wizard_line,base.group_user,1,1,1,1
+access_investment_file_creation_wizard,investment.file.creation.wizard,model_investment_file_creation_wizard,base.group_user,1,1,1,1
+access_investment_file_creation_wizard_line,investment.file.creation.wizard.line,model_investment_file_creation_wizard_line,base.group_user,1,1,1,1

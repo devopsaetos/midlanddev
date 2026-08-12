@@ -5,6 +5,20 @@
         <field name="model">investment</field>
         <field name="inherit_id" ref="real_estate.investment_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//button[@name='create_open_file']" position="attributes">
+                <attribute name="name">action_open_file_creation_wizard</attribute>
+            </xpath>
+            <!-- files_created now only flips True once EVERY unit has an open
+                 file (see create_open_file()), instead of right after the
+                 first (and previously only) creation batch - these two stat
+                 buttons need to show as soon as ANY files exist, not wait for
+                 the deal to be fully done. -->
+            <xpath expr="//button[@name='issued_files']" position="attributes">
+                <attribute name="invisible">no_of_issued_files == 0</attribute>
+            </xpath>
+            <xpath expr="//button[@name='investor_files']" position="attributes">
+                <attribute name="invisible">no_of_files == 0</attribute>
+            </xpath>
             <xpath expr="//button[@name='receive_payment']" position="after">
                 <button class="btn btn-primary" name="update_booking_amount_on_open_files" type="object" string="Update Booking On Files"/>
                 <button name="%(file_financials.action_report_deal_registration)d" type="action"

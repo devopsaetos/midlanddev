@@ -529,13 +529,14 @@ class InvestorFileExt(models.Model):
                 #     })
                 if self.initial_payment and self.type == 'normal':
                     if not self.installment_plan_ids or self.installment_plan_ids[0].payment_status not in ('in_payment', 'paid'):
-                        # A bucket deal has one Booking row per plan-group -
-                        # only that group's own Booking status should unlock
-                        # this file's Booking row, not any group's.
-                        file_plan_id = self.predefine_plan_id.id or self.investment_id.predefine_plan_id.id
+                        # Even on a multi-plan deal, _get_installment_plan_groups()
+                        # (investment.py) always collapses the whole deal into ONE
+                        # combined Booking row, regardless of how many distinct
+                        # predefine_plan_id values the individual units carry - so
+                        # this file's own plan does not need to match the Booking
+                        # row's plan_id; every unit draws from the same single pool.
                         booking_lines = self.investment_id.investment_plan_ids.filtered(
-                            lambda l: l.installment_type == 'down' and
-                            (l.predefine_plan_id.id or self.investment_id.predefine_plan_id.id) == file_plan_id)
+                            lambda l: l.installment_type == 'down')
                         if booking_lines and all(l.payment_status in ('in_payment', 'paid') for l in booking_lines):
                             self.installment_plan_ids.create({
                                 'date': self.booking_date + relativedelta(days=+self.grace_period),
@@ -613,19 +614,33 @@ class InvestorFileExt(models.Model):
                             confirmation_date = self.booking_date + relativedelta(months=+self.predefine_plan_id.confirmation_amount_period)
                         if self.predefine_plan_id.confirmation_period_type == 'years':
                             confirmation_date = self.booking_date + relativedelta(years=+self.predefine_plan_id.confirmation_amount_period)
-                        self.installment_plan_ids.create({
+                        # Mirrors the Booking row above: the deal's Confirmation
+                        # invoice is one shared invoice across every unit - if it
+                        # already shows payment activity, this file's own share
+                        # is already covered by that shared cash and shouldn't
+                        # sit 'not_paid' waiting for a top-up that (until
+                        # update_confirmation_amount_on_open_files() runs) never
+                        # comes.
+                        confirmation_lines = self.investment_id.investment_plan_ids.filtered(
+                            lambda l: l.installment_type == 'confirmation_amount')
+                        already_paid = confirmation_lines and all(
+                            l.payment_status in ('in_payment', 'paid') for l in confirmation_lines)
+                        confirmation_vals = {
                             'date': confirmation_date,
                             'installment_number': 2,
                             'installment_type': 'confirmation_amount',
                             'installment_name': 'Confirmation',
-                            'payment_status': 'not_paid',
+                            'payment_status': 'paid' if already_paid else 'not_paid',
                             'amount': self.confirmation_amount,
                             'tax_amount': round((self.confirmation_amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
-                            'residual': self.confirmation_amount + round(
+                            'residual': 0 if already_paid else (self.confirmation_amount + round(
                                 (self.confirmation_amount * tax_id[0].amount) / 100,
-                                2) if tax_id else self.confirmation_amount,
+                                2) if tax_id else self.confirmation_amount),
                             'investor_file_id': self.id
-                        })
+                        }
+                        if already_paid:
+                            confirmation_vals['amount_paid'] = self.confirmation_amount
+                        self.installment_plan_ids.create(confirmation_vals)
                         confirmation_interval += 1
                 else:
                     installment_number = 2
