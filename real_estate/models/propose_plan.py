@@ -119,7 +119,8 @@ class ProposePlan(models.Model):
         for recs in self:
             if recs.predefine_plan_id:
                 for pre_plan in recs.predefine_plan_id.predefine_plan_line_ids:
-                    if recs.env.ref('real_estate.downpayment_product').id == pre_plan.product_id.id:
+                    if pre_plan.product_id.id in (recs.env.ref('real_estate.downpayment_product').id,
+                                                  recs.env.ref('real_estate.down_payment_product').id):
                         recs.initial_payment = round(recs.amount * (
                                     pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
                     if recs.env.ref('real_estate.final_product').id == pre_plan.product_id.id:

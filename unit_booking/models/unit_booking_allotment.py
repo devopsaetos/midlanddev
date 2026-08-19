@@ -57,6 +57,7 @@ class UnitBookingAllotment(models.Model):
     total_amount = fields.Float('Total amount', compute='compute_deal_price', store=True, readonly=True,
                                 tracking=True)
     down_payment = fields.Float('Down Payment', required=True, tracking=True)
+    down_payment_amount = fields.Float('Down Payment Amount', tracking=True)
     balance_amount = fields.Float(compute='_compute_balance_amount', store=True, tracking=True)
     amount_paid = fields.Float()
     total_installment = fields.Integer('No. of Installments', related='predefine_plan_id.total_installment', store=True)
@@ -280,6 +281,11 @@ class UnitBookingAllotment(models.Model):
                             pre_plan.value / 100) if pre_plan.basis == 'percentage'
                                               else pre_plan.value * recs.no_of_units)
 
+                if recs.env.ref('real_estate.down_payment_product').id == pre_plan.product_id.id:
+                    recs.down_payment_amount = round(recs.total_amount * (
+                            pre_plan.value / 100) if pre_plan.basis == 'percentage'
+                                                     else pre_plan.value * recs.no_of_units)
+
                 if recs.env.ref('real_estate.final_product').id == pre_plan.product_id.id:
                     recs.balloting_amount = round(recs.total_amount * (
                             pre_plan.value / 100) if pre_plan.basis == 'percentage'
@@ -373,11 +379,11 @@ class UnitBookingAllotment(models.Model):
     #         if rec.rebate_amount >= rec.down_payment:
     #             raise ValidationError(_(f'Rebate amount cannot be greater or equal to down payment'))
 
-    @api.depends('total_amount', 'down_payment')
+    @api.depends('total_amount', 'down_payment', 'down_payment_amount')
     def _compute_balance_amount(self):
         for rec in self:
-            if rec.total_amount and rec.down_payment:
-                rec.balance_amount = rec.total_amount - rec.down_payment
+            if rec.total_amount and (rec.down_payment or rec.down_payment_amount):
+                rec.balance_amount = rec.total_amount - rec.down_payment - rec.down_payment_amount
             else:
                 rec.balance_amount = 0.0
 
@@ -504,7 +510,8 @@ class UnitBookingAllotment(models.Model):
                     for line in rec.unit_booking_allotment_line_ids:
                         if rec.unit_batch_id.plan_type == 'predefine' and rec.predefine_plan_id:
                             for pre_plan in rec.predefine_plan_id.predefine_plan_line_ids:
-                                if rec.env.ref('real_estate.downpayment_product').id == pre_plan.product_id.id:
+                                if pre_plan.product_id.id in (rec.env.ref('real_estate.downpayment_product').id,
+                                                              rec.env.ref('real_estate.down_payment_product').id):
                                     initial_payment = round(line.price * (
                                             pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
                         if rec.unit_batch_id.plan_type == 'custom':
@@ -607,31 +614,48 @@ class UnitBookingAllotment(models.Model):
 
     def create_installment_plan(self):
         # Creating downpayment line
-        if not self.down_payment:
+        if not self.down_payment and not self.down_payment_amount:
             raise ValidationError('Please enter down payment amount.')
 
-        self.booking_plan_ids.create({
-            'date': self.booking_date,
-            'installment_type': 'down',
-            'installment_name': 'Booking',
-            'installment_number': 1,
-            'amount': self.down_payment,
-            'amount_paid': 0,
-            'balance_amount': self.down_payment,
-            'residual': self.down_payment,
-            'payment_status': 'not_paid',
-            'booking_allotment_id': self.id
-        })
+        installment_number = 1
+
+        if self.down_payment:
+            self.booking_plan_ids.create({
+                'date': self.booking_date,
+                'installment_type': 'down',
+                'installment_name': 'Booking',
+                'installment_number': installment_number,
+                'amount': self.down_payment,
+                'amount_paid': 0,
+                'balance_amount': self.down_payment,
+                'residual': self.down_payment,
+                'payment_status': 'not_paid',
+                'booking_allotment_id': self.id
+            })
+            installment_number += 1
+
+        if self.down_payment_amount:
+            self.booking_plan_ids.create({
+                'date': self.booking_date,
+                'installment_type': 'down',
+                'installment_name': 'Down Payment',
+                'installment_number': installment_number,
+                'amount': self.down_payment_amount,
+                'amount_paid': 0,
+                'balance_amount': self.down_payment_amount,
+                'residual': self.down_payment_amount,
+                'payment_status': 'not_paid',
+                'booking_allotment_id': self.id
+            })
+            installment_number += 1
 
         # confirmation payment line
-
         if self.unit_batch_id.plan_type == 'predefine' \
                 and self.env.ref('real_estate.confirmation_amount_product').id \
                 in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
-            installment_number = 3
             self.booking_plan_ids.create({
                 'date': self.start_date + relativedelta(months=+self.predefine_plan_id.confirmation_amount_period),
-                'installment_number': 2,
+                'installment_number': installment_number,
                 'installment_type': 'confirmation_amount',
                 'installment_name': 'Confirmation',
                 'payment_status': 'not_paid',
@@ -641,8 +665,7 @@ class UnitBookingAllotment(models.Model):
                 'residual': self.confirmation_amount,
                 'booking_allotment_id': self.id
             })
-        else:
-            installment_number = 2
+            installment_number += 1
 
         if self.balance_amount > 0:
             if all([self.installment_starting_date, self.interval_id, self.total_installment]):

@@ -50,6 +50,7 @@ class PredefinePlan(models.Model):
             'grace_period_type': self.confirmation_period_type,
             'total_installment': self.total_installment,
             'down_payment': 0.0,
+            'down_payment_amount': 0.0,
             'balloting_amount': 0.0,
             'balloon_payment': 0.0,
             'balloon_payment_interval': 0,
@@ -75,6 +76,8 @@ class PredefinePlan(models.Model):
             product_id = pre_plan.product_id.id
             if product_id == self.env.ref('real_estate.downpayment_product').id:
                 params['down_payment'] = value
+            elif product_id == self.env.ref('real_estate.down_payment_product').id:
+                params['down_payment_amount'] = value
             elif product_id == self.env.ref('real_estate.final_product').id:
                 params['balloting_amount'] = value
             elif product_id == self.env.ref('real_estate.balloon_payment').id:

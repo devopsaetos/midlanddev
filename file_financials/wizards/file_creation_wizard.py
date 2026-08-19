@@ -36,12 +36,12 @@ class InvestmentFileCreationWizard(models.TransientModel):
         # therefore checked deal-wide, not per selected unit's own plan.
         booking_lines = self.investment_id.investment_plan_ids.filtered(
             lambda l: l.installment_type == 'down' and l.amount_paid > 0)
-        # booking_line.net_payment is only kept fresh by set_net_payment_data(),
-        # which itself only refreshes rows for company_id in (5, 16) - reading it
-        # directly here would read 0/stale for every other company. Recompute the
-        # same formula (investment_plan.compute_net_payment()) inline instead, so
-        # this works regardless of company.
-        pool = sum(max(l.amount_paid - l.dealer_share, 0) for l in booking_lines)
+        # amount_paid already reflects the invoice's true paid amount, whether it
+        # was settled by cash or by a rebate netted off against it (a Net Off
+        # rebate closes the invoice to Paid without a separate cash payment) - a
+        # rebate-settled invoice is just as usable to fund Open File creation as
+        # a cash-settled one, so the full amount_paid counts toward the pool.
+        pool = sum(l.amount_paid for l in booking_lines)
         already_distributed = sum(self.env['installment.plan'].search([
             ('investor_file_id.investment_id', '=', self.investment_id.id),
             ('installment_type', '=', 'down'),
@@ -60,7 +60,11 @@ class InvestmentFileCreationWizard(models.TransientModel):
 
     def _prorate(self):
         self.ensure_one()
-        return (self.investment_id.down_payment / self.investment_id.total_amount) \
+        # Booking and Down Payment are independent amounts - a plan can carry
+        # either, or both at once - so the prorated upfront share is based on
+        # their combined total, not Booking alone.
+        upfront_total = self.investment_id.down_payment + self.investment_id.down_payment_amount
+        return (upfront_total / self.investment_id.total_amount) \
             if self.investment_id.total_amount else 0.0
 
 

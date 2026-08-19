@@ -35,6 +35,8 @@ class InvestorFileExt(models.Model):
                                                tracking=True)
     initial_payment = fields.Float(
         'Initial Payment', compute='_compute_initial_payment', store=True, readonly=False, tracking=True)
+    down_payment_amount = fields.Float(
+        'Down Payment Amount', compute='_compute_down_payment_amount', store=True, readonly=False, tracking=True)
     initial_payment_percentage = fields.Float('Initial Payment Percentage', readonly=False, tracking=True)
     total_installment = fields.Integer(
         'No of Installment', compute='_compute_total_installment', store=True, readonly=False, tracking=True)
@@ -164,16 +166,17 @@ class InvestorFileExt(models.Model):
                 if lines.installment_type == 'down':
                     marketing_share = 0
                     dealer_share = 0
+                    txn_type = 'down_payment' if lines.installment_name == 'Down Payment' else 'booking'
                     if rec.investment_id.rebate_on_allotment_ids.filtered(lambda l: l.agent_type == 'marketing_company' and
-                                                                                    l.transaction_type == 'booking'):
+                                                                                    l.transaction_type == txn_type):
                         marketing_share = rec.investment_id.rebate_on_allotment_ids.filtered(lambda l: l.agent_type == 'marketing_company' and
-                                                                                                       l.transaction_type == 'booking')
+                                                                                                       l.transaction_type == txn_type)
                         lines.marketing_share = (marketing_share.total_rebate / 100) * rec.net_sale_amount if marketing_share.calculation_basis == 'percentage' else\
                             marketing_share.total_rebate
                     if rec.investment_id.rebate_on_allotment_ids.filtered(lambda l: l.agent_type == 'dealer' and
-                                                                                    l.transaction_type == 'booking'):
+                                                                                    l.transaction_type == txn_type):
                         dealer_share = rec.investment_id.rebate_on_allotment_ids.filtered(lambda l: l.agent_type == 'dealer' and
-                                                                                                    l.transaction_type == 'booking')
+                                                                                                    l.transaction_type == txn_type)
                         lines.dealer_share = (dealer_share.total_rebate / 100) * rec.net_sale_amount if dealer_share.calculation_basis == 'percentage' else\
                             dealer_share.total_rebate
                     lines.rebate_amount = lines.marketing_share + lines.dealer_share
@@ -224,6 +227,7 @@ class InvestorFileExt(models.Model):
                 rec.balloting_amount = 0.00
 
     @api.depends('plan_type', 'predefine_plan_id', 'predefine_plan_id.predefine_plan_line_ids',
+                 'predefine_plan_id.predefine_plan_line_ids.product_id',
                  'predefine_plan_id.predefine_plan_line_ids.value', 'predefine_plan_id.predefine_plan_line_ids.basis',
                  'sale_amount')
     def _compute_initial_payment(self):
@@ -245,6 +249,23 @@ class InvestorFileExt(models.Model):
                         rec.sale_amount * (line.value / 100) if line.basis == 'percentage' else line.value)
                 else:
                     rec.initial_payment = 0.0
+
+    @api.depends('plan_type', 'predefine_plan_id', 'predefine_plan_id.predefine_plan_line_ids',
+                 'predefine_plan_id.predefine_plan_line_ids.product_id',
+                 'predefine_plan_id.predefine_plan_line_ids.value', 'predefine_plan_id.predefine_plan_line_ids.basis',
+                 'sale_amount')
+    def _compute_down_payment_amount(self):
+        down_payment_product_id = self.env.ref('real_estate.down_payment_product').id
+        for rec in self:
+            if rec.plan_type == 'predefine' and rec.predefine_plan_id:
+                down_line = rec.predefine_plan_id.predefine_plan_line_ids.filtered(
+                    lambda l: l.product_id.id == down_payment_product_id)
+                if down_line:
+                    line = down_line[0]
+                    rec.down_payment_amount = round(
+                        rec.sale_amount * (line.value / 100) if line.basis == 'percentage' else line.value)
+                else:
+                    rec.down_payment_amount = 0.0
 
     @api.depends('plan_type', 'predefine_plan_id', 'predefine_plan_id.total_installment')
     def _compute_total_installment(self):
@@ -364,15 +385,15 @@ class InvestorFileExt(models.Model):
     #             self.possession_amount_interval = 4
 
     def reset_open_file_installment_plan(self):
-        if len(self.installment_plan_ids.filtered(lambda l: l.installment_name not in ['Booking']).mapped('invoice_id.id')) > 1:
+        if len(self.installment_plan_ids.filtered(lambda l: l.installment_name not in ['Booking', 'Down Payment']).mapped('invoice_id.id')) > 1:
             raise ValidationError(_('You can not reset plan.Once, invoice created!'))
         else:
             for lines in self.installment_plan_ids:
-                if lines.installment_name in ('Booking', 'Booking Payment'):
+                if lines.installment_name in ('Booking', 'Booking Payment', 'Down Payment'):
                     if lines.payment_status in ('not_paid', 'cancel'):
                         self.installment_plan_ids.unlink()
                         break
-                if lines.installment_name not in ('Booking', 'Booking Payment'):
+                if lines.installment_name not in ('Booking', 'Booking Payment', 'Down Payment'):
                     lines.unlink()
         # self.installment_plan_ids.unlink()
         self.installment_created = False
@@ -514,6 +535,8 @@ class InvestorFileExt(models.Model):
                 balance = working_balance
                 amount = 0
 
+                installment_number = 1
+
                 # if self.initial_payment and self.type == 'normal':
                 #     self.installment_plan_ids.create({
                 #         'date': self.booking_date + relativedelta(days=+self.grace_period),
@@ -547,7 +570,7 @@ class InvestorFileExt(models.Model):
                                 'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
                                 # 'invoice_created': True,
                                 # 'investor_payment': True,
-                                'installment_number': 1,
+                                'installment_number': installment_number,
                                 'amount': self.initial_payment,
                                 'amount_paid': self.initial_payment,
                                 'residual': 0,
@@ -592,7 +615,7 @@ class InvestorFileExt(models.Model):
                                 'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
                                 # 'invoice_created': True,
                                 # 'investor_payment': True,
-                                'installment_number': 1,
+                                'installment_number': installment_number,
                                 'amount': self.initial_payment,
                                 'tax_amount': round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0,
                                 'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else self.initial_payment,
@@ -601,11 +624,45 @@ class InvestorFileExt(models.Model):
                             })
                     # else:
                     #     pass
+                    installment_number += 1
+
+                if self.down_payment_amount and self.type == 'normal':
+                    if not self.installment_plan_ids or self.installment_plan_ids[0].payment_status not in ('in_payment', 'paid'):
+                        down_payment_lines = self.investment_id.investment_plan_ids.filtered(
+                            lambda l: l.installment_type == 'down' and l.installment_name == 'Down Payment')
+                        if down_payment_lines and all(l.payment_status in ('in_payment', 'paid') for l in down_payment_lines):
+                            self.installment_plan_ids.create({
+                                'date': self.booking_date + relativedelta(days=+self.grace_period),
+                                'payment_date': self.booking_date,
+                                'installment_name': 'Down Payment',
+                                'installment_type': 'down',
+                                'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
+                                'installment_number': installment_number,
+                                'amount': self.down_payment_amount,
+                                'amount_paid': self.down_payment_amount,
+                                'residual': 0,
+                                'payment_status': 'paid',
+                                'investor_file_id': self.id
+                            })
+                        else:
+                            self.installment_plan_ids.create({
+                                'date': self.booking_date + relativedelta(days=+self.grace_period),
+                                'payment_date': self.booking_date,
+                                'installment_name': 'Down Payment',
+                                'installment_type': 'down',
+                                'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
+                                'installment_number': installment_number,
+                                'amount': self.down_payment_amount,
+                                'tax_amount': round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
+                                'residual': self.down_payment_amount + round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else self.down_payment_amount,
+                                'payment_status': 'not_paid',
+                                'investor_file_id': self.id
+                            })
+                    installment_number += 1
 
                 if (self.predefine_plan_id
                         and self.env.ref('real_estate.confirmation_amount_product').id
                         in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids):
-                    installment_number = 3
                     if confirmation_interval < self.confirmation_amount_frequency:
                         confirmation_date = self.booking_date
                         if self.predefine_plan_id.confirmation_period_type == 'days':
@@ -627,7 +684,7 @@ class InvestorFileExt(models.Model):
                             l.payment_status in ('in_payment', 'paid') for l in confirmation_lines)
                         confirmation_vals = {
                             'date': confirmation_date,
-                            'installment_number': 2,
+                            'installment_number': installment_number,
                             'installment_type': 'confirmation_amount',
                             'installment_name': 'Confirmation',
                             'payment_status': 'paid' if already_paid else 'not_paid',
@@ -642,8 +699,7 @@ class InvestorFileExt(models.Model):
                             confirmation_vals['amount_paid'] = self.confirmation_amount
                         self.installment_plan_ids.create(confirmation_vals)
                         confirmation_interval += 1
-                else:
-                    installment_number = 2
+                    installment_number += 1
 
                 # balloons replace installment slots only when the plan treats them as
                 # installments; treated as balloons they come on top of the regular ones
@@ -1071,10 +1127,11 @@ class InvestorFileExt(models.Model):
     def _compute_balloting_amount(self):
         self.balloting_amount = round(self.net_sale_amount * (self.env.company.balloting_percentage / 100))
 
-    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount')
+    @api.depends('net_sale_amount', 'initial_payment', 'down_payment_amount', 'balloting_amount')
     def _compute_balance_amount(self):
         for rec in self:
-            rec.balance_amount = round(rec.net_sale_amount - rec.initial_payment - rec.balloting_amount)
+            rec.balance_amount = round(rec.net_sale_amount - rec.initial_payment
+                                       - rec.down_payment_amount - rec.balloting_amount)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -1337,7 +1394,7 @@ class InvestorFileExt(models.Model):
             ins.file_id = file.id
             # Change Installment Dates according to Installment Starting Date
             if self.env.company.id == 5:
-                if ins.installment_name not in ['Booking', 'Confirmation'] and not ins.invoice:
+                if ins.installment_name not in ['Booking', 'Confirmation', 'Down Payment'] and not ins.invoice:
                     current_date = current_date + relativedelta(months=+1)
                     ins.date = current_date
         # self.create_rebate_bills()
@@ -1469,7 +1526,7 @@ class InvestorFileExt(models.Model):
         if confirmation_lines:
             for line in confirmation_lines:
                 line.compute_net_payment()
-        booking_lines = self.env['installment.plan'].search([('installment_name', '=', 'Booking'), ('investor_file_id.society_id.company_id.id', 'in', [5, 16])])
+        booking_lines = self.env['installment.plan'].search([('installment_name', 'in', ['Booking', 'Down Payment']), ('investor_file_id.society_id.company_id.id', 'in', [5, 16])])
         if booking_lines:
             for line in booking_lines:
                 line.compute_net_payment()
@@ -1562,7 +1619,7 @@ class InstallmentPlanExt(models.Model):
                                                          'reconcile'))
                 rec.rebate_adjustment = confirmation_rebate_adjusted
                 rec.net_payment = confirmation_paid
-            if rec.installment_name == 'Booking' and rec.payment_status == 'paid' and rec.investor_file_id.society_id.company_id.id in [5, 16]:
+            if rec.installment_name in ('Booking', 'Down Payment') and rec.payment_status == 'paid' and rec.investor_file_id.society_id.company_id.id in [5, 16]:
                 rec.rebate_adjustment = rec.dealer_share
                 rec.net_payment = rec.amount_paid - rec.dealer_share if rec.amount_paid - rec.dealer_share > 0 else 0
 

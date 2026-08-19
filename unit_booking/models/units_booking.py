@@ -106,6 +106,7 @@ class UnitsBooking(models.Model):
     net_sale_amount = fields.Float('Net Sale Amount', store=True, readonly=False)
     balloting_amount = fields.Float(readonly=False, )
     initial_payment = fields.Float('Initial Payment', readonly=False)
+    down_payment_amount = fields.Float('Down Payment Amount', readonly=False)
     balance_amount = fields.Float('Balance Amount', compute='_compute_balance_amount')
 
     # installment and payment details
@@ -192,6 +193,10 @@ class UnitsBooking(models.Model):
                         recs.initial_payment = round(recs.sale_amount * (
                                 pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
 
+                    if recs.env.ref('real_estate.down_payment_product').id == pre_plan.product_id.id:
+                        recs.down_payment_amount = round(recs.sale_amount * (
+                                pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
+
                     if recs.env.ref('real_estate.final_product').id == pre_plan.product_id.id:
                         recs.balloting_amount = round(recs.sale_amount * (
                                 pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
@@ -222,11 +227,12 @@ class UnitsBooking(models.Model):
                         recs.primary_amount_interval = pre_plan.interval
                         recs.primary_amount_frequency = pre_plan.frequency
 
-    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount')
+    @api.depends('net_sale_amount', 'initial_payment', 'down_payment_amount', 'balloting_amount')
     def _compute_balance_amount(self):
         for rec in self:
             rec.balance_amount = round(rec.net_sale_amount -
-                                       rec.initial_payment - rec.balloting_amount - rec.discount_amount)
+                                       rec.initial_payment - rec.down_payment_amount
+                                       - rec.balloting_amount - rec.discount_amount)
 
     @api.depends('is_qr_printed', 'is_receipt_printed', 'is_ledger_printed')
     def _check_print_state(self):
@@ -323,25 +329,45 @@ class UnitsBooking(models.Model):
         """
         Creating down_payment line
         """
-        if not self.initial_payment:
+        if not self.initial_payment and not self.down_payment_amount:
             raise ValidationError('Please enter down payment amount.')
 
-        self.unit_booking_plan_ids.create({
-            'date': self.booking_date,
-            'installment_type': 'down',
-            'installment_name': 'Booking',
-            'installment_number': 1,
-            'amount': self.initial_payment,
-            'invoice': 'Paid by Agent',
-            'invoice_created': True,
-            'amount_paid': self.initial_payment,
-            # 'balance_amount': self.initial_payment,
-            'residual': 0,
-            'payment_status': 'paid',
-            'units_booking_id': self.id
-        })
+        installment_number = 1
 
-        """ 
+        if self.initial_payment:
+            self.unit_booking_plan_ids.create({
+                'date': self.booking_date,
+                'installment_type': 'down',
+                'installment_name': 'Booking',
+                'installment_number': installment_number,
+                'amount': self.initial_payment,
+                'invoice': 'Paid by Agent',
+                'invoice_created': True,
+                'amount_paid': self.initial_payment,
+                # 'balance_amount': self.initial_payment,
+                'residual': 0,
+                'payment_status': 'paid',
+                'units_booking_id': self.id
+            })
+            installment_number += 1
+
+        if self.down_payment_amount:
+            self.unit_booking_plan_ids.create({
+                'date': self.booking_date,
+                'installment_type': 'down',
+                'installment_name': 'Down Payment',
+                'installment_number': installment_number,
+                'amount': self.down_payment_amount,
+                'invoice': 'Paid by Agent',
+                'invoice_created': True,
+                'amount_paid': self.down_payment_amount,
+                'residual': 0,
+                'payment_status': 'paid',
+                'units_booking_id': self.id
+            })
+            installment_number += 1
+
+        """
         confirmation payment line
         """
 
@@ -349,7 +375,7 @@ class UnitsBooking(models.Model):
                 and self.env.ref('real_estate.confirmation_amount_product').id \
                 in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids:
             """
-            if confirmation amount is included in predefine plan than installment starting date of open file plan will 
+            if confirmation amount is included in predefine plan than installment starting date of open file plan will
             will be calculated from these line and if its not included then installment starting is selected from batch
             """
             confirmation_date = ((self.booking_date + relativedelta(
@@ -358,10 +384,9 @@ class UnitsBooking(models.Model):
 
             self.starting_date = confirmation_date + relativedelta(months=+1)
 
-            installment_number = 3
             self.unit_booking_plan_ids.create({
                 'date': confirmation_date,
-                'installment_number': 2,
+                'installment_number': installment_number,
                 'installment_type': 'confirmation_amount',
                 'installment_name': 'Confirmation',
                 'payment_status': 'not_paid',
@@ -369,8 +394,7 @@ class UnitsBooking(models.Model):
                 'residual': self.confirmation_amount,
                 'units_booking_id': self.id
             })
-        else:
-            installment_number = 2
+            installment_number += 1
 
         if self.balance_amount > 0:
             if all([self.starting_date, self.interval_id, self.total_installment]):

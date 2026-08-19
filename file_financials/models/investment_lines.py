@@ -36,7 +36,8 @@ class InvestmentLineExt(models.Model):
         # would otherwise compute a stale/zero amount despite having a plan.
         if self.predefine_plan_id and self.deal_price > 0:
             for pre_plan in self.predefine_plan_id.predefine_plan_line_ids:
-                if self.env.ref('real_estate.downpayment_product').id == pre_plan.product_id.id:
+                if pre_plan.product_id.id in (self.env.ref('real_estate.downpayment_product').id,
+                                              self.env.ref('real_estate.down_payment_product').id):
                     self.booking_value = round(self.deal_price * (pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value * self.no_of_units)
                 if self.env.ref("real_estate.confirmation_amount_product").id == pre_plan.product_id.id:
                     self.confirmation_value = round(self.deal_price * (pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value * self.no_of_units)

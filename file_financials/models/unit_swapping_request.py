@@ -408,6 +408,16 @@ class UnitSwappingRequestExt(models.Model):
                         if self.change_payment_type and self.new_payment_type and self.new_payment_type == file.payment_type:
                             raise ValidationError(
                                 'This Payment Type is already used on File, Please select the other one or change teh method.')
+                        if file.predefine_plan_id:
+                            downpayment_product_id = self.env.ref('real_estate.downpayment_product').id
+                            down_payment_product_id = self.env.ref('real_estate.down_payment_product').id
+                            old_product_ids = file.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                            new_product_ids = self.new_predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                            if ((downpayment_product_id in old_product_ids) != (downpayment_product_id in new_product_ids)
+                                    or (down_payment_product_id in old_product_ids) != (down_payment_product_id in new_product_ids)):
+                                raise ValidationError(_(
+                                    'Cannot swap this File to a plan with a different Booking/Down Payment line '
+                                    'combination - the existing installment lines cannot be merged/split automatically.'))
                         self.env['open.file.history'].create({
                             'investor_file_id': file.id,
                             'net_sale_amount': file.net_sale_amount,
@@ -415,11 +425,11 @@ class UnitSwappingRequestExt(models.Model):
                             'no_of_installments': file.total_installment,
                             # 'discount': file.discount,
                             'booking_marketing_share': file.installment_plan_ids.filtered(
-                                lambda l: l.installment_name == 'Booking').marketing_share,
+                                lambda l: l.installment_name in ('Booking', 'Down Payment')).marketing_share,
                             'booking_dealer_share': file.installment_plan_ids.filtered(
-                                lambda l: l.installment_name == 'Booking').dealer_share,
+                                lambda l: l.installment_name in ('Booking', 'Down Payment')).dealer_share,
                             'booking_rebate_amount': file.installment_plan_ids.filtered(
-                                lambda l: l.installment_name == 'Booking').rebate_amount,
+                                lambda l: l.installment_name in ('Booking', 'Down Payment')).rebate_amount,
                             'confirmation_marketing_share': file.installment_plan_ids.filtered(
                                 lambda l: l.installment_name == 'Confirmation').marketing_share,
                             'confirmation_dealer_share': file.installment_plan_ids.filtered(
@@ -432,7 +442,9 @@ class UnitSwappingRequestExt(models.Model):
                         file.net_sale_amount = self.new_price
                         file.predefine_plan_id = self.new_predefine_plan_id.id
                         file.initial_payment = self.new_predefine_plan_id.predefine_plan_line_ids.filtered(
-                            lambda l: l.product_id.id == self.env.ref('real_estate.downpayment_product').id).value
+                            lambda l: l.product_id.id == self.env.ref('real_estate.downpayment_product').id).value or 0
+                        file.down_payment_amount = self.new_predefine_plan_id.predefine_plan_line_ids.filtered(
+                            lambda l: l.product_id.id == self.env.ref('real_estate.down_payment_product').id).value or 0
                         file.total_installment = self.new_predefine_plan_id.total_installment
                         file.interval_id = self.new_predefine_plan_id.interval_id.id
                         file._balloon_payment()
@@ -440,7 +452,7 @@ class UnitSwappingRequestExt(models.Model):
                         for product in self.new_predefine_plan_id.predefine_plan_line_ids:
                             total_plan_amount += product.value * product.frequency
                         installment_amount = (self.new_price - total_plan_amount) / self.new_predefine_plan_id.total_installment
-                        booking_line = file.installment_plan_ids.filtered(lambda l: l.installment_name == 'Booking')
+                        booking_line = file.installment_plan_ids.filtered(lambda l: l.installment_name in ('Booking', 'Down Payment'))
                         if booking_line:
                             booking_line.previous_dealer_rebate = booking_line.dealer_share
                             booking_line.previous_marketing_rebate = booking_line.marketing_share
@@ -461,6 +473,12 @@ class UnitSwappingRequestExt(models.Model):
                                 # line.previous_dealer_rebate = line.dealer_share
                                 # line.previous_marketing_rebate = line.marketing_share
                                 # line.previous_total_rebate = line.rebate_amount
+                            if line.installment_name == 'Down Payment':
+                                line.previous_amount = line.amount
+                                line.amount = self.new_predefine_plan_id.predefine_plan_line_ids.filtered(
+                                    lambda l: l.product_id.id == self.env.ref('real_estate.down_payment_product').id).value
+                                line.amount_paid = line.amount
+                                line.amount_difference = line.amount - line.previous_amount
                             if line.installment_name == 'Confirmation':
                                 line.previous_amount = line.amount
                                 line.amount = self.new_predefine_plan_id.predefine_plan_line_ids.filtered(
@@ -518,6 +536,16 @@ class UnitSwappingRequestExt(models.Model):
                         if self.change_payment_type and self.new_payment_type and self.new_payment_type == file.payment_type:
                             raise ValidationError(
                                 'This Payment Type is already used on File, Please select the other one or change teh method.')
+                        if file.predefine_plan_id:
+                            downpayment_product_id = self.env.ref('real_estate.downpayment_product').id
+                            down_payment_product_id = self.env.ref('real_estate.down_payment_product').id
+                            old_product_ids = file.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                            new_product_ids = self.new_predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+                            if ((downpayment_product_id in old_product_ids) != (downpayment_product_id in new_product_ids)
+                                    or (down_payment_product_id in old_product_ids) != (down_payment_product_id in new_product_ids)):
+                                raise ValidationError(_(
+                                    'Cannot swap this File to a plan with a different Booking/Down Payment line '
+                                    'combination - the existing installment lines cannot be merged/split automatically.'))
                         self.env['open.file.history'].create({
                             'investor_file_id': file.id,
                             'net_sale_amount': file.net_sale_amount,
@@ -525,11 +553,11 @@ class UnitSwappingRequestExt(models.Model):
                             'no_of_installments': file.total_installment,
                             # 'discount': file.discount,
                             'booking_marketing_share': file.installment_plan_ids.filtered(
-                                lambda l: l.installment_name == 'Booking').marketing_share,
+                                lambda l: l.installment_name in ('Booking', 'Down Payment')).marketing_share,
                             'booking_dealer_share': file.installment_plan_ids.filtered(
-                                lambda l: l.installment_name == 'Booking').dealer_share,
+                                lambda l: l.installment_name in ('Booking', 'Down Payment')).dealer_share,
                             'booking_rebate_amount': file.installment_plan_ids.filtered(
-                                lambda l: l.installment_name == 'Booking').rebate_amount,
+                                lambda l: l.installment_name in ('Booking', 'Down Payment')).rebate_amount,
                             'confirmation_marketing_share': file.installment_plan_ids.filtered(
                                 lambda l: l.installment_name == 'Confirmation').marketing_share,
                             'confirmation_dealer_share': file.installment_plan_ids.filtered(
@@ -541,6 +569,8 @@ class UnitSwappingRequestExt(models.Model):
                         file.predefine_plan_id = self.new_predefine_plan_id.id
                         file.initial_payment = self.new_predefine_plan_id.predefine_plan_line_ids.filtered(
                             lambda l: l.product_id.id == self.env.ref('real_estate.downpayment_product').id).value or 0
+                        file.down_payment_amount = self.new_predefine_plan_id.predefine_plan_line_ids.filtered(
+                            lambda l: l.product_id.id == self.env.ref('real_estate.down_payment_product').id).value or 0
                         file.total_installment = self.new_predefine_plan_id.total_installment
                         file.interval_id = self.new_predefine_plan_id.interval_id.id
                         file.reset_open_file_installment_plan()
