@@ -91,7 +91,6 @@ class IssueRequistion(models.Model):
         lines = []
         for line in self.line_ids:
             rec_dict = {
-                'name': line.product_id.name,
                 'product_id': line.product_id.id,
                 'product_uom': line.uom_id.id or False,
                 'product_uom_qty': line.quantity or False,
