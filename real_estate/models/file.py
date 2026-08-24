@@ -185,6 +185,9 @@ class File(models.Model):
     initial_payment = fields.Float('Initial Payment', readonly=False, tracking=True)
     initial_payment_percentage = fields.Float('Initial Payment Percentage', readonly=False, tracking=True)
     down_payment_amount = fields.Float('Down Payment', readonly=False, tracking=True)
+    down_payment_start = fields.Integer()
+    down_payment_interval = fields.Integer()
+    down_payment_frequency = fields.Integer()
     balance_amount = fields.Float('Balance Amount', compute='_compute_balance_amount', store=True, readonly=True)
     remaining_payment = fields.Float(compute='_compute_remaining_amount', store=True, readonly=False)
     balloon_payment = fields.Float()
@@ -513,6 +516,9 @@ class File(models.Model):
                     if recs.env.ref('real_estate.down_payment_product').id == pre_plan.product_id.id:
                         recs.down_payment_amount = round(recs.sale_amount * (
                                 pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
+                        recs.down_payment_interval = pre_plan.interval
+                        recs.down_payment_frequency = pre_plan.frequency
+                        recs.down_payment_start = pre_plan.start_from
 
                     if recs.env.ref('real_estate.installment_product').id == pre_plan.product_id.id:
                         recs.installment_amount = round(recs.sale_amount * (
@@ -734,6 +740,11 @@ class File(models.Model):
             balloon_interval = self.balloon_payment_interval
             # when start_from is 0, first balloon fires at the first interval
             balloon_start = self.balloon_payment_start or self.balloon_payment_interval
+            # when neither is set, Down Payment resolves to slot 1 - i.e. "at
+            # booking", matching today's behavior for plans that don't
+            # explicitly schedule it
+            down_payment_position = self.down_payment_start or self.down_payment_interval or 1
+            start_down_payment = False
 
             # Running pool left for the regular monthly "Installment" lines
             # once Booking/Confirmation/Balloon/Possession/Balloting are
@@ -828,11 +839,11 @@ class File(models.Model):
                 })
                 installment_number += 1
 
-            if self.down_payment_amount and self.type == 'normal':
+            if self.down_payment_amount and self.type == 'normal' and down_payment_position <= 1:
                 dp_tax = round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0
                 self.installment_plan_ids.create({
                     'date': self.booking_date + relativedelta(days=+self.grace_period),
-                    'installment_type': 'down',
+                    'installment_type': 'down_payment',
                     'installment_name': 'Down Payment',
                     'installment_number': installment_number,
                     'amount': self.down_payment_amount,
@@ -843,6 +854,7 @@ class File(models.Model):
                     'file_id': self.id
                 })
                 installment_number += 1
+                start_down_payment = True
 
             if (self.plan_type == 'predefine'
                     and self.env.ref('real_estate.confirmation_amount_product').id
@@ -891,6 +903,9 @@ class File(models.Model):
                 if (self.env.ref('real_estate.balloting_product').id in plan_products
                         and primary_interval < self.primary_amount_frequency):
                     return True
+                if (self.env.ref('real_estate.down_payment_product').id in plan_products
+                        and not start_down_payment):
+                    return True
                 return False
 
             date_index = 0
@@ -900,6 +915,27 @@ class File(models.Model):
                     dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
                 rec = dates[date_index]
                 date_index += 1
+                # Down Payment positioned mid-schedule (position <= 1 was already
+                # created above, before the loop, at the booking date)
+                if (self.down_payment_amount and self.type == 'normal' and not start_down_payment
+                        and down_payment_position > 1):
+                    if installment_number == down_payment_position:
+                        dp_tax = round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0
+                        self.installment_plan_ids.create({
+                            'date': rec,
+                            'installment_type': 'down_payment',
+                            'installment_name': 'Down Payment',
+                            'installment_number': installment_number,
+                            'amount': self.down_payment_amount,
+                            'tax_amount': dp_tax,
+                            'amount_paid': 0,
+                            'residual': self.down_payment_amount + dp_tax,
+                            'payment_status': 'not_paid',
+                            'file_id': self.id
+                        })
+                        start_down_payment = True
+                        installment_number = installment_number + 1
+                        continue
                 # first balloon payment
                 if self.balloon_payment_frequency and not start_balloon_payment:
                     if installment_number == balloon_start:
@@ -2424,6 +2460,7 @@ class InstallmentPlan(models.Model):
     state = fields.Char(string='Status', readonly=False, related='invoice_id.invoice_way_type')
     installment_type = fields.Selection([
         ('down', 'Booking Payment'),
+        ('down_payment', 'Down Payment'),
         ('installment', 'Installment'),
         ('balloon', 'Balloon'),
         ('final', 'Final Payment'),

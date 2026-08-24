@@ -59,6 +59,7 @@
                                 icon="fa-pencil-square-o"
                                 invisible="file_status != 'approve' or overall_status == 'close'"
                                 class="oe_stat_button"/>
+                        <!--
                         <button
                                 name="open_invoices"
                                 type="object"
@@ -73,6 +74,7 @@
                                 string="Other Invoices"
                                 icon="fa-list"
                                 class="oe_stat_button"/>
+                        -->
                         <button
                                 name="generate_invoice"
                                 type="object"
@@ -319,6 +321,7 @@
                                                    invisible="add_custom_value == True" readonly="file_status != 'draft'"/>
                                             <field name="factor_amount" force_save="1" readonly="file_status != 'draft'"/>
                                             <field name="initial_payment" force_save="1" readonly="file_status != 'draft'"/>
+                                            <field name="down_payment_amount" force_save="1" readonly="file_status != 'draft'"/>
                                             <field name="ttl_sale_amount" force_save="1" readonly="file_status != 'draft'"/>
                                             <field name="discount_type" readonly="file_status != 'draft'"/>
                                             <field name="discount_amount" readonly="file_status != 'draft'"/>

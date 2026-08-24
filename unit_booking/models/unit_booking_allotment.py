@@ -94,6 +94,9 @@ class UnitBookingAllotment(models.Model):
     balloon_payment_interval = fields.Integer()
     balloon_payment_frequency = fields.Integer()
     balloon_payment_start = fields.Integer()
+    down_payment_interval = fields.Integer()
+    down_payment_frequency = fields.Integer()
+    down_payment_start = fields.Integer()
     primary_amount = fields.Float()
     primary_amount_interval = fields.Integer()
     primary_amount_frequency = fields.Integer()
@@ -285,6 +288,9 @@ class UnitBookingAllotment(models.Model):
                     recs.down_payment_amount = round(recs.total_amount * (
                             pre_plan.value / 100) if pre_plan.basis == 'percentage'
                                                      else pre_plan.value * recs.no_of_units)
+                    recs.down_payment_interval = pre_plan.interval
+                    recs.down_payment_frequency = pre_plan.frequency
+                    recs.down_payment_start = pre_plan.start_from
 
                 if recs.env.ref('real_estate.final_product').id == pre_plan.product_id.id:
                     recs.balloting_amount = round(recs.total_amount * (
@@ -618,6 +624,11 @@ class UnitBookingAllotment(models.Model):
             raise ValidationError('Please enter down payment amount.')
 
         installment_number = 1
+        # when neither is set, Down Payment resolves to slot 1 - i.e. "at
+        # booking", matching today's behavior for plans that don't
+        # explicitly schedule it
+        down_payment_position = self.down_payment_start or self.down_payment_interval or 1
+        start_down_payment = False
 
         if self.down_payment:
             self.booking_plan_ids.create({
@@ -634,10 +645,10 @@ class UnitBookingAllotment(models.Model):
             })
             installment_number += 1
 
-        if self.down_payment_amount:
+        if self.down_payment_amount and down_payment_position <= 1:
             self.booking_plan_ids.create({
                 'date': self.booking_date,
-                'installment_type': 'down',
+                'installment_type': 'down_payment',
                 'installment_name': 'Down Payment',
                 'installment_number': installment_number,
                 'amount': self.down_payment_amount,
@@ -648,6 +659,7 @@ class UnitBookingAllotment(models.Model):
                 'booking_allotment_id': self.id
             })
             installment_number += 1
+            start_down_payment = True
 
         # confirmation payment line
         if self.unit_batch_id.plan_type == 'predefine' \
@@ -717,6 +729,26 @@ class UnitBookingAllotment(models.Model):
                 #     balance = self.booking_allotment_history_ids[-1].new_balance
 
                 for rec in dates:
+                    # Down Payment positioned mid-schedule (position <= 1 was
+                    # already created above, before the loop, at booking date)
+                    if (self.down_payment_amount and not start_down_payment
+                            and down_payment_position > 1):
+                        if installment_number == down_payment_position:
+                            self.booking_plan_ids.create({
+                                'date': rec,
+                                'installment_number': installment_number,
+                                'installment_type': 'down_payment',
+                                'installment_name': 'Down Payment',
+                                'payment_status': 'not_paid',
+                                'amount_paid': 0,
+                                'balance_amount': self.down_payment_amount,
+                                'residual': self.down_payment_amount,
+                                'amount': self.down_payment_amount,
+                                'booking_allotment_id': self.id
+                            })
+                            start_down_payment = True
+                            installment_number = installment_number + 1
+                            continue
                     # first balloon payment
                     if self.balloon_payment_start and not start_balloon_payment:
                         if installment_number == self.balloon_payment_start:
@@ -1138,6 +1170,7 @@ class BookingAllotmentPlan(models.Model):
     state = fields.Char(string='Status', readonly=False, related='invoice_id.invoice_way_type')
     installment_type = fields.Selection([
         ('down', 'Down Payment'),
+        ('down_payment', 'Down Payment (Plan Line)'),
         ('installment', 'Investment Installment'),
         ('adjustment', 'Investment Adjustment'),
         ('balloon', 'Balloon'),

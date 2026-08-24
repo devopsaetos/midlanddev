@@ -120,7 +120,7 @@ class ResetInstallmentPlan(models.TransientModel):
         if self.down_payment_amount:
             self.units_booking_id.unit_booking_plan_ids.create({
                 'date': self.units_booking_id.booking_date,
-                'installment_type': 'down',
+                'installment_type': 'down_payment',
                 'installment_name': 'Down Payment',
                 'installment_number': installment_number,
                 'amount': self.down_payment_amount,

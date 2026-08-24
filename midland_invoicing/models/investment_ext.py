@@ -84,8 +84,6 @@ class InvestmentExt(models.Model):
             # Generate only the first uninvoiced installment — cron handles the rest
             plan = plans[0]
             xml_ref = _INSTALLMENT_PRODUCT.get(plan.installment_type, 'real_estate.installment_product')
-            if plan.installment_type == 'down' and plan.installment_name == 'Down Payment':
-                xml_ref = 'real_estate.down_payment_product'
             pp = rec._resolve_product(xml_ref)
 
             invoice_lines = [(0, 0, {
@@ -151,8 +149,6 @@ class InvestmentExt(models.Model):
                     continue
 
                 xml_ref = _INSTALLMENT_PRODUCT.get(plan.installment_type, 'real_estate.installment_product')
-                if plan.installment_type == 'down' and plan.installment_name == 'Down Payment':
-                    xml_ref = 'real_estate.down_payment_product'
                 pp = investment_rec._resolve_product(xml_ref)
 
                 invoice_lines = [(0, 0, {

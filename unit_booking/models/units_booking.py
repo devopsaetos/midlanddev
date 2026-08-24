@@ -107,6 +107,9 @@ class UnitsBooking(models.Model):
     balloting_amount = fields.Float(readonly=False, )
     initial_payment = fields.Float('Initial Payment', readonly=False)
     down_payment_amount = fields.Float('Down Payment Amount', readonly=False)
+    down_payment_interval = fields.Integer(tracking=True)
+    down_payment_frequency = fields.Integer(tracking=True)
+    down_payment_start = fields.Integer(tracking=True)
     balance_amount = fields.Float('Balance Amount', compute='_compute_balance_amount')
 
     # installment and payment details
@@ -196,6 +199,9 @@ class UnitsBooking(models.Model):
                     if recs.env.ref('real_estate.down_payment_product').id == pre_plan.product_id.id:
                         recs.down_payment_amount = round(recs.sale_amount * (
                                 pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
+                        recs.down_payment_interval = pre_plan.interval
+                        recs.down_payment_frequency = pre_plan.frequency
+                        recs.down_payment_start = pre_plan.start_from
 
                     if recs.env.ref('real_estate.final_product').id == pre_plan.product_id.id:
                         recs.balloting_amount = round(recs.sale_amount * (
@@ -354,7 +360,7 @@ class UnitsBooking(models.Model):
         if self.down_payment_amount:
             self.unit_booking_plan_ids.create({
                 'date': self.booking_date,
-                'installment_type': 'down',
+                'installment_type': 'down_payment',
                 'installment_name': 'Down Payment',
                 'installment_number': installment_number,
                 'amount': self.down_payment_amount,
@@ -740,6 +746,7 @@ class UnitBookingPlan(models.Model):
     state = fields.Char(string='Status', readonly=False, related='invoice_id.invoice_way_type')
     installment_type = fields.Selection([
         ('down', 'Booking Payment'),
+        ('down_payment', 'Down Payment'),
         ('installment', 'Installment'),
         ('balloon', 'Balloon'),
         ('final', 'Final Payment'),

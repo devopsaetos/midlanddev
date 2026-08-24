@@ -6,6 +6,7 @@ from odoo.exceptions import ValidationError
 # Maps installment_type → product.realestate XML ref
 _INSTALLMENT_PRODUCT = {
     'down':                 'real_estate.downpayment_product',
+    'down_payment':         'real_estate.down_payment_product',
     'installment':          'real_estate.installment_product',
     'balloon':              'real_estate.balloon_payment',
     'final':                'real_estate.final_product',
@@ -138,8 +139,6 @@ class FileExt(models.Model):
             # Generate only the first uninvoiced installment — cron handles the rest
             plan = plans[0]
             xml_ref = _INSTALLMENT_PRODUCT.get(plan.installment_type, 'real_estate.installment_product')
-            if plan.installment_type == 'down' and plan.installment_name == 'Down Payment':
-                xml_ref = 'real_estate.down_payment_product'
             pp = rec._resolve_product(xml_ref)
 
             invoice_lines = [(0, 0, {
@@ -173,7 +172,7 @@ class FileExt(models.Model):
                 'invoice_created': True,
             })
             rec._settle_token_on_plan(plan, token_fees)
-            if plan.installment_type == 'down' and rec.payment_states == 'draft':
+            if plan.installment_type in ('down', 'down_payment') and rec.payment_states == 'draft':
                 rec.payment_states = 'open'
 
         return {
@@ -210,8 +209,6 @@ class FileExt(models.Model):
                     continue
 
                 xml_ref = _INSTALLMENT_PRODUCT.get(plan.installment_type, 'real_estate.installment_product')
-                if plan.installment_type == 'down' and plan.installment_name == 'Down Payment':
-                    xml_ref = 'real_estate.down_payment_product'
                 pp = file_rec._resolve_product(xml_ref)
 
                 invoice_lines = [(0, 0, {

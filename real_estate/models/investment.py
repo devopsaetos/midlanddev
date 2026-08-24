@@ -127,6 +127,9 @@ class Investment(models.Model):
     balloon_payment_interval = fields.Integer()
     balloon_payment_frequency = fields.Integer()
     balloon_payment_start = fields.Integer()
+    down_payment_interval = fields.Integer()
+    down_payment_frequency = fields.Integer()
+    down_payment_start = fields.Integer()
     primary_amount = fields.Float()
     primary_amount_interval = fields.Integer()
     primary_amount_frequency = fields.Integer()
@@ -554,6 +557,11 @@ class Investment(models.Model):
             tag_vals['investment_line_ids'] = [(6, 0, lines.ids)]
 
         installment_number = 1
+        # when neither is set, Down Payment resolves to slot 1 - i.e. "at
+        # booking", matching today's behavior for plans that don't
+        # explicitly schedule it
+        down_payment_position = params['down_payment_start'] or params['down_payment_interval'] or 1
+        start_down_payment = False
 
         if params['down_payment']:
             self.investment_plan_ids.create({
@@ -571,10 +579,10 @@ class Investment(models.Model):
             })
             installment_number += 1
 
-        if params['down_payment_amount']:
+        if params['down_payment_amount'] and down_payment_position <= 1:
             self.investment_plan_ids.create({
                 'date': self.booking_date,
-                'installment_type': 'down',
+                'installment_type': 'down_payment',
                 'installment_name': 'Down Payment',
                 'installment_number': installment_number,
                 'amount': params['down_payment_amount'],
@@ -586,6 +594,7 @@ class Investment(models.Model):
                 **tag_vals,
             })
             installment_number += 1
+            start_down_payment = True
 
         # confirmation payment line
         if group_plan and self.env.ref('real_estate.confirmation_amount_product').id \
@@ -702,6 +711,9 @@ class Investment(models.Model):
             if (self.env.ref('real_estate.balloting_product').id in plan_products
                     and primary_interval < params['primary_amount_frequency']):
                 return True
+            if (self.env.ref('real_estate.down_payment_product').id in plan_products
+                    and not start_down_payment):
+                return True
             return False
 
         date_index = 0
@@ -711,6 +723,26 @@ class Investment(models.Model):
                 dates.append(dates[-1] + relativedelta(months=+interval_rec.nom))
             rec = dates[date_index]
             date_index += 1
+            # Down Payment positioned mid-schedule (position <= 1 was already
+            # created above, before the loop, at the booking date)
+            if params['down_payment_amount'] and not start_down_payment and down_payment_position > 1:
+                if installment_number == down_payment_position:
+                    self.investment_plan_ids.create({
+                        'date': rec,
+                        'installment_number': installment_number,
+                        'installment_type': 'down_payment',
+                        'installment_name': 'Down Payment',
+                        'payment_status': 'not_paid',
+                        'amount_paid': 0,
+                        'balance_amount': params['down_payment_amount'],
+                        'residual': params['down_payment_amount'],
+                        'amount': params['down_payment_amount'],
+                        'investment_id': self.id,
+                        **tag_vals,
+                    })
+                    start_down_payment = True
+                    installment_number = installment_number + 1
+                    continue
             if params['balloon_payment_start'] and not start_balloon_payment:
                 if installment_number == params['balloon_payment_start']:
                     if balance:
@@ -1122,7 +1154,7 @@ class Investment(models.Model):
         booking_total = sum(self.investment_plan_ids.filtered(
             lambda l: l.installment_type == 'down' and l.installment_name == 'Booking').mapped('amount'))
         down_payment_total = sum(self.investment_plan_ids.filtered(
-            lambda l: l.installment_type == 'down' and l.installment_name == 'Down Payment').mapped('amount'))
+            lambda l: l.installment_type == 'down_payment').mapped('amount'))
         booking_prorate = (booking_total / self.total_amount) if self.total_amount else 0.0
         down_payment_prorate = (down_payment_total / self.total_amount) if self.total_amount else 0.0
         investor_file = self.env['investor.file']
@@ -1862,6 +1894,7 @@ class InvestmentPlan(models.Model):
     # ])
     installment_type = fields.Selection([
         ('down', 'Down Payment'),
+        ('down_payment', 'Down Payment (Plan Line)'),
         ('installment', 'Investment Installment'),
         ('adjustment', 'Investment Adjustment'),
         ('balloon', 'Balloon'),
