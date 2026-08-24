@@ -66,7 +66,7 @@ class MaintenanceCharges(models.Model):
                     monthly_invoice_created = False
                     existing_invoice = self.env['account.move'].search([
                         ('file_ids', '=', file_rec.id),
-                        ('partner_id', '=', file_rec.membership_id.id),
+                        ('partner_id', '=', file_rec.membership_id.partner_id.id),
                         ('property_invoice_type', '=', 'maintenance_charges'),
                         ('invoice_date', '>=', month_first_date),
                         ('invoice_date', '<', month_first_date + relativedelta(months=1)),
@@ -110,7 +110,7 @@ class MaintenanceCharges(models.Model):
                                                 'price_unit': amount
                                             })]
                                             invoice = self.env['account.move'].create({
-                                                'partner_id': file_rec.membership_id.id,
+                                                'partner_id': file_rec.membership_id.partner_id.id,
                                                 # 'branch_id': self.env.branch.id,  # res.branch not available in this project
                                                 'move_type': 'out_invoice',
                                                 'maintenance_charges_id': recs.id,
@@ -160,7 +160,7 @@ class MaintenanceCharges(models.Model):
                     monthly_invoice_created = False
                     existing_invoice = self.env['account.move'].search([
                         ('file_ids', '=', file_rec.id),
-                        ('partner_id', '=', file_rec.membership_id.id),
+                        ('partner_id', '=', file_rec.membership_id.partner_id.id),
                         ('property_invoice_type', '=', 'society_charges'),
                         ('state', '=', 'posted'),
                         ('invoice_date', '>=', month_first_date),
@@ -205,7 +205,7 @@ class MaintenanceCharges(models.Model):
                                                 'price_unit': amount
                                             })]
                                             invoice = self.env['account.move'].create({
-                                                'partner_id': file_rec.membership_id.id,
+                                                'partner_id': file_rec.membership_id.partner_id.id,
                                                 # 'branch_id': self.env.branch.id,  # res.branch not available in this project
                                                 'move_type': 'out_invoice',
                                                 'maintenance_charges_id': recs.id,

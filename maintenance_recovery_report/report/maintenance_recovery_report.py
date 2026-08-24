@@ -13,74 +13,46 @@ class MaintenanceRecoveryReport(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        model = self.env.context.get('active_model')
-        docs = self.env[model].browse(self.env.context.get('active_id'))
+        # The wizard (maintenance.recovery.wizard) already passes its filter
+        # values explicitly via data['form'] when it calls report_action() -
+        # read from there instead of context['active_model']/['active_id'],
+        # which isn't reliably the wizard when the report is rendered from a
+        # different context (e.g. a PDF/document-layout preview).
+        form = (data or {}).get('form') or {}
 
-        # 'society_id': self.society_id.id,
-        #         'phase_id': self.phase_id.id,
-        #         'sector_ids': self.sector_ids.ids,
-        #         'category_id': self.category_id.id,
-        #         'product_id': self.product_id.id,
+        society_id = form.get('society_id')
+        phase_id = form.get('phase_id')
+        sector_ids = form.get('sector_ids')
+        category_id = form.get('category_id')
+        product_id = form.get('product_id')
+        agent_ids = form.get('agent_ids')
+        date_from = form.get('date_from')
+        date_to = form.get('date_to')
 
         domain = []
-        society_id = None
-        phase_id = None
-        sector_ids = None
-        category_id = None
-        product_id = None
-        agent_ids = None
-        date_from = None
-        date_to = None
-
-        if docs.society_id:
-            society_id = docs.society_id
-
-        if docs.phase_id:
-            phase_id = docs.phase_id
-
-        if docs.sector_ids:
-            sector_ids = docs.sector_ids
-
-        if docs.category_id:
-            category_id = docs.category_id
-
-        if docs.product_id:
-            product_id = docs.product_id
-
-        if docs.agent_ids:
-            agent_ids = docs.agent_ids
-
-        if docs.date_from:
-            date_from = docs.date_from
-
-        if docs.date_to:
-            date_to = docs.date_to
-
-        #################################################
-
         if society_id:
             domain.append(
-                ('sector_id', '=', society_id.id)
+                ('sector_id', '=', society_id[0])
             )
         if phase_id:
             domain.append(
-                ('phase_id', '=', phase_id.id)
+                ('phase_id', '=', phase_id[0])
             )
         if sector_ids:
             domain.append(
-                ('sector_id', 'in', sector_ids.ids)
+                ('sector_id', 'in', sector_ids)
             )
         if category_id:
             domain.append(
-                ('category_id', '=', category_id.id)
+                ('category_id', '=', category_id[0])
             )
         if product_id:
             domain.append(
-                ('unit_category_type_id', '=', product_id.id)
+                ('unit_category_type_id', '=', product_id[0])
             )
         if agent_ids:
             domain.append(
-                ('maintenance_recovery_agent_id', 'in', agent_ids.ids)
+                ('maintenance_recovery_agent_id', 'in', agent_ids)
             )
         if date_from:
             domain.append(
@@ -98,8 +70,7 @@ class MaintenanceRecoveryReport(models.AbstractModel):
             'data': record,
             'date_from': date_from,
             'date_to': date_to,
-            'sector_ids': sector_ids,
-            'category_id': category_id,
-            'agent_ids': agent_ids
-
+            'sector_ids': self.env['sector'].browse(sector_ids) if sector_ids else self.env['sector'],
+            'category_id': self.env['plot.category'].browse(category_id[0]) if category_id else self.env['plot.category'],
+            'agent_ids': self.env['res.users'].browse(agent_ids) if agent_ids else self.env['res.users'],
         }

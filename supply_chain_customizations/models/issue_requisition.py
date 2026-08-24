@@ -111,7 +111,6 @@ class IssueRequistion(models.Model):
                     # 'branch_id': self.branch_id.id or False,
                     'origin': self.name or False,
                     'picking_type_id': self.picking_type_id.id or False,
-                    'partner_id': self.request_by_id.partner_id.id,
                     'state': 'draft',
                     'move_ids': self._get_stock_picking_lines()
                     }
