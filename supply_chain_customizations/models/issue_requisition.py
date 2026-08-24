@@ -106,7 +106,7 @@ class IssueRequistion(models.Model):
 
     def _get_stock_picking(self):
 
-        rec_dict = {'date': self.date,
+        rec_dict = {'scheduled_date': self.date,
                     'location_id': self.location_id.id or False,
                     'location_dest_id': self.location_dest_id.id or False,
                     # 'branch_id': self.branch_id.id or False,
@@ -114,7 +114,7 @@ class IssueRequistion(models.Model):
                     'picking_type_id': self.picking_type_id.id or False,
                     'partner_id': self.request_by_id.partner_id.id,
                     'state': 'draft',
-                    'move_ids_without_package': self._get_stock_picking_lines()
+                    'move_ids': self._get_stock_picking_lines()
                     }
 
         return rec_dict
@@ -138,11 +138,16 @@ class IssueRequistion(models.Model):
                 stock_transaction_line.fecth_product_location()
             return self.write({'state': 'issue'})
         else:
-            if self.location_dest_id and self.picking_type_id:
-                self._create_stock_picking()
-                return self.write({'state': 'issue'})
-            else:
-                raise ValidationError("Please enter Source Location and Operation Type")
+            missing = []
+            if not self.location_dest_id:
+                missing.append(_("Destination Location"))
+            if not self.picking_type_id:
+                missing.append(_("Operation Type"))
+            if missing:
+                raise ValidationError(
+                    _("Please enter %s before issuing.") % _(" and ").join(missing))
+            self._create_stock_picking()
+            return self.write({'state': 'issue'})
 
     def _get_lines(self):
         lines = []

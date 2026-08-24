@@ -33,6 +33,7 @@
                                    options='{"no_create": True}' invisible="1"/>
                             <field name="location_dest_id"
                                    readonly="state == 'issue'" invisible="operation_type != 'transfer'"
+                                   required="operation_type == 'transfer'"
                                    options='{"no_create": True}'/>
                         </group>
                         <group>
