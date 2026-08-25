@@ -60,7 +60,7 @@
                                 style="width:120px; height:120px" readonly="id and not edit_unlocked"/>
                         <div class="oe_title">
                             <h1>
-                                <field name="name" required="1" default_focus="1" placeholder="Name" readonly="id and not edit_unlocked"/>
+                                <field name="name" required="not id or edit_unlocked" default_focus="1" placeholder="Name" readonly="id and not edit_unlocked"/>
                             </h1>
                             <field name="project_type" invisible="1"/>
                             <field name="token_generated" invisible="1"/>
@@ -84,7 +84,7 @@
                                        invisible="company_type != 'person'" readonly="id and not edit_unlocked"/>
                                 <field name='relation_name' string="Father/Spouse"
                                        invisible="company_type != 'person'"
-                                       required="company_type == 'person'" readonly="id and not edit_unlocked"/>
+                                       required="company_type == 'person' and (not id or edit_unlocked)" readonly="id and not edit_unlocked"/>
                             </group>
                         </group>
 
@@ -98,7 +98,7 @@
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Street..." class="o_address_street"
-                                                   required='1' readonly="id and not edit_unlocked"/>
+                                                   required="not id or edit_unlocked" readonly="id and not edit_unlocked"/>
                                             <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="id and not edit_unlocked"/>
                                             <field name="city_id" placeholder="City" class="o_address_city"
                                                    options='{"no_open": True}' readonly="id and not edit_unlocked"/>
@@ -108,7 +108,7 @@
                                             <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="id and not edit_unlocked"/>
                                             <field name="country_id" placeholder="Country" class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   required='1' readonly="id and not edit_unlocked"/>
+                                                   required="not id or edit_unlocked" readonly="id and not edit_unlocked"/>
                                         </div>
                                     </group>
                                     <group name='corespondence_address' string="Correspondence Details">
@@ -154,17 +154,17 @@
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Street..." class="o_address_street"
-                                                   required='1' readonly="id and not edit_unlocked"/>
+                                                   required="not id or edit_unlocked" readonly="id and not edit_unlocked"/>
                                             <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="id and not edit_unlocked"/>
                                             <field name="city_id" placeholder="City" class="o_address_city"
-                                                   required='1' options='{"no_open": True}' readonly="id and not edit_unlocked"/>
+                                                   required="not id or edit_unlocked" options='{"no_open": True}' readonly="id and not edit_unlocked"/>
                                             <field name="state_id" string="Province" class="o_address_state"
                                                    placeholder="State" options='{"no_open": True}'
                                                    context="{'country_id': country_id, 'zip': zip}" readonly="id and not edit_unlocked"/>
                                             <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="id and not edit_unlocked"/>
                                             <field name="country_id" placeholder="Country" class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   required='1' readonly="id and not edit_unlocked"/>
+                                                   required="not id or edit_unlocked" readonly="id and not edit_unlocked"/>
                                         </div>
                                     </group>
                                     <group name='corespondence_address' string="Correspondence Details">
@@ -214,7 +214,7 @@
                                         </div>
                                         <field widget="mask"
                                                name="mobile"
-                                               required="company_type == 'person'"
+                                               required="company_type == 'person' and (not id or edit_unlocked)"
                                                placeholder='+92-300-8765432' readonly="id and not edit_unlocked"/>
                                         <field widget="mask"
                                                name="secondary_phone"
@@ -230,11 +230,11 @@
                                         <label for="street" string="Address"/>
                                         <div class="o_address_format">
                                             <field name="street" placeholder="Street..."
-                                                   class="o_address_street" required='1' readonly="id and not edit_unlocked"/>
+                                                   class="o_address_street" required="not id or edit_unlocked" readonly="id and not edit_unlocked"/>
                                             <field name="street2" placeholder="Street 2..."
                                                    class="o_address_street" readonly="id and not edit_unlocked"/>
                                             <field name="city_id" placeholder="City"
-                                                   class="o_address_city" required='1'
+                                                   class="o_address_city" required="not id or edit_unlocked"
                                                    options='{"no_open": True}' readonly="id and not edit_unlocked"/>
                                             <field name="state_id" string="Province"
                                                    class="o_address_state" placeholder="State"
@@ -244,7 +244,7 @@
                                             <field name="country_id" placeholder="Country"
                                                    class="o_address_country"
                                                    options='{"no_open": True, "no_create": True}'
-                                                   required='1' readonly="id and not edit_unlocked"/>
+                                                   required="not id or edit_unlocked" readonly="id and not edit_unlocked"/>
                                         </div>
                                     </group>
                                     <group name='corespondence_details' string="Correspondence Address">
@@ -280,11 +280,11 @@
                                         <field name='identification_type' readonly="id and not edit_unlocked"/>
                                         <field name='relation_name' string="Mother/Father"
                                                invisible="identification_type != 'parent_cnic'"
-                                               required="identification_type == 'parent_cnic'" readonly="id and not edit_unlocked"/>
+                                               required="identification_type == 'parent_cnic' and (not id or edit_unlocked)" readonly="id and not edit_unlocked"/>
                                         <field widget="mask"
                                                data-inputmask="'mask': '99999-9999999-9'"
                                                name='cnic'
-                                               required="identification_type in ('cnic', 'parent_cnic') and company_type == 'person'"
+                                               required="identification_type in ('cnic', 'parent_cnic') and company_type == 'person' and (not id or edit_unlocked)"
                                                invisible="identification_type != 'cnic'" readonly="id and not edit_unlocked"/>
                                         <field name='cnic_expiry_date'
                                                invisible="identification_type not in ('cnic', 'parent_cnic')" readonly="id and not edit_unlocked"/>
@@ -293,30 +293,30 @@
                                         <field name='passport_expiry_date'
                                                invisible="identification_type != 'passport'" readonly="id and not edit_unlocked"/>
                                         <field name='passport_front'
-                                               required="identification_type == 'passport'"
+                                               required="identification_type == 'passport' and (not id or edit_unlocked)"
                                                invisible="identification_type != 'passport'"
                                                widget='image'
                                                style="width:100px; height:100px" readonly="id and not edit_unlocked"/>
                                         <field name='form_b'
                                                invisible="identification_type != 'form_b'" readonly="id and not edit_unlocked"/>
                                         <field name='form_b_front'
-                                               required="identification_type == 'form_b'"
+                                               required="identification_type == 'form_b' and (not id or edit_unlocked)"
                                                invisible="identification_type != 'form_b'"
                                                widget='image'
                                                style="width:100px; height:100px" readonly="id and not edit_unlocked"/>
                                     </group>
                                     <group string="Nominee">
-                                        <field name="kin_name" required="company_type == 'person'" readonly="id and not edit_unlocked"/>
+                                        <field name="kin_name" required="company_type == 'person' and (not id or edit_unlocked)" readonly="id and not edit_unlocked"/>
                                         <field name="kin_mobile" widget="mask"
                                                data-inputmask="'mask': '+99-999-9999999'"
                                                placeholder="+92-300-2132132" readonly="id and not edit_unlocked"/>
                                         <field name="kin_cnic" widget="mask"
                                                data-inputmask="'mask': '99999-9999999-9'" readonly="id and not edit_unlocked"/>
                                         <field name="kin_member_relation"
-                                               required="company_type == 'person'" readonly="id and not edit_unlocked"/>
+                                               required="company_type == 'person' and (not id or edit_unlocked)" readonly="id and not edit_unlocked"/>
                                         <field name="other_relation"
                                                invisible="kin_member_relation != 'other'"
-                                               required="kin_member_relation == 'other'" readonly="id and not edit_unlocked"/>
+                                               required="kin_member_relation == 'other' and (not id or edit_unlocked)" readonly="id and not edit_unlocked"/>
                                     </group>
                                     <group invisible="identification_type not in ('cnic', 'parent_cnic')">
                                         <label for="cnic_front"/>
