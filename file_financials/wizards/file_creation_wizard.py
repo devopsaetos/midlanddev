@@ -35,7 +35,7 @@ class InvestmentFileCreationWizard(models.TransientModel):
         # different plans still draw from the same single pool. Eligibility is
         # therefore checked deal-wide, not per selected unit's own plan.
         booking_lines = self.investment_id.investment_plan_ids.filtered(
-            lambda l: l.installment_type == 'down' and l.amount_paid > 0)
+            lambda l: l.installment_type in ('down', 'down_payment') and l.amount_paid > 0)
         # amount_paid already reflects the invoice's true paid amount, whether it
         # was settled by cash or by a rebate netted off against it (a Net Off
         # rebate closes the invoice to Paid without a separate cash payment) - a
@@ -44,7 +44,7 @@ class InvestmentFileCreationWizard(models.TransientModel):
         pool = sum(l.amount_paid for l in booking_lines)
         already_distributed = sum(self.env['installment.plan'].search([
             ('investor_file_id.investment_id', '=', self.investment_id.id),
-            ('installment_type', '=', 'down'),
+            ('installment_type', 'in', ('down', 'down_payment')),
         ]).mapped('amount_paid'))
         available = pool - already_distributed
         needed = sum(checked.mapped('estimated_booking_share'))

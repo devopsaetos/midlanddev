@@ -109,6 +109,19 @@ class InvestmentExt(models.Model):
         default="yes",
         tracking=True)
 
+    @staticmethod
+    def _schedule_field_changed(rec, key, value):
+        # _compute_combined_schedule_fields() returns write-safe values (a
+        # raw id/False for Many2one fields, e.g. interval_id), but rec[key]
+        # returns the field in read form (a recordset for Many2one) - compare
+        # ids on both sides so a Many2one field isn't always seen as
+        # "changed" (recordset != int is never equal) and doesn't trigger a
+        # redundant write every single time.
+        current = rec[key]
+        if hasattr(current, 'id'):
+            return (current.id or False) != (value or False)
+        return current != value
+
     def write(self, vals):
         res = super().write(vals)
         # Booking Payment and every other schedule field (Confirmation/
@@ -128,7 +141,7 @@ class InvestmentExt(models.Model):
                 # predefine_plan_id (own_plan) - which happens regardless of
                 # whether the Multiple Plans checkbox is ticked.
                 updates = rec._compute_combined_schedule_fields()
-                updates = {k: v for k, v in updates.items() if v != rec[k]}
+                updates = {k: v for k, v in updates.items() if rec._schedule_field_changed(rec, k, v)}
                 if updates:
                     rec.with_context(skip_down_payment_recompute=True).write(updates)
         return res
@@ -138,7 +151,7 @@ class InvestmentExt(models.Model):
         records = super().create(vals_list)
         for rec in records:
             updates = rec._compute_combined_schedule_fields()
-            updates = {k: v for k, v in updates.items() if v != rec[k]}
+            updates = {k: v for k, v in updates.items() if rec._schedule_field_changed(rec, k, v)}
             if updates:
                 rec.with_context(skip_down_payment_recompute=True).write(updates)
         return records
@@ -391,7 +404,7 @@ class InvestmentExt(models.Model):
         booking_total = sum(self.investment_plan_ids.filtered(
             lambda l: l.installment_type == 'down' and l.installment_name == 'Booking').mapped('amount'))
         down_payment_total = sum(self.investment_plan_ids.filtered(
-            lambda l: l.installment_type == 'down' and l.installment_name == 'Down Payment').mapped('amount'))
+            lambda l: l.installment_type == 'down_payment').mapped('amount'))
         booking_prorate = (booking_total / self.total_amount) if self.total_amount else 0.0
         down_payment_prorate = (down_payment_total / self.total_amount) if self.total_amount else 0.0
         investor_file = self.env['investor.file']
@@ -670,7 +683,7 @@ class InvestmentExt(models.Model):
             # A multi-bucket deal can have one Booking row per plan-group -
             # require ALL of them paid, not just whichever one happened to be
             # first in the recordset.
-            booking_lines = self.investment_plan_ids.filtered(lambda l: l.installment_type == 'down')
+            booking_lines = self.investment_plan_ids.filtered(lambda l: l.installment_type in ('down', 'down_payment'))
             if booking_lines and any(l.payment_status != 'paid' for l in booking_lines):
                 raise ValidationError('Please Pay your Booking Payment First...')
         if self.rebate_on_allotment_ids and not self.deal_rebate_invoice_created:
@@ -710,7 +723,7 @@ class InvestmentExt(models.Model):
             # total_amount-based formula, and never tracked this button.
             rec.calculate_rebate()
             for lines in rec.investment_plan_ids:
-                if lines.installment_type == 'down':
+                if lines.installment_type in ('down', 'down_payment'):
                     # Fixed-basis rebates are per-unit — use THIS row's own
                     # group's unit count (via investment_line_ids), not the
                     # deal's total no_of_units, or a multi-bucket deal with N
@@ -766,9 +779,10 @@ class InvestmentExt(models.Model):
 
     def create_dealer_booking_rebate_bill(self):
         # One combined credit note for the deal's total dealer share across
-        # every Booking row (no 1:1 constraint on account.move the way there
-        # is on midland.invoice, so no need for one credit note per group).
-        booking_lines = self.investment_plan_ids.filtered(lambda ins: ins.installment_type == 'down')
+        # every Booking/Down Payment row (no 1:1 constraint on account.move
+        # the way there is on midland.invoice, so no need for one credit
+        # note per group).
+        booking_lines = self.investment_plan_ids.filtered(lambda ins: ins.installment_type in ('down', 'down_payment'))
         if booking_lines.filtered(lambda ins: ins.dealer_share > 0):
             dealer_share = sum(booking_lines.mapped('dealer_share'))
             if dealer_share > 0:
@@ -1172,7 +1186,7 @@ class InvestmentExt(models.Model):
     def update_booking_amount_on_open_files(self):
         for rec in self:
             booking_lines = rec.investment_plan_ids.filtered(
-                lambda l: l.installment_type == 'down' and l.amount_paid > 0)
+                lambda l: l.installment_type in ('down', 'down_payment') and l.amount_paid > 0)
             if not booking_lines:
                 continue
             open_files = self.env['investor.file'].search(
@@ -1180,6 +1194,7 @@ class InvestmentExt(models.Model):
             for file in open_files:
                 file.update_rebate_values_for_booking()
         self._distribute_installment_pool('down')
+        self._distribute_installment_pool('down_payment')
 
     def update_confirmation_amount_on_open_files(self):
         self._distribute_installment_pool('confirmation_amount')

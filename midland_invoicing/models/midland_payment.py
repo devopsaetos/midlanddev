@@ -171,18 +171,19 @@ class MidlandPayment(models.Model):
         )
 
     def _invoice_rebate_amount(self, inv):
-        """Dealer rebate funded for `inv` under the Investor/Dealer Booking
-        rebate flow (0.0 if that flow doesn't apply). Only returned once per
-        invoice — guarded on `amount_paid` so a rebate already settled by an
-        earlier payment isn't counted again."""
+        """Dealer rebate funded for `inv` under the Investor/Dealer Booking /
+        Down Payment rebate flow (0.0 if that flow doesn't apply). Only
+        returned once per invoice — guarded on `amount_paid` so a rebate
+        already settled by an earlier payment isn't counted again."""
         self.ensure_one()
-        # Booking invoices raised from the investor/dealer flow
+        # Booking/Down Payment invoices raised from the investor/dealer flow
         # (investment_ext.py) are always tagged property_invoice_type =
-        # 'investment_installment' — the real Booking marker there is the
-        # linked Investment Plan line's own installment_type.
+        # 'investment_installment' — the real marker there is the linked
+        # Investment Plan line's own installment_type.
         is_booking = (
-            inv.property_invoice_type == 'down'
-            or (inv.investment_installment_id and inv.investment_installment_id.installment_type == 'down')
+            inv.property_invoice_type in ('down', 'down_payment')
+            or (inv.investment_installment_id
+                and inv.investment_installment_id.installment_type in ('down', 'down_payment'))
         )
         if (self.payment_for == 'investor' and is_booking
                 and inv.rebate_total > 0 and not inv.amount_paid):
