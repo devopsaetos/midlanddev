@@ -19,7 +19,7 @@ class ChangeUnitType(models.Model):
     date = fields.Date(default=fields.Date.today())
     tracking_id = fields.Char()
     file_id = fields.Many2one('file', string='File No')
-    membership_id = fields.Many2one('res.partner', string='Member No')  # domain="[('is_member','=',1)]" removed: is_member is not a field on res.partner anywhere in this project
+    membership_id = fields.Many2one('res.member', string='Member No')
     society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]")
     phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]")
     sector_id = fields.Many2one('sector', readonly=False)
@@ -55,14 +55,13 @@ class ChangeUnitType(models.Model):
             self.membership_id = file.membership_id.id
             self.tracking_id = file.tracking_id
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code("change.unit.type") or _('New')
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code("change.unit.type") or _('New')
 
-        record = super(ChangeUnitType, self).create(vals)
-
-        return record
+        return super().create(vals_list)
 
     def button_submit(self):
         self.submit_app = True
@@ -103,7 +102,7 @@ class ChangeUnitTypeLines(models.Model):
     unit_class_id = fields.Many2one('unit.class', related="inventory_id.unit_class_id", store=True, tracking=True)
     tracking_id = fields.Char()
     file_id = fields.Many2one('file', string='File No')
-    membership_id = fields.Many2one('res.partner', string='Member No')  # domain="[('is_member','=',1)]" removed: is_member is not a field on res.partner anywhere in this project
+    membership_id = fields.Many2one('res.member', string='Member No')
     new_unit_class_id = fields.Many2one('unit.class', string="Select Type", tracking=True)
     unit_change_type_id = fields.Many2one('change.unit.type', string="Unit Change Type")
 

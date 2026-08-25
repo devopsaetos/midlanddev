@@ -121,22 +121,26 @@ class InvestmentExt(models.Model):
         # values are correct even if that onchange never fired client-side.
         if not self.env.context.get('skip_down_payment_recompute'):
             for rec in self:
-                if rec.multiple_plans:
-                    updates = rec._compute_combined_schedule_fields()
-                    updates = {k: v for k, v in updates.items() if v != rec[k]}
-                    if updates:
-                        rec.with_context(skip_down_payment_recompute=True).write(updates)
+                # Not gated on rec.multiple_plans: _compute_combined_schedule_fields()
+                # already returns {} for the plain single-plan case (nothing to
+                # override), so this is a safe no-op there and only actually
+                # updates anything when units/lines carry their own per-unit
+                # predefine_plan_id (own_plan) - which happens regardless of
+                # whether the Multiple Plans checkbox is ticked.
+                updates = rec._compute_combined_schedule_fields()
+                updates = {k: v for k, v in updates.items() if v != rec[k]}
+                if updates:
+                    rec.with_context(skip_down_payment_recompute=True).write(updates)
         return res
 
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         for rec in records:
-            if rec.multiple_plans:
-                updates = rec._compute_combined_schedule_fields()
-                updates = {k: v for k, v in updates.items() if v != rec[k]}
-                if updates:
-                    rec.with_context(skip_down_payment_recompute=True).write(updates)
+            updates = rec._compute_combined_schedule_fields()
+            updates = {k: v for k, v in updates.items() if v != rec[k]}
+            if updates:
+                rec.with_context(skip_down_payment_recompute=True).write(updates)
         return records
 
     def reserve_inventory(self):
@@ -376,7 +380,20 @@ class InvestmentExt(models.Model):
         # have an open file, so repeat calls never recreate one.
         inventory = inventory or self.env['plot.inventory'].search(
             [('investment_id', '=', self.id), ('investor_file_id', '=', False)])
-        prorate = self.down_payment / self.total_amount
+        # Prorate off the deal's actual generated Booking/Down Payment installment
+        # lines (investment_plan_ids), not the deal's own down_payment/
+        # down_payment_amount header fields - those are only kept fresh by the
+        # _onchange_total_amount UI onchange, so any deal created/copied without
+        # that onchange firing (duplicate, bulk import, etc.) would silently
+        # prorate off a stale/wrong header value while the real installment plan
+        # (built from predefine.plan.get_schedule_params()) already has the
+        # correct amounts.
+        booking_total = sum(self.investment_plan_ids.filtered(
+            lambda l: l.installment_type == 'down' and l.installment_name == 'Booking').mapped('amount'))
+        down_payment_total = sum(self.investment_plan_ids.filtered(
+            lambda l: l.installment_type == 'down' and l.installment_name == 'Down Payment').mapped('amount'))
+        booking_prorate = (booking_total / self.total_amount) if self.total_amount else 0.0
+        down_payment_prorate = (down_payment_total / self.total_amount) if self.total_amount else 0.0
         investor_file = self.env['investor.file']
         if self.reservation_type == 'bulk':
             for lines in self.investment_line_ids:
@@ -411,9 +428,12 @@ class InvestmentExt(models.Model):
                         'ttl_sale_amount': lines.investor_price,
                         'net_sale_amount': lines.investor_price,
                         'initial_payment': round(
-                            lines.investor_price * prorate) if self.options == 'down' else 0,
+                            lines.investor_price * booking_prorate) if self.options == 'down' else 0,
+                        'down_payment_amount': round(
+                            lines.investor_price * down_payment_prorate) if self.options == 'down' else 0,
                         'balance_amount': lines.investor_price - round(
-                            lines.investor_price * prorate) if self.options == 'down' else lines.investor_price,
+                            lines.investor_price * booking_prorate) - round(
+                            lines.investor_price * down_payment_prorate) if self.options == 'down' else lines.investor_price,
                     }
                     investor_file.create(vals)
         else:
@@ -447,9 +467,12 @@ class InvestmentExt(models.Model):
                     'ttl_sale_amount': inv.investor_unit_price,
                     'net_sale_amount': inv.investor_unit_price,
                     'initial_payment': round(
-                        inv.investor_unit_price * prorate) if self.options == 'down' else inv.investor_unit_price,
+                        inv.investor_unit_price * booking_prorate) if self.options == 'down' else inv.investor_unit_price,
+                    'down_payment_amount': round(
+                        inv.investor_unit_price * down_payment_prorate) if self.options == 'down' else 0,
                     'balance_amount': inv.investor_unit_price - round(
-                        inv.investor_unit_price * prorate) if self.options == 'down' else 0,
+                        inv.investor_unit_price * booking_prorate) - round(
+                        inv.investor_unit_price * down_payment_prorate) if self.options == 'down' else 0,
                 }
                 open_file = investor_file.create(vals)
                 inv.investor_file_id = open_file.id
@@ -695,10 +718,11 @@ class InvestmentExt(models.Model):
                     # Legacy rows (empty investment_line_ids) fall back to the
                     # deal total exactly as before.
                     group_units = sum(lines.investment_line_ids.mapped('no_of_units')) or rec.no_of_units
+                    txn_type = 'down_payment' if lines.installment_name == 'Down Payment' else 'booking'
                     marketing_lines = rec.rebate_on_allotment_ids.filtered(
-                        lambda l: l.agent_type == 'marketing_company' and l.transaction_type == 'booking')
+                        lambda l: l.agent_type == 'marketing_company' and l.transaction_type == txn_type)
                     dealer_lines = rec.rebate_on_allotment_ids.filtered(
-                        lambda l: l.agent_type == 'dealer' and l.transaction_type == 'booking')
+                        lambda l: l.agent_type == 'dealer' and l.transaction_type == txn_type)
                     # Percentage rebates (Booking and Confirmation alike) apply
                     # against the deal's Total Deal Amount, not this
                     # installment line's own amount.
@@ -954,11 +978,15 @@ class InvestmentExt(models.Model):
         amounts. Source of the units depends on reservation_type: bulk deals
         use investment_line_ids (investment.line), unit deals - where units
         are hand-picked one by one instead of specified by count - use
-        inventory_ids (plot.inventory) instead. Only activates under
-        multiple_plans - deals that don't use it get exactly one group,
-        identical to the base implementation."""
+        inventory_ids (plot.inventory) instead. Activates under multiple_plans,
+        and also whenever the header has no single predefine_plan_id of its own
+        to fall back on - a deal whose units were assigned their own plans
+        (via the Assign Plan wizard) but never had multiple_plans ticked would
+        otherwise silently use no plan at all instead of combining the units'
+        own plans. When the header does have its own plan, that explicit
+        choice is trusted as-is and this per-unit combining is skipped."""
         self.ensure_one()
-        if not self.multiple_plans:
+        if not self.multiple_plans and self.predefine_plan_id:
             return super()._get_installment_plan_groups()
         if self.reservation_type == 'bulk' and self.investment_line_ids:
             source_lines = self.investment_line_ids
@@ -977,7 +1005,7 @@ class InvestmentExt(models.Model):
             seen.setdefault(line.predefine_plan_id.id, self.env[source_lines._name])
             seen[line.predefine_plan_id.id] |= line
 
-        amount_keys = ('down_payment', 'confirmation_amount', 'balloting_amount',
+        amount_keys = ('down_payment', 'down_payment_amount', 'confirmation_amount', 'balloting_amount',
                        'possession_amount', 'primary_amount', 'balloon_payment')
         combined = {k: 0.0 for k in amount_keys}
         combined_sub_total = 0.0
@@ -1021,7 +1049,7 @@ class InvestmentExt(models.Model):
             updates = self._compute_combined_schedule_fields()
             if updates:
                 self.write(updates)
-        if self.payment_type == 'installments' and not self.down_payment:
+        if self.payment_type == 'installments' and not self.down_payment and not self.down_payment_amount:
             raise ValidationError('Please enter booking payment amount.')
         if self.multiple_plans and self.payment_type == 'lump_sum':
             raise ValidationError(_(
@@ -1108,12 +1136,13 @@ class InvestmentExt(models.Model):
                 continue
             rec.set_net_payment_data()
             for pool_line in pool_lines:
-                # investment.plan.compute_net_payment() only sets net_payment
-                # for company_id in (5, 16) - the gate is inside the compute
-                # itself, so calling it explicitly does not help for any other
-                # company. Recompute the same formula inline instead, so this
-                # works regardless of company.
-                pool = max(pool_line.amount_paid - pool_line.dealer_share, 0)
+                # amount_paid already reflects the invoice's true paid amount,
+                # whether settled by cash or by a rebate netted off against it -
+                # a rebate-settled invoice is just as usable to fund open files'
+                # installment lines as a cash-settled one, so the full
+                # amount_paid is distributed, same as the Open File eligibility
+                # check in file_creation_wizard.py.
+                pool = pool_line.amount_paid
                 group_installments, adjustment_amount = rec._group_available_pool(
                     pool, installment_type)
                 all_installments = group_installments.filtered(

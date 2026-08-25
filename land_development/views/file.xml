@@ -28,6 +28,7 @@
                                     invisible="file_status != 'approve' or overall_status == 'close'"
                                     class="oe_stat_button">
                             </button>
+                            <!--
                             <button
                                     name="open_invoices"
                                     type="object"
@@ -37,6 +38,7 @@
 
                                 <field name="no_of_invoices" readonly="file_status != 'draft'"/>
                             </button>
+                            -->
                             <button
                                     name="generate_invoice"
                                     type="object"
@@ -365,6 +367,9 @@
                                                 <field name="initial_payment" force_save="1"
                                                        required="payment_type == 'installments'"
                                                        readonly="file_status != 'draft' or token_id != False or initial_calculation_basis == 'percentage'"
+                                                       invisible="create_manually == True or (payment_type == 'lump_sum' and type != 'investor')"/>
+                                                <field name="down_payment_amount" force_save="1"
+                                                       readonly="file_status != 'draft' or token_id != False"
                                                        invisible="create_manually == True or (payment_type == 'lump_sum' and type != 'investor')"/>
                                                 <!--                                                <label for="balloting_calculation_basis"-->
                                                 <!--                                                       invisible="payment_type == 'lump_sum' or plan_type == 'predefine' or create_manually != False"/>-->

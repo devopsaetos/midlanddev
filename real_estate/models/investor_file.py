@@ -88,6 +88,7 @@ class InvestorFile(models.Model):
     net_sale_amount = fields.Float('Net Sale Amount', store=True, readonly=False, tracking=True)
     balloting_amount = fields.Float(readonly=False, tracking=True)
     initial_payment = fields.Float('Initial Payment', readonly=False, tracking=True)
+    down_payment_amount = fields.Float('Down Payment Amount', readonly=False, tracking=True)
     balance_amount = fields.Float('Balance Amount', readonly=False, tracking=True, compute='_compute_balance_amount',
                                   store=True)
 
@@ -122,10 +123,11 @@ class InvestorFile(models.Model):
     file_created = fields.Boolean(default=False)
     token_id = fields.Many2one('token.money')
 
-    @api.depends('net_sale_amount', 'initial_payment', 'balloting_amount')
+    @api.depends('net_sale_amount', 'initial_payment', 'down_payment_amount', 'balloting_amount')
     def _compute_balance_amount(self):
         for rec in self:
-            rec.balance_amount = round(rec.net_sale_amount - rec.initial_payment - rec.balloting_amount)
+            rec.balance_amount = round(rec.net_sale_amount - rec.initial_payment
+                                       - rec.down_payment_amount - rec.balloting_amount)
 
     @api.onchange('inventory_id')
     def _onchange_inventory(self):
@@ -208,11 +210,18 @@ class InvestorFile(models.Model):
         # neither of which exist anywhere in this module set — dead/never-finished feature.
         self.investment_id.amount_paid = self.investment_id.amount_paid - self.investment_id.investor_unit_price
         file.investment_adjustment = True
-        # Creating down payment on file which is already paid by investor
+        # Creating down payment on file which is already paid by investor - prefer
+        # the Down Payment product's label when the plan carries that product line,
+        # otherwise fall back to Booking (this flow only ever produces one line).
+        down_payment_label = 'Booking'
+        if self.plan_type == 'predefine' and self.predefine_plan_id:
+            plan_product_ids = self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids
+            if self.env.ref('real_estate.down_payment_product').id in plan_product_ids:
+                down_payment_label = 'Down Payment'
         file.installment_plan_ids.create({
             'date': self.booking_date,
             'payment_date': self.booking_date,
-            'installment_name': 'Booking',
+            'installment_name': down_payment_label,
             'installment_type': 'down',
             'invoice': 'Paid By Investor',
             'invoice_created': True,

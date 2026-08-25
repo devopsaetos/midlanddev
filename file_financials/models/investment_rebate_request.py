@@ -30,7 +30,7 @@ class InvestmentRebateRequest(models.Model):
     def validate(self):
         if self.request_line_ids:
             for line in self.request_line_ids:
-                if line.transaction_type == 'booking' and line.settlement_option == 'separate':
+                if line.transaction_type in ('booking', 'down_payment') and line.settlement_option == 'separate':
                     rebate_invoice = self.env['account.move'].create({
                         'partner_id': line.investment_id.partner_id.id if line.agent_type == 'dealer' else line.investment_id.marketing_company_id.id,
                         # 'branch_id': self.env.branch.id,
@@ -50,7 +50,7 @@ class InvestmentRebateRequest(models.Model):
                     line.move_id = rebate_invoice.id
                     line.investment_rebate_line_id.move_id = rebate_invoice.id
                     line.investment_rebate_line_id.rebate_given = line.actual_amount
-                if line.transaction_type == 'booking' and line.settlement_option == 'net_off':
+                if line.transaction_type in ('booking', 'down_payment') and line.settlement_option == 'net_off':
                     rebate_invoice = self.env['account.move'].create({
                         'partner_id': line.investment_id.partner_id.id if line.agent_type == 'dealer' else line.investment_id.marketing_company_id.id,
                         # 'branch_id': self.env.branch.id,
@@ -106,7 +106,7 @@ class InvestmentRebateRequestLine(models.Model):
     actual_amount = fields.Float(string="Actual Amount")
     agent_type = fields.Selection([('dealer', 'Dealer'), ('marketing_company', 'Marketing Company')], string="Agent Type", required=True,
                                   tracking=True)
-    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation')], string="Transaction Type", required=True,
+    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation'), ('down_payment', 'Down Payment')], string="Transaction Type", required=True,
                                         tracking=True)
     move_id = fields.Many2one('account.move')
     rebate_request_id = fields.Many2one('investment.rebate.request')

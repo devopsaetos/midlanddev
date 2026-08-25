@@ -6,6 +6,7 @@ from odoo.exceptions import ValidationError
 # Maps installment_type → product.realestate XML ref
 _INSTALLMENT_PRODUCT = {
     'down':                 'real_estate.downpayment_product',
+    'down_payment':         'real_estate.down_payment_product',
     'installment':          'real_estate.installment_product',
     'balloon':              'real_estate.balloon_payment',
     'final':                'real_estate.final_product',
@@ -171,7 +172,7 @@ class FileExt(models.Model):
                 'invoice_created': True,
             })
             rec._settle_token_on_plan(plan, token_fees)
-            if plan.installment_type == 'down' and rec.payment_states == 'draft':
+            if plan.installment_type in ('down', 'down_payment') and rec.payment_states == 'draft':
                 rec.payment_states = 'open'
 
         return {

@@ -144,23 +144,23 @@ class DailyMaintenanceBatch(models.Model):
             else:
                 raise ValidationError('Submit Transaction First Before Approval!')
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', _('New')) == _('New'):
-            prefix = 'MNT/REC/'
-            if 'journal_id' in vals and vals['journal_id']:
-                journal_code = self.env['account.journal'].sudo().browse(vals['journal_id']).code
-                if journal_code == 'MC':
-                    prefix = 'MNT/CSH/'
-                elif journal_code == 'HBM-M':
-                    prefix = 'MNT/HBM/'
-            if 'date' in vals and vals['date']:
-                date_obj = fields.Date.from_string(vals['date'])
-                vals['name'] = prefix + date_obj.strftime('%d/%b/%Y').upper()
-            else:
-                raise ValidationError('Date must be provided for creating a record.')
-        new_record = super(DailyMaintenanceBatch, self).create(vals)
-        return new_record
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                prefix = 'MNT/REC/'
+                if 'journal_id' in vals and vals['journal_id']:
+                    journal_code = self.env['account.journal'].sudo().browse(vals['journal_id']).code
+                    if journal_code == 'MC':
+                        prefix = 'MNT/CSH/'
+                    elif journal_code == 'HBM-M':
+                        prefix = 'MNT/HBM/'
+                if 'date' in vals and vals['date']:
+                    date_obj = fields.Date.from_string(vals['date'])
+                    vals['name'] = prefix + date_obj.strftime('%d/%b/%Y').upper()
+                else:
+                    raise ValidationError('Date must be provided for creating a record.')
+        return super().create(vals_list)
 
     def account_payment_created(self):
         return {

@@ -109,7 +109,7 @@ class PlotInventoryExt(models.Model):
                             f.name as file_name,
                             inv.id as plot_id,
                             inv.name as inventory_id,
-                            rp.display_name as membership_id,
+                            rp.name as membership_id,
                             sec.name as sector_id,
                             sec.id as sector_db_id,
                             cat.name as category_id,
@@ -125,7 +125,7 @@ class PlotInventoryExt(models.Model):
                             f.maintenance_recovery_agent_id as maintenance_agent_id
                     from file f 
                     inner join account_move am on am.file_ids=f.id
-                    LEFT join res_partner rp on f.membership_id = rp.id
+                    LEFT join res_member rp on f.membership_id = rp.id
                     LEFT JOIN society s  ON f.society_id = s.id
                     LEFT JOIN society ph  ON f.phase_id = ph.id
                     LEFT JOIN sector sec  ON f.sector_id = sec.id

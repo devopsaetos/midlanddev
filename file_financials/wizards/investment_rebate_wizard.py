@@ -115,7 +115,7 @@ class InvestmentRebateLine(models.TransientModel):
     agent_type = fields.Selection([('dealer', 'Dealer'), ('marketing_company', 'Marketing Company')],
                                   string="Agent Type", required=True,
                                   tracking=True)
-    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation')],
+    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation'), ('down_payment', 'Down Payment')],
                                         string="Transaction Type", required=True,
                                         tracking=True)
     actual_amount = fields.Float(string="Actual Amount")

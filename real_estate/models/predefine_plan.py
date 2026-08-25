@@ -50,6 +50,10 @@ class PredefinePlan(models.Model):
             'grace_period_type': self.confirmation_period_type,
             'total_installment': self.total_installment,
             'down_payment': 0.0,
+            'down_payment_amount': 0.0,
+            'down_payment_interval': 0,
+            'down_payment_frequency': 0,
+            'down_payment_start': 0,
             'balloting_amount': 0.0,
             'balloon_payment': 0.0,
             'balloon_payment_interval': 0,
@@ -75,6 +79,11 @@ class PredefinePlan(models.Model):
             product_id = pre_plan.product_id.id
             if product_id == self.env.ref('real_estate.downpayment_product').id:
                 params['down_payment'] = value
+            elif product_id == self.env.ref('real_estate.down_payment_product').id:
+                params['down_payment_amount'] = value
+                params['down_payment_interval'] = pre_plan.interval
+                params['down_payment_frequency'] = pre_plan.frequency
+                params['down_payment_start'] = pre_plan.start_from
             elif product_id == self.env.ref('real_estate.final_product').id:
                 params['balloting_amount'] = value
             elif product_id == self.env.ref('real_estate.balloon_payment').id:
@@ -128,6 +137,9 @@ class PredefinePlanLine(models.Model):
             if rec.product_id.id == rec.env.ref('real_estate.confirmation_amount_product').id:
                 if rec.frequency > 1:
                     raise ValidationError(_('Confirmation amount frequency should be 1'))
+            if rec.product_id.id == rec.env.ref('real_estate.down_payment_product').id:
+                if rec.frequency > 1:
+                    raise ValidationError(_('Down Payment frequency should be 1'))
 
     @api.constrains('basis', 'value')
     def check_percentage_value(self):

@@ -27,7 +27,7 @@ class MaintenanceChargesPayment(models.Model):
     unit_class_id = fields.Many2one('unit.class', default=lambda self: self._default_unit_class())
     inventory_id = fields.Many2one('plot.inventory')
     sector_id = fields.Many2one('sector', related='inventory_id.sector_id', store=True)
-    membership_id = fields.Many2one('res.partner', related='file_id.membership_id')  # domain=[('is_member','=',True)] removed: is_member is not a field on res.partner anywhere in this project
+    membership_id = fields.Many2one('res.member', related='file_id.membership_id')
     category_id = fields.Many2one('plot.category', string='Category', related='inventory_id.category_id')
     size_id = fields.Many2one('unit.size', 'Size', related='inventory_id.size_id')
     unit_category_type_id = fields.Many2one('unit.category.type', related='inventory_id.unit_category_type_id')
@@ -95,7 +95,7 @@ class MaintenanceChargesPayment(models.Model):
                 if rec.product_id.name == 'Maintenance Charges':
                     return {
                         'domain': {
-                            'invoice_ids': [('partner_id', '=', rec.membership_id.id),
+                            'invoice_ids': [('partner_id', '=', rec.membership_id.partner_id.id),
                                             ('property_invoice_type', '=', 'maintenance_charges'),
                                             ('date', '>=', set_date),
                                             ('file_ids', '=', file.id), ('payment_state', '=', 'not_paid'),
@@ -105,7 +105,7 @@ class MaintenanceChargesPayment(models.Model):
                 elif rec.membership_id and rec.product_id.name == 'Service Charges':
                     return {
                         'domain': {
-                            'invoice_ids': [('partner_id', '=', rec.membership_id.id),
+                            'invoice_ids': [('partner_id', '=', rec.membership_id.partner_id.id),
                                             ('property_invoice_type', '=', 'society_charges'), ('date', '>=', set_date),
                                             ('file_ids', '=', file.id), ('payment_state', '=', 'not_paid'),
                                             ('amount_residual_signed', '>', 0.0), ('is_maintenance_batch', '=', False)],
@@ -115,7 +115,7 @@ class MaintenanceChargesPayment(models.Model):
             elif rec.membership_id and rec.inventory_id:
                 return {
                     'domain': {
-                        'invoice_ids': [('partner_id', '=', rec.membership_id.id), ('date', '>=', set_date),
+                        'invoice_ids': [('partner_id', '=', rec.membership_id.partner_id.id), ('date', '>=', set_date),
                                         ('file_ids', '=', file.id), ('payment_state', '=', 'not_paid'),
                                         ('amount_residual', '>', 0.0)],
                     }
@@ -149,7 +149,7 @@ class MaintenanceChargesPayment(models.Model):
                     'payment_type': 'inbound',
                     'partner_type': 'customer',
                     'payment_category': 'multi_inv_payment',
-                    'partner_id': rec.membership_id.id,
+                    'partner_id': rec.membership_id.partner_id.id,
                     'file_id': rec.file_id.id,
                     'amount': total_amount,
                     'journal_id': rec.journal_id.id,
@@ -210,7 +210,7 @@ class MaintenanceChargesPayment(models.Model):
                                 'price_unit': line.amount / total_invoices
                             })]
                             invoice = self.env['account.move'].create({
-                                'partner_id': rec.membership_id.id,
+                                'partner_id': rec.membership_id.partner_id.id,
                                 # 'branch_id': rec.env.branch.id,  # res.branch not available in this project
                                 'move_type': 'out_invoice',
                                 'invoice_date': start_date,
@@ -250,7 +250,7 @@ class MaintenanceChargesPayment(models.Model):
                     'payment_type': 'inbound',
                     'partner_type': 'customer',
                     'payment_category': 'multi_inv_payment',
-                    'partner_id': rec.membership_id.id,
+                    'partner_id': rec.membership_id.partner_id.id,
                     'file_id': rec.file_id.id,
                     'amount': line.net_amount,
                     'journal_id': rec.journal_id.id,
@@ -318,7 +318,7 @@ class MaintenanceChargesPayment(models.Model):
                     'payment_type': 'inbound',
                     'partner_type': 'customer',
                     'payment_category': 'multi_inv_payment',
-                    'partner_id': maintenance_payment.membership_id.id,
+                    'partner_id': maintenance_payment.membership_id.partner_id.id,
                     'file_id': file.id,
                     'amount': rec['payment_amount'],
                     'journal_id': maintenance_payment.journal_id.id,

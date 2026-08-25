@@ -58,6 +58,7 @@ class MidlandInvoice(models.Model):
         ('demarcation', 'Demarcation'),
         ('merger_adjustment', 'Merger Adjustment'),
         ('down', 'Booking'),
+        ('down_payment', 'Down Payment'),
         ('confirmation_amount', 'Confirmation'),
         ('balloon', 'Balloon'),
         ('balloting_amount', 'Balloting'),

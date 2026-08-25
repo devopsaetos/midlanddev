@@ -85,7 +85,8 @@ class InvestmentPlatterLines(models.Model):
     def calculate_amount_and_values(self):
         if self.own_plan and self.predefine_plan_id and self.deal_price > 0:
             for pre_plan in self.predefine_plan_id.predefine_plan_line_ids:
-                if self.env.ref('real_estate.downpayment_product').id == pre_plan.product_id.id:
+                if pre_plan.product_id.id in (self.env.ref('real_estate.downpayment_product').id,
+                                              self.env.ref('real_estate.down_payment_product').id):
                     self.booking_value = round(
                         self.deal_price * (pre_plan.value / 100)
                         if pre_plan.basis == 'percentage'

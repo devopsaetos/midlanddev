@@ -53,6 +53,14 @@
             <field name="description">Booking of the file</field>
         </record>
 
+        <record id="real_estate.down_payment_product" model="product.realestate">
+            <field name="name">Down Payment</field>
+            <field name="is_include_net_amount">1</field>
+            <field name="is_include_property_system">1</field>
+            <field name="type">service</field>
+            <field name="description">Down Payment</field>
+        </record>
+
         <record id="real_estate.balloting_product" model="product.realestate">
             <field name="name">BALLOTING</field>
             <field name="is_include_net_amount">1</field>

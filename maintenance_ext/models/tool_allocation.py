@@ -50,9 +50,10 @@ class ToolsAllocation(models.Model):
         self.return_date = datetime.datetime.now()
         self.is_returned = True
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code("tools") or _('New')
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code("tools") or _('New')
 
-        return super(ToolsAllocation, self).create(vals)
+        return super().create(vals_list)

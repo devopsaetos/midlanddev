@@ -33,6 +33,7 @@ class ResetInstallmentPlan(models.TransientModel):
     balloting_amount = fields.Float(string='Final Payment')
 
     initial_payment = fields.Float('Initial Payment')
+    down_payment_amount = fields.Float('Down Payment Amount')
 
     balance_amount = fields.Float('Balance Amount')
 
@@ -52,10 +53,11 @@ class ResetInstallmentPlan(models.TransientModel):
     confirmation_amount_frequency = fields.Integer()
 
     @api.onchange('discount_amount', 'confirmation_amount',
-                  'possession_amount', 'primary_amount', 'balloon_payment', 'balloting_amount')
+                  'possession_amount', 'primary_amount', 'balloon_payment', 'balloting_amount',
+                  'initial_payment', 'down_payment_amount')
     def calculate_balance_amount(self):
         self.balance_amount = self.sale_amount
-        self.balance_amount = self.balance_amount - self.initial_payment
+        self.balance_amount = self.balance_amount - self.initial_payment - self.down_payment_amount
 
         if self.discount_amount:
             self.balance_amount = self.balance_amount - self.discount_amount
@@ -92,29 +94,49 @@ class ResetInstallmentPlan(models.TransientModel):
 
     def reset_installment_plan(self):
         # Creating downpayment line
-        if not self.initial_payment:
+        if not self.initial_payment and not self.down_payment_amount:
             raise ValidationError('Please enter down payment amount.')
         self.units_booking_id.unit_booking_plan_ids = [(5,)]
 
-        self.units_booking_id.unit_booking_plan_ids.create({
-            'date': self.units_booking_id.booking_date,
-            'installment_type': 'down',
-            'installment_name': 'Booking',
-            'installment_number': 1,
-            'amount': self.initial_payment,
-            'invoice': 'Paid by Agent',
-            'invoice_created': True,
-            'amount_paid': self.initial_payment,
-            # 'balance_amount': self.initial_payment,
-            'residual': 0,
-            'payment_status': 'paid',
-            'units_booking_id': self.units_booking_id.id
-        })
+        installment_number = 1
+
+        if self.initial_payment:
+            self.units_booking_id.unit_booking_plan_ids.create({
+                'date': self.units_booking_id.booking_date,
+                'installment_type': 'down',
+                'installment_name': 'Booking',
+                'installment_number': installment_number,
+                'amount': self.initial_payment,
+                'invoice': 'Paid by Agent',
+                'invoice_created': True,
+                'amount_paid': self.initial_payment,
+                # 'balance_amount': self.initial_payment,
+                'residual': 0,
+                'payment_status': 'paid',
+                'units_booking_id': self.units_booking_id.id
+            })
+            installment_number += 1
+
+        if self.down_payment_amount:
+            self.units_booking_id.unit_booking_plan_ids.create({
+                'date': self.units_booking_id.booking_date,
+                'installment_type': 'down_payment',
+                'installment_name': 'Down Payment',
+                'installment_number': installment_number,
+                'amount': self.down_payment_amount,
+                'invoice': 'Paid by Agent',
+                'invoice_created': True,
+                'amount_paid': self.down_payment_amount,
+                'residual': 0,
+                'payment_status': 'paid',
+                'units_booking_id': self.units_booking_id.id
+            })
+            installment_number += 1
+
         if self.confirmation_amount:
-            installment_number = 3
             self.units_booking_id.unit_booking_plan_ids.create({
                 'date': self.starting_date,
-                'installment_number': 2,
+                'installment_number': installment_number,
                 'installment_type': 'confirmation_amount',
                 'installment_name': 'Confirmation',
                 'payment_status': 'not_paid',
@@ -122,8 +144,7 @@ class ResetInstallmentPlan(models.TransientModel):
                 'residual': self.confirmation_amount,
                 'units_booking_id': self.units_booking_id.id
             })
-        else:
-            installment_number = 2
+            installment_number += 1
 
         if self.balance_amount > 0:
             if all([self.starting_date, self.interval_id, self.total_installment]):

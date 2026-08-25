@@ -270,6 +270,13 @@ class FileExtension(models.Model):
                     self.initial_payment = round(self.sale_amount * (
                             pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
 
+                if self.env.ref('real_estate.down_payment_product').id == pre_plan.product_id.id:
+                    self.down_payment_amount = round(self.sale_amount * (
+                            pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
+                    self.down_payment_interval = pre_plan.interval
+                    self.down_payment_frequency = pre_plan.frequency
+                    self.down_payment_start = pre_plan.start_from
+
                 if self.env.ref('real_estate.installment_product').id == pre_plan.product_id.id:
                     self.installment_amount = round(self.sale_amount * (
                             pre_plan.value / 100) if pre_plan.basis == 'percentage' else pre_plan.value)
@@ -386,6 +393,11 @@ class FileExtension(models.Model):
             balloon_interval = self.balloon_payment_interval
             # when start_from is 0, first balloon fires at the first interval
             balloon_start = self.balloon_payment_start or self.balloon_payment_interval
+            # when neither is set, Down Payment resolves to slot 1 - i.e. "at
+            # booking", matching today's behavior for plans that don't
+            # explicitly schedule it
+            down_payment_position = self.down_payment_start or self.down_payment_interval or 1
+            start_down_payment = False
             """
             these variable should be true if include in installment check is true from predefine plan
             if it true then it will create two lines of installment with same date
@@ -449,13 +461,15 @@ class FileExtension(models.Model):
 
             # Commented
 
+            installment_number = 1
+
             if self.initial_payment and self.type == 'normal':
                 self.installment_plan_ids.create({
                     # 'date': self.booking_date + relativedelta(days=+self.grace_period),
                     'date': self.booking_date,
                     'installment_type': 'down',
                     'installment_name': 'Booking',
-                    'installment_number': 1,
+                    'installment_number': installment_number,
                     'amount': self.initial_payment,
                     'tax_amount': round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0,
                     'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100,
@@ -463,11 +477,27 @@ class FileExtension(models.Model):
                     'payment_status': 'not_paid',
                     'file_id': self.id
                 })
+                installment_number += 1
+
+            if self.down_payment_amount and self.type == 'normal' and down_payment_position <= 1:
+                self.installment_plan_ids.create({
+                    'date': self.booking_date,
+                    'installment_type': 'down_payment',
+                    'installment_name': 'Down Payment',
+                    'installment_number': installment_number,
+                    'amount': self.down_payment_amount,
+                    'tax_amount': round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
+                    'residual': self.down_payment_amount + round((self.down_payment_amount * tax_id[0].amount) / 100,
+                                                                 2) if tax_id else self.down_payment_amount,
+                    'payment_status': 'not_paid',
+                    'file_id': self.id
+                })
+                installment_number += 1
+                start_down_payment = True
 
             if (self.predefine_plan_id
                     and self.env.ref('real_estate.confirmation_amount_product').id
                     in self.predefine_plan_id.predefine_plan_line_ids.mapped('product_id').ids):
-                installment_number = 3
                 if confirmation_interval < self.confirmation_amount_frequency:
                     confirmation_date = self.booking_date
                     if self.predefine_plan_id.confirmation_period_type == 'days':
@@ -481,7 +511,7 @@ class FileExtension(models.Model):
                             years=+self.predefine_plan_id.confirmation_amount_period)
                     self.installment_plan_ids.create({
                         'date': confirmation_date,
-                        'installment_number': 2,
+                        'installment_number': installment_number,
                         'installment_type': 'confirmation_amount',
                         'installment_name': 'Confirmation',
                         'payment_status': 'not_paid',
@@ -493,8 +523,7 @@ class FileExtension(models.Model):
                         'file_id': self.id
                     })
                     confirmation_interval += 1
-            else:
-                installment_number = 2
+                installment_number += 1
 
             # balloons replace installment slots only when the plan treats them as
             # installments; treated as balloons they come on top of the regular ones
@@ -529,6 +558,9 @@ class FileExtension(models.Model):
                 if (self.env.ref('real_estate.balloting_product').id in plan_products
                         and primary_interval < self.primary_amount_frequency):
                     return True
+                if (self.env.ref('real_estate.down_payment_product').id in plan_products
+                        and not start_down_payment):
+                    return True
                 return False
 
             i = 0
@@ -549,6 +581,29 @@ class FileExtension(models.Model):
                     total_dates = len(dates) - 1
                     extra_dates += 1
                 # for rec in dates:
+                # Down Payment positioned mid-schedule (position <= 1 was already
+                # created above, before the loop, at the booking date)
+                if (self.down_payment_amount and self.type == 'normal' and not start_down_payment
+                        and down_payment_position > 1):
+                    if installment_number == down_payment_position:
+                        self.installment_plan_ids.create({
+                            'date': dates[i],
+                            'installment_type': 'down_payment',
+                            'installment_name': 'Down Payment',
+                            'installment_number': installment_number,
+                            'amount': self.down_payment_amount,
+                            'tax_amount': round((self.down_payment_amount * tax_id[0].amount) / 100,
+                                                2) if tax_id else 0,
+                            'residual': self.down_payment_amount + round(
+                                (self.down_payment_amount * tax_id[0].amount) / 100,
+                                2) if tax_id else self.down_payment_amount,
+                            'payment_status': 'not_paid',
+                            'file_id': self.id
+                        })
+                        start_down_payment = True
+                        installment_number = installment_number + 1
+                        i += 1
+                        continue
                 # first balloon payment
                 if self.balloon_payment_frequency and not start_balloon_payment:
                     if installment_number == balloon_start:
@@ -834,15 +889,15 @@ class FileExtension(models.Model):
 
     def reset_installment_plan(self):
         if len(self.installment_plan_ids.filtered(
-                lambda l: l.installment_name not in ['Booking', 'Booking Payment']).mapped('invoice_id.id')) > 1:
+                lambda l: l.installment_name not in ['Booking', 'Booking Payment', 'Down Payment']).mapped('invoice_id.id')) > 1:
             raise ValidationError(_('You can not reset plan.Once, invoice created!'))
         else:
             for lines in self.installment_plan_ids:
-                if lines.installment_name in ('Booking', 'Booking Payment'):
+                if lines.installment_name in ('Booking', 'Booking Payment', 'Down Payment'):
                     if lines.payment_status in ('not_paid', 'cancel'):
                         self.installment_plan_ids.unlink()
                         break
-                if lines.installment_name not in ('Booking', 'Booking Payment'):
+                if lines.installment_name not in ('Booking', 'Booking Payment', 'Down Payment'):
                     lines.unlink()
         # self.installment_plan_ids.unlink()
         self.installment_created = False

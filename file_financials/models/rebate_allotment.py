@@ -17,7 +17,7 @@ class RebateOnAllotmentExt(models.Model):
     partner_id = fields.Many2one('res.partner')
     agent_type = fields.Selection([('dealer', 'Dealer'), ('marketing_company', 'Marketing Company')], default="dealer", string="Agent Type", required=True,
                                   tracking=True)
-    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation')], default="booking", string="Transaction Type", required=True,
+    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation'), ('down_payment', 'Down Payment')], default="booking", string="Transaction Type", required=True,
                                         tracking=True)
     calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')], default="percentage", tracking=True)
     # Numerical fields
