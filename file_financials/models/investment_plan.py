@@ -27,6 +27,7 @@ class InvestmentPlanExt(models.Model):
     # ])
     installment_type = fields.Selection([
         ('down', 'Booking Payment'),
+        ('down_payment', 'Down Payment'),
         ('installment', 'Investment Installment'),
         ('adjustment', 'Investment Adjustment'),
         ('balloon', 'Balloon'),
