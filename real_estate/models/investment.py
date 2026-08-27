@@ -1235,7 +1235,7 @@ class Investment(models.Model):
             rec.no_of_files = len(rec.env['investor.file'].search([('investment_id', '=', rec.id)]))
 
     def investor_files(self):
-        obj = self._context.get('current_view')
+        obj = self.env.context.get('current_view')
         if obj == 'building' or self.project_type == 'skyscraper':
             tree_view = (self.env.ref('land_development.investor_file_tree').id, 'list')
             form_view = (self.env.ref('land_development.investor_file_form').id, 'form')

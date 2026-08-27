@@ -13,6 +13,8 @@ class PredefinePlan(models.Model):
 
     name = fields.Char(required=True)
     code = fields.Char(required=True)
+    company_id = fields.Many2one('res.company', string='Company', required=True,
+                                 default=lambda self: self.env.company)
     confirmation_amount_period = fields.Integer()
     interval_id = fields.Many2one('payment.interval', required=True)
     total_installment = fields.Integer()
