@@ -629,7 +629,7 @@ class InvestorFileExt(models.Model):
                 if self.down_payment_amount and self.type == 'normal':
                     if not self.installment_plan_ids or self.installment_plan_ids[0].payment_status not in ('in_payment', 'paid'):
                         down_payment_lines = self.investment_id.investment_plan_ids.filtered(
-                            lambda l: l.installment_type == 'down' and l.installment_name == 'Down Payment')
+                            lambda l: l.installment_type == 'down_payment')
                         if down_payment_lines and all(l.payment_status in ('in_payment', 'paid') for l in down_payment_lines):
                             self.installment_plan_ids.create({
                                 'date': self.booking_date + relativedelta(days=+self.grace_period),
