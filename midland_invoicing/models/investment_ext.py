@@ -92,6 +92,7 @@ class InvestmentExt(models.Model):
                 'account_id': rec._resolve_income_account(pp).id,
                 'quantity': 1.0,
                 'price_unit': plan.amount,
+                'rebate_amount': plan.dealer_share or 0.0,
             })]
             token_fees, token_line = rec._token_adjustment_invoice_line(plan)
             if token_line:
@@ -157,6 +158,7 @@ class InvestmentExt(models.Model):
                     'account_id': investment_rec._resolve_income_account(pp).id,
                     'quantity': 1.0,
                     'price_unit': plan.amount,
+                    'rebate_amount': plan.dealer_share or 0.0,
                 })]
                 token_fees, token_line = investment_rec._token_adjustment_invoice_line(plan)
                 if token_line:

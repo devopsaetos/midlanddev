@@ -116,6 +116,7 @@
                                        widget="monetary"
                                        options="{'currency_field': 'currency_id'}"/>
                                 <field name="amount_paid"
+                                       readonly="1"
                                        widget="monetary"
                                        options="{'currency_field': 'currency_id'}"/>
                                 <field name="payment_state" widget="badge"
