@@ -231,7 +231,7 @@ class ResMember(models.Model):
                 self._name,
                 self.id,
                 self.env.ref('real_estate.action_members').id,
-                self._context.get('target_field'),
+                self.env.context.get('target_field'),
             ),
         }
 
@@ -293,7 +293,7 @@ class ResMember(models.Model):
         }
 
     def open_file(self):
-        obj = self._context.get('current_view')
+        obj = self.env.context.get('current_view')
         context = {"from_member": True, 'default_membership_id': self.id, 'current_view': 'realestate',
                    'default_project_type': 'housing_society'}
         if obj == 'building' or self.project_type == 'skyscraper':
@@ -840,7 +840,7 @@ class ResMember(models.Model):
                 else:
                     val['ref'] = self.env['ir.sequence'].next_by_code("res.partner") or _('New')
 
-            if self._context.get('active_model', True) and self._context.get('active_model') != 'res.company':
+            if self.env.context.get('active_model', True) and self.env.context.get('active_model') != 'res.company':
                 val['company_id'] = self.env.company.id
 
             if val.get('kin_name', False) and val.get('kin_member_relation', False):
@@ -863,20 +863,20 @@ class ResMember(models.Model):
             if record.company_type == 'aop' and not record.cnic_line_ids:
                 raise ValidationError(_("Please add information in Details tab."))
 
-            if self._context.get('active_model') and self._context.get('active_model') == "transfer.application":
-                transfer_app = self.env['transfer.application'].browse(self._context.get('active_id'))
+            if self.env.context.get('active_model') and self.env.context.get('active_model') == "transfer.application":
+                transfer_app = self.env['transfer.application'].browse(self.env.context.get('active_id'))
                 transfer_app.transferee_existing_partner = 'yes'
                 transfer_app.transferee_partner_id = record.id
                 transfer_app.transferee_name = record.name
 
-            if self._context.get('active_model') and self._context.get('active_model') == "investor.file":
-                investor_file = self.env['investor.file'].browse(self._context.get('active_id'))
+            if self.env.context.get('active_model') and self.env.context.get('active_model') == "investor.file":
+                investor_file = self.env['investor.file'].browse(self.env.context.get('active_id'))
                 investor_file.is_transferee_partner = True
                 investor_file.transferee_partner_id = record.id
                 investor_file.transferee_name = record.name
 
-            if self._context.get('active_model') and self._context.get('active_model') == "unit.swapping.request":
-                unit_swapping_request = self.env['unit.swapping.request'].browse(self._context.get('active_id'))
+            if self.env.context.get('active_model') and self.env.context.get('active_model') == "unit.swapping.request":
+                unit_swapping_request = self.env['unit.swapping.request'].browse(self.env.context.get('active_id'))
                 unit_swapping_request.is_transferee_partner = True
                 unit_swapping_request.transferee_partner_id = record.id
 
