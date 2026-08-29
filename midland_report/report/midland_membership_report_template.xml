@@ -7,11 +7,35 @@
 
                     <!--  PAGE 1 : MEMBERSHIP FORM                                  -->
                     <div class="page"
-                         style="font-family: Arial, sans-serif; font-size:11px; padding:10mm 12mm; color:#222;">
-                        <!--  TOP HEADER ROW: Logo center, OFFICE COPY + photo right  -->
+                         style="font-family: Arial, sans-serif; font-size:11px; padding:4mm 12mm; color:#222;">
+                        <!--  PAGE TITLE ROW  -->
+                        <table style="width:100%; margin-bottom:4px;">
+                            <tr>
+                                <td style="text-align:center;">
+                                    <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
+                                        MEMBERSHIP FORM
+                                    </span>
+                                    <div style="color:#40a4d5; font-weight:bold; font-size:11px; margin-top:3px;">
+                                        File No:
+                                        <span t-field="file.tracking_id"/>
+                                    </div>
+                                    <!-- QR disabled: the letterhead carries its own. Restore by uncommenting.
+                                    <div style="margin-top:5px;">
+                                        <strong style="font-size:10px;">Verify Me</strong>
+                                        <br/>
+                                        <t t-if="file.qr_code">
+                                            <img t-att-src="image_data_uri(file.qr_code)"
+                                                 style="height:70px; width:70px;"/>
+                                        </t>
+                                    </div>
+                                    -->
+                                </td>
+                            </tr>
+                        </table>
+                        <!--  DATE / OFFICE COPY ROW  -->
                         <table style="width:100%; margin-bottom:6px;">
                             <tr>
-                                <td style="width:25%; vertical-align:bottom;">
+                                <td style="width:50%; vertical-align:top;">
                                     <div style="margin-bottom:4px; font-size:11px; margin-left:-4px;">
                                         <span>Date:
                                             <span t-field="file.booking_date" t-options="{'widget': 'date'}"/>
@@ -22,26 +46,7 @@
                                         <span t-field="file.society_id.name"/>
                                     </div>
                                 </td>
-                                <td style="width:50%; text-align:center; vertical-align:top;">
-                                    <div style="margin-top: 3px;">
-                                        <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
-                                            MEMBERSHIP FORM
-                                        </span>
-                                    </div>
-                                    <div style="color:#40a4d5; font-weight:bold; font-size:11px; margin-top:3px;">
-                                        File No:
-                                        <span t-field="file.tracking_id"/>
-                                    </div>
-                                    <div style="margin-top:5px;">
-                                        <strong style="font-size:10px;">Verify Me</strong>
-                                        <br/>
-                                        <t t-if="file.qr_code">
-                                            <img t-att-src="image_data_uri(file.qr_code)"
-                                                 style="height:70px; width:70px;"/>
-                                        </t>
-                                    </div>
-                                </td>
-                                <td style="width:25%; text-align:right; vertical-align:bottom;">
+                                <td style="width:50%; text-align:right; vertical-align:top;">
                                     <div style="font-weight:bold; font-size:11px; margin-bottom:4px;">
                                         <span t-esc="copy_label"/>
                                     </div>
@@ -273,7 +278,7 @@
                                     <strong>Down Payment:</strong>
                                 </td>
                                 <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.initial_payment"/>
+                                    <span t-field="file.down_payment_amount"/>
                                 </td>
                             </tr>
                             <tr>
@@ -315,7 +320,10 @@
                             <strong>Note:</strong>
                         </div>
 
-                        <div style="margin-top: 80mm;"></div>
+                        <!-- Spacer sets the signature row position. Do not exceed 16mm:
+                             above that, records with a member photo spill to a
+                             second sheet. -->
+                        <div style="margin-top: 15mm;"></div>
                         <table style="width:100%; margin-top:25px;">
                             <tr>
                                 <td style="width:33%; text-align:left; padding-top:8px; vertical-align:bottom;">
@@ -345,23 +353,19 @@
 
 
                     <div class="page"
-                         style="font-family: Arial, sans-serif; font-size:11px; padding:10mm 12mm; color:#222;">
-                        <!--  TOP HEADER ROW  -->
-                        <table style="width:100%; margin-bottom:6px;">
+                         style="font-family: Arial, sans-serif; font-size:11px; padding:4mm 12mm; color:#222;">
+                        <!--  PAGE TITLE ROW  -->
+                        <table style="width:100%; margin-bottom:4px;">
                             <tr>
-                                <td style="width:25%; vertical-align:top;">
-                                    <!--  left spacer  -->
-                                </td>
-                                <td style="width:50%; text-align:center; vertical-align:top;">
-                                    <div style="margin-top: 3px;">
-                                        <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
-                                            INSTALLMENT PLAN
-                                        </span>
-                                    </div>
+                                <td style="text-align:center;">
+                                    <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
+                                        INSTALLMENT PLAN
+                                    </span>
                                     <div style="color:#40a4d5; font-weight:bold; font-size:11px; margin-top:3px;">
                                         File No:
                                         <span t-field="file.tracking_id"/>
                                     </div>
+                                    <!-- QR disabled: the letterhead carries its own. Restore by uncommenting.
                                     <div style="margin-top:5px;">
                                         <strong style="font-size:10px;">Verify Me</strong>
                                         <br/>
@@ -370,8 +374,14 @@
                                                  style="height:70px; width:70px;"/>
                                         </t>
                                     </div>
+                                    -->
                                 </td>
-                                <td style="width:25%; text-align:right; vertical-align:bottom;">
+                            </tr>
+                        </table>
+                        <!--  OFFICE COPY ROW  -->
+                        <table style="width:100%; margin-bottom:6px;">
+                            <tr>
+                                <td style="text-align:right; vertical-align:top;">
                                     <div style="font-weight:bold; font-size:11px; margin-bottom:4px;">
                                         <span t-esc="copy_label"/>
                                     </div>
@@ -387,72 +397,181 @@
                             FILE DETAILS
                         </div>
                         <hr style="background-color:#40a4d5; border:none; height:1px; margin-top:-6px;"/>
-                        <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:10px; font-size:11px;">
+                        <!-- Tight cell padding keeps this page on a single sheet. -->
+                        <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:6px; font-size:11px;">
                             <tr>
-                                <td style="width:12%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="width:12%; background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>Name:</strong>
                                 </td>
-                                <td style="width:38%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="width:38%; background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <span t-field="file.membership_id.name"/>
                                 </td>
-                                <td style="width:12%; background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="width:12%; background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>Category:</strong>
                                 </td>
-                                <td style="width:38%; background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="width:38%; background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <span t-field="file.category_id.name"/>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>File No:</strong>
                                 </td>
-                                <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <span t-field="file.tracking_id"/>
                                 </td>
-                                <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>Product:</strong>
                                 </td>
-                                <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <span t-field="file.unit_category_type_id.name"/>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="border:none; padding:6px 8px;"/>
-                                <td style="border:none; padding:6px 8px;"/>
-                                <td style="background:#edf7fc; padding:6px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Plot No:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.unit_number"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Street:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.street_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Society:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.society_id.name"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Phase:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.phase_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Sector:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.sector_id.name"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Total Area (SQFT):</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.standard_area"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>Size:</strong>
                                 </td>
-                                <td style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <span t-esc="(file.size_id.name or '').replace('×', 'x').replace('Ã—', 'x')"/>
                                 </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Plan Type:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.plan_type"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Payment Type:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.payment_type"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Sale Price:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.ttl_sale_amount"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>No of Installments:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.total_installment"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Less Discount:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.discount_amount"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Payment Interval:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.interval_id.name"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Down Payment:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.down_payment_amount"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Start Date:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.starting_date" t-options="{'widget': 'date'}"/>
+                                </td>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Balance Amount:</strong>
+                                </td>
+                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-field="file.balance_amount"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <strong>Mode Of Payment:</strong>
+                                </td>
+                                <td colspan="3" style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;"/>
                             </tr>
                         </table>
                         <!--  INSTALLMENT TABLE  -->
-                        <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px;">
+                        <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:6px;">
                             <thead>
                                 <tr style="background-color:#40a4d5; color:white; font-size:11px;">
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
                                         Sr#
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:left;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:left;">
                                         Payment Type
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
                                         Due Date
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
                                         Payment Date
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:left;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:left;">
                                         Document No.
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         Amount
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         Received Amount
                                     </th>
-                                    <th style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <th style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         Amount Due
                                     </th>
                                 </tr>
@@ -461,41 +580,212 @@
                                 <tr t-foreach="file.installment_plan_ids.sorted(lambda l: (l.date or '0000-00-00', l.installment_number))"
                                     t-as="line"
                                     t-att-style="'background:' + ('#f7fbfd' if line_index % 2 == 0 else '#ffffff') + '; font-size:11px;'">
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
                                         <span t-esc="line_index + 1"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2;">
                                         <span t-field="line.installment_name"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
                                         <span t-field="line.date" t-options="{'widget': 'date'}"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:center;">
                                         <span t-field="line.payment_date" t-options="{'widget': 'date'}"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2;">
                                         <span t-field="line.invoice"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         <span t-esc="'{:,.2f}'.format(line.amount)"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         <span t-esc="'{:,.2f}'.format(line.amount_paid)"/>
                                     </td>
-                                    <td style="padding:6px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
+                                    <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         <span t-esc="'{:,.2f}'.format(line.residual)"/>
                                     </td>
                                 </tr>
                                 <tr t-if="not file.installment_plan_ids">
-                                    <td colspan="8" style="padding:7px; border:none;">No installment plan created</td>
+                                    <td colspan="8" style="padding:5px; border:none;">No installment plan created</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <div style="page-break-before: always;"/>
+
+
+                    <!--  PAGE 3 : TERMS &amp; CONDITIONS - last page of each copy  -->
+                    <!-- Fitted to the usable page height; shrink the font before
+                         letting the clause list spill onto a second sheet. -->
+                    <div class="page"
+                         style="font-family: Arial, sans-serif; font-size:11px; padding:4mm 12mm; color:#222;">
+                        <!--  PAGE TITLE ROW  -->
+                        <table style="width:100%; margin-bottom:4px;">
+                            <tr>
+                                <td style="text-align:center;">
+                                    <span style="background-color:#40a4d5; color:white; font-weight:bold; font-size:18px; padding:7px 12px 6px 12px; letter-spacing:1px; display:inline-block; line-height: 1; white-space: nowrap;">
+                                        TERMS &amp; CONDITIONS
+                                    </span>
+                                    <div style="color:#40a4d5; font-weight:bold; font-size:11px; margin-top:3px;">
+                                        File No:
+                                        <span t-field="file.tracking_id"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <!--  COPY LABEL ROW  -->
+                        <table style="width:100%; margin-bottom:4px;">
+                            <tr>
+                                <td style="text-align:right; vertical-align:top;">
+                                    <div style="font-weight:bold; font-size:11px;">
+                                        <span t-esc="copy_label"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        <hr style="background-color:#40a4d5; border:none; height:1px; margin-top:0; margin-bottom:4px;"/>
+                        <!--  TERMS LIST  -->
+                        <table style="width:100%; border-collapse:collapse; font-size:11px; line-height:1.35;">
+                            <tbody>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">1.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The applicant shall get the Application Form from Society Office by depositing PKR. 1000/-.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">2.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">Processing fee will be charged @ Rs. 100/- per Marla for Residential and Rs. 20,000/- per plot for Commercial.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">3.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">All payments and installments are to be made according to the category/size of the plot, as per schedules of payments, through Bank Drafts/Pay Orders/Cheques/Cash.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">4.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Developer has provisionally offered this plot based on the proposed Layout Plan. The Developer reserves the right to cancel the offer/earmarking/allotment of effect any variations, alterations in the Layout Plan, which are necessary to meet the planning requirements, relevant rules, regulations and any other reason etc.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">5.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Plot number shall be given through ballot on the payment of entire consideration as per schedule of payment.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">6.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Plot Price includes land price and development charges only excluding Additional Development Charges and any other charges which the Developer may impose from time to time.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">7.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Developer has calculated the total price payable by the Allottee(s) for the plot on the basis of total area of the plot only.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">8.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The payment, on or before due date, of Total Price and other amounts payable as per the Payment Plan, accepted by the Allottee(s) is the essence of this allotment.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">9.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">Installments after due date from the applicant/Allottee will only be accepted with surcharge at the rate of 1.5% per month (0.05% per day).</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">10.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">If any Allottee fails to pay two successive installments within the prescribed period, the allotment shall be liable to be cancelled.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">11.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Additional Development Charges may be imposed due to material increase in development cost.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">12.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">For each preferential location i.e. Corner, Facing Park &amp; Main Boulevard Plot, Applicant will pay 10% premium for each category.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">13.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Developers and the Allottee(s) hereby agree that the Booking Amount shall be treated as Advance Down Payment and may be forfeited in case of delayed payments or non-fulfillment of the terms and conditions.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">14.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Developer shall endeavor to offer possession of the plot within fifteen (15) months from the date of this application subject to timely payments and government duties/taxes.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">15.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">All registration/mutation charges shall be borne by the Allottee along with any other government taxes in vogue.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">16.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">In the event of failure to take possession within ninety (90) days of intimation, the Allottee(s) shall be liable to pay security/maintenance charges.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">17.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">No construction can be done without the approval of the Design Authorities of the Developer.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">18.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The applicant shall submit his building plan to the Developer for onward submission to the competent authority.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">19.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">It shall be incumbent upon the Allottee(s) to comply with all terms and conditions of the Developer, failing which the provisional allotment may stand cancelled.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">20.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Allottee(s) shall inform the Developer in writing of any change in mailing address within seven (7) days.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">21.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The Allottee(s) agree and surrender in favor of the Developer any right to receive interest/mark-up against the amounts paid by him/them.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">22.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">Allottee(s) may transfer their interest under this Letter subject to payment of transfer fee and clearance of all dues.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">23.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">Firm Allotment Letter shall be issued upon submission of the required documents and possession certificate.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">24.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">In case of transfer of plot, the first Allottee shall be bound to clear all committed dues payable to the Developer.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">25.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">In case of any dispute with the Developer, the matter shall be referred to the Chief Executive of the Developer or nominee whose decision shall be final and binding.</td>
+                                </tr>
+                                <tr style="background:#ffffff;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">26.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">Every Allottee shall abide by these Terms &amp; Conditions in addition to the Bye-Laws of LDA and other applicable regulations.</td>
+                                </tr>
+                                <tr style="background:#f7fbfd;">
+                                    <td style="width:6%; padding:2px 4px; text-align:right; vertical-align:top; font-weight:bold; border:none;">27.</td>
+                                    <td style="padding:2px 6px; text-align:justify; vertical-align:top; border:none;">The terms and conditions herein are binding on the Developer and the Allottee. The Developer reserves the right to amend or add further terms and conditions.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!--  DECLARATION  -->
+                        <div style="font-size:11px; line-height:1.35; font-weight:bold; border-top:1px solid #ccc; padding-top:5px; margin-top:6px;">
+                            I have read and understood the above terms and conditions and I hereby agree to abide by these as well as any future rules and regulations of the Society.
+                        </div>
+                        <!--  SIGNATURE ROW  -->
+                        <table style="width:100%; margin-top:12mm;">
+                            <tr>
+                                <td style="width:60%; text-align:left; vertical-align:bottom;">
+                                    <div style="display:inline-block; width:65mm; border-top:1px solid #999; padding-top:4px;">
+                                        <span style="color:#40a4d5; font-size:10px;">Signature &amp; Thumb Impression</span>
+                                    </div>
+                                </td>
+                                <td style="width:40%; text-align:right; vertical-align:bottom;">
+                                    <div style="display:inline-block; width:50mm; border-top:1px solid #999; padding-top:4px;">
+                                        <span style="color:#40a4d5; font-size:10px;">Date</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                     <div t-if="copy_label == 'OFFICE COPY'" style="page-break-before: always;"/>
                 </t>
+                <!-- Start each additional file on a fresh sheet. -->
+                <div t-if="not file_last" style="page-break-before: always;"/>
 
                 <!--                  CUSTOM FOOTER           -->
+                <!-- Footer disabled: the signature row prints in its place.
+                     Restore by uncommenting; it is positioned by the paperformat's
+                     margin_bottom, not by CSS margin on this div.
                 <div class="footer" style="font-family: Arial, sans-serif; margin: 0 10mm;">
                     <div style="padding-top:4px; font-size:9px; color:#666;">
                         <table style="width:100%; border:none; border-collapse:collapse;">
@@ -516,6 +806,7 @@
                         </table>
                     </div>
                 </div>
+                     -->
             </t>
         </t>
     </template>

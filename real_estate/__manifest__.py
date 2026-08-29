@@ -22,6 +22,7 @@
         'portal',
         'crm',
         'default_payment',
+        'purchase',
     ],
 
     'data': [

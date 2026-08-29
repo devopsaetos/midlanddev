@@ -6,11 +6,11 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//div[@name='options']" position="inside">
-                    <div>
+                    <div invisible="1">
                         <field name="is_include_net_amount"/>
                         <label for="is_include_net_amount"/>
                     </div>
-                    <div>
+                    <div invisible="1">
                         <field name="is_include_property_system"/>
                         <label for="is_include_property_system"/>
                     </div>
@@ -24,16 +24,32 @@
             <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//div[@name='options']" position="inside">
-                    <div>
+                    <div invisible="1">
                         <field name="is_include_net_amount"/>
                         <label for="is_include_net_amount"/>
                     </div>
-                    <div>
+                    <div invisible="1">
                         <field name="is_include_property_system"/>
                         <label for="is_include_property_system"/>
                     </div>
                 </xpath>
             </field>
         </record>
-        
+
+        <!-- Hide the internal real-estate "shadow" products (product.realestate's
+             accounting counterpart, e.g. Booking/Down Payment/Installments) from
+             the generic Products lists in Purchase/Sales/Inventory - they're not
+             meant to be purchased/sold directly. Every product.realestate shadow
+             product has is_include_property_system=True (see data/product_data.xml),
+             so filtering that out is enough to exclude exactly these records
+             without touching real purchasable/sellable products. Data is kept
+             intact - this only changes which records these actions list. -->
+        <record id="purchase.product_normal_action_puchased" model="ir.actions.act_window">
+            <field name="domain">[('is_include_property_system', '=', False)]</field>
+        </record>
+
+        <record id="product.product_template_action" model="ir.actions.act_window">
+            <field name="domain">[('is_include_property_system', '=', False)]</field>
+        </record>
+
 </odoo>

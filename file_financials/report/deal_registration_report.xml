@@ -83,28 +83,16 @@
                             <div class="col-6" t-field="doc.platter_id"/>
                         </div>
                         <div class="row">
+                            <div class="col-6"><strong>Multiple Plans:</strong></div>
+                            <div class="col-6" t-field="doc.multiple_plans"/>
+                        </div>
+                        <div class="row">
                             <div class="col-6"><strong>Plan Type:</strong></div>
                             <div class="col-6" t-field="doc.plan_type"/>
                         </div>
-                        <div class="row" t-if="doc.plan_type == 'predefine'">
+                        <div class="row" t-if="doc.plan_type == 'predefine' and not doc.multiple_plans">
                             <div class="col-6"><strong>Plan Name:</strong></div>
                             <div class="col-6" t-field="doc.predefine_plan_id"/>
-                        </div>
-                        <div class="row">
-                            <div class="col-6"><strong>Payment Type:</strong></div>
-                            <div class="col-6" t-field="doc.payment_type"/>
-                        </div>
-                        <div class="row">
-                            <div class="col-6"><strong>Interval:</strong></div>
-                            <div class="col-6" t-field="doc.interval_id"/>
-                        </div>
-                        <div class="row">
-                            <div class="col-6"><strong>No. of Installments:</strong></div>
-                            <div class="col-6" t-field="doc.total_installment"/>
-                        </div>
-                        <div class="row">
-                            <div class="col-6"><strong>Installment Start Date:</strong></div>
-                            <div class="col-6" t-field="doc.start_date"/>
                         </div>
                     </div>
                     <div class="col-6">
@@ -117,20 +105,16 @@
                             <div class="col-6" t-esc="'{:,.2f}'.format(doc.down_payment)"/>
                         </div>
                         <div class="row">
+                            <div class="col-6"><strong>Down Payment:</strong></div>
+                            <div class="col-6" t-esc="'{:,.2f}'.format(doc.down_payment_amount)"/>
+                        </div>
+                        <div class="row">
                             <div class="col-6"><strong>Balance Amount:</strong></div>
                             <div class="col-6" t-esc="'{:,.2f}'.format(doc.balance_amount)"/>
                         </div>
                         <div class="row">
                             <div class="col-6"><strong>No. Of Units:</strong></div>
                             <div class="col-6" t-field="doc.no_of_units"/>
-                        </div>
-                        <div class="row">
-                            <div class="col-6"><strong>Mode Of Payments:</strong></div>
-                            <div class="col-6" t-field="doc.mode_of_payments"/>
-                        </div>
-                        <div class="row">
-                            <div class="col-6"><strong>Payment States:</strong></div>
-                            <div class="col-6" t-field="doc.payment_states"/>
                         </div>
                         <div class="row">
                             <div class="col-6"><strong>Files to Show:</strong></div>
@@ -152,6 +136,7 @@
                             <th style="padding:4px;">Street</th>
                             <th style="padding:4px;">Category</th>
                             <th style="padding:4px;">Product</th>
+                            <th style="padding:4px;" t-if="doc.multiple_plans">Plan</th>
                             <th style="padding:4px;">Size</th>
                             <th style="padding:4px;">Plot No.</th>
                             <th style="padding:4px; text-align:right;">List Price</th>
@@ -167,6 +152,7 @@
                             <td style="padding:4px;"><span t-field="line.street_id"/></td>
                             <td style="padding:4px;"><span t-field="line.category_id"/></td>
                             <td style="padding:4px;"><span t-field="line.unit_category_type_id"/></td>
+                            <td style="padding:4px;" t-if="doc.multiple_plans"><span t-field="line.predefine_plan_id"/></td>
                             <td style="padding:4px;"><span t-field="line.size_id"/></td>
                             <td style="padding:4px;" t-esc="line.name if doc.reservation_type == 'unit' else (line.inventory_id.name if line.inventory_id else '')"/>
                             <td style="padding:4px; text-align:right;" t-esc="'{:,.2f}'.format(line.list_price or 0.0)"/>

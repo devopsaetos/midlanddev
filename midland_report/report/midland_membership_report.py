@@ -3,20 +3,12 @@ from odoo import api, models
 
 
 class MidlandMembershipReport(models.AbstractModel):
-    """
-    Report parser for the combined Membership Form + Installment Plan PDF.
-    Kept thin on purpose: all heavy field logic already lives on file/res.member,
-    here we just expose convenience helpers to the QWeb template so the XML
-    stays readable.
-    """
+    """Report parser for the Membership Form PDF, exposing helpers to the template."""
     _name = 'report.midland_report.report_midland_membership_document'
     _description = 'Midland Membership Form Report Parser'
 
     def _get_kin_lines(self, file):
-        """
-        Next of Kin priority: file-specific kin lines first (per booking/file),
-        fall back to the member's permanent kin lines if the file has none.
-        """
+        """Prefer the file's own kin lines; fall back to the member's permanent ones."""
         if file.kin_line_ids:
             return file.kin_line_ids
         return file.membership_id.kin_line_ids
