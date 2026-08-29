@@ -26,8 +26,13 @@
                 </button>
             </div>
 
-            <!-- Generate Invoices button in header (before state statusbar) -->
+            <!-- Reset to Draft + Generate Invoices buttons in header (before state statusbar) -->
             <field name="state" position="before">
+                <button name="action_reset_to_draft"
+                        string="Reset to Draft"
+                        type="object"
+                        confirm="This releases the reserved inventory and clears the installment plan. Continue?"
+                        invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
                 <button name="action_generate_installment_invoices"
                         string="Generate Invoices"
                         type="object"
@@ -69,8 +74,13 @@
                 </button>
             </div>
 
-            <!-- Generate Invoices button in header (before state statusbar) -->
+            <!-- Reset to Draft + Generate Invoices buttons in header (before state statusbar) -->
             <field name="state" position="before">
+                <button name="action_reset_to_draft"
+                        string="Reset to Draft"
+                        type="object"
+                        confirm="This releases the reserved inventory and clears the installment plan. Continue?"
+                        invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
                 <button name="action_generate_installment_invoices"
                         string="Generate Invoices"
                         type="object"

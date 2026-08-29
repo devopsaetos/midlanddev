@@ -314,6 +314,23 @@ class Investment(models.Model):
                     raise ValidationError('Please add inventory details.')
         self.state = 'reserved'
 
+    def action_reset_to_draft(self):
+        # Undo exactly what reserve_inventory() did, so the deal can be
+        # edited (or deleted) with a clean slate. Only meant to be reachable
+        # from 'reserved' - before any invoice exists - so there's nothing
+        # else (payments, open files) to unwind here.
+        for rec in self:
+            if rec.inventory_ids:
+                for line in rec.inventory_ids:
+                    if line.investment_id == rec:
+                        line.state = 'avalible_for_sale'
+                        line.investment_id = False
+                        line.partner_id = False
+            if rec.investment_plan_ids:
+                rec.investment_plan_ids.unlink()
+            rec.installment_created = False
+            rec.state = 'draft'
+
     def receive_payment(self):
         if not self.investment_plan_ids:
             raise ValidationError(_('Create Installment Plan first.'))

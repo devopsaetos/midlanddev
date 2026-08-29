@@ -7,8 +7,12 @@
         <field name="page_height">0</field>
         <field name="page_width">0</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">8</field>
-        <field name="margin_bottom">8</field>
+        <!-- Reserves the pre-printed letterhead's logo band (top) and its
+             address/QR strip (bottom). Measured values, not estimates. Keep
+             margin_bottom <= 44 or the signature row cannot reach its position:
+             body content is never drawn inside the margin band. -->
+        <field name="margin_top">56</field>
+        <field name="margin_bottom">40</field>
         <field name="margin_left">7</field>
         <field name="margin_right">7</field>
         <field name="header_line" eval="False"/>
