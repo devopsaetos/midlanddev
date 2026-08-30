@@ -69,6 +69,7 @@
                         <group>
                             <group>
                                 <field name="ref" readonly="id and not edit_unlocked"/>
+                                <field name="company_id" options="{'no_create': True}" readonly="id and not edit_unlocked"/>
                                 <field name="company_type" string="Member Type"
                                        readonly="(id and not edit_unlocked) or (token_generated == True)"/>
                                 <field name="assigned_user_ids" string="Assigned Users" readonly="id and not edit_unlocked"/>

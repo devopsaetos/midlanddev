@@ -91,9 +91,12 @@
                             <field name="amount" sum="Total Amount"/>
                             <field name="net_payment" readonly="1" force_save="1"/>
                             <field name="rebate_adjustment" readonly="1" force_save="1"/>
-                            <field name="residual" sum="Amount Due" readonly="0"/>
-                            <field name="payment_status" string="Status"/>
-                            <field name="amount_paid" sum="Total Paid" readonly="0"/>
+                            <field name="residual" invisible="1"/>
+                            <field name="payment_status" invisible="1"/>
+                            <field name="amount_paid" invisible="1"/>
+                            <field name="display_residual" sum="Amount Due" string="Amount Due"/>
+                            <field name="display_payment_status" string="Status"/>
+                            <field name="display_amount_paid" sum="Total Paid" string="Amount Paid"/>
                             <field name="dealer_share" readonly="1" force_save="1"/>
                             <field name="marketing_share" readonly="1" force_save="1"/>
                             <field name="rebate_amount" readonly="1" force_save="1"/>
