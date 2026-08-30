@@ -552,112 +552,41 @@ class InvestorFileExt(models.Model):
                 #     })
                 if self.initial_payment and self.type == 'normal':
                     if not self.installment_plan_ids or self.installment_plan_ids[0].payment_status not in ('in_payment', 'paid'):
-                        # Even on a multi-plan deal, _get_installment_plan_groups()
-                        # (investment.py) always collapses the whole deal into ONE
-                        # combined Booking row, regardless of how many distinct
-                        # predefine_plan_id values the individual units carry - so
-                        # this file's own plan does not need to match the Booking
-                        # row's plan_id; every unit draws from the same single pool.
-                        booking_lines = self.investment_id.investment_plan_ids.filtered(
-                            lambda l: l.installment_type == 'down')
-                        if booking_lines and all(l.payment_status in ('in_payment', 'paid') for l in booking_lines):
-                            self.installment_plan_ids.create({
-                                'date': self.booking_date + relativedelta(days=+self.grace_period),
-                                'payment_date': self.booking_date,
-                                'installment_name': 'Booking',
-                                'installment_type': 'down',
-                                # 'invoice': 'Paid By Investor',
-                                'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
-                                # 'invoice_created': True,
-                                # 'investor_payment': True,
-                                'installment_number': installment_number,
-                                'amount': self.initial_payment,
-                                'amount_paid': self.initial_payment,
-                                'residual': 0,
-                                'payment_status': 'paid',
-                                'investor_file_id': self.id
-                            })
-                            # self.installment_plan_ids.create({
-                            #     'date': self.booking_date + relativedelta(days=+self.grace_period),
-                            #     'payment_date': self.booking_date,
-                            #     'installment_name': 'Booking',
-                            #     'installment_type': 'down',
-                            #     # 'invoice': 'Paid By Investor',
-                            #     # 'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
-                            #     # 'invoice_created': True,
-                            #     # 'investor_payment': True,
-                            #     'installment_number': 1,
-                            #     'amount': self.initial_payment,
-                            #     # 'amount_paid': self.initial_payment,
-                            #     # 'residual': 0,
-                            #     'payment_status': 'not_paid',
-                            #     'investor_file_id': self.id
-                            # })
-                        else:
-                            # self.installment_plan_ids.create({
-                            #     'date': self.booking_date + relativedelta(days=+self.grace_period),
-                            #     'installment_type': 'down',
-                            #     'installment_name': 'Booking',
-                            #     'installment_number': 1,
-                            #     'amount': self.initial_payment,
-                            #     'tax_amount': round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0,
-                            #     'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100,
-                            #                                              2) if tax_id else self.initial_payment,
-                            #     'payment_status': 'not_paid',
-                            #     'investor_file_id': self.id
-                            # })
-                            self.installment_plan_ids.create({
-                                'date': self.booking_date + relativedelta(days=+self.grace_period),
-                                'payment_date': self.booking_date,
-                                'installment_name': 'Booking',
-                                'installment_type': 'down',
-                                # 'invoice': 'Paid By Investor',
-                                'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
-                                # 'invoice_created': True,
-                                # 'investor_payment': True,
-                                'installment_number': installment_number,
-                                'amount': self.initial_payment,
-                                'tax_amount': round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0,
-                                'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else self.initial_payment,
-                                'payment_status': 'not_paid',
-                                'investor_file_id': self.id
-                            })
-                    # else:
-                    #     pass
+                        # Not marked paid here even though the Deal's own Booking
+                        # pool may already be fully paid - this open file has no
+                        # real member and no real invoice yet, so showing "Paid"
+                        # here would be misleading. check_booking_clearance()
+                        # verifies the Deal-level pool is paid before this file
+                        # can be issued; create_file() generates the real invoice
+                        # (under the actual member's name) once it is.
+                        self.installment_plan_ids.create({
+                            'date': self.booking_date + relativedelta(days=+self.grace_period),
+                            'installment_name': 'Booking',
+                            'installment_type': 'down',
+                            'installment_number': installment_number,
+                            'amount': self.initial_payment,
+                            'tax_amount': round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else 0,
+                            'residual': self.initial_payment + round((self.initial_payment * tax_id[0].amount) / 100, 2) if tax_id else self.initial_payment,
+                            'payment_status': 'not_paid',
+                            'investor_file_id': self.id
+                        })
                     installment_number += 1
 
                 if self.down_payment_amount and self.type == 'normal':
                     if not self.installment_plan_ids or self.installment_plan_ids[0].payment_status not in ('in_payment', 'paid'):
-                        down_payment_lines = self.investment_id.investment_plan_ids.filtered(
-                            lambda l: l.installment_type == 'down_payment')
-                        if down_payment_lines and all(l.payment_status in ('in_payment', 'paid') for l in down_payment_lines):
-                            self.installment_plan_ids.create({
-                                'date': self.booking_date + relativedelta(days=+self.grace_period),
-                                'payment_date': self.booking_date,
-                                'installment_name': 'Down Payment',
-                                'installment_type': 'down',
-                                'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
-                                'installment_number': installment_number,
-                                'amount': self.down_payment_amount,
-                                'amount_paid': self.down_payment_amount,
-                                'residual': 0,
-                                'payment_status': 'paid',
-                                'investor_file_id': self.id
-                            })
-                        else:
-                            self.installment_plan_ids.create({
-                                'date': self.booking_date + relativedelta(days=+self.grace_period),
-                                'payment_date': self.booking_date,
-                                'installment_name': 'Down Payment',
-                                'installment_type': 'down',
-                                'invoice': self.env['ir.sequence'].next_by_code('files.dp.paid.sequence'),
-                                'installment_number': installment_number,
-                                'amount': self.down_payment_amount,
-                                'tax_amount': round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
-                                'residual': self.down_payment_amount + round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else self.down_payment_amount,
-                                'payment_status': 'not_paid',
-                                'investor_file_id': self.id
-                            })
+                        # Same reasoning as Booking above - not paid until a real
+                        # invoice exists under the actual member's name.
+                        self.installment_plan_ids.create({
+                            'date': self.booking_date + relativedelta(days=+self.grace_period),
+                            'installment_name': 'Down Payment',
+                            'installment_type': 'down_payment',
+                            'installment_number': installment_number,
+                            'amount': self.down_payment_amount,
+                            'tax_amount': round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else 0,
+                            'residual': self.down_payment_amount + round((self.down_payment_amount * tax_id[0].amount) / 100, 2) if tax_id else self.down_payment_amount,
+                            'payment_status': 'not_paid',
+                            'investor_file_id': self.id
+                        })
                     installment_number += 1
 
                 if (self.predefine_plan_id
@@ -1187,12 +1116,26 @@ class InvestorFileExt(models.Model):
             # for the Member flow (real_estate/models/file.py).
             if not record.installment_plan_ids and record.payment_type != 'lump_sum' and record.balance_amount != 0:
                 raise ValidationError(_('Please create installment plan first.'))
-            booking_line = self.env['installment.plan'].search([('investor_file_id', '=', record.id), ('installment_type', '=', 'down')])
-            if booking_line and booking_line.residual > 1:
-                error = "Please Clear the Booking Amount for the reserved Inventory to Issue the File"
-                if self.payment_type == 'lump_sum':
-                    error = "Please Clear the Amount for the reserved Inventory to Issue the File"
-                raise ValidationError(error)
+            # Booking/Down Payment lines on the open file itself are never
+            # marked paid (create_installment_plan() no longer does that —
+            # this file has no real member/invoice yet). What actually needs
+            # to be cleared is the Deal-level pool this file's share is drawn
+            # from — the same pool create_installment_plan() sizes that share
+            # against. Only check whichever of Booking/Down Payment this file
+            # actually uses.
+            needed_types = []
+            if record.initial_payment:
+                needed_types.append('down')
+            if record.down_payment_amount:
+                needed_types.append('down_payment')
+            if needed_types:
+                deal_lines = record.investment_id.investment_plan_ids.filtered(
+                    lambda l: l.installment_type in needed_types)
+                if deal_lines and any(l.payment_status not in ('in_payment', 'paid') for l in deal_lines):
+                    error = "Please Clear the Booking Amount for the reserved Inventory to Issue the File"
+                    if record.payment_type == 'lump_sum':
+                        error = "Please Clear the Amount for the reserved Inventory to Issue the File"
+                    raise ValidationError(error)
 
     def create_file(self):
         if not self.transferee_partner_id:
@@ -1397,6 +1340,59 @@ class InvestorFileExt(models.Model):
                 if ins.installment_name not in ['Booking', 'Confirmation', 'Down Payment'] and not ins.invoice:
                     current_date = current_date + relativedelta(months=+1)
                     ins.date = current_date
+
+        # Booking/Down Payment: check_booking_clearance() above already
+        # confirmed the Deal-level pool is paid, but this file's own line is
+        # still 'not_paid' with no invoice (create_installment_plan() no
+        # longer stamps a fake "already paid" marker on the open file - see
+        # the comment there). Now that a real member exists, generate the
+        # real invoice under their name via the same product/account
+        # resolution midland_invoicing's own installment-invoice flow uses -
+        # only if midland_invoicing is installed (file._resolve_product is
+        # one of the methods it adds to `file`).
+        if hasattr(file, '_resolve_product'):
+            xml_ref_by_type = {
+                'down': 'real_estate.downpayment_product',
+                'down_payment': 'real_estate.down_payment_product',
+            }
+            for ins in file.installment_plan_ids.filtered(
+                    lambda l: l.installment_type in xml_ref_by_type and not l.invoice_created):
+                pp = file._resolve_product(xml_ref_by_type[ins.installment_type])
+                inv = self.env['midland.invoice'].create({
+                    'member_id': file.membership_id.id,
+                    'partner_id': file.membership_id.partner_id.id if file.membership_id.partner_id else False,
+                    'invoice_date': ins.date or fields.Date.today(),
+                    'property_invoice_type': ins.installment_type,
+                    'installment_id': ins.id,
+                    'file_ids': file.id,
+                    'currency_id': file.currency_id.id,
+                    'company_id': (file.society_id.company_id or self.env.company).id,
+                    'invoice_line_ids': [(0, 0, {
+                        'product_id': pp.id if pp else False,
+                        'name': pp.name if pp else ins.installment_name,
+                        'account_id': file._resolve_income_account(pp).id,
+                        'quantity': 1.0,
+                        'price_unit': ins.amount,
+                    })],
+                })
+                inv.action_post()
+                # installment.plan.invoice_id is typed Many2one('account.move')
+                # (the legacy JV link, only set when action_post() runs in
+                # create_entry mode) - it is NOT a midland.invoice, so it must
+                # not be pointed at inv.id here (that produced a "Missing
+                # Record: account.move(...)" error). The real link back is
+                # inv.installment_id, already set above; midland_payment.py's
+                # _update_installment() uses that to write payment_status/
+                # amount_paid/residual on this same line once the member
+                # actually pays. For now, reset the line's paid state, which
+                # still carries the deal-level pool distribution's stamped
+                # "paid" values from when this was still an Open File.
+                ins.write({
+                    'invoice_created': True,
+                    'payment_status': 'not_paid',
+                    'amount_paid': 0.0,
+                    'residual': ins.amount + ins.tax_amount,
+                })
         # self.create_rebate_bills()
 
     def create_rebate_bills(self):
@@ -1533,7 +1529,7 @@ class InvestorFileExt(models.Model):
 
     def update_rebate_values_for_booking(self):
         for rec in self:
-            booking_lines = rec.installment_plan_ids.filtered(lambda l: l.installment_type == 'down')
+            booking_lines = rec.installment_plan_ids.filtered(lambda l: l.installment_type in ('down', 'down_payment'))
             if booking_lines:
                 for booking_line in booking_lines:
                     booking_line.net_payment = 0
@@ -1595,6 +1591,36 @@ class InstallmentPlanExt(models.Model):
 
     account_status = fields.Selection([('accepted', 'Accepted'), ('rejected', 'Rejected')], string="Account Status")
     reason = fields.Text()
+
+    # Booking/Down Payment lines on an Open File get marked paid by the
+    # deal-level pool distribution (investment._distribute_installment_pool)
+    # as soon as the deal itself has received that money - real accounting,
+    # correct for rebate/pool-availability purposes. But an Open File is just
+    # an unissued placeholder with no real member yet, so showing that as
+    # "Paid" on the file is misleading. These display_* fields mirror the
+    # real ones everywhere except that one case, so the underlying ledger
+    # data (and every other flow reading payment_status/amount_paid/residual
+    # directly) is untouched - only the Open File's own list view swaps in
+    # these fields for display.
+    display_payment_status = fields.Selection(selection=[
+        ('not_paid', 'Not Paid'),
+        ('in_payment', 'In Payment'),
+        ('paid', 'Paid')],
+        string='Status', compute='_compute_display_payment')
+    display_amount_paid = fields.Float(string='Amount Paid', compute='_compute_display_payment')
+    display_residual = fields.Float(string='Amount Due', compute='_compute_display_payment')
+
+    @api.depends('payment_status', 'amount_paid', 'residual', 'installment_type', 'investor_file_id.state')
+    def _compute_display_payment(self):
+        for rec in self:
+            if rec.installment_type in ('down', 'down_payment') and rec.investor_file_id.state == 'open':
+                rec.display_payment_status = 'not_paid'
+                rec.display_amount_paid = 0.0
+                rec.display_residual = rec.residual + rec.amount_paid
+            else:
+                rec.display_payment_status = rec.payment_status
+                rec.display_amount_paid = rec.amount_paid
+                rec.display_residual = rec.residual
 
     def compute_net_receivable(self):
         for rec in self:

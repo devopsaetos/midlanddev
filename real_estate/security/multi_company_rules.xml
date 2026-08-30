@@ -1,4 +1,40 @@
 <odoo>
+        <record id="real_estate.res_investor_rule" model="ir.rule">
+            <field name="name">Investor multi-company</field>
+            <field name="model_id" ref="model_res_investor"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.res_member_rule" model="ir.rule">
+            <field name="name">Member multi-company</field>
+            <field name="model_id" ref="model_res_member"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
+        <record id="real_estate.unit_size_rule" model="ir.rule">
+            <field name="name">Unit Size multi-company</field>
+            <field name="model_id" ref="model_unit_size"/>
+            <field name="domain_force">
+                [
+                '|',
+                ('company_id','=',False),
+                ('company_id','in',company_ids)
+                ]
+            </field>
+        </record>
+
         <record id="real_estate.file_rule" model="ir.rule">
             <field name="name">File multi-company</field>
             <field name="model_id" ref="model_file"/>

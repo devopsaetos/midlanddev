@@ -73,6 +73,7 @@
 
                                 <field name='create_date' invisible='1'/> <!-- create_date is Inherited field -->
                                 <field name="ref" readonly="id and not edit_unlocked"/>
+                                <field name="company_id" options="{'no_create': True}" readonly="id and not edit_unlocked"/>
                                 <field name="company_type" string="Member Type"
                                        readonly="(id and not edit_unlocked) or (token_generated == True)"/>
                                 <field name='cnic' string="CNIC" widget="mask"
@@ -605,6 +606,7 @@
                                         <field name="phase_id" string="Phase"/>
                                         <field name='sector_id' string="Sector"/>
                                         <field name='street_id' string="Street"/>
+                                        <field name='down_payment_amount' string="Down Payment"/>
                                     </list>
                                 </field>
                                 <separator string="Building Files"/>
@@ -616,6 +618,7 @@
                                         <field name="phase_id" string="Building"/>
                                         <field name='sector_id' string="Floor"/>
                                         <field name='street_id' string="Street"/>
+                                        <field name='down_payment_amount' string="Down Payment"/>
                                     </list>
                                 </field>
                             </page>
@@ -634,6 +637,7 @@
                 <list name="real_estate_member" decoration-info="biometric == True">
                     <field name="name"/>
                     <field name="ref"/>
+                    <field name="company_id"/>
                     <field name="cnic"/>
                     <field name="mobile"/>
                     <field name="email"/>
