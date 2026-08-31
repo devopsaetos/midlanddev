@@ -1974,8 +1974,15 @@ class InvestmentPlan(models.Model):
     @api.depends('invoice_id', 'invoice_id.amount_residual')
     def _invoice_id_data(self):
         for rec in self:
-            rec.amount_paid = rec.invoice_id.amount_total - rec.invoice_id.amount_residual
-            rec.residual = rec.invoice_id.amount_residual
+            # invoice_id (account.move) is only set for the legacy invoicing
+            # path - lines invoiced/paid through midland.invoice deliberately
+            # leave it False and get amount_paid/residual written directly
+            # by midland_payment.py instead. Without this guard, any
+            # unrelated write re-triggering this compute would blank
+            # amount_paid/residual back to 0 even on a genuinely paid line.
+            if rec.invoice_id:
+                rec.amount_paid = rec.invoice_id.amount_total - rec.invoice_id.amount_residual
+                rec.residual = rec.invoice_id.amount_residual
 
     def _double_check_paid_amount(self):
         for rec in self:

@@ -178,7 +178,13 @@ class FileExt(models.Model):
                 'invoice_created': True,
             })
             rec._settle_token_on_plan(plan, token_fees)
-            if plan.installment_type in ('down', 'down_payment') and rec.payment_states == 'draft':
+            # Any first invoice takes the file out of Draft - not just
+            # Booking/Down Payment. A Lump Sum file's only line is never
+            # 'down'/'down_payment', so restricting this to those types left
+            # Lump Sum files stuck at payment_states='draft' forever, which
+            # blocks approve() with "Please pay the booking payment invoice"
+            # even once that single invoice is fully paid.
+            if rec.payment_states == 'draft':
                 rec.payment_states = 'open'
 
         return {
@@ -246,6 +252,8 @@ class FileExt(models.Model):
                     'invoice_created': True,
                 })
                 file_rec._settle_token_on_plan(plan, token_fees)
+                if file_rec.payment_states == 'draft':
+                    file_rec.payment_states = 'open'
 
     # ── Smart button action ────────────────────────────────────────────────────
     def action_view_midland_invoices(self):
