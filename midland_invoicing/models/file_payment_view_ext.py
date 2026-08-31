@@ -32,7 +32,12 @@ class FilePaymentViewExt(models.Model):
 
                 SELECT
                     mp.date                                          AS payment_date,
-                    0.0                                              AS payment_amount_residual,
+                    -- leftover on the payment as a whole (amount received
+                    -- minus what's actually been applied across all of its
+                    -- invoice lines) - not a per-line residual, since a
+                    -- single midland.payment can cover several invoices;
+                    -- every row for this payment shows the same figure.
+                    (mp.payment_amount - COALESCE(applied.total_paid, 0))  AS payment_amount_residual,
                     mp.file_id                                       AS file_id,
                     NULL::integer                                    AS payment_id,
                     mp.name                                          AS midland_payment_ref,
@@ -45,6 +50,11 @@ class FilePaymentViewExt(models.Model):
                 FROM midland_payment mp
                 INNER JOIN midland_payment_line mpl ON mpl.payment_id = mp.id
                 INNER JOIN midland_invoice mi       ON mi.id = mpl.invoice_id
+                LEFT JOIN (
+                    SELECT payment_id, SUM(COALESCE(payment_amount_paid, payment_amount, 0)) AS total_paid
+                    FROM midland_payment_line
+                    GROUP BY payment_id
+                ) applied ON applied.payment_id = mp.id
                 WHERE mp.state = \'confirmed\'
                   AND mp.file_id IS NOT NULL
 
