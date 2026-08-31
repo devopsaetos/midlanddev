@@ -58,7 +58,12 @@ class InvestmentPaymentView(models.Model):
                     -- per-invoice granularity for a payment covering several.
                     select
                         mp.date as payment_date,
-                        0 as payment_amount_residual,
+                        -- leftover on the payment as a whole (amount received
+                        -- minus what's actually been applied across all of its
+                        -- invoice lines) - not a per-line residual, since a
+                        -- single midland.payment can cover several invoices;
+                        -- every row for this payment shows the same figure.
+                        (mp.payment_amount - COALESCE(applied.total_paid, 0)) as payment_amount_residual,
                         mp.investment_id as investment_id,
                         NULL::integer as payment_id,
                         mp.id as midland_payment_id,
@@ -70,6 +75,11 @@ class InvestmentPaymentView(models.Model):
                     from midland_payment mp
                     inner join midland_payment_line mpl on mpl.payment_id = mp.id
                     inner join midland_invoice mi on mi.id = mpl.invoice_id
+                    left join (
+                        select payment_id, sum(coalesce(payment_amount_paid, payment_amount, 0)) as total_paid
+                        from midland_payment_line
+                        group by payment_id
+                    ) applied on applied.payment_id = mp.id
                     where mp.investment_id is not null and mp.state != 'cancelled'
                ) combined
                )''' % (self._table,)
