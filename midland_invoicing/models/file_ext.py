@@ -146,7 +146,12 @@ class FileExt(models.Model):
                 'name': pp.name if pp else (plan.installment_name or 'Installment'),
                 'account_id': rec._resolve_income_account(pp).id,
                 'quantity': 1.0,
-                'price_unit': plan.amount,
+                # A "Create Manually" file's lines are entered as a
+                # Percentage of Net Sale Amount and computed into
+                # amount_manual (installment.plan._compute_amount) - the
+                # plain `amount` field is only populated for predefine-plan
+                # lines, so it's 0 here and would silently invoice at 0.00.
+                'price_unit': plan.amount or plan.amount_manual,
                 'rebate_amount': plan.dealer_share or 0.0,
             })]
             token_fees, token_line = rec._token_adjustment_invoice_line(plan)
