@@ -2571,8 +2571,18 @@ class InstallmentPlan(models.Model):
                 token = rec.file_id.token_id
                 token_amount = token.token_fees
                 token.state = 'adjusted'
-            rec.amount_paid = rec.invoice_id.amount_total - rec.invoice_id.amount_residual + token_amount
-            rec.residual = rec.invoice_id.amount_residual
+            # invoice_id (account.move) is only set for the legacy invoicing
+            # path - lines invoiced through midland.invoice deliberately
+            # leave it False (see the "don't write invoice_id" comments in
+            # midland_invoicing) and instead get amount_paid/residual/
+            # payment_status written directly by midland_payment.py's
+            # _update_installment() when the member pays. Without this
+            # guard, any unrelated write that re-triggers this compute (e.g.
+            # touching file_id.token_id) would blank amount_paid/residual
+            # back to 0 even though the line is genuinely paid.
+            if rec.invoice_id:
+                rec.amount_paid = rec.invoice_id.amount_total - rec.invoice_id.amount_residual + token_amount
+                rec.residual = rec.invoice_id.amount_residual
 
     @api.depends('file_id.net_sale_amount', 'percentage')
     def _compute_amount(self):
