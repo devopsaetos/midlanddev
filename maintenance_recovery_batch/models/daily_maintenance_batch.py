@@ -395,5 +395,4 @@ class DailyMaintenanceLines(models.Model):
     def _compute_partner(self):
         for rec in self:
             file = self.env['file'].sudo().search([('inventory_id', '=', rec.house_id.id)], limit=1)
-            if file:
-                rec.partner_id = file.membership_id.id
+            rec.partner_id = file.membership_id.id if file else False
