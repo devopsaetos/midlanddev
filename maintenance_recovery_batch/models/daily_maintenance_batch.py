@@ -186,7 +186,7 @@ class DailyMaintenanceLines(models.Model):
     batch_maintenance_id = fields.Many2one('daily.maintenance.batch', string="Batch")
     due_amount = fields.Float(string='Due Amount', compute='_compute_amounts', store=True)
     paid_amount = fields.Float(string='Paid Amount')
-    balance = fields.Float(string='Balance', compute='_compute_balance', store=True)
+    balance = fields.Float(string='Balance', compute='_compute_amounts', store=True)
     journal_id = fields.Many2one('account.journal', string='Journal')
     sequence = fields.Integer(string="Sr.No",
                               default=lambda self: self.env['ir.sequence'].next_by_code('daily.maintenance.line'))
