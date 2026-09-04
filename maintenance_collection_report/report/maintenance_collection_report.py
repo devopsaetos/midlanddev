@@ -26,11 +26,11 @@ class MaintenanceCollectionReport(models.AbstractModel):
 
         if docs.date_from:
             from_date = docs.date_from
-            domain.append(('payment_date', '>=', from_date))
+            domain.append(('date', '>=', from_date))
 
         if docs.date_to:
             to_date = docs.date_to
-            domain.append(('payment_date', '<=', to_date))
+            domain.append(('date', '<=', to_date))
 
         invoice_types = docs.invoice_type
 

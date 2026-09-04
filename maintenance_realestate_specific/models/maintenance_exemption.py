@@ -30,10 +30,12 @@ class MaintenanceExemption(models.Model):
     def _product_domain(self):
         return [('id', 'in', self.env['maintenance.charges.type.lines'].sudo().search([]).mapped('product_id.id'))]
 
-    def create(self, vals):
-        if vals.get('exemption_batch_no', 'New') == 'New':
-            vals['exemption_batch_no'] = self.env['ir.sequence'].next_by_code('maintenance.exemption') or 'New'
-        return super(MaintenanceExemption, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('exemption_batch_no', 'New') == 'New':
+                vals['exemption_batch_no'] = self.env['ir.sequence'].next_by_code('maintenance.exemption') or 'New'
+        return super(MaintenanceExemption, self).create(vals_list)
 
     def button_submit(self):
         for rec in self:
@@ -73,7 +75,7 @@ class MaintenanceExemptionLine(models.Model):
     category_id = fields.Many2one('plot.category', string='Category')
     unit_category_type_id = fields.Many2one('unit.category.type', string="Product")
     size_id = fields.Many2one('unit.size', string='Size')
-    inventory_id = fields.Many2one('plot.inventory', string='Plot No')
+    inventory_id = fields.Many2one('plot.inventory', string='Plot No', required=True)
     file_id = fields.Many2one('file')
     exemption_type = fields.Selection([
         ('percentage', 'Percentage'),
@@ -88,6 +90,12 @@ class MaintenanceExemptionLine(models.Model):
     exemption_state = fields.Selection([
         ('active', 'Active'),
         ('inactive', 'Inactive')], default='active')
+
+    @api.constrains('exemption_type', 'exemption_percent')
+    def _check_exemption_percent(self):
+        for rec in self:
+            if rec.exemption_type == 'percentage' and not (0 < rec.exemption_percent <= 100):
+                raise ValidationError(_('Exemption Percentage must be between 0 and 100.'))
 
     @api.onchange('file_id', 'inventory_id')
     def fetch_details(self):
@@ -111,10 +119,12 @@ class MaintenanceExemptionLine(models.Model):
                 rec.size_id = rec.inventory_id.size_id
                 rec.file_id = self.env['file'].search([('inventory_id', '=', rec.inventory_id.id)])
 
-    def create(self, vals):
-        if vals.get('exemption_no', 'New') == 'New':
-            vals['exemption_no'] = self.env['ir.sequence'].next_by_code('maintenance.exemption.line') or 'New'
-        return super(MaintenanceExemptionLine, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('exemption_no', 'New') == 'New':
+                vals['exemption_no'] = self.env['ir.sequence'].next_by_code('maintenance.exemption.line') or 'New'
+        return super(MaintenanceExemptionLine, self).create(vals_list)
 
     def unlink(self):
         for rec in self:

@@ -216,6 +216,7 @@
                                         </p>
                                     </div>
                                 </div>
+                                <!--
                                 <div class="row"
                                      style="font-size: 13px; font-family: 'Roboto', sans-serif;">
                                     <div class="col-3">
@@ -270,6 +271,7 @@
                                         </ol>
                                     </div>
                                 </div>
+                                -->
                                 <!--                                <div class="row ml-0 mr-0">-->
                                 <!--                                    <div class="note-section" style="font-size: 13px; font-family: 'Roboto', sans-serif; margin-top: 20px;">-->
                                 <!--                                        <h5 style="text-decoration: underline;">Note:</h5>-->
@@ -521,6 +523,7 @@
                                         </p>
                                     </div>
                                 </div>
+                                <!--
                                 <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
                                     <div class="col-3">
                                         <b>Account Title</b>
@@ -573,6 +576,7 @@
                                         </ol>
                                     </div>
                                 </div>
+                                -->
 
                                 <!--                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">-->
                                 <!--                                    <div class="col-3">-->
@@ -806,6 +810,7 @@
                                         </p>
                                     </div>
                                 </div>
+                                <!--
                                 <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
                                     <div class="col-3">
                                         <b>Account Title</b>
@@ -858,6 +863,7 @@
                                         </ol>
                                     </div>
                                 </div>
+                                -->
 
                                 <!--                                <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">-->
                                 <!--                                    <div class="col-3">-->

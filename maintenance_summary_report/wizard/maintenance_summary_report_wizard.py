@@ -82,8 +82,8 @@ class MaintenanceSummaryReportWizard(models.TransientModel):
                 plot_category category ON category.id = f.category_id
             LEFT JOIN 
                 unit_category_type product ON product.id = f.unit_category_type_id
-            LEFT JOIN 
-                unit_size size ON size.id = f.size_id
+            LEFT JOIN
+                unit_size size ON size.id = inventory.size_id
             LEFT JOIN 
                 unit_class class ON class.id = f.unit_class_id
             LEFT JOIN 

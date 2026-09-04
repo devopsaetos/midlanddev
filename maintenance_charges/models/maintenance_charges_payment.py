@@ -34,8 +34,8 @@ class MaintenanceChargesPayment(models.Model):
     date = fields.Date(tracking=True, default=fields.Date.today())
     product_id = fields.Many2one('product.product', string='Charge Type')
 
-    # Hard coded cash journal for society charges
-    journal_id = fields.Many2one('account.journal', 'Payment Journal', default=6,
+    journal_id = fields.Many2one('account.journal', 'Payment Journal',
+                                 default=lambda self: self._default_maintenance_journal(),
                                  domain=[('type', 'in', ('cash', 'bank')), ('show_in_maintenance', '=', True)],
                                  tracking=True)
     mode_of_payments = fields.Selection([
@@ -64,6 +64,13 @@ class MaintenanceChargesPayment(models.Model):
     def _default_unit_class(self):
         house = self.env['unit.class'].search([('name', '=', 'House')], limit=1)
         return house.id if house else False
+
+    def _default_maintenance_journal(self):
+        return self.env['account.journal'].search([
+            ('type', 'in', ('cash', 'bank')),
+            ('show_in_maintenance', '=', True),
+            ('company_id', '=', self.env.company.id),
+        ], limit=1)
 
     @api.onchange('sector_id')
     def _product_domain(self):
@@ -145,7 +152,7 @@ class MaintenanceChargesPayment(models.Model):
                                             }))
 
                 payment = self.env['account.payment'].create({
-                    'payment_date': fields.Date.today(),
+                    'date': fields.Date.today(),
                     'payment_type': 'inbound',
                     'partner_type': 'customer',
                     'payment_category': 'multi_inv_payment',
@@ -156,8 +163,7 @@ class MaintenanceChargesPayment(models.Model):
                     'company_id': rec.env.company.id,
                     # 'branch_id': rec.env.branch.id,  # res.branch not available in this project
                     'currency_id': rec.env.company.currency_id.id,
-                    'payment_difference_handling': 'reconcile',
-                    'communication': rec.remarks,
+                    'memo': rec.remarks,
                     'multi_invoice_ids': invoices,
                 })
                 payment.post()
@@ -165,7 +171,15 @@ class MaintenanceChargesPayment(models.Model):
                 rec.payment_id = payment.id
                 rec.state = 'paid'
 
-            if rec.is_advance_payment and rec.product_id.name in ('Maintenance Charges', 'Service Charges'):
+            charges_model = self.env['maintenance.charges']
+            maintenance_product = charges_model._get_maintenance_charges_product_id()
+            society_product = charges_model._get_society_charges_product_id()
+            if rec.is_advance_payment and rec.product_id.id in (maintenance_product.id, society_product.id):
+                if not rec.env.company.account_journal_id:
+                    raise ValidationError(_(
+                        'No invoicing journal is configured for company %s. '
+                        'Please set Company Settings > Invoicing Journal before receiving an advance payment.'
+                    ) % rec.env.company.name)
                 multi_invoices = []
                 invoices_list = []
                 monthly_invoice_created = False
@@ -216,7 +230,7 @@ class MaintenanceChargesPayment(models.Model):
                                 'invoice_date': start_date,
                                 'journal_id': rec.env.company.account_journal_id.id,
                                 'invoice_line_ids': invoice_line,
-                                'property_invoice_type': 'maintenance_charges' if rec.product_id.name == 'Maintenance Charges' else 'society_charges',
+                                'property_invoice_type': 'maintenance_charges' if rec.product_id.id == maintenance_product.id else 'society_charges',
                             })
                             invoices_list.append((0, 0, {
                                 'id': invoice.id,
@@ -246,7 +260,7 @@ class MaintenanceChargesPayment(models.Model):
                             start_date = start_date + relativedelta(months=1)
 
                 payment = self.env['account.payment'].create({
-                    'payment_date': fields.Date.today(),
+                    'date': fields.Date.today(),
                     'payment_type': 'inbound',
                     'partner_type': 'customer',
                     'payment_category': 'multi_inv_payment',
@@ -257,8 +271,7 @@ class MaintenanceChargesPayment(models.Model):
                     'company_id': rec.env.company.id,
                     # 'branch_id': rec.env.branch.id,  # res.branch not available in this project
                     'currency_id': rec.env.company.currency_id.id,
-                    'payment_difference_handling': 'reconcile',
-                    'communication': rec.remarks,
+                    'memo': rec.remarks,
                     'multi_invoice_ids': multi_invoices,
                 })
                 payment.post()
@@ -280,6 +293,13 @@ class MaintenanceChargesPayment(models.Model):
         if not maintenance_invoices:
             raise ValidationError(_('No Invoices found against this plot/file.'))
 
+        maintenance_journal = self._default_maintenance_journal()
+        if not maintenance_journal:
+            raise ValidationError(_(
+                'No maintenance payment journal is configured for company %s. '
+                'Please configure a Cash/Bank journal with "Show in Maintenance" enabled.'
+            ) % self.env.company.name)
+
         # file = self.env['file'].browse(kwargs['file_id'])
         total_amount = 0
         amount_residual = -1
@@ -297,7 +317,7 @@ class MaintenanceChargesPayment(models.Model):
                     'unit_class_id': file.unit_class_id.id,
                     'size_id': file.size_id.id,
                     'date': fields.Date.today(),
-                    'journal_id': 6,
+                    'journal_id': maintenance_journal.id,
                     'mode_of_payments': 'cash',
                     'remarks': "Payment Created From Maintenance App",
                     'maintenance_recovery_agent_id': rec.get("uid", False),
@@ -314,7 +334,7 @@ class MaintenanceChargesPayment(models.Model):
                 #                                 }))
 
                 payment = self.env['account.payment'].sudo().create({
-                    'payment_date': fields.Date.today(),
+                    'date': fields.Date.today(),
                     'payment_type': 'inbound',
                     'partner_type': 'customer',
                     'payment_category': 'multi_inv_payment',
@@ -325,8 +345,7 @@ class MaintenanceChargesPayment(models.Model):
                     'company_id': self.env.company.id,
                     # 'branch_id': self.env.branch.id,  # res.branch not available in this project
                     'currency_id': self.env.company.currency_id.id,
-                    'payment_difference_handling': 'reconcile',
-                    'communication': maintenance_payment.remarks,
+                    'memo': maintenance_payment.remarks,
                     'multi_invoice_ids': [(0, 0, {'invoice_id': inv.id,
                                                   'payment_id': False,
                                                   'payment_due': inv.amount_residual,
@@ -382,14 +401,13 @@ class MaintenanceChargesPayment(models.Model):
 
         return json.dumps(amount)
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code("maintenance.charges.payment") or _('New')
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code("maintenance.charges.payment") or _('New')
 
-        record = super(MaintenanceChargesPayment, self).create(vals)
-
-        return record
+        return super(MaintenanceChargesPayment, self).create(vals_list)
 
     def unlink(self):
         for rec in self:

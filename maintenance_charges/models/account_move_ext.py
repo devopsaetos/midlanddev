@@ -6,5 +6,8 @@ class AccountMoveExt(models.Model):
 
     maintenance_charges_id = fields.Many2one('maintenance.charges')
 
-    property_invoice_type = fields.Selection(selection_add=[('maintenance_charges', 'Maintenance Charges')])
+    property_invoice_type = fields.Selection(selection_add=[
+        ('maintenance_charges', 'Maintenance Charges'),
+        ('society_charges', 'Society/Service Charges'),
+    ])
     is_maintenance_batch = fields.Boolean(default=False)

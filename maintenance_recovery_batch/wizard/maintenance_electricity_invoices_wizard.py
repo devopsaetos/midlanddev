@@ -29,6 +29,9 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
         return [('id', 'in', self.env['maintenance.charges.type.lines'].sudo().search([]).mapped('product_id.id'))]
 
     def generate_invoices(self):
+        charges_model = self.env['maintenance.charges']
+        maintenance_product = charges_model._get_maintenance_charges_product_id()
+        society_product = charges_model._get_society_charges_product_id()
         for rec in self:
             domain = []
             month_first_day = rec.till_date.replace(day=1)
@@ -56,7 +59,7 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
             for file_rec in files:
                 move_line_records = self.env['account.move.line'].search([
                     ('product_id', '=', rec.product_id.id),
-                    ('move_id.partner_id', '=', file_rec.membership_id.id),
+                    ('move_id.partner_id', '=', file_rec.membership_id.partner_id.id),
                     ('move_id.state', '=', 'posted'),
                     ('move_id.date', '>=', month_first_day),
                     ('move_id.date', '<=', month_last_day),
@@ -100,7 +103,7 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                                 else:
                                     amount = maintenance_rule_line.amount
                                 # For Service Charges / Electricity
-                                if rec.product_id.id == 22943:
+                                if rec.product_id.id == society_product.id:
                                     if exemption_obj and exemption_obj.exemption_nature == 'full':
                                         pass
                                     else:
@@ -111,7 +114,7 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                                             'price_unit': amount
                                         })]
                                         invoice = self.env['account.move'].create({
-                                            'partner_id': file_rec.membership_id.id,
+                                            'partner_id': file_rec.membership_id.partner_id.id,
                                             # 'branch_id': self.env.branch.id,  # res.branch not available in this project
                                             'move_type': 'out_invoice',
                                             'maintenance_charges_id': charge_line.maintenance_charges_id.id,
@@ -136,7 +139,7 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                                             'file_id': file_rec.id
                                         })
                                 # For Maintenance Charges
-                                if rec.product_id.id == 103:
+                                if rec.product_id.id == maintenance_product.id:
                                     if exemption_obj and exemption_obj.exemption_nature == 'full':
                                         pass
                                     else:
@@ -147,7 +150,7 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                                             'price_unit': amount
                                         })]
                                         invoice = self.env['account.move'].create({
-                                            'partner_id': file_rec.membership_id.id,
+                                            'partner_id': file_rec.membership_id.partner_id.id,
                                             # 'branch_id': self.env.branch.id,  # res.branch not available in this project
                                             'move_type': 'out_invoice',
                                             'maintenance_charges_id': charge_line.maintenance_charges_id.id,

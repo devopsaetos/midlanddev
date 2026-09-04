@@ -564,6 +564,7 @@
                                             </div>
                                         </div>
                                     </t>
+                                    <!--
                                     <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
                                         <div class="col-3">
                                             <b>Account Title</b>
@@ -623,6 +624,7 @@
                                             </ol>
                                         </div>
                                     </div>
+                                    -->
                                     <div class="row">
                                         <img src='/maintenance_invoice_report/static/image/maintenance.jpeg'
                                              style="height: 40px; width: 100%;"/>
@@ -886,6 +888,7 @@
                                             </div>
                                         </div>
                                     </t>
+                                    <!--
                                     <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
                                         <div class="col-3">
                                             <b>Account Title</b>
@@ -945,6 +948,7 @@
                                             </ol>
                                         </div>
                                     </div>
+                                    -->
                                     <div class="row">
                                         <img src='/maintenance_invoice_report/static/image/maintenance.jpeg'
                                              style="height: 40px; width: 100%;"/>
@@ -1207,6 +1211,7 @@
                                             </div>
                                         </div>
                                     </t>
+                                    <!--
                                     <div class="row" style="font-size: 13px; font-family: 'Roboto', sans-serif;">
                                         <div class="col-3">
                                             <b>Account Title</b>
@@ -1266,6 +1271,7 @@
                                             </ol>
                                         </div>
                                     </div>
+                                    -->
                                     <div class="row">
                                         <img src='/maintenance_invoice_report/static/image/maintenance.jpeg'
                                              style="height: 40px; width: 100%;"/>

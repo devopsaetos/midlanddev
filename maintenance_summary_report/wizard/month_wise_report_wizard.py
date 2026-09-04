@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from io import BytesIO
 import pandas as pd
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 from dateutil.relativedelta import relativedelta
 
 
@@ -54,9 +55,10 @@ class MonthWiseReportWizard(models.TransientModel):
                 current_date += relativedelta(months=1)
 
         # Determine the property_invoice_type condition based on product_id
+        maintenance_product = self.env['maintenance.charges']._get_maintenance_charges_product_id()
         property_invoice_type_condition = (
             "AND am.property_invoice_type = 'maintenance_charges'"
-            if self.product_id.name  == 'Maintenance Charges'
+            if self.product_id.id == maintenance_product.id
             else "AND am.property_invoice_type = 'society_charges'"
         )
 
@@ -194,6 +196,9 @@ class MonthWiseReportWizard(models.TransientModel):
         # Execute the SQL query
         self._cr.execute(sql_query)
         data = self._cr.dictfetchall()
+
+        if not data:
+            raise UserError(_('No records found for the selected filters. Please widen your date range or filters and try again.'))
 
         # Convert the result to a DataFrame
         df = pd.DataFrame(data)
