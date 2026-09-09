@@ -36,9 +36,10 @@ class MaintenancePaymentSummaryWizard(models.TransientModel):
 
     def generate_xlsx_report(self):
         # Determine the property_invoice_type condition based on product_id
+        maintenance_product = self.env['maintenance.charges']._get_maintenance_charges_product_id()
         property_invoice_type_condition = (
             "AND am.property_invoice_type = 'maintenance_charges'"
-            if self.product_id.name == 'Maintenance Charges'
+            if self.product_id.id == maintenance_product.id
             else "AND am.property_invoice_type = 'society_charges'"
         )
 

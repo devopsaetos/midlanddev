@@ -3,7 +3,8 @@
     'name': "Supply Chain Customizations",
     'summary': """To customize supply chain""",
     'description': """To customize supply chain""",
-    'author': "Hassan Raza",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.0.0.2',
     'depends': ['purchase', 'maintenance'],
     'data': [

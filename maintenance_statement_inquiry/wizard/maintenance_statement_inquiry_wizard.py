@@ -27,7 +27,7 @@ class MaintenanceInquiryWizard(models.TransientModel):
         for rec in self:
             file = self.env['file'].sudo().search([('inventory_id', '=', rec.house_id.id)], limit=1)
             if rec.house_id:
-                rec.partner_id = file.membership_id.id
+                rec.partner_id = file.membership_id.partner_id.id
                 rec.category_id = file.category_id.id
                 rec.unit_category_type_id = file.unit_category_type_id.id
                 rec.size_id = file.size_id.id

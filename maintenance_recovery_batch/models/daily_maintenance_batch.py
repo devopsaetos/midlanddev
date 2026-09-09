@@ -108,7 +108,7 @@ class DailyMaintenanceBatch(models.Model):
                     Payment = self.env['account.payment'].sudo()
                     total_payment_amount = line.paid_amount
                     payment = Payment.create({
-                        'payment_date': line.payment_date,
+                        'date': line.payment_date,
                         'payment_type': 'inbound',
                         'partner_type': 'customer',
                         'payment_category': 'multi_inv_payment',
@@ -119,7 +119,7 @@ class DailyMaintenanceBatch(models.Model):
                         'company_id': rec.env.company.id,
                         # 'branch_id': rec.env.branch.id,  # res.branch not available in this project
                         'currency_id': rec.env.company.currency_id.id,
-                        'communication': 'Received Maintenance Charges For ' + file.name if file else 'Received Maintenance Charges For ' + line.house_id.name,
+                        'memo': 'Received Maintenance Charges For ' + file.name if file else 'Received Maintenance Charges For ' + line.house_id.name,
                         'multi_invoice_ids': payment_lines,
                     })
                     if payment:
@@ -186,7 +186,7 @@ class DailyMaintenanceLines(models.Model):
     batch_maintenance_id = fields.Many2one('daily.maintenance.batch', string="Batch")
     due_amount = fields.Float(string='Due Amount', compute='_compute_amounts', store=True)
     paid_amount = fields.Float(string='Paid Amount')
-    balance = fields.Float(string='Balance', compute='_compute_balance', store=True)
+    balance = fields.Float(string='Balance', compute='_compute_amounts', store=True)
     journal_id = fields.Many2one('account.journal', string='Journal')
     sequence = fields.Integer(string="Sr.No",
                               default=lambda self: self.env['ir.sequence'].next_by_code('daily.maintenance.line'))
@@ -288,7 +288,10 @@ class DailyMaintenanceLines(models.Model):
             #             }
             #         }
             if rec.partner_id and rec.house_id and rec.product_id:
-                if rec.product_id.name == 'Maintenance Charges':
+                charges_model = self.env['maintenance.charges']
+                maintenance_product = charges_model._get_maintenance_charges_product_id()
+                society_product = charges_model._get_society_charges_product_id()
+                if rec.product_id.id == maintenance_product.id:
                     return {
                         'domain': {
                             'invoice_ids': [('partner_id', '=', rec.partner_id.id),
@@ -298,7 +301,7 @@ class DailyMaintenanceLines(models.Model):
                                             ('amount_residual_signed', '>', 0.0), ('is_maintenance_batch', '=', False)],
                         }
                     }
-                elif rec.partner_id and rec.product_id.name == 'Service Charges':
+                elif rec.product_id.id == society_product.id:
                     return {
                         'domain': {
                             'invoice_ids': [('partner_id', '=', rec.partner_id.id),
@@ -395,5 +398,4 @@ class DailyMaintenanceLines(models.Model):
     def _compute_partner(self):
         for rec in self:
             file = self.env['file'].sudo().search([('inventory_id', '=', rec.house_id.id)], limit=1)
-            if file:
-                rec.partner_id = file.membership_id.id
+            rec.partner_id = file.membership_id.partner_id.id if file else False

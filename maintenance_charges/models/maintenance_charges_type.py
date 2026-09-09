@@ -1,4 +1,5 @@
-from odoo import fields, models, api
+from odoo import fields, models, api, _
+from odoo.exceptions import ValidationError
 
 
 class MaintenanceChargesType(models.Model):
@@ -12,12 +13,12 @@ class MaintenanceChargesType(models.Model):
     _description = 'Maintenance Charges Type'
 
     name = fields.Char(tracking=True)
-    society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]")
-    phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]")
+    society_id = fields.Many2one('society', 'Society', required=True, domain="[('is_society','=',True)]")
+    phase_id = fields.Many2one('society', 'Phase', required=True, domain="[('is_society','!=',True)]")
     sector_ids = fields.Many2many('sector')
 
-    date_from = fields.Date(tracking=True)
-    date_to = fields.Date(tracking=True)
+    date_from = fields.Date(required=True, tracking=True)
+    date_to = fields.Date(required=True, tracking=True)
     unit_type = fields.Selection([
         ('marla', 'Marla'),
         ('sq_feet', 'Sq. Feet'),
@@ -39,7 +40,7 @@ class MaintenanceChargesTypeLine(models.Model):
     _name = 'maintenance.charges.type.lines'
     _description = 'Maintenance Charges Type Lines'
 
-    product_id = fields.Many2one('product.product')
+    product_id = fields.Many2one('product.product', required=True)
     basis_on = fields.Selection([
         ('fix', 'Fix'),
         ('percentage', 'Percentage'),
@@ -48,3 +49,9 @@ class MaintenanceChargesTypeLine(models.Model):
     amount = fields.Float()
 
     maintenance_charges_type_id = fields.Many2one('maintenance.charges.type')
+
+    @api.constrains('amount')
+    def _check_amount(self):
+        for rec in self:
+            if rec.amount <= 0:
+                raise ValidationError(_('Amount must be greater than 0 for charge type line "%s".') % rec.product_id.display_name)

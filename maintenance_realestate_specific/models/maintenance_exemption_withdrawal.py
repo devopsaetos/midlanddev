@@ -31,11 +31,13 @@ class MaintenanceExemptionWithdrawal(models.Model):
     def _product_domain(self):
         return [('id', 'in', self.env['maintenance.charges.type.lines'].sudo().search([]).mapped('product_id.id'))]
 
-    def create(self, vals):
-        if vals.get('name', 'New') == 'New':
-            vals['withdrawal_batch_no'] = self.env['ir.sequence'].next_by_code(
-                'maintenance.exemption.withdrawal') or 'New'
-        return super(MaintenanceExemptionWithdrawal, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('withdrawal_batch_no', 'New') == 'New':
+                vals['withdrawal_batch_no'] = self.env['ir.sequence'].next_by_code(
+                    'maintenance.exemption.withdrawal') or 'New'
+        return super(MaintenanceExemptionWithdrawal, self).create(vals_list)
 
     def button_submit(self):
         for rec in self:
@@ -74,7 +76,7 @@ class MaintenanceExemptionWithdrawalLine(models.Model):
     category_id = fields.Many2one('plot.category', string='Category')
     unit_category_type_id = fields.Many2one('unit.category.type', string="Product")
     size_id = fields.Many2one('unit.size', string='Size')
-    inventory_id = fields.Many2one('plot.inventory', string='Plot No')
+    inventory_id = fields.Many2one('plot.inventory', string='Plot No', required=True)
     file_id = fields.Many2one('file')
     maintenance_exemption_id = fields.Many2one('maintenance.exemption.line',
                                                domain="['|', ('inventory_id', '=', inventory_id), ('file_id', '=', file_id), ('exemption_state', '=', 'active')]")
@@ -108,11 +110,13 @@ class MaintenanceExemptionWithdrawalLine(models.Model):
                     # [('maintenance_exemption_id.state', '=', 'approved'), ('inventory_id', '=', rec.inventory_id.id)],
                     # limit=1)
 
-    def create(self, vals):
-        if vals.get('name', 'New') == 'New':
-            vals['exemption_withdrawal_no'] = self.env['ir.sequence'].next_by_code(
-                'maintenance.exemption.withdrawal.line') or 'New'
-        return super(MaintenanceExemptionWithdrawalLine, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('exemption_withdrawal_no', 'New') == 'New':
+                vals['exemption_withdrawal_no'] = self.env['ir.sequence'].next_by_code(
+                    'maintenance.exemption.withdrawal.line') or 'New'
+        return super(MaintenanceExemptionWithdrawalLine, self).create(vals_list)
 
     def unlink(self):
         for rec in self:

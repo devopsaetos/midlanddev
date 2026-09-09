@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 import dateutil.parser
 from dateutil.relativedelta import relativedelta
+
+_logger = logging.getLogger(__name__)
 
 
 class MaintenanceCharges(models.Model):
@@ -16,14 +20,14 @@ class MaintenanceCharges(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin', 'portal.mixin']
     _description = 'Maintenance Charges'
 
-    name = fields.Char(tracking=True)
+    name = fields.Char(required=True, tracking=True)
     file_id = fields.Many2one('file')
-    society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]")
-    phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]")
+    society_id = fields.Many2one('society', 'Society', required=True, domain="[('is_society','=',True)]")
+    phase_id = fields.Many2one('society', 'Phase', required=True, domain="[('is_society','!=',True)]")
     sector_ids = fields.Many2many('sector')
 
-    date_from = fields.Date(tracking=True)
-    date_to = fields.Date(tracking=True)
+    date_from = fields.Date(required=True, tracking=True)
+    date_to = fields.Date(required=True, tracking=True)
     applicable_from = fields.Selection([
         ('1st_ins', 'First Installment'),
         ('last_ins', 'Last Installment'),
@@ -43,11 +47,28 @@ class MaintenanceCharges(models.Model):
     # New code
     # ******************************* New Correct Code **********************************************************
     @api.model
+    def _get_maintenance_charges_product_id(self):
+        """Product used by ``maintenance_charges_invoices``. Configured via the
+        ``maintenance_charges.maintenance_product_id`` system parameter instead of being
+        hardcoded, since the product's database id differs between environments."""
+        param = self.env['ir.config_parameter'].sudo().get_param('maintenance_charges.maintenance_product_id')
+        product = self.env['product.product'].browse(int(param)) if param else self.env['product.product']
+        return product if product.exists() else self.env['product.product']
+
+    @api.model
     def maintenance_charges_invoices(self):
         date = self.env.ref('maintenance_charges.ir_cron_maintenance_charges').till_date or fields.Date.today()
         today_date = fields.Date.today()
         month_first_date = date.replace(day=1)
         file = self.env['file']
+        maintenance_product = self._get_maintenance_charges_product_id()
+        if not maintenance_product:
+            _logger.warning(
+                "maintenance_charges_invoices: system parameter "
+                "'maintenance_charges.maintenance_product_id' is not set to a valid product. "
+                "No invoices will be generated until it is configured."
+            )
+            return
         for recs in self.search([('society_id.company_id', '=', self.env.company.id)]):
             for rec in recs.maintenance_charges_line_ids:
                 files = file.search([('society_id', '=', recs.society_id.id),
@@ -71,7 +92,7 @@ class MaintenanceCharges(models.Model):
                         ('invoice_date', '>=', month_first_date),
                         ('invoice_date', '<', month_first_date + relativedelta(months=1)),
                     ], limit=1)
-                    exemption_obj = self.env['maintenance.exemption.history'].search([('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'), ('product_id.id', '=', 103), ('from_date', '<=', today_date), ('to_date', '>=', today_date)])
+                    exemption_obj = self.env['maintenance.exemption.history'].search([('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'), ('product_id', '=', maintenance_product.id), ('from_date', '<=', today_date), ('to_date', '>=', today_date)])
 
                     if existing_invoice:
                         print(f"Invoice already exists for {file_rec.name} in {month_first_date.strftime('%B')}. Skipping...")
@@ -89,7 +110,7 @@ class MaintenanceCharges(models.Model):
                         if round(file_rec.unit_category_type_id.area_marla) in range(rec.from_no, rec.to_no + 1):
                             if date >= recs.date_from and date <= recs.date_to:
                                 for line in rec.maintenance_charges_type_id.maintenance_charges_type_line_ids:
-                                    if line.product_id.id == 103:
+                                    if line.product_id.id == maintenance_product.id:
                                         amount = False
                                         if exemption_obj:
                                             if exemption_obj.exemption_type == 'percentage' and exemption_obj.exemption_percent:
@@ -137,11 +158,28 @@ class MaintenanceCharges(models.Model):
                                             })
 
     @api.model
+    def _get_society_charges_product_id(self):
+        """Product used by ``society_charges_invoices``. Configured via the
+        ``maintenance_charges.society_product_id`` system parameter instead of being
+        hardcoded, since the product's database id differs between environments."""
+        param = self.env['ir.config_parameter'].sudo().get_param('maintenance_charges.society_product_id')
+        product = self.env['product.product'].browse(int(param)) if param else self.env['product.product']
+        return product if product.exists() else self.env['product.product']
+
+    @api.model
     def society_charges_invoices(self):
         date = self.env.ref('maintenance_charges.ir_cron_society_charges').till_date or fields.Date.today()
         today_date = fields.Date.today()
         month_first_date = date.replace(day=1)
         file = self.env['file']
+        society_product = self._get_society_charges_product_id()
+        if not society_product:
+            _logger.warning(
+                "society_charges_invoices: system parameter "
+                "'maintenance_charges.society_product_id' is not set to a valid product. "
+                "No invoices will be generated until it is configured."
+            )
+            return
         for recs in self.search([('society_id.company_id', '=', self.env.company.id)]):
             for rec in recs.maintenance_charges_line_ids:
                 files = file.search([('society_id', '=', recs.society_id.id),
@@ -166,7 +204,7 @@ class MaintenanceCharges(models.Model):
                         ('invoice_date', '>=', month_first_date),
                         ('invoice_date', '<', month_first_date + relativedelta(months=1)),
                     ], limit=1)
-                    exemption_obj = self.env['maintenance.exemption.history'].search([('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'), ('product_id.id', '=', 22943), ('from_date', '<=', today_date), ('to_date', '>=', today_date)])
+                    exemption_obj = self.env['maintenance.exemption.history'].search([('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'), ('product_id', '=', society_product.id), ('from_date', '<=', today_date), ('to_date', '>=', today_date)])
 
                     if existing_invoice:
                         print(f"Invoice already exists for {file_rec.name} in {month_first_date.strftime('%B')}. Skipping...")
@@ -184,7 +222,7 @@ class MaintenanceCharges(models.Model):
                         if round(file_rec.unit_category_type_id.area_marla) in range(rec.from_no, rec.to_no + 1):
                             if date >= recs.date_from and date <= recs.date_to:
                                 for line in rec.maintenance_charges_type_id.maintenance_charges_type_line_ids:
-                                    if line.product_id.id == 22943:
+                                    if line.product_id.id == society_product.id:
                                         amount = False
                                         if exemption_obj:
                                             if exemption_obj.exemption_type == 'percentage' and exemption_obj.exemption_percent:

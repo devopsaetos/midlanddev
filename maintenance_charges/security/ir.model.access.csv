@@ -8,3 +8,4 @@ access_maintenance_charges_payment,maintenance.charges.payment,model_maintenance
 access_change_unit_type,change.unit.type,model_change_unit_type,,1,1,1,1
 access_change_unit_type_lines,change.unit.type.lines,model_change_unit_type_lines,,1,1,1,1
 access_maintenance_advance_payment_lines,maintenance.advance.payment.lines,model_maintenance_advance_payment_lines,,1,1,1,1
+access_maintenance_agent_wizard,maintenance.agent.wizard,model_maintenance_agent_wizard,,1,1,1,1

@@ -69,7 +69,9 @@
                         <notebook colspan="4">
                             <page name="maintenance_charges_invoices" string="Invoices"
                                   invisible="is_advance_payment != False" readonly="state != 'draft'">
-                                <field name="invoice_ids" options="{'no_create': True, 'no_open': True}">
+                                <field name="invoice_ids"
+                                       domain="[('file_ids', '=', file_id), ('payment_state', '=', 'not_paid'), ('amount_residual', '>', 0.0)]"
+                                       options="{'no_create': True, 'no_open': True}">
                                     <list editable="bottom">
                                         <field name="name"/>
                                         <field name="partner_id" invisible="0"
