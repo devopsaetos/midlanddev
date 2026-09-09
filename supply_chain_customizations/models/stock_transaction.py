@@ -148,6 +148,20 @@ class StockTransaction(models.Model):
         inventory_out = False
         if self.type in ('issue', 'transfer_out'):
             inventory_out = True
+        if self.type == 'transfer_out':
+            counterpart_location = self.target_warehouse_id.lot_stock_id
+        elif self.type == 'transfer_in':
+            counterpart_location = self.warehouse_id.lot_stock_id
+        elif self.target_warehouse_id:
+            # Target Warehouse is shown on every transaction type in the
+            # view, not just Transfer Out — if the user filled it in on an
+            # Issue/Return, honor it instead of silently dropping the stock
+            # into the generic scrap/inventory-adjustment location.
+            counterpart_location = self.target_warehouse_id.lot_stock_id
+        else:
+            counterpart_location = line.transaction_id.scrap_location_id
+        location_id = line.source_location_id.id if inventory_out else counterpart_location.id
+        location_dest_id = counterpart_location.id if inventory_out else line.source_location_id.id
         return {
             'origin': line.transaction_id.name,
             'company_id': line.transaction_id.company_id.id,
@@ -158,16 +172,16 @@ class StockTransaction(models.Model):
             'date_deadline': self.date,
             'state': 'draft',
             'product_uom_qty': line.scrap_qty,
-            'location_id': line.source_location_id.id if inventory_out else line.transaction_id.scrap_location_id.id,
-            'location_dest_id': line.transaction_id.scrap_location_id.id if inventory_out else line.source_location_id.id,
+            'location_id': location_id,
+            'location_dest_id': location_dest_id,
             'stock_transaction_id': line.transaction_id.id,
             'stock_transaction_line_id': line.id,
             'move_line_ids': [(0, 0, {
                 'product_id': line.product_id.id,
                 'product_uom_id': line.product_uom_id.id,
                 'quantity': line.scrap_qty,
-                'location_id': line.source_location_id.id if inventory_out else line.transaction_id.scrap_location_id.id,
-                'location_dest_id': line.transaction_id.scrap_location_id.id if inventory_out else line.source_location_id.id,
+                'location_id': location_id,
+                'location_dest_id': location_dest_id,
             })],
             'picked': True,
         }
@@ -221,8 +235,7 @@ class StockTransaction(models.Model):
                 if not line.source_location_id:
                     raise UserError(_("Please select a Source Location for product %s") % line.product_id.display_name)
                 
-                available_qty = sum(self.env['stock.quant']._gather(line.product_id, line.source_location_id,
-                                                                    strict=True).mapped('quantity'))
+                available_qty = self.env['stock.quant']._get_available_quantity(line.product_id, line.source_location_id)
                 scrap_qty = line.product_uom_id._compute_quantity(line.scrap_qty, line.product_id.uom_id)
                 if float_compare(available_qty, scrap_qty, precision_digits=precision) < 0:
                     ctx = dict(self.env.context)
@@ -334,20 +347,11 @@ class StockTransactionLine(models.Model):
     def _compute_product_location_ids(self):
         for rec in self:
             warehouse = rec.transaction_id.warehouse_id
-            # branch = rec.transaction_id.branch_id
             if warehouse:
                 # If a specific warehouse is selected, only show its internal locations
                 locations = self.env['stock.location'].search([
                     ('usage', '=', 'internal'),
                     ('warehouse_id', '=', warehouse.id)
-                ])
-                rec.product_location_ids = locations.ids
-            elif branch:
-                # If no warehouse but a branch is selected, show all internal locations for all warehouses in that branch
-                # warehouses = self.env['stock.warehouse'].search([('branch_id', '=', branch.id)])
-                locations = self.env['stock.location'].search([
-                    ('usage', '=', 'internal'),
-                    ('warehouse_id', 'in', warehouses.ids)
                 ])
                 rec.product_location_ids = locations.ids
             else:

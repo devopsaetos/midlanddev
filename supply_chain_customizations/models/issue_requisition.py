@@ -24,7 +24,7 @@ class IssueRequistion(models.Model):
                                   check_company=True, tracking=True)
     location_dest_id = fields.Many2one('stock.location', 'Destination Location', domain="[('usage','=','internal')]",
                                        check_company=True, tracking=True)
-    picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type', states={'draft': [('readonly', False)]},
+    picking_type_id = fields.Many2one('stock.picking.type', 'Operation Type',
                                       default=_default_picking_type, domain="[('code','=','internal')]")
 
     warehouse_id = fields.Many2one('stock.warehouse', ondelete='restrict', tracking=True)
