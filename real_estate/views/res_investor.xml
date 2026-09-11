@@ -255,9 +255,9 @@
                         </group>
                         <notebook>
                             <page string="Registration Details" name="registration_details">
-                                <button name="create_registration_invoice" string="Create Payment" class="oe_highlight"
-                                        type="object"
-                                        invisible="is_invoice_generation"/>
+<!--                                <button name="create_registration_invoice" string="Create Payment" class="oe_highlight"-->
+<!--                                        type="object"-->
+<!--                                        invisible="is_invoice_generation"/>-->
                                 <field name="fees_line_ids">
                                     <list editable="bottom">
                                         <field name="amenity_id" string="Fee Type"
