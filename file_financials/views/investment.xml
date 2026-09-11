@@ -242,6 +242,17 @@
             <xpath expr="//button[@name='generate_invoice_for_plan']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <!-- receive_payment() requires investment_plan_ids to already exist before it will
+                 move state to 'payment', but reset_installment_plan() can still empty that plan
+                 out afterwards (it only blocks resetting once an invoice exists) - and once
+                 emptied, the original invisible condition (state in draft/reserved only) left no
+                 way to create a plan again. Allow 'payment' too so the deal isn't stuck. -->
+            <xpath expr="//button[@name='create_installment_plan']" position="attributes">
+                <attribute name="invisible">installment_created == True or state not in ['draft', 'reserved', 'payment']</attribute>
+            </xpath>
+            <xpath expr="//button[@name='reset_installment_plan']" position="attributes">
+                <attribute name="invisible">installment_created != True or state not in ['draft', 'reserved', 'payment']</attribute>
+            </xpath>
             <xpath expr="//form/sheet/notebook/page[6]" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
