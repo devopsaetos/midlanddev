@@ -26,18 +26,24 @@
                 </button>
             </div>
 
-            <!-- Reset to Draft + Generate Invoices buttons in header (before state statusbar) -->
+            <!-- Reset to Draft + Create/Reset Installment Plan + Generate Invoices
+                 buttons in header (before state statusbar). Create/Reset
+                 Installment Plan are relocated here (out of the Installment
+                 Plan tab, where they used to sit above the plan lines list)
+                 so the whole deal-progression sequence reads left to right. -->
             <field name="state" position="before">
                 <button name="action_reset_to_draft"
                         string="Reset to Draft"
                         type="object"
                         confirm="This releases the reserved inventory and clears the installment plan. Continue?"
                         invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
+                <button name="create_installment_plan" position="move"/>
+                <button name="reset_installment_plan" position="move"/>
                 <button name="action_generate_installment_invoices"
                         string="Generate Invoices"
                         type="object"
                         class="oe_highlight"
-                        invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
+                        invisible="state != 'reserved' or midland_invoice_count &gt; 0 or installment_created != True"/>
             </field>
 
             <!-- Receive Payment only makes sense once invoices actually exist
@@ -45,6 +51,17 @@
                  flipping, instead of as soon as the deal is Reserved. -->
             <button name="receive_payment" position="attributes">
                 <attribute name="invisible">state != 'reserved' or midland_invoice_count == 0</attribute>
+            </button>
+
+            <!-- Assign Plan / Add Inventory only make sense before the
+                 installment plan exists - once Create Installment Plan has
+                 been used, hide both so the header doesn't keep offering
+                 pre-plan setup actions. -->
+            <button name="action_open_assign_plan_wizard" position="attributes">
+                <attribute name="invisible">state != 'reserved' or plan_type != 'predefine' or not header_plan_required or installment_created == True</attribute>
+            </button>
+            <button name="action_open_add_inventory_wizard" position="attributes">
+                <attribute name="invisible">state != 'reserved' or reservation_type != 'unit' or installment_created == True</attribute>
             </button>
 
             <!-- Payments tab: receive_payment()'s midland.payment rows have no
@@ -81,18 +98,22 @@
                 </button>
             </div>
 
-            <!-- Reset to Draft + Generate Invoices buttons in header (before state statusbar) -->
+            <!-- Reset to Draft + Create/Reset Installment Plan + Generate Invoices
+                 buttons in header (before state statusbar) - mirrors the
+                 housing-society view above. -->
             <field name="state" position="before">
                 <button name="action_reset_to_draft"
                         string="Reset to Draft"
                         type="object"
                         confirm="This releases the reserved inventory and clears the installment plan. Continue?"
                         invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
+                <button name="create_installment_plan" position="move"/>
+                <button name="reset_installment_plan" position="move"/>
                 <button name="action_generate_installment_invoices"
                         string="Generate Invoices"
                         type="object"
                         class="oe_highlight"
-                        invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
+                        invisible="state != 'reserved' or midland_invoice_count &gt; 0 or installment_created != True"/>
             </field>
 
             <!-- Receive Payment only makes sense once invoices actually exist
