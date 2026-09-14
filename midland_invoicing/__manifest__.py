@@ -19,6 +19,7 @@
         'views/dealer_confirmation_views.xml',
         'views/file_ext_views.xml',
         'views/investment_ext_views.xml',
+        'views/res_investor_views.xml',
         'views/menuitems.xml',
     ],
     'application': True,

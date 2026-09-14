@@ -10,3 +10,4 @@ from . import file_payment_view_ext
 from . import investment_payment_view_ext
 from . import file_installment_payment_ext
 from . import plot_merger_application_ext
+from . import res_investor_ext

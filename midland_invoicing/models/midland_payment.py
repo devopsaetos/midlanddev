@@ -69,7 +69,22 @@ class MidlandPayment(models.Model):
         currency_field='currency_id',
         help='Actual amount that will hit the Bank/Cash account once '
              'confirmed — Net Payment minus any Confirmation dealer rebate '
-             'netted against Dealer Clearance Advance instead of cash.',
+             'netted against Dealer Clearance Advance instead of cash, and '
+             'minus any amount applied from the dealer\'s own Advance '
+             'balance below.',
+    )
+    dealer_advance_available = fields.Monetary(
+        string='Dealer Advance Available', compute='_compute_dealer_advance_available',
+        currency_field='currency_id',
+        help='This dealer\'s current Advance from Dealer balance — cash '
+             'they\'ve already paid in that has not been applied to any '
+             'invoice yet.',
+    )
+    advance_applied = fields.Monetary(
+        string='Applied from Advance', currency_field='currency_id', tracking=True,
+        help='How much of the dealer\'s existing Advance balance to use '
+             'toward this payment instead of fresh cash — reduces the Bank '
+             'Amount required by the same amount.',
     )
 
     # ── Right panel ───────────────────────────────────────────────────────────
@@ -113,7 +128,7 @@ class MidlandPayment(models.Model):
         for rec in self:
             rec.net_payment = rec.payment_amount - rec.wht_amount
 
-    @api.depends('net_payment', 'invoice_line_ids.invoice_id.rebate_total',
+    @api.depends('net_payment', 'advance_applied', 'invoice_line_ids.invoice_id.rebate_total',
                  'invoice_line_ids.invoice_id.amount_paid')
     def _compute_bank_amount(self):
         for rec in self:
@@ -121,7 +136,18 @@ class MidlandPayment(models.Model):
                 rec._invoice_confirmation_rebate_amount(line.invoice_id)
                 for line in rec.invoice_line_ids if line.invoice_id
             )
-            rec.bank_amount = rec.net_payment - confirmation_rebate
+            rec.bank_amount = rec.net_payment - confirmation_rebate - (rec.advance_applied or 0.0)
+
+    @api.depends('dealer_id', 'company_id')
+    def _compute_dealer_advance_available(self):
+        # Scoped to this payment's own company, not the dealer's cross-company
+        # total (res.investor.dealer_advance_balance) - a journal entry can
+        # only debit the same company's Advance account it was credited in.
+        for rec in self:
+            rec.dealer_advance_available = (
+                rec.dealer_id._dealer_advance_balance_for_company(rec.company_id)
+                if rec.dealer_id and rec.company_id else 0.0
+            )
 
     @api.onchange('payment_for')
     def _onchange_payment_for(self):
@@ -251,6 +277,20 @@ class MidlandPayment(models.Model):
                 partner = rec.partner_id or (rec.member_id.partner_id if rec.member_id else False)
                 if not partner:
                     raise ValidationError(_('Please set a customer.'))
+
+            if rec.advance_applied:
+                if rec.advance_applied < 0:
+                    raise ValidationError(_('Applied from Advance cannot be negative.'))
+                if round(rec.advance_applied, 2) > round(rec.dealer_advance_available or 0.0, 2) + 0.01:
+                    raise ValidationError(
+                        _('Cannot apply %.2f from advance - this dealer only has %.2f available.')
+                        % (rec.advance_applied, rec.dealer_advance_available or 0.0)
+                    )
+                if round(rec.advance_applied, 2) > round(net_pay, 2) + 0.01:
+                    raise ValidationError(
+                        _('Applied from Advance (%.2f) cannot exceed the Net Payment (%.2f).')
+                        % (rec.advance_applied, net_pay)
+                    )
 
             debit_account = (
                 rec.journal_id.default_account_id
@@ -412,6 +452,7 @@ class MidlandPayment(models.Model):
         total_allocated = 0.0
         total_rebate = 0.0
         total_confirmation_rebate = 0.0
+        total_dealer_advance = 0.0
         for line in rec.invoice_line_ids:
             inv = line.invoice_id
             if not inv or not inv.invoice_line_ids:
@@ -481,7 +522,17 @@ class MidlandPayment(models.Model):
                 total_allocated += credit_amount
                 continue
 
-            ratio = line.payment_amount / inv.amount_total if inv.amount_total else 0.0
+            # Cap what actually funds Revenue at what's still owed on this
+            # invoice (its own running balance, not just amount_total, so a
+            # line paid in a prior, separate payment is respected) — a payer
+            # entering more than that isn't extra revenue, it's cash held on
+            # their behalf. That excess is booked to Advance from Dealer
+            # below instead of being let through the ratio at face value.
+            remaining_due = max(round(inv.amount_total - inv.amount_paid, 2), 0.0)
+            revenue_amount = min(line.payment_amount, remaining_due)
+            total_dealer_advance += max(round(line.payment_amount - remaining_due, 2), 0.0)
+
+            ratio = revenue_amount / inv.amount_total if inv.amount_total else 0.0
             for inv_line in inv.invoice_line_ids:
                 revenue_account = inv_line.account_id
                 if not revenue_account:
@@ -497,6 +548,25 @@ class MidlandPayment(models.Model):
                     'credit': credit_amount,
                 }))
                 total_allocated += credit_amount
+
+        if total_dealer_advance > 0:
+            advance_account = rec.company_id.advance_from_dealer_account_id
+            if not advance_account:
+                raise ValidationError(
+                    _('This payment collects more than what is due on the selected '
+                      'invoice(s) (%.2f extra). Please configure the "Advance from '
+                      'Dealer Account" (Settings → Invoicing → Midland Invoicing) so '
+                      'the excess can be booked as a dealer advance instead of '
+                      'revenue.') % total_dealer_advance
+                )
+            jv_lines.append((0, 0, {
+                'account_id': advance_account.id,
+                'partner_id': partner.id,
+                'name': _('Advance from Dealer - %s') % rec.name,
+                'debit': 0.0,
+                'credit': round(total_dealer_advance, 2),
+            }))
+            total_allocated += total_dealer_advance
 
         # Confirmation rebate — the customer only owes cash for (invoice
         # total − dealer rebate); the shortfall clears against the same
@@ -518,6 +588,31 @@ class MidlandPayment(models.Model):
                 'partner_id': partner.id,
                 'name': _('Dealer Clearance - %s') % rec.name,
                 'debit': round(total_confirmation_rebate, 2),
+                'credit': 0.0,
+            }))
+
+        # Applied from the dealer's own Advance balance — funds part (or
+        # all) of this payment from cash they already paid in earlier,
+        # instead of fresh Bank/Cash. Debits down the Advance liability by
+        # the same amount the Bank debit line is reduced by, so the JV still
+        # balances; the credit side (Revenue/rebate/advance-from-this-
+        # payment above) is unaffected — it already reflects the invoices
+        # being settled regardless of where the debit-side funds come from.
+        if rec.advance_applied:
+            advance_account = rec.company_id.advance_from_dealer_account_id
+            if not advance_account:
+                raise ValidationError(
+                    _('Please configure the "Advance from Dealer Account" '
+                      '(Settings → Invoicing → Midland Invoicing).')
+                )
+            bank_line = dict(jv_lines[0][2])
+            bank_line['debit'] = round(bank_line['debit'] - rec.advance_applied, 2)
+            jv_lines[0] = (0, 0, bank_line)
+            jv_lines.insert(1, (0, 0, {
+                'account_id': advance_account.id,
+                'partner_id': partner.id,
+                'name': _('Advance Applied - %s') % rec.name,
+                'debit': round(rec.advance_applied, 2),
                 'credit': 0.0,
             }))
 
@@ -576,11 +671,16 @@ class MidlandPayment(models.Model):
             # For Booking-rebate lines, what gets settled THIS payment is the
             # cash actually paid plus the rebate(s) funded against it - not
             # necessarily the invoice's whole total, so a partial cash
-            # payment correctly leaves the rest as still due.
-            paid_amount = (
-                round(min(line.payment_amount + rebate + marketing_rebate, inv.amount_total), 2)
-                if rebate > 0 or marketing_rebate > 0 else line.payment_amount
-            )
+            # payment correctly leaves the rest as still due. For plain
+            # lines, cap at what's still owed - same as the JV-building loop
+            # above - so an overpayment (booked to Advance from Dealer there)
+            # doesn't also inflate this invoice's/installment's own paid
+            # amount past what it's actually worth.
+            if rebate > 0 or marketing_rebate > 0:
+                paid_amount = round(min(line.payment_amount + rebate + marketing_rebate, inv.amount_total), 2)
+            else:
+                remaining_due = max(round(inv.amount_total - inv.amount_paid, 2), 0.0)
+                paid_amount = min(line.payment_amount, remaining_due)
             new_paid = inv.amount_paid + paid_amount
             if new_paid >= inv.amount_total:
                 inv.write({'amount_paid': inv.amount_total, 'payment_state': 'paid'})

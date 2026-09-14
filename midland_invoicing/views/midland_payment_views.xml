@@ -70,6 +70,11 @@
                                    readonly="state != 'draft'"
                                    invisible="1"/>
                             <field name="net_payment" readonly="1"/>
+                            <field name="dealer_advance_available" readonly="1"
+                                   invisible="payment_for != 'investor' or not dealer_id"/>
+                            <field name="advance_applied"
+                                   readonly="state != 'draft'"
+                                   invisible="payment_for != 'investor' or not dealer_id"/>
                             <field name="bank_amount" readonly="1"/>
                         </group>
 
