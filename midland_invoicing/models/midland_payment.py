@@ -41,8 +41,7 @@ class MidlandPayment(models.Model):
         compute='_compute_partner_id', store=True, readonly=False,
     )
     journal_id = fields.Many2one(
-        'account.journal', string='Payment Journal',
-        domain="[('type', 'in', ['cash', 'bank'])]", tracking=True,
+        'account.journal', string='Payment Journal', tracking=True,
     )
     mode_of_payments = fields.Selection([
         ('cash', 'Cash'),
