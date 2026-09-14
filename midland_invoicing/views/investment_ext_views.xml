@@ -40,6 +40,13 @@
                         invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
             </field>
 
+            <!-- Receive Payment only makes sense once invoices actually exist
+                 to pay — hide it alongside Generate Invoices/Reset to Draft
+                 flipping, instead of as soon as the deal is Reserved. -->
+            <button name="receive_payment" position="attributes">
+                <attribute name="invisible">state != 'reserved' or midland_invoice_count == 0</attribute>
+            </button>
+
             <!-- Payments tab: receive_payment()'s midland.payment rows have no
                  account.payment counterpart, so they need their own column -->
             <xpath expr="//field[@name='investment_payment_view_ids']/list/field[@name='payment_id']" position="after">
@@ -87,6 +94,13 @@
                         class="oe_highlight"
                         invisible="state != 'reserved' or midland_invoice_count &gt; 0"/>
             </field>
+
+            <!-- Receive Payment only makes sense once invoices actually exist
+                 to pay — hide it alongside Generate Invoices/Reset to Draft
+                 flipping, instead of as soon as the deal is Reserved. -->
+            <button name="receive_payment" position="attributes">
+                <attribute name="invisible">state == 'payment' or midland_invoice_count == 0</attribute>
+            </button>
 
             <!-- Payments tab: receive_payment()'s midland.payment rows have no
                  account.payment counterpart, so they need their own column -->

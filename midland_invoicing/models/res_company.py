@@ -10,6 +10,11 @@ class ResCompanyMidlandInvoicing(models.Model):
         help='Debited with the dealer rebate amount when a Booking payment '
              'is settled through the Investor/Dealer rebate flow.',
     )
+    marketing_rebate_account_id = fields.Many2one(
+        'account.account', string='Marketing Rebate Expense Account',
+        help='Debited with the marketing company rebate amount when a Booking '
+             'payment is settled through the Investor/Dealer rebate flow.',
+    )
     advance_from_dealer_account_id = fields.Many2one(
         'account.account', string='Advance from Dealer Account',
         help='Credited with cash collected + rebate (instead of Revenue) when '

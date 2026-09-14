@@ -136,6 +136,13 @@ class MidlandInvoice(models.Model):
              'dealer rebate rather than cash — reduces the cash needed to '
              'settle this invoice under the Investor/Dealer Booking flow.',
     )
+    marketing_rebate_total = fields.Monetary(
+        string='Total Marketing Rebate', compute='_compute_rebate_total', store=True,
+        currency_field='currency_id',
+        help='Marketing company\'s share of the rebate. Funded rather than '
+             'cash — reduces the cash needed to settle this invoice under '
+             'the Investor/Dealer Booking flow, same as the dealer rebate.',
+    )
 
     # ── Payment status ────────────────────────────────────────────────────────
     payment_state = fields.Selection([
@@ -256,19 +263,23 @@ class MidlandInvoice(models.Model):
             rec.amount_residual = rec.amount_total - rec.amount_paid
 
     @api.depends('invoice_line_ids.rebate_amount', 'installment_id.dealer_share',
-                 'investment_installment_id.dealer_share')
+                 'investment_installment_id.dealer_share', 'installment_id.marketing_share',
+                 'investment_installment_id.marketing_share')
     def _compute_rebate_total(self):
         for rec in self:
             if rec.installment_id and rec.installment_id.dealer_share:
                 # File/member flow — File's "Rebate" tab (installment.plan),
                 # populated by Investor File > Compute Rebate.
                 rec.rebate_total = rec.installment_id.dealer_share
+                rec.marketing_rebate_total = rec.installment_id.marketing_share
             elif rec.investment_installment_id and rec.investment_installment_id.dealer_share:
                 # Investor/dealer flow — Investment Plan line, populated by
                 # Investment > Compute Rebate (compute_rebate_amount_process).
                 rec.rebate_total = rec.investment_installment_id.dealer_share
+                rec.marketing_rebate_total = rec.investment_installment_id.marketing_share
             else:
                 rec.rebate_total = sum(rec.invoice_line_ids.mapped('rebate_amount'))
+                rec.marketing_rebate_total = 0.0
 
     # ── CRUD ──────────────────────────────────────────────────────────────────
 

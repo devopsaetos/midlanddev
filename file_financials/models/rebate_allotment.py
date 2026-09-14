@@ -33,9 +33,9 @@ class RebateOnAllotmentExt(models.Model):
                 if rec.calculation_basis == 'fix':
                     rec.rebate_amount = rec.total_rebate
                 else:
-                    # Percentage rebates (Booking and Confirmation alike) apply
-                    # against the deal's Total Deal Amount, not each stage's
-                    # own Booking/Confirmation amount.
+                    # Percentage rebates (Dealer and Marketing, Booking and
+                    # Confirmation alike) apply against the deal's Total Deal
+                    # Amount, not each stage's own Booking/Confirmation amount.
                     rec.rebate_amount = rec.investment_id.total_amount * (rec.total_rebate / 100)
             else:
                 rec.rebate_amount = 0

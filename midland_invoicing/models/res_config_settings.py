@@ -17,6 +17,10 @@ class ResConfigSettings(models.TransientModel):
         'account.account', string='Rebate Expense Account',
         related='company_id.rebate_expense_account_id', readonly=False,
     )
+    marketing_rebate_account_id = fields.Many2one(
+        'account.account', string='Marketing Rebate Expense Account',
+        related='company_id.marketing_rebate_account_id', readonly=False,
+    )
     advance_from_dealer_account_id = fields.Many2one(
         'account.account', string='Advance from Dealer Account',
         related='company_id.advance_from_dealer_account_id', readonly=False,

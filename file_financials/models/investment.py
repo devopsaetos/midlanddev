@@ -910,23 +910,26 @@ class InvestmentExt(models.Model):
         if token_fees_total:
             self.token_id.state = 'adjusted'
 
-        # Compute the dealer's Booking rebate before the auto-payment below,
-        # so its rebate JV (Bank Dr / Rebate Expense Dr / Advance from
-        # Dealer Cr) has a real investment_installment_id.dealer_share to
-        # read — otherwise it would fall through to a plain revenue entry.
+        # Compute the dealer's and marketing company's Booking rebate before
+        # the auto-payment below, so its rebate JV (Bank Dr / Rebate Expense
+        # Dr / Marketing Rebate Dr / Advance from Dealer Cr) has real
+        # investment_installment_id.dealer_share / .marketing_share to read —
+        # otherwise it would fall through to a plain revenue entry.
         self.compute_rebate_amount_process()
 
         payment_type = self.env.company.payment_type
         if payment_type and payment_type == 'osp' and invoices:
-            # Dealer's rebate on each group's Booking line — funded by the
-            # dealer rather than cash, so it's netted out of what we ask for
-            # in cash below. Wrapped in one midland.payment with one
-            # invoice_line per group's invoice (payment_type== 'osp' auto-payment).
+            # Dealer's and marketing company's rebate on each group's Booking
+            # line — funded by them rather than cash, so both are netted out
+            # of what we ask for in cash below. Wrapped in one midland.payment
+            # with one invoice_line per group's invoice (payment_type== 'osp'
+            # auto-payment).
             payment_lines = []
             total_net = 0.0
             for inv in invoices:
                 dealer_rebate = inv.investment_installment_id.dealer_share or 0.0
-                net_amount = inv.amount_total - dealer_rebate
+                marketing_rebate = inv.investment_installment_id.marketing_share or 0.0
+                net_amount = inv.amount_total - dealer_rebate - marketing_rebate
                 if net_amount > 0:
                     payment_lines.append((0, 0, {'invoice_id': inv.id, 'payment_amount': net_amount}))
                     total_net += net_amount

@@ -190,6 +190,22 @@ class MidlandPayment(models.Model):
             return inv.rebate_total
         return 0.0
 
+    def _invoice_marketing_rebate_amount(self, inv):
+        """Marketing company's rebate funded for `inv` under the same
+        Investor/Dealer Booking / Down Payment rebate flow as
+        `_invoice_rebate_amount` — same gating, just the marketing share
+        instead of the dealer share."""
+        self.ensure_one()
+        is_booking = (
+            inv.property_invoice_type in ('down', 'down_payment')
+            or (inv.investment_installment_id
+                and inv.investment_installment_id.installment_type in ('down', 'down_payment'))
+        )
+        if (self.payment_for == 'investor' and is_booking
+                and inv.marketing_rebate_total > 0 and not inv.amount_paid):
+            return inv.marketing_rebate_total
+        return 0.0
+
     def _invoice_confirmation_rebate_amount(self, inv):
         """Dealer rebate to net out of the cash owed when a Confirmation
         invoice is paid — by Member or Investor, independent of the Booking
@@ -349,7 +365,7 @@ class MidlandPayment(models.Model):
                 raise ValidationError(
                     _('Invoice "%s" has no lines. Cannot create payment entry.') % inv.name
                 )
-            if rec._invoice_rebate_amount(inv) > 0:
+            if rec._invoice_rebate_amount(inv) > 0 or rec._invoice_marketing_rebate_amount(inv) > 0:
                 # Rebate lines route to Advance from Dealer, not per-line Revenue.
                 continue
             missing = [
@@ -365,11 +381,31 @@ class MidlandPayment(models.Model):
                        ', '.join(missing))
                 )
 
+        # Booking-rebate lines: if the entered Payment Amount plus the
+        # rebate(s) already funded against the invoice would exceed the
+        # invoice's own total, that excess isn't real cash owed on top of
+        # the invoice — it just means less cash was actually needed once
+        # both rebates are netted in. Pull that excess out of the cash
+        # (Bank) side instead of over-crediting Advance from Customers past
+        # what the invoice is worth (or, worse, silently discarding it and
+        # letting the rounding-correction below quietly add it back).
+        bank_amount = rec.net_payment
+        for line in rec.invoice_line_ids:
+            inv = line.invoice_id
+            if not inv:
+                continue
+            rebate = rec._invoice_rebate_amount(inv)
+            marketing_rebate = rec._invoice_marketing_rebate_amount(inv)
+            if rebate > 0 or marketing_rebate > 0:
+                overage = max(round(
+                    line.payment_amount + rebate + marketing_rebate - inv.amount_total, 2), 0.0)
+                bank_amount -= overage
+
         jv_lines = [(0, 0, {
             'account_id': debit_account.id,
             'partner_id': partner.id,
             'name': rec.name,
-            'debit': rec.net_payment,
+            'debit': round(bank_amount, 2),
             'credit': 0.0,
         })]
 
@@ -384,13 +420,8 @@ class MidlandPayment(models.Model):
             total_confirmation_rebate += rec._invoice_confirmation_rebate_amount(inv)
 
             rebate = rec._invoice_rebate_amount(inv)
-            if rebate > 0:
-                rebate_account = rec.company_id.rebate_expense_account_id
-                if not rebate_account:
-                    raise ValidationError(
-                        _('Please configure the "Rebate Expense Account" '
-                          '(Settings → Invoicing → Midland Invoicing).')
-                    )
+            marketing_rebate = rec._invoice_marketing_rebate_amount(inv)
+            if rebate > 0 or marketing_rebate > 0:
                 advance_account = rec.company_id.advance_from_dealer_account_id
                 if not advance_account:
                     raise ValidationError(
@@ -398,24 +429,48 @@ class MidlandPayment(models.Model):
                           '(Settings → Invoicing → Midland Invoicing).')
                     )
 
-                # Debit: Rebate Expense (before its matching credit below, so
-                # the JV reads Bank Dr / Rebate Expense Dr / Advance Cr)
-                jv_lines.append((0, 0, {
-                    'account_id': rebate_account.id,
-                    'partner_id': partner.id,
-                    'name': _('Dealer Rebate - %s') % rec.name,
-                    'debit': round(rebate, 2),
-                    'credit': 0.0,
-                }))
-                total_rebate += rebate
+                # Debit: Rebate Expense(s) (before their matching credit below,
+                # so the JV reads Bank Dr / Rebate Expense Dr / Advance Cr)
+                if rebate > 0:
+                    rebate_account = rec.company_id.rebate_expense_account_id
+                    if not rebate_account:
+                        raise ValidationError(
+                            _('Please configure the "Rebate Expense Account" '
+                              '(Settings → Invoicing → Midland Invoicing).')
+                        )
+                    jv_lines.append((0, 0, {
+                        'account_id': rebate_account.id,
+                        'partner_id': partner.id,
+                        'name': _('Dealer Rebate - %s') % rec.name,
+                        'debit': round(rebate, 2),
+                        'credit': 0.0,
+                    }))
+                    total_rebate += rebate
+
+                if marketing_rebate > 0:
+                    marketing_rebate_account = rec.company_id.marketing_rebate_account_id
+                    if not marketing_rebate_account:
+                        raise ValidationError(
+                            _('Please configure the "Marketing Rebate Expense Account" '
+                              '(Settings → Invoicing → Midland Invoicing).')
+                        )
+                    jv_lines.append((0, 0, {
+                        'account_id': marketing_rebate_account.id,
+                        'partner_id': partner.id,
+                        'name': _('Marketing Rebate - %s') % rec.name,
+                        'debit': round(marketing_rebate, 2),
+                        'credit': 0.0,
+                    }))
+                    total_rebate += marketing_rebate
 
                 # Credit: Advance from Dealer — only what's actually being
-                # settled THIS payment (the cash just paid + the rebate funded
-                # against it), not the invoice's full value - a Booking-rebate
-                # invoice can still be paid in genuine partial installments,
-                # same as any other invoice, once the one-time rebate has
-                # been applied on the first payment.
-                credit_amount = round(min(line.payment_amount + rebate, inv.amount_total), 2)
+                # settled THIS payment (the cash just paid + the rebate(s)
+                # funded against it), not the invoice's full value - a
+                # Booking-rebate invoice can still be paid in genuine partial
+                # installments, same as any other invoice, once the one-time
+                # rebate has been applied on the first payment.
+                credit_amount = round(
+                    min(line.payment_amount + rebate + marketing_rebate, inv.amount_total), 2)
                 jv_lines.append((0, 0, {
                     'account_id': advance_account.id,
                     'partner_id': partner.id,
@@ -469,10 +524,11 @@ class MidlandPayment(models.Model):
         # Rounding correction on last credit line — jv_lines[-1] is always a
         # credit line here (each loop iteration ends by appending one,
         # whether the Advance from Dealer credit or a Revenue credit).
-        # Booking-rebate lines already self-balance exactly (payment_amount +
-        # rebate == credit_amount by construction) — only non-Booking lines
-        # can leave rounding slack.
-        diff = (rec.net_payment + total_rebate) - total_allocated
+        # Booking-rebate lines already self-balance exactly (bank_amount
+        # already has any overage pulled out above, so cash + rebate(s) ==
+        # credit_amount by construction) — only non-Booking lines can leave
+        # rounding slack.
+        diff = (bank_amount + total_rebate) - total_allocated
         if diff and len(jv_lines) > 1:
             last = dict(jv_lines[-1][2])
             last['credit'] = round(last['credit'] + diff, 2)
@@ -516,11 +572,15 @@ class MidlandPayment(models.Model):
             if not inv:
                 continue
             rebate = rec._invoice_rebate_amount(inv)
+            marketing_rebate = rec._invoice_marketing_rebate_amount(inv)
             # For Booking-rebate lines, what gets settled THIS payment is the
-            # cash actually paid plus the rebate funded against it - not
+            # cash actually paid plus the rebate(s) funded against it - not
             # necessarily the invoice's whole total, so a partial cash
             # payment correctly leaves the rest as still due.
-            paid_amount = round(min(line.payment_amount + rebate, inv.amount_total), 2) if rebate > 0 else line.payment_amount
+            paid_amount = (
+                round(min(line.payment_amount + rebate + marketing_rebate, inv.amount_total), 2)
+                if rebate > 0 or marketing_rebate > 0 else line.payment_amount
+            )
             new_paid = inv.amount_paid + paid_amount
             if new_paid >= inv.amount_total:
                 inv.write({'amount_paid': inv.amount_total, 'payment_state': 'paid'})
