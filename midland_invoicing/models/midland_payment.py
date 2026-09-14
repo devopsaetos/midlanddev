@@ -291,13 +291,19 @@ class MidlandPayment(models.Model):
                         % (rec.advance_applied, net_pay)
                     )
 
-            debit_account = (
-                rec.journal_id.default_account_id
-                or rec.journal_id.payment_credit_account_id
-            )
+            # journal_id.payment_credit_account_id doesn't exist on
+            # account.journal (never a real field here) - this only worked
+            # before because the field was restricted to cash/bank journals,
+            # which always carry their own default_account_id, so the dead
+            # fallback never actually got evaluated. Now that any journal
+            # type is selectable, a journal without one (e.g. Sales,
+            # Purchases) hits this cleanly instead of crashing.
+            debit_account = rec.journal_id.default_account_id
             if not debit_account:
                 raise ValidationError(
-                    _('Journal "%s" has no default account configured.') % rec.journal_id.name
+                    _('Journal "%s" has no default account configured. Please set one on the '
+                      'journal (Accounting → Configuration → Journals), or pick a different '
+                      'journal.') % rec.journal_id.name
                 )
 
             if create_entry:

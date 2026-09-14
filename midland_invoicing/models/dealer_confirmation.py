@@ -109,13 +109,16 @@ class DealerConfirmation(models.Model):
             if not rec.journal_id:
                 raise ValidationError(_('Please select a Journal.'))
 
-            debit_account = (
-                rec.journal_id.default_account_id
-                or rec.journal_id.payment_credit_account_id
-            )
+            # payment_credit_account_id isn't a real field on account.journal
+            # (see midland_payment.py's action_confirm for the same fix) -
+            # this journal has never been type-restricted, so any journal
+            # without its own default_account_id already hits this.
+            debit_account = rec.journal_id.default_account_id
             if not debit_account:
                 raise ValidationError(
-                    _('Journal "%s" has no default account configured.') % rec.journal_id.name
+                    _('Journal "%s" has no default account configured. Please set one on the '
+                      'journal (Accounting → Configuration → Journals), or pick a different '
+                      'journal.') % rec.journal_id.name
                 )
 
             # Re-check everything against the LIVE installment.plan /
