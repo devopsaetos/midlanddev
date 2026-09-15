@@ -37,6 +37,16 @@ class InvestmentAddInventoryWizard(models.TransientModel):
         # picks up a per-product predefine.plan for these new units if the
         # deal is plan_type == 'predefine'.
         self.investment_id._auto_assign_predefine_plan(inventory_recs)
+        # files_created is a plain stored flag, only ever flipped True once
+        # every unit on the deal has its own open file (see
+        # investment.action_open_file_creation_wizard's completion logic) -
+        # it never gets reset on its own, so a deal whose original units
+        # were already fully filed would keep hiding "Create Open File"
+        # forever after, even though these freshly-added units still need
+        # one. Recompute it the same way that method does.
+        if self.investment_id.reservation_type == 'unit':
+            self.investment_id.files_created = not self.env['plot.inventory'].search_count(
+                [('investment_id', '=', self.investment_id.id), ('investor_file_id', '=', False)])
         return {'type': 'ir.actions.act_window_close'}
 
 
