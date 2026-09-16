@@ -909,8 +909,16 @@ class File(models.Model):
                 return False
 
             date_index = 0
+            # Safety margin kept tight: a plan that legitimately needs extra
+            # slots for interspersed Balloon/Possession/Balloting events still
+            # fits comfortably under total_installment + 10 (observed healthy
+            # plans top out at total_installment + 8). A margin of +120 let a
+            # plan whose predefine-plan frequencies never actually get
+            # satisfied (so _pending_plan_events() never returns False) run
+            # away to 150+ duplicate installment lines instead of failing
+            # fast - see file management "150 installment lines" bug.
             while date_index < len(dates) or (_pending_plan_events()
-                                              and len(dates) < self.total_installment + 120):
+                                              and len(dates) < self.total_installment + 10):
                 if date_index >= len(dates):
                     dates.append(dates[-1] + relativedelta(months=+self.interval_id.nom))
                 rec = dates[date_index]
