@@ -104,7 +104,7 @@ class AccountPayment(models.Model):
                 box_size=10,
                 border=1,
             )
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
 
             if isinstance(rec.id, int):  # Skip if not a saved record
                 salt = secrets.token_urlsafe(16)
@@ -138,7 +138,7 @@ class AccountPayment(models.Model):
                 border=1,
             )
 
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
             params = '/payment/verification/%s' % (rec.id)
             url = base_url + params
             data = rec.id

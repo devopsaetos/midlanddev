@@ -325,7 +325,7 @@ class File(models.Model):
                 box_size=10,
                 border=1,
             )
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
             '''url_params = {
                 'id': self.id,
                 'view_type': 'form',
@@ -365,7 +365,7 @@ class File(models.Model):
                 border=1,
             )
 
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
             params = '/file/verification/%s' % (rec.id)
             url = base_url + params
             data = (rec.tracking_id or '') + '/' + (rec.name or '')

@@ -163,7 +163,7 @@ class OpenFileIssuanceRequest(models.Model):
                     box_size=9,
                     border=1,
                 )
-                base_url = rec.env["ir.config_parameter"].get_param("web.base.url")
+                base_url = rec.env["ir.config_parameter"].sudo().get_param("web.base.url")
                 '''url_params = {
                     'id': self.id,
                     'view_type': 'form',

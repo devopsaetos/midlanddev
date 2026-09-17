@@ -90,7 +90,7 @@ class FileExtension(models.Model):
                 border=1,
             )
 
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
             params = '/file/verification/%s' % (rec.id)
             url = base_url + params
             data = rec.tracking_id + '/' + rec.name

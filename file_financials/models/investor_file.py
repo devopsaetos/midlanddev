@@ -114,7 +114,7 @@ class InvestorFileExt(models.Model):
                 box_size=10,
                 border=1,
             )
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
             '''url_params = {
                 'id': self.id,
                 'view_type': 'form',
@@ -143,7 +143,7 @@ class InvestorFileExt(models.Model):
                 border=1,
             )
 
-            base_url = self.env["ir.config_parameter"].get_param("web.base.url")
+            base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
             params = '/open/file/verification/%s' % (rec.id)
             url = base_url + params
             data = rec.id + '/' + rec.name
