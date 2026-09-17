@@ -416,6 +416,11 @@ class InvestmentExt(models.Model):
                         'investment_id': self.id,
                         'development_charges_included': self.development_charges_included,
                         'state': 'open',
+                        # Investor's File Management (real_estate.action_investor_file)
+                        # filters strictly on project_type - leaving it unset here
+                        # made every open file created through this path invisible
+                        # there, even though it's a real, valid Open file.
+                        'project_type': self.project_type,
                         'society_id': self.society_id.id,
                         'phase_id': self.phase_id.id,
                         'sector_id': lines.sector_id.id,
@@ -456,6 +461,9 @@ class InvestmentExt(models.Model):
                     'investment_id': self.id,
                     'development_charges_included': self.development_charges_included,
                     'state': 'open',
+                    # See the bulk branch above - without this, Investor's
+                    # File Management never shows this file.
+                    'project_type': self.project_type,
                     'society_id': self.society_id.id,
                     'phase_id': self.phase_id.id,
                     'sector_id': inv.sector_id.id,
