@@ -119,7 +119,7 @@
                                 <t t-foreach="data" t-as="record">
                                     <table class="table table-bordered font-weight-bold" style="line-height: 1.2px !important;font-size:12px !important;">
                                         <thead class="text-center">
-                                            <tr style="background-color:#023047;color:#fff;">
+                                            <tr style="background-color:#d7deef;color:#191970;">
                                                 <th t-attf-colspan="#{len(record['inventory_rows']) + 2}" class="text-center text-uppercase">
                                                     inventory status - <span class="text-uppercase" t-esc="record['investor'].investor_id"/>
                                                 </th>
@@ -151,46 +151,54 @@
 
                                     <table class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
                                         <thead>
-                                            <tr style="background-color:#191970;color:#fff;">
-                                                <th colspan="5" class="text-center text-uppercase">payment details</th>
+                                            <tr style="background-color:#d7deef;color:#191970;">
+                                                <th colspan="4" class="text-center text-uppercase">payment details</th>
                                             </tr>
                                             <tr style="background-color:#546291;color:#fff;">
                                                 <th/>
                                                 <th class="text-center">Amount</th>
-                                                <th class="text-center">Rebate</th>
+                                                <th class="text-center">Dealer Rebate</th>
                                                 <th class="text-center">Paid</th>
-                                                <th class="text-center">Due</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
+                                            <!-- Booking and Confirmation rows hidden per client request
+                                                 (2026-09-18) - kept commented rather than deleted since
+                                                 the underlying data (record['booking_*']/['confirmation_*'])
+                                                 is still computed and used by other investors/prints. -->
+                                            <!-- <tr>
                                                 <td>Booking</td>
                                                 <td class="text-right"><span t-esc="record['booking_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['booking_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['booking_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['booking_amount_due']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                            </tr>
+                                            </tr> -->
                                             <tr>
+                                                <td>Down Payment</td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            </tr>
+                                            <!-- <tr>
                                                 <td>Confirmation</td>
                                                 <td class="text-right"><span t-esc="record['confirmation_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['confirmation_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['confirmation_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['confirmation_amount_due']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                            </tr>
+                                            </tr> -->
                                             <tr>
                                                 <td>Total</td>
-                                                <td class="text-right"><span t-esc="record['booking_amount'] + record['confirmation_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['booking_rebate'] + record['confirmation_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['booking_amount_paid'] + record['confirmation_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['booking_amount_due'] + record['confirmation_amount_due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr>
                                         </tbody>
                                     </table>
 
-                                    <table class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
+                                    <!-- Booking details table hidden per client request (2026-09-18)
+                                         - see note above the Payment Details tbody. -->
+                                    <!-- <table class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
                                         <thead>
                                             <tr>
-                                                <th colspan="7" class="text-center text-uppercase" style="background-color:#191970;color:#fff;">installment type - booking details</th>
+                                                <th colspan="7" class="text-center text-uppercase" style="background-color:#d7deef;color:#191970;">installment type - booking details</th>
                                             </tr>
                                             <tr style="background-color:#546291;color:#fff;">
                                                 <th style="white-space: nowrap;">Payment #</th>
@@ -213,12 +221,42 @@
                                                 <td><span t-esc="line['bank_ref']"/></td>
                                             </tr>
                                         </tbody>
-                                    </table>
+                                    </table> -->
 
                                     <table class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
                                         <thead>
                                             <tr>
-                                                <th colspan="9" class="text-center text-uppercase" style="background-color:#191970;color:#fff;">installment type - confirmation details</th>
+                                                <th colspan="7" class="text-center text-uppercase" style="background-color:#d7deef;color:#191970;">installment type - down payment details</th>
+                                            </tr>
+                                            <tr style="background-color:#546291;color:#fff;">
+                                                <th style="white-space: nowrap;">Payment #</th>
+                                                <th style="white-space: nowrap;">Investment #</th>
+                                                <th style="white-space: nowrap;">Invoice #</th>
+                                                <th style="white-space: nowrap;">Payment Date</th>
+                                                <th style="white-space: nowrap;">Amount Paid</th>
+                                                <th style="white-space: nowrap;">Cheque No</th>
+                                                <th style="white-space: nowrap;">Bank</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="record['down_payment_lines']" t-as="line">
+                                                <td><span t-esc="line['invoice_number']"/></td>
+                                                <td><span t-esc="line['investment_name']"/></td>
+                                                <td><span t-esc="line['payment_type']"/></td>
+                                                <td><span t-esc="line['date']"/></td>
+                                                <td class="text-right"><span t-esc="line['amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td><span t-esc="line['cheque_no']"/></td>
+                                                <td><span t-esc="line['bank_ref']"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <!-- Confirmation details table hidden per client request
+                                         (2026-09-18) - see note above the Payment Details tbody. -->
+                                    <!-- <table class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="9" class="text-center text-uppercase" style="background-color:#d7deef;color:#191970;">installment type - confirmation details</th>
                                             </tr>
                                             <tr style="background-color:#546291;color:#fff;">
                                                 <th style="white-space: nowrap;">Sr No.</th>
@@ -248,7 +286,7 @@
                                             </tr>
                                         </tbody>
                                         <tfoot>
-                                            <tr style="background-color:#191970;color:#fff">
+                                            <tr style="background-color:#d7deef;color:#191970;">
                                                 <th colspan="6"><span>Total</span></th>
                                                 <th class="text-right"><span t-esc="sum(l['payment_amount'] for l in record['confirmation_lines'])" t-options='{"widget": "float", "precision": 2}'/></th>
                                                 <th class="text-right"><span t-esc="record['confirmation_rebate']" t-options='{"widget": "float", "precision": 2}'/></th>
@@ -256,7 +294,7 @@
                                                 <th/>
                                             </tr>
                                         </tfoot>
-                                    </table>
+                                    </table> -->
                                 </t>
                             </div>
                         </div>

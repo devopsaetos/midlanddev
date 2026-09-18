@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="midland_report.FilePrintButton">
+        <div class="d-inline-block">
+            <Dropdown>
+                <button class="btn btn-secondary" type="button">
+                    <i class="fa fa-print me-1"/>
+                    <span>Print</span>
+                </button>
+                <t t-set-slot="content">
+                    <t t-if="!state.reports.length">
+                        <span class="dropdown-item-text text-muted">No report available.</span>
+                    </t>
+                    <t t-foreach="state.reports" t-as="report" t-key="report.id">
+                        <DropdownItem onSelected="() => this.onClickReport(report)">
+                            <t t-esc="report.name"/>
+                        </DropdownItem>
+                    </t>
+                </t>
+            </Dropdown>
+        </div>
+    </t>
+</templates>

@@ -92,6 +92,26 @@ class DealerStatementReport(models.AbstractModel):
             })
         return rows
 
+    def _summarize_lines(self, plan_lines, fk_field):
+        """(amount, paid, rebate, midland_invoices_map) for `plan_lines`
+        (investment.plan or installment.plan rows already filtered to one
+        installment_type) - midland.invoice data where a line has it, the
+        old net_receivable/net_payment/rebate_adjustment fields otherwise.
+        """
+        invoices_map = self._midland_invoices_for(plan_lines, fk_field)
+        amount = paid = rebate = 0.0
+        for plan_line in plan_lines:
+            invs = invoices_map.get(plan_line.id)
+            if invs:
+                amount += sum(invs.mapped('amount_total'))
+                paid += self._midland_cash_paid(invs)
+                rebate += sum(invs.mapped('rebate_total'))
+            else:
+                amount += plan_line.net_receivable
+                paid += plan_line.net_payment
+                rebate += plan_line.rebate_adjustment
+        return amount, paid, rebate, invoices_map
+
     def _booking_lines(self, investments_booking_lines, midland_invoices_map):
         lines = []
         for plan_line in investments_booking_lines:
@@ -233,29 +253,28 @@ class DealerStatementReport(models.AbstractModel):
                 ('investment_id', 'in', investor_investments.ids),
             ])
 
-            # 'down' (Booking Payment) and 'down_payment' (Down Payment) are
+            # 'down' (Booking) and 'down_payment' (Down Payment) are
             # independent plan lines a deal's plan can create at booking time
             # (see Investment._create_installment_plan_for_group()) - a given
-            # deal uses one or the other (occasionally both), never neither,
-            # so both count toward the Booking section here.
-            investments_booking_lines = investments_lines.filtered(
-                lambda l: l.installment_type in ('down', 'down_payment'))
-            booking_invoices = self._midland_invoices_for(investments_booking_lines, 'investment_installment_id')
-            booking_amount = 0.0
-            booking_amount_paid = 0.0
-            booking_rebate = 0.0
-            for plan_line in investments_booking_lines:
-                invs = booking_invoices.get(plan_line.id)
-                if invs:
-                    booking_amount += sum(invs.mapped('amount_total'))
-                    booking_amount_paid += self._midland_cash_paid(invs)
-                    booking_rebate += sum(invs.mapped('rebate_total'))
-                else:
-                    booking_amount += plan_line.net_receivable
-                    booking_amount_paid += plan_line.net_payment
-                    booking_rebate += plan_line.rebate_adjustment
+            # deal uses one or the other (occasionally both), never neither.
+            # They're two distinct fields on the Deal form itself ("Booking
+            # Payment" vs "Down Payment"), so they get their own row here too
+            # instead of being merged under one label.
+            booking_lines_src = investments_lines.filtered(lambda l: l.installment_type == 'down')
+            booking_amount, booking_amount_paid, booking_rebate, booking_invoices = \
+                self._summarize_lines(booking_lines_src, 'investment_installment_id')
             booking_amount_due = booking_amount - booking_amount_paid
 
+            down_payment_lines_src = investments_lines.filtered(lambda l: l.installment_type == 'down_payment')
+            down_payment_amount, down_payment_amount_paid, down_payment_rebate, down_payment_invoices = \
+                self._summarize_lines(down_payment_lines_src, 'investment_installment_id')
+            down_payment_amount_due = down_payment_amount - down_payment_amount_paid
+
+            # Not _summarize_lines(): unlike booking/down payment, confirmation's
+            # rebate has never come from rebate_adjustment for old-pipeline
+            # lines - it's derived below from payment_difference on the actual
+            # payment rows instead, so the per-line loop here deliberately
+            # leaves rebate out to avoid double-counting it.
             files_confirmation_lines = files.mapped('installment_plan_ids').filtered(
                 lambda l: l.installment_type == 'confirmation_amount')
             confirmation_invoices = self._midland_invoices_for(files_confirmation_lines, 'installment_id')
@@ -286,11 +305,16 @@ class DealerStatementReport(models.AbstractModel):
                 'booking_amount_paid': booking_amount_paid,
                 'booking_amount_due': booking_amount_due,
                 'booking_rebate': booking_rebate,
+                'down_payment_amount': down_payment_amount,
+                'down_payment_amount_paid': down_payment_amount_paid,
+                'down_payment_amount_due': down_payment_amount_due,
+                'down_payment_rebate': down_payment_rebate,
                 'confirmation_amount': confirmation_amount,
                 'confirmation_amount_paid': confirmation_amount_paid,
                 'confirmation_amount_due': confirmation_amount_due,
                 'confirmation_rebate': confirmation_rebate,
-                'booking_lines': self._booking_lines(investments_booking_lines, booking_invoices),
+                'booking_lines': self._booking_lines(booking_lines_src, booking_invoices),
+                'down_payment_lines': self._booking_lines(down_payment_lines_src, down_payment_invoices),
                 'confirmation_lines': confirmation_lines,
             })
 

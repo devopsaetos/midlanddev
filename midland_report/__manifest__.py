@@ -17,6 +17,12 @@ a combined PDF report containing:
         'report/midland_membership_report_template.xml',
         'views/file_view.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'midland_report/static/src/js/file_print_button.js',
+            'midland_report/static/src/xml/file_print_button.xml',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'LGPL-3',
