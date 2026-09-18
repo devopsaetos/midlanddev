@@ -93,24 +93,32 @@ class DealerStatementReport(models.AbstractModel):
         return rows
 
     def _summarize_lines(self, plan_lines, fk_field):
-        """(amount, paid, rebate, midland_invoices_map) for `plan_lines`
+        """(amount, paid, rebate, due, midland_invoices_map) for `plan_lines`
         (investment.plan or installment.plan rows already filtered to one
         installment_type) - midland.invoice data where a line has it, the
         old net_receivable/net_payment/rebate_adjustment fields otherwise.
+
+        due = the plan line's own "Amount Due" (residual) - the same figure
+        the Deal form's Installment Plan tab shows, so the report agrees with
+        it. Not derived from amount/rebate/cash here: that disagreed with the
+        system on deals where the marketing rebate also settles part of an
+        invoice.
         """
         invoices_map = self._midland_invoices_for(plan_lines, fk_field)
-        amount = paid = rebate = 0.0
+        amount = paid = rebate = due = 0.0
         for plan_line in plan_lines:
             invs = invoices_map.get(plan_line.id)
             if invs:
                 amount += sum(invs.mapped('amount_total'))
                 paid += self._midland_cash_paid(invs)
                 rebate += sum(invs.mapped('rebate_total'))
+                due += plan_line.residual
             else:
                 amount += plan_line.net_receivable
                 paid += plan_line.net_payment
                 rebate += plan_line.rebate_adjustment
-        return amount, paid, rebate, invoices_map
+                due += plan_line.residual
+        return amount, paid, rebate, due, invoices_map
 
     def _booking_lines(self, investments_booking_lines, midland_invoices_map):
         lines = []
@@ -261,14 +269,12 @@ class DealerStatementReport(models.AbstractModel):
             # Payment" vs "Down Payment"), so they get their own row here too
             # instead of being merged under one label.
             booking_lines_src = investments_lines.filtered(lambda l: l.installment_type == 'down')
-            booking_amount, booking_amount_paid, booking_rebate, booking_invoices = \
+            booking_amount, booking_amount_paid, booking_rebate, booking_amount_due, booking_invoices = \
                 self._summarize_lines(booking_lines_src, 'investment_installment_id')
-            booking_amount_due = booking_amount - booking_amount_paid
 
             down_payment_lines_src = investments_lines.filtered(lambda l: l.installment_type == 'down_payment')
-            down_payment_amount, down_payment_amount_paid, down_payment_rebate, down_payment_invoices = \
+            down_payment_amount, down_payment_amount_paid, down_payment_rebate, down_payment_amount_due, down_payment_invoices = \
                 self._summarize_lines(down_payment_lines_src, 'investment_installment_id')
-            down_payment_amount_due = down_payment_amount - down_payment_amount_paid
 
             # Not _summarize_lines(): unlike booking/down payment, confirmation's
             # rebate has never come from rebate_adjustment for old-pipeline
@@ -295,6 +301,10 @@ class DealerStatementReport(models.AbstractModel):
             confirmation_lines = self._confirmation_lines(files_confirmation_lines, confirmation_invoices)
             confirmation_rebate += sum(l['payment_difference'] for l in confirmation_lines)
 
+            # Deal-wide balance still to collect = sum of every plan line's Amount
+            # Due, matching the Total row of the Deal form's Installment Plan tab.
+            deal_due = sum(investments_lines.mapped('residual'))
+
             data.append({
                 'investor': investor,
                 'files': files,
@@ -308,6 +318,7 @@ class DealerStatementReport(models.AbstractModel):
                 'down_payment_amount': down_payment_amount,
                 'down_payment_amount_paid': down_payment_amount_paid,
                 'down_payment_amount_due': down_payment_amount_due,
+                'deal_due': deal_due,
                 'down_payment_rebate': down_payment_rebate,
                 'confirmation_amount': confirmation_amount,
                 'confirmation_amount_paid': confirmation_amount_paid,
