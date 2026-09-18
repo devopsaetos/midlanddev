@@ -1,0 +1,324 @@
+<odoo>
+    <template id="statement_of_account_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="realestate_report.statement_of_account_header"/>
+                <t t-call="realestate_report.statement_of_account_footer"/>
+                <t t-call="web.internal_layout">
+                    <div class="page" style="font-family:'Roboto',sans-serif;font-size:15px;margin-top:5px;">
+                        <t t-if="o.payment_type == 'installments'">
+                            <t t-set="amount_paid_total" t-value="0.0"/>
+                            <t t-set="total_amount" t-value="0.0"/>
+                            <t t-set="total_amount_due" t-value="0.0"/>
+                            <t t-set="received_percentage" t-value="0.0"/>
+                            <div class="row text-center" style="color:#191970">
+                                <div class="col-12">
+                                    <h3 class="text-capitalize">
+                                        <strong>statement of account</strong>
+                                    </h3>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:15px">
+                                <div class="col-12" style="background-color:#d7deef;">
+                                    <h5 class="text-capitalize" style="color:#191970;">
+                                        <strong>client details</strong>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-10 text-capitalize">
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-2" style="margin-top:15px">
+                                            <strong><span>Application #:</span></strong>
+                                        </div>
+                                        <div class="col-4" style="margin-top:15px">
+                                            <t t-esc="o.tracking_id"/>
+                                        </div>
+                                        <div class="col-2" style="margin-top:15px">
+                                            <strong><span>Print Date:</span></strong>
+                                        </div>
+                                        <div class="col-4" style="margin-top:15px">
+                                            <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-2"><strong><span>name:</span></strong></div>
+                                        <div class="col-4"><t t-esc="o.membership_name"/></div>
+                                        <div class="col-2"><strong><span>father/spouse:</span></strong></div>
+                                        <div class="col-4"><t t-esc="o.membership_id.relation_name"/></div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-2"><strong><span>cnic no:</span></strong></div>
+                                        <div class="col-4"><t t-esc="o.membership_id.cnic"/></div>
+                                        <div class="col-2"><strong><span>contact:</span></strong></div>
+                                        <div class="col-4">
+                                            <t t-esc="o.membership_id.country_code_mobile_id.name"/>
+                                            <t t-esc="o.membership_id.mobile"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-2"><strong><span>address:</span></strong></div>
+                                        <div class="col-10">
+                                            <t t-esc="o.membership_id.street"/>
+                                            <t t-esc="o.membership_id.street2"/>,
+                                            <t t-esc="o.membership_id.city_id.name"/>,
+                                            <t t-esc="o.membership_id.country_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2 text-center">
+                                    <div class="row">
+                                        <div class="col-12" style="margin-top:10px">
+                                            <img t-if="o.membership_id.image_1920"
+                                                 t-att-src="image_data_uri(o.membership_id.image_1920)" alt="Logo"
+                                                 style="width:150px;height:150"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12" style="background-color:#d7deef;">
+                                    <h5 class="text-capitalize" style="color:#191970;">
+                                        <strong>property details</strong>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="row text-capitalize" style="margin-top:10px">
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div class="col-5"><strong><span>phase:</span></strong></div>
+                                        <div class="col-7"><t t-esc="o.phase_id.name"/></div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>sector:</span></strong></div>
+                                        <div class="col-7"><t t-esc="o.sector_id.name"/></div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>Product:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-if="o.unit_category_type_id">
+                                                <t t-esc="o.unit_category_type_id.name"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div class="col-5"><strong><span>plot no:</span></strong></div>
+                                        <div class="col-7"><t t-esc="o.unit_number"/></div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>booking date:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-if="o.booking_date">
+                                                <t t-esc="o.booking_date.strftime('%d-%m-%Y')"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div class="col-5"><strong><span>factor:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-if="o.preference_ids">
+                                                <t t-esc="o.preference_ids[0].factor_id.name"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>type:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-if="o.category_id">
+                                                <t t-esc="o.category_id.name"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:15px">
+                                <div class="col-12" style="background-color:#d7deef;">
+                                    <h5 class="text-capitalize" style="color:#191970;">
+                                        <strong>payment details(amount in
+                                            <t t-esc="o.env.company.currency_id.name"/>
+                                            )
+                                        </strong>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="row text-capitalize" style="margin-top:10px">
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div class="col-5"><strong><span>plot price:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-esc="'{0:,.2f}'.format(o.sale_amount)"/>
+                                            <t t-esc="o.env.company.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>fact amount:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-esc="'{0:,.2f}'.format(o.factor_amount)"/>
+                                            <t t-esc="o.env.company.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>Disc amount:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-esc="'{0:,.2f}'.format(o.discount_amount)"/>
+                                            <t t-esc="o.env.company.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="row">
+                                        <div class="col-5"><strong><span>net price:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-if="o.net_sale_amount">
+                                                <t t-esc="'{0:,.2f}'.format(o.net_sale_amount)"/>
+                                                <t t-esc="o.env.company.currency_id.symbol"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>received amt:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-foreach="o.installment_plan_ids" t-as="plan">
+                                                <t t-set="total_amount" t-value="total_amount+plan.amount"/>
+                                                <t t-set="amount_paid_total" t-value="amount_paid_total+plan.amount_paid"/>
+                                                <t t-set="total_amount_due" t-value="total_amount_due+plan.residual"/>
+                                            </t>
+                                            <t t-esc="'{0:,.2f}'.format(amount_paid_total)"/>
+                                            <t t-esc="o.env.company.currency_id.symbol"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>outstanding:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-esc="'{0:,.2f}'.format(o.net_sale_amount-amount_paid_total)"/>
+                                            <t t-esc="o.env.company.currency_id.symbol"/>
+                                            <t t-set="total_amount_due" t-value="o.net_sale_amount-amount_paid_total"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-5"><strong><span>received %:</span></strong></div>
+                                        <div class="col-7">
+                                            <t t-if="total_amount">
+                                                <t t-set="received_percentage" t-value="(amount_paid_total/total_amount)*100"/>
+                                                <t t-esc="round(received_percentage,2)"/>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row text-center" style="color:#191970;margin-top:20px">
+                                <div class="col-12">
+                                    <h3 class="text-capitalize"><strong>installment plan</strong></h3>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:30px">
+                                <table class="table table-bordered table-sm">
+                                    <thead style="background-color:#d7deef;color:#191970;" class="text-center text-capitalize">
+                                        <th>inst #</th>
+                                        <th>payment type</th>
+                                        <th>invoice date</th>
+                                        <th>invoice number</th>
+                                        <th>invoice amount</th>
+                                        <th>payment date</th>
+                                        <th>payment amount</th>
+                                        <th>amount due</th>
+                                        <th>status</th>
+                                        <th>mode</th>
+                                        <th>cheque no</th>
+                                    </thead>
+                                    <tbody class="text-center text-capitalize">
+                                        <tr t-foreach="o.installment_plan_ids" t-as="plan">
+                                            <t t-set="mode"
+                                               t-value="o.env['account.payment'].sudo().search([('invoice_ids', 'in', plan.invoice_id.ids)], limit=1)"/>
+                                            <td><t t-esc="plan.installment_number"/></td>
+                                            <td><span t-field="plan.installment_type"/></td>
+                                            <td>
+                                                <t t-if="plan.date">
+                                                    <t t-esc="plan.date.strftime('%d-%m-%Y')"/>
+                                                </t>
+                                            </td>
+                                            <td><t t-esc="plan.invoice"/></td>
+                                            <td><t t-esc="'{0:,.2f}'.format(plan.amount)"/></td>
+                                            <td>
+                                                <t t-if="plan.payment_date">
+                                                    <t t-esc="plan.payment_date.strftime('%d-%m-%Y')"/>
+                                                </t>
+                                            </td>
+                                            <td><t t-esc="'{0:,.2f}'.format(plan.amount_paid)"/></td>
+                                            <td><t t-esc="'{0:,.2f}'.format(plan.amount-plan.amount_paid)"/></td>
+                                            <td><t t-esc="plan.payment_status"/></td>
+                                            <td>
+                                                <t t-if="mode.mode_of_payments"><t t-esc="mode.mode_of_payments"/></t>
+                                            </td>
+                                            <td><t t-esc="mode.cheque_no"/></td>
+                                        </tr>
+                                        <tr style="background-color:#DCDCDC">
+                                            <th colspan="4"><span>Total</span></th>
+                                            <th>
+                                                <t t-esc="'{0:,.2f}'.format(total_amount)"/>
+                                                <t t-esc="o.env.company.currency_id.symbol"/>
+                                            </th>
+                                            <th/>
+                                            <th>
+                                                <t t-esc="'{0:,.2f}'.format(amount_paid_total)"/>
+                                                <t t-esc="o.env.company.currency_id.symbol"/>
+                                            </th>
+                                            <th>
+                                                <t t-esc="'{0:,.2f}'.format(total_amount_due)"/>
+                                                <t t-esc="o.env.company.currency_id.symbol"/>
+                                            </th>
+                                            <th/>
+                                            <th/>
+                                            <th/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+                        <t t-if="o.payment_type == 'lump_sum'">
+                            <div class="row">
+                                <div class="col-12 text-capitalize text-center" style="margin-top:20px">
+                                    <h5>your payment type is lump sum. therefore account statement is not required.</h5>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_statement_of_account_report" model="report.paperformat">
+        <field name="name">Statement Of Account Paper Format</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_statement_of_account_report" model="ir.actions.report">
+        <field name="name">Statement Of Account</field>
+        <field name="model">file</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">realestate_report.statement_of_account_report</field>
+        <field name="report_file">realestate_report.statement_of_account_report</field>
+        <field name="print_report_name">'Statement Of Account - %s' % (object.tracking_id or object.name)</field>
+        <field name="paperformat_id" ref="paperformat_statement_of_account_report"/>
+        <field name="binding_model_id" ref="real_estate.model_file"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

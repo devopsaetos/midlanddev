@@ -33,7 +33,7 @@
             <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
                 <div class="col-4 text-center" style="margin-top:50px;">
                     <span>Printed By:
-                        <span t-esc="request.env.user.name"/>
+                        <span t-esc="o.env.user.name"/>
                     </span>
                 </div>
                 <div class="col-4 text-center" style="margin-top:50px;"/>
@@ -92,7 +92,7 @@
                                         <strong>Memo:</strong>
                                     </div>
                                     <div class="col-8">
-                                        <span t-esc="o.communication"/>
+                                        <span t-esc="o.memo"/>
                                     </div>
                                 </div>
                             </div>
@@ -114,7 +114,7 @@
                                         <strong>Date:</strong>
                                     </div>
                                     <div class="col-6">
-                                        <span t-field="o.payment_date"/>
+                                        <span t-field="o.date"/>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -279,7 +279,7 @@
                              style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;margin-top:110px;">
                             <div class="col-4 text-center">
                                 <span>Printed By:
-                                    <span t-esc="request.env.user.name"/>
+                                    <span t-esc="o.env.user.name"/>
                                 </span>
                             </div>
                             <div class="col-4 text-center"/>
@@ -359,7 +359,7 @@
                                         <strong>Memo:</strong>
                                     </div>
                                     <div class="col-8">
-                                        <span t-esc="o.communication"/>
+                                        <span t-esc="o.memo"/>
                                     </div>
                                 </div>
                             </div>
@@ -381,7 +381,7 @@
                                         <strong>Date:</strong>
                                     </div>
                                     <div class="col-6">
-                                        <span t-field="o.payment_date"/>
+                                        <span t-field="o.date"/>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -564,12 +564,15 @@
         <field name="dpi">90</field>
     </record>
 
-    <report id="action_payment_receipt_report"
-            model="account.payment"
-            string="Payment Customer Receipt"
-            report_type="qweb-pdf"
-            name="real_estate.payment_receipt_report"
-            paperformat="paperformat_receipt_report"
-            file="real_estate.payment_receipt_report" menu="True"/>
+    <record id="action_payment_receipt_report" model="ir.actions.report">
+        <field name="name">Payment Customer Receipt</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">real_estate.payment_receipt_report</field>
+        <field name="report_file">real_estate.payment_receipt_report</field>
+        <field name="paperformat_id" ref="paperformat_receipt_report"/>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_type">report</field>
+    </record>
 
 </odoo>

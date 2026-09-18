@@ -146,7 +146,7 @@ class PrintDocuments(models.Model):
                         'print_by': self.env.user.id,
                         'file_id': file
                     })
-                report = self.env.ref('file_receipt_report.action_file_receipt_report').report_action(file_ids)
+                report = self.env.ref('realestate_report.action_file_receipt_report').report_action(file_ids)
                 return report
             else:
                 raise UserError(_('There are no Receipts to print'))

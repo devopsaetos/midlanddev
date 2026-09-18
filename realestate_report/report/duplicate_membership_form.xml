@@ -1,0 +1,204 @@
+<odoo>
+    <template id="duplicate_membership_form">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:'Roboto',sans-serif;font-size:14px;">
+                        <div class="row text-center" style="color:#191970">
+                            <div class="col-12">
+                                <h3 class="text-capitalize"><strong>Membership Form</strong></h3>
+                                <h5 style="letter-spacing: 3px;">(DUPLICATE COPY)</h5>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:10px">
+                            <div class="col-12" style="background-color:#191970">
+                                <h5 class="text-capitalize text-white"><strong>member details</strong></h5>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:10px">
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4"><strong>Name:</strong></div>
+                                    <div class="col-8"><span t-esc="o.membership_id.name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Father/Spouse:</strong></div>
+                                    <div class="col-8"><span t-esc="o.membership_id.relation_name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>CNIC No:</strong></div>
+                                    <div class="col-8"><span t-esc="o.membership_id.cnic"/></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4"><strong>File No:</strong></div>
+                                    <div class="col-8"><span t-esc="o.name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Contact:</strong></div>
+                                    <div class="col-8">
+                                        <t t-esc="o.membership_id.country_code_mobile_id.name"/>
+                                        <t t-esc="o.membership_id.mobile"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Address:</strong></div>
+                                    <div class="col-8">
+                                        <t t-esc="o.membership_id.street"/>
+                                        <t t-esc="o.membership_id.street2"/>,
+                                        <t t-esc="o.membership_id.city_id.name"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:15px">
+                            <div class="col-12" style="background-color:#191970">
+                                <h5 class="text-capitalize text-white"><strong>property details</strong></h5>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:10px">
+                            <div class="col-4">
+                                <div class="row">
+                                    <div class="col-5"><strong>Phase:</strong></div>
+                                    <div class="col-7"><span t-esc="o.phase_id.name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"><strong>Sector:</strong></div>
+                                    <div class="col-7"><span t-esc="o.sector_id.name"/></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="row">
+                                    <div class="col-5"><strong>Plot No:</strong></div>
+                                    <div class="col-7"><span t-esc="o.unit_number"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"><strong>Category:</strong></div>
+                                    <div class="col-7"><span t-esc="o.category_id.name"/></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="row">
+                                    <div class="col-5"><strong>Booking Date:</strong></div>
+                                    <div class="col-7">
+                                        <t t-if="o.booking_date">
+                                            <t t-esc="o.booking_date.strftime('%d-%m-%Y')"/>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5"><strong>Product:</strong></div>
+                                    <div class="col-7">
+                                        <t t-if="o.unit_category_type_id">
+                                            <t t-esc="o.unit_category_type_id.name"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:15px">
+                            <div class="col-12" style="background-color:#191970">
+                                <h5 class="text-capitalize text-white">
+                                    <strong>payment details (amount in <t t-esc="o.env.company.currency_id.name"/>)</strong>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:10px">
+                            <div class="col-4">
+                                <div class="row">
+                                    <div class="col-6"><strong>Sale Price:</strong></div>
+                                    <div class="col-6"><t t-esc="'{0:,.2f}'.format(o.sale_amount)"/></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="row">
+                                    <div class="col-6"><strong>Discount:</strong></div>
+                                    <div class="col-6"><t t-esc="'{0:,.2f}'.format(o.discount_amount)"/></div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="row">
+                                    <div class="col-6"><strong>Net Price:</strong></div>
+                                    <div class="col-6"><t t-esc="'{0:,.2f}'.format(o.net_sale_amount)"/></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:15px">
+                            <table class="table table-bordered table-sm">
+                                <thead style="background-color:#191970" class="text-white text-center">
+                                    <th>Inst #</th>
+                                    <th>Type</th>
+                                    <th>Due Date</th>
+                                    <th>Amount</th>
+                                    <th>Paid</th>
+                                    <th>Due</th>
+                                    <th>Status</th>
+                                </thead>
+                                <tbody class="text-center">
+                                    <tr t-foreach="o.installment_plan_ids" t-as="plan">
+                                        <td><t t-esc="plan.installment_number"/></td>
+                                        <td><span t-field="plan.installment_type"/></td>
+                                        <td>
+                                            <t t-if="plan.date">
+                                                <t t-esc="plan.date.strftime('%d-%m-%Y')"/>
+                                            </t>
+                                        </td>
+                                        <td><t t-esc="'{0:,.2f}'.format(plan.amount)"/></td>
+                                        <td><t t-esc="'{0:,.2f}'.format(plan.amount_paid)"/></td>
+                                        <td><t t-esc="'{0:,.2f}'.format(plan.amount-plan.amount_paid)"/></td>
+                                        <td><t t-esc="plan.payment_status"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row" style="margin-top:60px">
+                            <div class="col-6 text-center">
+                                <span style="text-decoration:overline">Authorized Signatory</span>
+                            </div>
+                            <div class="col-6 text-center">
+                                <span style="text-decoration:overline">Member Signature</span>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:20px">
+                            <div class="col-12 text-center" style="font-size:11px;">
+                                <em>Duplicate copy issued on <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/> by <t t-esc="o.env.user.name"/>.</em>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_duplicate_membership_form" model="report.paperformat">
+        <field name="name">Duplicate Membership Form Paper Format</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_duplicate_membership_form" model="ir.actions.report">
+        <field name="name">Duplicate Membership Form</field>
+        <field name="model">file</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">realestate_report.duplicate_membership_form</field>
+        <field name="report_file">realestate_report.duplicate_membership_form</field>
+        <field name="print_report_name">'Duplicate Membership Form - %s' % (object.tracking_id or object.name)</field>
+        <field name="paperformat_id" ref="paperformat_duplicate_membership_form"/>
+        <!-- Hidden from the file's Print menu per client request (2026-09-18) -
+             report definition kept intact, just unbound. eval="False" (not a
+             commented-out ref) so the upgrade actually clears these on the
+             already-existing record, not just on first install. -->
+        <field name="binding_model_id" eval="False"/>
+    </record>
+</odoo>

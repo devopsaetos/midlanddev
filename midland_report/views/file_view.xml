@@ -6,12 +6,19 @@
         <field name="inherit_id" ref="real_estate.file_form"/>
         <field name="arch" type="xml">
             <div name="button_box" position="inside">
-                <button name="%(midland_report.action_report_midland_membership)d"
+                <!-- Removed per client request (2026-09-18): this shortcut only
+                     ever opened one specific report (Membership Form) directly,
+                     with no way to pick another - which looked like a broken
+                     "Print" dropdown next to it. That report is already one of
+                     the options in file's real Print menu (binding_type=report
+                     actions), so this duplicate, single-target button is gone;
+                     the standard Print menu is the only print entry point now. -->
+                <!-- <button name="%(midland_report.action_report_midland_membership)d"
                         type="action"
                         class="oe_stat_button"
                         icon="fa-print">
                     <span class="o_stat_text">Print PDF</span>
-                </button>
+                </button> -->
             </div>
         </field>
     </record>

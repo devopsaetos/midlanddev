@@ -184,14 +184,16 @@
             </t>
         </template>
 
-        <report
-                string="Full Greeting Letter"
-                id="full_greeting_letter_action"
-                model="file"
-                report_type="qweb-pdf"
-                name="real_estate.full_greeting_letter"
-                file="real_estate.full_greeting_letter"
-        />
+        <record id="full_greeting_letter_action" model="ir.actions.report">
+            <field name="name">Full Greeting Letter</field>
+            <field name="model">file</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">real_estate.full_greeting_letter</field>
+            <field name="report_file">real_estate.full_greeting_letter</field>
+            <field name="print_report_name">'Full Greeting Letter - %s' % (object.tracking_id or '')</field>
+            <field name="binding_model_id" ref="model_file"/>
+            <field name="binding_type">report</field>
+        </record>
 
     
 </odoo>

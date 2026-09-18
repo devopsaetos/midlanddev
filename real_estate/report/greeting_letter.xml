@@ -3,7 +3,7 @@
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <!--                     <t t-call="real_estate.internal_layout1"/> -->
-                    <t t-if="o.company_id.name == 'New City Paradise'">
+                    <t t-if="o.society_id.company_id.name == 'New City Paradise'">
                         <div class="container">
                             <style>p { font-family: "Times New Roman", Times, serif; font-size: 16px; color: black; } li
                                 {
@@ -161,7 +161,7 @@
                                             </td>
                                             <!--                                            <td>-->
                                             <!--                                                <t t-set="downpayment"-->
-                                            <!--                                                   t-value="request.env['file.payment'].search([('file_payment_plan_id', '=', o.id), ('product_id.default_code', '=', 'DOWN PAYMENT')]).total"/>-->
+                                            <!--                                                   t-value="o.env['file.payment'].search([('file_payment_plan_id', '=', o.id), ('product_id.default_code', '=', 'DOWN PAYMENT')]).total"/>-->
                                             <!--                                                <span t-esc="downpayment"/>-->
                                             <!--                                            </td>-->
                                             <t t-if="o.installment_plan_ids">
@@ -243,7 +243,7 @@
                         </div>
                     </t>
 
-                    <t t-if="o.company_id.name == 'New City Housing Project'">
+                    <t t-if="o.society_id.company_id.name == 'New City Housing Project'">
                         <div class="container">
                             <style>
                                 p {
@@ -375,7 +375,7 @@
                                             </td>
                                             <td>
                                                 <t t-set="downpayment"
-                                                   t-value="request.env['file.payment'].search([('file_payment_plan_id', '=', o.id), ('product_id.default_code', '=', 'DOWN PAYMENT')]).total"/>
+                                                   t-value="o.env['file.payment'].search([('file_payment_plan_id', '=', o.id), ('product_id.default_code', '=', 'DOWN PAYMENT')]).total"/>
                                                 <span t-esc="downpayment"/>
                                             </td>
                                             <td>
@@ -431,11 +431,15 @@
             </t>
         </template>
 
-        <report string="Greeting Letter"
-                id="greeting_letter_action"
-                model="file"
-                report_type="qweb-pdf"
-                name="real_estate.greeting_letter"
-                file="real_estate.greeting_letter"/>
+        <record id="greeting_letter_action" model="ir.actions.report">
+            <field name="name">Greeting Letter</field>
+            <field name="model">file</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">real_estate.greeting_letter</field>
+            <field name="report_file">real_estate.greeting_letter</field>
+            <field name="print_report_name">'Greeting Letter - %s' % (object.tracking_id or '')</field>
+            <field name="binding_model_id" ref="model_file"/>
+            <field name="binding_type">report</field>
+        </record>
     
 </odoo>

@@ -158,13 +158,14 @@
         <field name="header_spacing">39</field>
         <field name="dpi">90</field>
     </record>
-    <report
-            string="Transfer Request"
-            id="transfer_request_action"
-            model="file.transfer.request"
-            report_type="qweb-pdf"
-            paperformat="paperformat_transfer_request"
-            name="real_estate.transfer_request"
-            file="real_estate.transfer_request"
-    />
+    <record id="transfer_request_action" model="ir.actions.report">
+        <field name="name">Transfer Request</field>
+        <field name="model">file.transfer.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">real_estate.transfer_request</field>
+        <field name="report_file">real_estate.transfer_request</field>
+        <field name="paperformat_id" ref="paperformat_transfer_request"/>
+        <field name="binding_model_id" ref="model_file_transfer_request"/>
+        <field name="binding_type">report</field>
+    </record>
 </odoo>

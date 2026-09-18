@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dealer_statement_wizard,dealer.statement.wizard,model_dealer_statement_wizard,,1,1,1,1

@@ -1,0 +1,78 @@
+<odoo>
+    <template id="file_receipt_report_template_id">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="realestate_report.pr_customized_footer"/>
+                <t t-call="web.external_layout">
+                    <t t-set="plan" t-value="o.installment_plan_ids[:1]"/>
+                    <t t-set="copy_label" t-value="'OFFICE COPY'"/>
+                    <t t-call="realestate_report.receipt_copy"/>
+                    <p style="page-break-before: always"/>
+                    <t t-set="copy_label" t-value="'CUSTOMER COPY'"/>
+                    <t t-call="realestate_report.receipt_copy"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="file_confirmation_receipt_report_template_id">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="realestate_report.pr_customized_footer"/>
+                <t t-call="web.external_layout">
+                    <t t-set="plan"
+                       t-value="o.installment_plan_ids.filtered(lambda x: x.installment_type == 'confirmation_amount')[:1]"/>
+                    <t t-set="copy_label" t-value="'OFFICE COPY'"/>
+                    <t t-call="realestate_report.receipt_copy"/>
+                    <p style="page-break-before: always"/>
+                    <t t-set="copy_label" t-value="'CUSTOMER COPY'"/>
+                    <t t-call="realestate_report.receipt_copy"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_file_receipt_report" model="report.paperformat">
+        <field name="name">File Receipt Paper Format</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_file_receipt_report" model="ir.actions.report">
+        <field name="name">Payment Customer Receipt</field>
+        <field name="model">file</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">realestate_report.file_receipt_report_template_id</field>
+        <field name="report_file">realestate_report.file_receipt_report_template_id</field>
+        <field name="print_report_name">'Payment Receipt - %s' % (object.tracking_id or object.name)</field>
+        <field name="paperformat_id" ref="paperformat_file_receipt_report"/>
+        <!-- Hidden from the file's Print menu per client request (2026-09-18) -
+             report definition kept intact, just unbound. eval="False" (not a
+             commented-out ref) so the upgrade actually clears these on the
+             already-existing record, not just on first install. -->
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <record id="action_file_confirmation_receipt_report" model="ir.actions.report">
+        <field name="name">Confirmation Customer Receipt</field>
+        <field name="model">file</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">realestate_report.file_confirmation_receipt_report_template_id</field>
+        <field name="report_file">realestate_report.file_confirmation_receipt_report_template_id</field>
+        <field name="print_report_name">'Confirmation Receipt - %s' % (object.tracking_id or object.name)</field>
+        <field name="paperformat_id" ref="paperformat_file_receipt_report"/>
+        <!-- Hidden from the file's Print menu per client request (2026-09-18) -
+             report definition kept intact, just unbound. -->
+        <field name="binding_model_id" eval="False"/>
+    </record>
+</odoo>

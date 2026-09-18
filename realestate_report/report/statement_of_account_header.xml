@@ -1,0 +1,46 @@
+<odoo>
+    <template id="statement_of_account_header">
+        <div class="header">
+            <div class="o_clean_header">
+                <div class="row">
+                    <div class="col-7">
+                        <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"
+                             style="max-width: 260px;max-height: 70px;"/>
+                    </div>
+                    <div class="col-5" name="company_address" style="font-size:13px; text-align:right;">
+                        <ul class="list-unstyled">
+                            <strong>
+                                <li t-if="o.env.company.name">
+                                    <span t-field="o.env.company.name"/>
+                                </li>
+                            </strong>
+                            <li t-if="o.env.company.street">
+                                <span t-field="o.env.company.street"/>
+                            </li>
+                            <li t-if="o.env.company.street2">
+                                <span t-field="o.env.company.street2"/>
+                            </li>
+                            <li t-if="o.env.company.city">
+                                <span t-field="o.env.company.city"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="statement_of_account_footer">
+        <div class="footer">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+                <div class="col-12 text-center" style="margin-top:15px;">
+                    <span>Printed By:
+                        <span t-esc="o.env.user.name"/>
+                        On
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

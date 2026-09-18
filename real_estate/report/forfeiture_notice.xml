@@ -22,10 +22,8 @@
                             </style>
                             <t t-set="current_date"
                                t-value="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
-                            <t t-set="installment_check"
-                               t-value="request.env['installment.plan'].search_count([('file_id', '=', o.id),('state', '=', 'open'),('date', '&lt;', current_date)])"/>
                             <t t-set="balloting_amount_of_file"
-                               t-value="o.sale_amount * (request.env['res.company']._company_default_get().balloting_percentage / 100)"/>
+                               t-value="o.sale_amount * (o.society_id.company_id.balloting_percentage / 100)"/>
                             <t>
                                 <div class="row" style="margin-top:20px;">
                                     <div class="col-xs-12">
@@ -54,9 +52,15 @@
                                                 <t t-if="o.membership_id.country_id.name">
                                                     <div t-field="o.membership_id.country_id.name"/>
                                                 </t>
-                                                <div t-field="o.membership_id" t-options='{
-                "widget": "contact",
-                "fields": ["phone", "mobile", "email"]}'/>
+                                                <t t-if="o.membership_id.phone">
+                                                    <div t-field="o.membership_id.phone"/>
+                                                </t>
+                                                <t t-if="o.membership_id.mobile">
+                                                    <div t-field="o.membership_id.mobile"/>
+                                                </t>
+                                                <t t-if="o.membership_id.email">
+                                                    <div t-field="o.membership_id.email"/>
+                                                </t>
                                             </strong>
                                         </div>
                                     </div>
@@ -180,14 +184,17 @@
             </t>
         </template>
 
-        <report
-                string="Forfeiture Notice"
-                id="forfeiture_notice_action"
-                model="file"
-                report_type="qweb-pdf"
-                name="real_estate.forfeiture_notice"
-                file="real_estate.forfeiture_notice"
-        />
+        <record id="forfeiture_notice_action" model="ir.actions.report">
+            <field name="name">Forfeiture Notice</field>
+            <field name="model">file</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">real_estate.forfeiture_notice</field>
+            <field name="report_file">real_estate.forfeiture_notice</field>
+            <field name="print_report_name">'Forfeiture Notice - %s' % (object.tracking_id or '')</field>
+            <!-- Hidden from the file's Print menu per client request (2026-09-18) -
+                 report definition kept intact, just unbound. -->
+            <field name="binding_model_id" eval="False"/>
+        </record>
 
     
 </odoo>

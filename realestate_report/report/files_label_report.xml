@@ -1,0 +1,74 @@
+<odoo>
+    <template id="label_report">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="o">
+                    <style>
+                        h1 { text-align: center !important; font-size: 34px !important; font-weight: bolder !important; }
+                        h2 { font-size: 28px !important; font-weight: bolder !important; }
+                        .left-0 { margin-left: 0px !important; }
+                        .p-10 { padding-top:8px !important; }
+                        .dealer-name { font-size:21px !important; margin-left: -15px !important; }
+                    </style>
+                    <t t-foreach="[('OFFICE COPY'), ('CUSTOMER COPY')]" t-as="copy_label">
+                        <div class="page text-dark">
+                            <div class="col-12">
+                                <h1 style="font-size: 38px !important;" t-esc="copy_label"/>
+                            </div>
+                            <div class="col-8 float-left">
+                                <h2 class="p-10 left-0">
+                                    <span t-esc="o.membership_id.name"/>
+                                </h2>
+                                <h2 class="p-10 left-0">
+                                    FILE -
+                                    <span t-esc="o.name"/>
+                                </h2>
+                            </div>
+                            <div class="col-4 float-left">
+                                <img t-if="o.qr_code" t-attf-src="data:image/*;base64,{{o.qr_code}}"
+                                     style="max-height:135px; max-width:135px;margin-right: -50px !important;"/>
+                            </div>
+                            <div class="col-12 p-10">
+                                <h3 class="dealer-name left-0">Dealer:
+                                    <span t-esc="o.investor_id.investor_id"/>
+                                </h3>
+                            </div>
+                        </div>
+                        <div style="page-break-after: always !important;"/>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="paperformat_files_labels_print" model="report.paperformat">
+        <field name="name">Files Labels Paper Size</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">50</field>
+        <field name="page_width">100</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="files_label_report_action" model="ir.actions.report">
+        <field name="name">Files Labels</field>
+        <field name="model">file</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">realestate_report.label_report</field>
+        <field name="report_file">realestate_report.label_report</field>
+        <field name="print_report_name">'File Label - %s' % (object.tracking_id or object.name)</field>
+        <field name="paperformat_id" ref="paperformat_files_labels_print"/>
+        <!-- Hidden from the file's Print menu per client request (2026-09-18) -
+             report definition kept intact, just unbound. eval="False" (not a
+             commented-out ref) so the upgrade actually clears these on the
+             already-existing record, not just on first install. -->
+        <field name="binding_model_id" eval="False"/>
+    </record>
+</odoo>

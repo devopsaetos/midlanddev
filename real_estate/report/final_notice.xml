@@ -22,10 +22,8 @@
                             </style>
                             <t t-set="current_date"
                                t-value="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
-                            <t t-set="installment_check"
-                               t-value="request.env['installment.plan'].search_count([('file_id', '=', o.id),('state', '=', 'open'),('date', '&lt;', current_date)])"/>
                             <t t-set="balloting_amount_of_file"
-                               t-value="o.sale_amount * (request.env['res.company']._company_default_get().balloting_percentage / 100)"/>
+                               t-value="o.sale_amount * (o.society_id.company_id.balloting_percentage / 100)"/>
                             <t>
                                 <div class="row" style="margin-top:20px;">
                                     <div class="col-xs-12">
@@ -139,14 +137,16 @@
             </t>
         </template>
 
-        <report
-                string="Final Notice"
-                id="final_notice_action"
-                model="file"
-                report_type="qweb-pdf"
-                name="real_estate.final_notice"
-                file="real_estate.final_notice"
-        />
+        <record id="final_notice_action" model="ir.actions.report">
+            <field name="name">Final Notice</field>
+            <field name="model">file</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">real_estate.final_notice</field>
+            <field name="report_file">real_estate.final_notice</field>
+            <field name="print_report_name">'Final Notice - %s' % (object.tracking_id or '')</field>
+            <field name="binding_model_id" ref="model_file"/>
+            <field name="binding_type">report</field>
+        </record>
 
     
 </odoo>

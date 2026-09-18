@@ -276,13 +276,14 @@
         <field name="header_spacing">20</field>
         <field name="dpi">90</field>
     </record>
-    <report
-            string="Installment Plan"
-            id="action_installment_plan_report"
-            model="file"
-            report_type="qweb-html"
-            paperformat="paperformat_installment_plan_report"
-            name="real_estate.installment_plan_report"
-            file="real_estate.installment_plan_report"
-    />
+    <record id="action_installment_plan_report" model="ir.actions.report">
+        <field name="name">Installment Plan</field>
+        <field name="model">file</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">real_estate.installment_plan_report</field>
+        <field name="report_file">real_estate.installment_plan_report</field>
+        <field name="paperformat_id" ref="paperformat_installment_plan_report"/>
+        <field name="binding_model_id" ref="model_file"/>
+        <field name="binding_type">report</field>
+    </record>
 </odoo>

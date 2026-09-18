@@ -17,10 +17,8 @@
                             </style>
                             <t t-set="current_date"
                                t-value="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/>
-                            <t t-set="installment_check"
-                               t-value="request.env['installment.plan'].search_count([('file_id', '=', o.id),('state', '=', 'open'),('date', '&lt;', current_date)])"/>
                             <t t-set="balloting_amount_of_file"
-                               t-value="o.sale_amount * (request.env['res.company']._company_default_get().balloting_percentage / 100)"/>
+                               t-value="o.sale_amount * (o.society_id.company_id.balloting_percentage / 100)"/>
                             <t>
                                 <div class="row">
                                     <div class="col-xs-12">
@@ -49,9 +47,15 @@
                                                 <t t-if="o.membership_id.country_id.name">
                                                     <div t-field="o.membership_id.country_id.name"/>
                                                 </t>
-                                                <div t-field="o.membership_id" t-options='{
-                "widget": "contact",
-                "fields": ["phone", "mobile", "email"]}'/>
+                                                <t t-if="o.membership_id.phone">
+                                                    <div t-field="o.membership_id.phone"/>
+                                                </t>
+                                                <t t-if="o.membership_id.mobile">
+                                                    <div t-field="o.membership_id.mobile"/>
+                                                </t>
+                                                <t t-if="o.membership_id.email">
+                                                    <div t-field="o.membership_id.email"/>
+                                                </t>
                                             </strong>
                                         </div>
                                     </div>
@@ -85,7 +89,7 @@
                                     <b>
                                         <u>
                                             <t t-set='title'
-                                               t-value="request.env['account.move'].search([('partner_id', '=', o.membership_id.partner_id.id) , ('name', '=' , o.name), ('state', '!=' , 'paid')] ,limit=1)"/>
+                                               t-value="o.env['account.move'].search([('partner_id', '=', o.membership_id.partner_id.id) , ('name', '=' , o.name), ('state', '!=' , 'paid')] ,limit=1)"/>
                                         </u>
                                     </b>
                                 </p>
@@ -132,7 +136,7 @@
                                         <th style="background:white;">Account No:</th>
                                         <td style="background:white;">
                                             <t t-set='account'
-                                               t-value="request.env['account.journal'].search([],limit=1)"/>
+                                               t-value="o.env['account.journal'].search([],limit=1)"/>
                                             <t t-esc="account.bank_acc_number"/>
                                         </td>
                                     </tr>
@@ -140,16 +144,8 @@
                                         <th style="background:white;">Bank:</th>
                                         <td style="background:white;">
                                             <t t-set='bank'
-                                               t-value="request.env['account.journal'].search([],limit=1)"/>
+                                               t-value="o.env['account.journal'].search([],limit=1)"/>
                                             <t t-esc="bank.bank_id.name"/>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th style="background:white;">Branch:</th>
-                                        <td style="background:white;">
-                                            <t t-set='address'
-                                               t-value="request.env['account.journal'].search([],limit=1)"/>
-                                            <t t-esc="address.branch_id.name"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -184,14 +180,16 @@
             </t>
         </template>
 
-        <report
-                string="Reminder Letter"
-                id="reminder_letter_action"
-                model="file"
-                report_type="qweb-pdf"
-                name="real_estate.reminder_letter"
-                file="real_estate.reminder_letter"
-        />
+        <record id="reminder_letter_action" model="ir.actions.report">
+            <field name="name">Reminder Letter</field>
+            <field name="model">file</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">real_estate.reminder_letter</field>
+            <field name="report_file">real_estate.reminder_letter</field>
+            <field name="print_report_name">'Reminder Letter - %s' % (object.tracking_id or '')</field>
+            <field name="binding_model_id" ref="model_file"/>
+            <field name="binding_type">report</field>
+        </record>
 
     
 </odoo>

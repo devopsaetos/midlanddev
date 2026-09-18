@@ -1,24 +1,4 @@
 <odoo>
-        <template id="external_layout_background_ext" inherit_id="web.external_layout_background">
-            <xpath expr="//div[hasclass('o_background_header')]" position="replace">
-                <div class="header o_background_header">
-                    <div class="pull-right" style="font-size:18px;">
-                        <h3 class="mt0 text-right" t-field="company.report_header"/>
-                    </div>
-                    <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)" width="150"
-                         height="50" class="pull-left"/>
-                    <!--            <div class="pull-right company_address">-->
-                    <!--                <div>-->
-                    <!--                    <strong t-field="company.partner_id.name" style="font-size:18px;"/>-->
-                    <!--                </div>-->
-                    <!--                <span t-field="company.partner_id"-->
-                    <!--                    t-field-options='{"widget": "contact", "fields": ["address"], "no_marker": true}'/>-->
-                    <!--            </div>-->
-                    <div class="clearfix mb8"/>
-                </div>
-            </xpath>
-        </template>
-
         <record id="paperformat_letter_report2" model="report.paperformat">
             <field name="name">Cash flow report paperformat</field>
             <field name="default" eval="True"/>
@@ -44,15 +24,37 @@
             </t>
             <div class="header">
                 <div class="row">
-                    <div class="col-xs-3">
-                        <span>
-                            <img t-attf-src="data:image/*;base64,{{o.society_id.image}}"
-                                 style="max-height:50px; max-width:150px;"/>
-                        </span>
+                    <div class="col-6">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo"
+                             style="max-width: 220px;max-height: 70px;"/>
                     </div>
-                    <div class="col-xs-2 col-xs-offset-2 text-center">
+                    <div class="col-6 text-right" style="font-size:10px;">
+                        <strong t-if="company.name">
+                            <span t-esc="company.name"/>
+                        </strong>
+                        <div t-if="company.street">
+                            <span t-esc="company.street"/>
+                        </div>
+                        <div t-if="company.street2">
+                            <span t-esc="company.street2"/>
+                        </div>
+                        <div t-if="company.city">
+                            <span t-esc="company.city"/>
+                            <t t-if="company.country_id">, <span t-esc="company.country_id.name"/></t>
+                        </div>
                     </div>
-                    <div class="col-xs-2 col-xs-offset-3 text-right" style="font-size:10px">
+                </div>
+            </div>
+            <div class="footer">
+                <div class="row" style="font-size:11px;">
+                    <div class="col-6 text-left">
+                        Printed By:
+                        <span t-esc="o.env.user.name"/>
+                        On
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </div>
+                    <div class="col-6 text-right">
+                        Page <span class="page"/> / <span class="topage"/>
                     </div>
                 </div>
             </div>

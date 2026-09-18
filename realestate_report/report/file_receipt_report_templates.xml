@@ -1,0 +1,192 @@
+<odoo>
+    <template id="pr_customized_footer">
+        <div class="footer">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#9e7c20;">
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Printed By:
+                        <span t-esc="o.env.user.name"/>
+                    </span>
+                </div>
+                <div class="col-4 text-center" style="margin-top:50px;"/>
+                <div class="col-4 text-center" style="margin-top:50px;">
+                    <span>Print Date:
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="receipt_copy">
+        <div class="page text-dark" style="font-family:'Roboto',sans-serif;font-size:15px;">
+            <style>
+                @media print {
+                .header, header {
+                display: none !important;
+                padding: 0px !important;
+                margin-top: 0px !important;
+                }
+                }
+            </style>
+            <div class="row text-dark" style="font-family:'Roboto',sans-serif;">
+                <div class="col-4"/>
+                <div class="col-4">
+                    <img t-if="o.env.company.logo" t-att-src="image_data_uri(o.env.company.logo)" alt="Logo"
+                         class="center" style="width: 260px;height:50px;"/>
+                </div>
+                <div class="col-4" style="text-align:right; font-size:11px;margin-top:15px;">
+                    <h6 style="color:black;">
+                        <t t-if="o.env.company.street">
+                            <t t-esc="o.env.company.street"/>,
+                            <br/>
+                            <t t-esc="o.env.company.street2"/>,
+                            <br/>
+                            <t t-esc="o.env.company.city"/>
+                        </t>
+                    </h6>
+                    <br/>
+                    <h6 style="color:black;">
+                        <t t-if="o.env.company.phone">
+                            <t t-esc="o.env.company.phone"/>
+                        </t>
+                    </h6>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-12">
+                    <h3 style="color:#ffffff;width:100%;text-align:center;">
+                        <strong style="background-color:#9e7c20;">
+                            &amp;nbsp;
+                            PAYMENT RECEIPT
+                            &amp;nbsp;
+                        </strong>
+                    </h3>
+                    <h6 style="color:#96872f;width:100%;text-align:center;">
+                        <strong t-esc="copy_label"/>
+                        <br/>
+                        <br/>
+                        <br/>
+                    </h6>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-4"><strong>Customer Name:</strong></div>
+                        <div class="col-7"><span t-field="o.membership_id.name"/></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4"><strong>Payment Journal:</strong></div>
+                        <div class="col-7">Cash</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4"><strong>Memo:</strong></div>
+                        <div class="col-8"><span t-field="o.name"/></div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-2"/>
+                        <div class="col-4"><strong>Receipt #:</strong></div>
+                        <div class="col-7">
+                            <t t-if="plan.invoice">
+                                <b><span t-esc="plan.invoice"/></b>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"/>
+                        <div class="col-4"><strong>Date:</strong></div>
+                        <div class="col-6"><span t-esc="plan.date"/></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"/>
+                        <div class="col-4"><strong>Cheque Name:</strong></div>
+                        <div class="col-6"/>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"/>
+                        <div class="col-4"><strong>Cheque No:</strong></div>
+                        <div class="col-6"/>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-bordered table-sm" style="margin-top:15px;">
+                <thead>
+                    <tr style="background-color:#9e7c20;">
+                        <th class="text-capitalize" style="color:white;font-weight: normal;">File No.</th>
+                        <th class="text-capitalize" style="color:white;font-weight: normal;">Category</th>
+                        <th class="text-capitalize" style="color:white;font-weight: normal;">Product</th>
+                        <th class="text-capitalize" style="color:white;font-weight: normal;">Invoice Number</th>
+                        <th class="text-capitalize" style="color:white;font-weight: normal;">Payment Type</th>
+                        <th class="text-capitalize" style="color:white;text-align:center;font-weight: normal;">Total</th>
+                        <th class="text-capitalize" style="color:white;text-align:center;font-weight: normal;">Paid</th>
+                        <th class="text-capitalize" style="color:white;text-align:center;font-weight: normal;">Discount</th>
+                        <th class="text-capitalize" style="color:white;text-align:center;font-weight: normal;">Due(Advance)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span t-esc="o.name"/></td>
+                        <td><span t-esc="o.category_id.name"/></td>
+                        <td><span t-esc="o.unit_category_type_id.name"/></td>
+                        <td>
+                            <t t-if="plan.invoice">
+                                <span t-esc="plan.invoice"/>
+                            </t>
+                        </td>
+                        <td><span t-esc="plan.installment_name"/></td>
+                        <td class="text-right">
+                            <span t-esc="plan.amount" t-options='{"widget": "float", "precision": 2}'/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="plan.amount" t-options='{"widget": "float", "precision": 2}'/>
+                        </td>
+                        <td class="text-right">0.00</td>
+                        <td class="text-right">0.00</td>
+                    </tr>
+                    <tr style="color:black;">
+                        <th colspan="5" style="color:black;font-weight: bold;">Total</th>
+                        <th class="text-right" style="color:black;font-weight: bold;">
+                            <span t-esc="plan.amount" t-options='{"widget": "float", "precision": 2}'/>
+                        </th>
+                        <th class="text-right" style="color:black;font-weight: bold;">
+                            <span t-esc="plan.amount" t-options='{"widget": "float", "precision": 2}'/>
+                        </th>
+                        <th class="text-right" style="color:black;font-weight: bold;">0.00</th>
+                        <th class="text-right" style="color:black;font-weight: bold;">0.00</th>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="color:#9e7c20; margin-top:15px;">
+                <strong>Amount In Words :
+                    <span t-if="o.env.company.currency_id"
+                          t-esc="o.env.company.currency_id.amount_to_text(plan.amount)"
+                          style="text-color:#bfbfd6;"/>
+                </strong>
+            </p>
+            <div class="row" style="margin-top:80px;color:#9e7c20">
+                <div class="col-4 text-center"><span t-esc="o.sudo().create_uid.name"/></div>
+                <div class="col-4 text-center"/>
+                <div class="col-4 text-center"/>
+            </div>
+            <div class="row" style="color:#9e7c20">
+                <div class="col-4 text-center"><span style="text-decoration:overline">Receipt By</span></div>
+                <div class="col-4 text-center">
+                    <img t-if="o.qr_code" t-attf-src="data:image/*;base64,{{o.qr_code}}" class="center"
+                         style="max-height:80px; max-width:80px;margin-top: -40px;"/>
+                </div>
+                <div class="col-4 text-center"><span style="text-decoration:overline">Customer Signature</span></div>
+            </div>
+            <div class="row">
+                <div class="col-4"/>
+                <div class="col-4 text-center" style="margin-top: 10px;">
+                    <span style="display: block; margin-bottom: 10px;font-weight:bold;">Verify Me</span>
+                    <span style="font-weight:bold;">تصدیق کریں</span>
+                </div>
+            </div>
+            <br/>
+        </div>
+    </template>
+</odoo>
