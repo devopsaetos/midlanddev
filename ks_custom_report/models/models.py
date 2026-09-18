@@ -349,12 +349,11 @@ class KsCustomReport(models.Model):
         select_clause_list.append('ROW_NUMBER () over() as id')
         select_clause_list.append("".join([initial_name[0] for initial_name in temp_model_name.split(".")]) + '.' +
                                   'id' + '::varchar as x_name')
-        if rec.ks_is_enable_multi_company and rec.ks_model_id.field_id.filtered(lambda x: x.name == 'company_id'):
-            select_clause_list.append("".join([initial_name[0] for initial_name in temp_model_name.split(".")]) + '.' +
-                                      'company_id' + '::int as x_company_id')
-        elif rec.ks_is_enable_multi_company and rec.ks_model_id.field_id.filtered(
-                lambda x: x.name != 'company_id' and x.name == 'company_ids'):
-            field_id = rec.ks_model_id.field_id.filtered(lambda company: company.name != 'company_id' and company.name == 'company_ids')
+        if rec.ks_is_enable_multi_company and rec.ks_model_id.field_id.filtered(lambda x: x.name == 'company_ids'):
+            # Prefer the multi-company "company_ids" field over a single-value "company_id"
+            # when both exist, since a record can legitimately belong to more than one company
+            # (e.g. res.member records with files across multiple societies/companies).
+            field_id = rec.ks_model_id.field_id.filtered(lambda x: x.name == 'company_ids')
             current_abbr_chain = "".join([initial_name[0] for initial_name in temp_model_name.split(".")])
             prev_abbr = current_abbr_chain
             attrs = {}
@@ -371,6 +370,9 @@ class KsCustomReport(models.Model):
 
             select_clause_list.append(rel_chain + '.' +
                                       attrs['column2'] + '::int as x_company_id')
+        elif rec.ks_is_enable_multi_company and rec.ks_model_id.field_id.filtered(lambda x: x.name == 'company_id'):
+            select_clause_list.append("".join([initial_name[0] for initial_name in temp_model_name.split(".")]) + '.' +
+                                      'company_id' + '::int as x_company_id')
         # get default fields and their values
         default_report_fields = self.get_default_report_fields()
         for field_name in default_report_fields:
