@@ -133,17 +133,17 @@
                                         <tbody>
                                             <tr style="background-color:#cc9d04;color:#fff;">
                                                 <td>Units Assigned</td>
-                                                <td class="text-center"><span t-esc="len(record['files'])"/></td>
+                                                <td class="text-center"><span t-esc="record['inventory_totals']['assigned']"/></td>
                                                 <td t-foreach="record['inventory_rows']" t-as="cat" class="text-center"><span t-esc="cat['assigned']"/></td>
                                             </tr>
                                             <tr style="background-color:#2183bc;color:#fff;">
                                                 <td>Units Sold</td>
-                                                <td class="text-center"><span t-esc="len(record['sold_files'])"/></td>
+                                                <td class="text-center"><span t-esc="record['inventory_totals']['sold']"/></td>
                                                 <td t-foreach="record['inventory_rows']" t-as="cat" class="text-center"><span t-esc="cat['sold']"/></td>
                                             </tr>
                                             <tr style="background-color:#21a0bc;color:#fff;">
                                                 <td>Units Available</td>
-                                                <td class="text-center"><span t-esc="len(record['available_files'])"/></td>
+                                                <td class="text-center"><span t-esc="record['inventory_totals']['available']"/></td>
                                                 <td t-foreach="record['inventory_rows']" t-as="cat" class="text-center"><span t-esc="cat['available']"/></td>
                                             </tr>
                                         </tbody>
@@ -173,12 +173,12 @@
                                                 <td class="text-right"><span t-esc="record['booking_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['booking_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr> -->
-                                            <tr>
-                                                <td>Down Payment</td>
-                                                <td class="text-right"><span t-esc="record['down_payment_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['down_payment_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['down_payment_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['down_payment_amount_due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <tr t-foreach="record['payment_rows']" t-as="row">
+                                                <td><span t-esc="row['label']"/></td>
+                                                <td class="text-right"><span t-esc="row['amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="row['rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="row['paid']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="row['due']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr>
                                             <!-- <tr>
                                                 <td>Confirmation</td>
@@ -186,12 +186,12 @@
                                                 <td class="text-right"><span t-esc="record['confirmation_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['confirmation_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr> -->
-                                            <tr>
+                                            <tr style="font-weight:bold;">
                                                 <td>Total</td>
-                                                <td class="text-right"><span t-esc="record['down_payment_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['down_payment_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['down_payment_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['deal_due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['payment_totals']['amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['payment_totals']['rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['payment_totals']['paid']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['payment_totals']['due']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr>
                                         </tbody>
                                     </table>

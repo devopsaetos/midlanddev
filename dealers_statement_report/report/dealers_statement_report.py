@@ -71,26 +71,52 @@ class DealerStatementReport(models.AbstractModel):
         lines = invoices.payment_line_ids.filtered(lambda l: l.payment_id.state == 'confirmed')
         return sum(lines.mapped('payment_amount'))
 
-    def _inventory_rows(self, files):
-        """[{'category', 'assigned', 'sold', 'available'}, ...], one row per
-        unit category actually present in `files` - not a hardcoded list of
-        sizes (which silently dropped any category it didn't know about,
-        e.g. '3 Marla' wasn't in it at all here) filtered with `'5 Marla' in
-        name`, a substring check that also matches '3.5 Marla' and double-
-        counts it into the '5 Marla' bucket. Both bugs were in the original
-        template's inline t-set expressions.
+    # investor.file states from "File Created" onwards - the unit has left the
+    # dealer's stock and been turned into a customer file. 'open', 'selected'
+    # and 'in_process' files are still the dealer's to sell.
+    _SOLD_FILE_STATES = ('issued', 'file_printed', 'delivered', 'received')
+
+    def _inventory_rows(self, investments, files):
+        """([{'category', 'assigned', 'sold', 'available'}, ...], totals dict)
+        for the Inventory Status block, one row per unit category actually
+        present - not a hardcoded list of sizes (which silently dropped any
+        category it didn't know about, e.g. '3 Marla' wasn't in it at all
+        here) filtered with `'5 Marla' in name`, a substring check that also
+        matches '3.5 Marla' and double-counts it into the '5 Marla' bucket.
+        Both bugs were in the original template's inline t-set expressions.
+
+        Assigned = the units on the deal itself (the Deal form's Inventory
+        count): plot.inventory reserved to it for unit reservations, plus
+        investment.line.no_of_units for bulk ones - not investor.file, which
+        only exists for the files already requested/created out of them
+        (8 files on a 49-unit deal).
+        Sold = the deal's files that have reached "File Created" or later.
+        Available = whatever's still unsold.
         """
-        sold_files = files.filtered(lambda x: x.state != 'open')
-        available_files = files.filtered(lambda x: x.state == 'open')
+        assigned = {}
+        for unit in self.env['plot.inventory'].sudo().search([('investment_id', 'in', investments.ids)]):
+            assigned[unit.unit_category_type_id] = assigned.get(unit.unit_category_type_id, 0) + 1
+        for line in investments.sudo().investment_line_ids.filtered(lambda l: not l.inventory_id):
+            assigned[line.unit_category_type_id] = assigned.get(line.unit_category_type_id, 0) + line.no_of_units
+
+        sold = {}
+        for f in files.filtered(lambda f: f.state in self._SOLD_FILE_STATES):
+            sold[f.unit_category_type_id] = sold.get(f.unit_category_type_id, 0) + 1
+
+        # A file's category can't exceed what the deal was assigned; if
+        # files somehow outnumber the deal's units (units swapped/edited
+        # after the fact), still show them rather than a negative Available.
         rows = []
-        for category in files.mapped('unit_category_type_id').sorted('name'):
+        for category in sorted(set(assigned) | set(sold), key=lambda c: c.name or ''):
+            total = max(assigned.get(category, 0), sold.get(category, 0))
             rows.append({
-                'category': category.name,
-                'assigned': len(files.filtered(lambda f, category=category: f.unit_category_type_id == category)),
-                'sold': len(sold_files.filtered(lambda f, category=category: f.unit_category_type_id == category)),
-                'available': len(available_files.filtered(lambda f, category=category: f.unit_category_type_id == category)),
+                'category': category.name or '',
+                'assigned': total,
+                'sold': sold.get(category, 0),
+                'available': total - sold.get(category, 0),
             })
-        return rows
+        totals = {key: sum(r[key] for r in rows) for key in ('assigned', 'sold', 'available')}
+        return rows, totals
 
     def _summarize_lines(self, plan_lines, fk_field):
         """(amount, paid, rebate, due, midland_invoices_map) for `plan_lines`
@@ -119,6 +145,22 @@ class DealerStatementReport(models.AbstractModel):
                 rebate += plan_line.rebate_adjustment
                 due += plan_line.residual
         return amount, paid, rebate, due, invoices_map
+
+    def _payment_row(self, label, plan_lines, rebate):
+        """One Payment Details row, straight from the plan lines' own
+        Amount / Amount Paid / Amount Due - the same columns the Deal form's
+        Installment Plan tab shows, so the two always agree. Amount Paid there
+        includes what the dealer rebate (and any token) settled, not just cash,
+        which is why it can differ from the payment list below. `rebate` is the
+        dealer rebate for these lines.
+        """
+        return {
+            'label': label,
+            'amount': sum(plan_lines.mapped('amount')),
+            'rebate': rebate,
+            'paid': sum(plan_lines.mapped('amount_paid')),
+            'due': sum(plan_lines.mapped('residual')),
+        }
 
     def _booking_lines(self, investments_booking_lines, midland_invoices_map):
         lines = []
@@ -253,10 +295,12 @@ class DealerStatementReport(models.AbstractModel):
         for investor in investors:
             files = self.env['investor.file'].sudo().search([
                 ('investor_id', '=', investor.id),
+                ('investment_id', 'in', investments.ids),
                 ('state', '!=', 'cancel'),
             ])
 
             investor_investments = investments.filtered(lambda x, investor=investor: x.partner_id == investor)
+            inventory_rows, inventory_totals = self._inventory_rows(investor_investments, files)
             investments_lines = self.env['investment.plan'].sudo().search([
                 ('investment_id', 'in', investor_investments.ids),
             ])
@@ -301,16 +345,35 @@ class DealerStatementReport(models.AbstractModel):
             confirmation_lines = self._confirmation_lines(files_confirmation_lines, confirmation_invoices)
             confirmation_rebate += sum(l['payment_difference'] for l in confirmation_lines)
 
-            # Deal-wide balance still to collect = sum of every plan line's Amount
-            # Due, matching the Total row of the Deal form's Installment Plan tab.
-            deal_due = sum(investments_lines.mapped('residual'))
+            # Payment Details rows: only lines that actually have something
+            # paid against them (Down Payment, then any installment with a
+            # non-zero Amount Paid, whatever its due date) - installments that
+            # are due but untouched, and the future plan, stay out. Booking/
+            # Confirmation are hidden per client request, see the template.
+            paid_lines = investments_lines.filtered(
+                lambda l: l.installment_type not in ('down', 'confirmation_amount') and l.amount_paid > 0)
+            payment_rows = []
+            if down_payment_lines_src.filtered(lambda l: l.amount_paid > 0):
+                payment_rows.append(self._payment_row(
+                    'Down Payment', down_payment_lines_src, down_payment_rebate))
+            for plan_line in paid_lines.filtered(lambda l: l.installment_type != 'down_payment').sorted(
+                    lambda l: (l.date or fields.Date.today(), l.id)):
+                rebate = self._summarize_lines(plan_line, 'investment_installment_id')[2]
+                label = plan_line.installment_name or dict(
+                    plan_line._fields['installment_type']._description_selection(self.env)
+                ).get(plan_line.installment_type, '')
+                if plan_line.date:
+                    label = '%s (%s)' % (label, plan_line.date.strftime('%d-%m-%Y'))
+                payment_rows.append(self._payment_row(label, plan_line, rebate))
+            payment_totals = {
+                key: sum(r[key] for r in payment_rows) for key in ('amount', 'rebate', 'paid', 'due')
+            }
 
             data.append({
                 'investor': investor,
                 'files': files,
-                'sold_files': files.filtered(lambda x: x.state != 'open'),
-                'available_files': files.filtered(lambda x: x.state == 'open'),
-                'inventory_rows': self._inventory_rows(files),
+                'inventory_rows': inventory_rows,
+                'inventory_totals': inventory_totals,
                 'booking_amount': booking_amount,
                 'booking_amount_paid': booking_amount_paid,
                 'booking_amount_due': booking_amount_due,
@@ -318,7 +381,8 @@ class DealerStatementReport(models.AbstractModel):
                 'down_payment_amount': down_payment_amount,
                 'down_payment_amount_paid': down_payment_amount_paid,
                 'down_payment_amount_due': down_payment_amount_due,
-                'deal_due': deal_due,
+                'payment_rows': payment_rows,
+                'payment_totals': payment_totals,
                 'down_payment_rebate': down_payment_rebate,
                 'confirmation_amount': confirmation_amount,
                 'confirmation_amount_paid': confirmation_amount_paid,
