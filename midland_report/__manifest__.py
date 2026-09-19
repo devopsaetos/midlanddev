@@ -10,7 +10,7 @@ a combined PDF report containing:
 """,
     'category': 'Real Estate',
     'author': 'Midland Dev',
-    'depends': ['real_estate'],
+    'depends': ['real_estate', 'midland_invoicing'],
     'data': [
         'security/ir.model.access.csv',
         'report/midland_membership_report_actions.xml',

@@ -312,7 +312,9 @@
                                     <strong>Mode Of Payment</strong>
                                 </td>
                                 <td colspan="3"
-                                    style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;"/>
+                                    style="background:#ffffff; padding:6px 8px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-esc="', '.join(file.installment_plan_ids.mapped('payment_journal_id').mapped('name'))"/>
+                                </td>
                             </tr>
                         </table>
                         <!--  NOTE  -->
@@ -543,7 +545,9 @@
                                 <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>Mode Of Payment:</strong>
                                 </td>
-                                <td colspan="3" style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;"/>
+                                <td colspan="3" style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                    <span t-esc="', '.join(file.installment_plan_ids.mapped('payment_journal_id').mapped('name'))"/>
+                                </td>
                             </tr>
                         </table>
                         <!--  INSTALLMENT TABLE  -->
@@ -593,7 +597,7 @@
                                         <span t-field="line.payment_date" t-options="{'widget': 'date'}"/>
                                     </td>
                                     <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2;">
-                                        <span t-field="line.invoice"/>
+                                        <span t-field="line.midland_document_no"/>
                                     </td>
                                     <td style="padding:4px; border:none; border-bottom:1px solid #ddebf2; text-align:right;">
                                         <span t-esc="'{:,.2f}'.format(line.amount)"/>

@@ -6,6 +6,7 @@ from . import midland_payment
 from . import dealer_confirmation
 from . import file_ext
 from . import investment_ext
+from . import installment_plan_ext
 from . import file_payment_view_ext
 from . import investment_payment_view_ext
 from . import file_installment_payment_ext

@@ -692,7 +692,8 @@ class MidlandPayment(models.Model):
             else:
                 inv.write({'amount_paid': new_paid, 'payment_state': 'partial'})
             if inv.installment_id:
-                self._update_installment(inv.installment_id, paid_amount, journal_id=rec.journal_id.id)
+                self._update_installment(inv.installment_id, paid_amount, journal_id=rec.journal_id.id,
+                                         payment_date=rec.date)
             if inv.investment_installment_id:
                 self._update_investment_installment(inv.investment_installment_id, paid_amount,
                                                     invoice=inv)
@@ -716,12 +717,13 @@ class MidlandPayment(models.Model):
             else:
                 inv.write({'amount_paid': new_paid, 'payment_state': 'partial'})
             if inv.installment_id:
-                self._update_installment(inv.installment_id, payment_amount, journal_id=self.journal_id.id)
+                self._update_installment(inv.installment_id, payment_amount, journal_id=self.journal_id.id,
+                                         payment_date=self.date)
             if inv.investment_installment_id:
                 self._update_investment_installment(inv.investment_installment_id, payment_amount,
                                                     invoice=inv)
 
-    def _update_installment(self, install, payment_amount, journal_id=None):
+    def _update_installment(self, install, payment_amount, journal_id=None, payment_date=None):
         plan_total = (install.amount or 0.0) + (install.tax_amount or 0.0)
         new_plan_paid = (install.amount_paid or 0.0) + payment_amount
         remaining = plan_total - new_plan_paid
@@ -731,6 +733,8 @@ class MidlandPayment(models.Model):
             vals = {'payment_status': 'in_payment', 'amount_paid': new_plan_paid, 'residual': remaining}
         if journal_id and 'payment_journal_id' in install._fields:
             vals['payment_journal_id'] = journal_id
+        if payment_date:
+            vals['payment_date'] = payment_date
         install.write(vals)
 
     def _update_investment_installment(self, install, payment_amount, invoice=None):
