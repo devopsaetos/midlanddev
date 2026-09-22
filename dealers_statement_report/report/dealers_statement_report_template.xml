@@ -133,17 +133,17 @@
                                         <tbody>
                                             <tr style="background-color:#cc9d04;color:#fff;">
                                                 <td>Units Assigned</td>
-                                                <td class="text-center"><span t-esc="record['inventory_totals']['assigned']"/></td>
+                                                <td class="text-center"><span t-esc="len(record['files'])"/></td>
                                                 <td t-foreach="record['inventory_rows']" t-as="cat" class="text-center"><span t-esc="cat['assigned']"/></td>
                                             </tr>
                                             <tr style="background-color:#2183bc;color:#fff;">
                                                 <td>Units Sold</td>
-                                                <td class="text-center"><span t-esc="record['inventory_totals']['sold']"/></td>
+                                                <td class="text-center"><span t-esc="len(record['sold_files'])"/></td>
                                                 <td t-foreach="record['inventory_rows']" t-as="cat" class="text-center"><span t-esc="cat['sold']"/></td>
                                             </tr>
                                             <tr style="background-color:#21a0bc;color:#fff;">
                                                 <td>Units Available</td>
-                                                <td class="text-center"><span t-esc="record['inventory_totals']['available']"/></td>
+                                                <td class="text-center"><span t-esc="len(record['available_files'])"/></td>
                                                 <td t-foreach="record['inventory_rows']" t-as="cat" class="text-center"><span t-esc="cat['available']"/></td>
                                             </tr>
                                         </tbody>
@@ -152,39 +152,43 @@
                                     <table class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
                                         <thead>
                                             <tr style="background-color:#d7deef;color:#191970;">
-                                                <th colspan="7" class="text-center text-uppercase">payment details</th>
+                                                <th colspan="4" class="text-center text-uppercase">payment details</th>
                                             </tr>
                                             <tr style="background-color:#546291;color:#fff;">
-                                                <th>Deal</th>
-                                                <th class="text-center">Total Deal Amount</th>
-                                                <th class="text-center">Payment Received</th>
+                                                <th/>
+                                                <th class="text-center">Amount</th>
                                                 <th class="text-center">Dealer Rebate</th>
-                                                <th class="text-center">Marketing Rebate</th>
-                                                <th class="text-center">Cash Received</th>
-                                                <th class="text-center">Due Amount</th>
+                                                <th class="text-center">Paid</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <!-- Booking and Confirmation rows hidden per client request
-                                                 (2026-09-18) - the underlying data (record['booking_*']/
-                                                 ['confirmation_*']) is still computed for other prints. -->
-                                            <tr t-foreach="record['payment_rows']" t-as="row">
-                                                <td><span t-esc="row['label']"/></td>
-                                                <td class="text-right"><span t-esc="row['total']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="row['paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="row['dealer_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="row['marketing_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="row['cash']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="row['due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                 (2026-09-18) - kept commented rather than deleted since
+                                                 the underlying data (record['booking_*']/['confirmation_*'])
+                                                 is still computed and used by other investors/prints. -->
+                                            <!-- <tr>
+                                                <td>Booking</td>
+                                                <td class="text-right"><span t-esc="record['booking_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['booking_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['booking_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            </tr> -->
+                                            <tr>
+                                                <td>Down Payment</td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr>
-                                            <tr t-if="len(record['payment_rows']) &gt; 1" style="font-weight:bold;">
+                                            <!-- <tr>
+                                                <td>Confirmation</td>
+                                                <td class="text-right"><span t-esc="record['confirmation_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['confirmation_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['confirmation_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            </tr> -->
+                                            <tr>
                                                 <td>Total</td>
-                                                <td class="text-right"><span t-esc="record['payment_totals']['total']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['payment_totals']['paid']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['payment_totals']['dealer_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['payment_totals']['marketing_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['payment_totals']['cash']" t-options='{"widget": "float", "precision": 2}'/></td>
-                                                <td class="text-right"><span t-esc="record['payment_totals']['due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-esc="record['down_payment_amount_paid']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr>
                                         </tbody>
                                     </table>
