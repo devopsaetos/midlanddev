@@ -17,7 +17,16 @@
         <field name="margin_right">7</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
-        <field name="dpi">90</field>
+        <!-- 96, not Odoo's usual default of 90: at dpi=90 Odoo always adds a
+             compensating zoom flag (96 / dpi) to the wkhtmltopdf call (see
+             ir_actions_report.py, _build_wkhtmltopdf_args). That zoom, combined
+             with this report's page-break-before/after between Membership Form /
+             Terms & Conditions / Installment Plan, made wkhtmltopdf insert a
+             genuinely blank sheet after every break (confirmed by rendering
+             through the real report pipeline, on/off, holding everything else
+             fixed). dpi=96 makes the zoom factor 1.0 (a no-op) and the blank
+             sheets stop appearing entirely. -->
+        <field name="dpi">96</field>
     </record>
 
     <record id="action_report_midland_membership" model="ir.actions.report">
