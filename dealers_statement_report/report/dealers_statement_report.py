@@ -19,6 +19,15 @@ class DealerStatementReport(models.AbstractModel):
             ('payment_id.is_advance_payment', '=', True),
         ])
 
+    def _payment_method_label(self, payment):
+        """Human-readable Payment Method (e.g. 'Cheque') for a midland.payment
+        or account.payment record - both define mode_of_payments as the same
+        cash/cheque/payorder/online selection.
+        """
+        if not payment or not payment.mode_of_payments:
+            return ''
+        return dict(payment._fields['mode_of_payments'].selection).get(payment.mode_of_payments, '')
+
     def _midland_invoices_for(self, plan_lines, fk_field):
         """{plan_line.id: midland.invoice recordset}, non-cancelled, linked
         through `fk_field` (investment_installment_id on investment.plan /
@@ -147,32 +156,53 @@ class DealerStatementReport(models.AbstractModel):
         return amount, paid, rebate, due, invoices_map
 
     def _deal_payment_row(self, investment, plan_lines):
-        """One Payment Details row for a whole deal.
+        """One Payment Details row for a deal's Down Payment (`plan_lines`
+        is that deal's installment_type == 'down_payment' lines only).
 
-        total    = the deal's total amount.
-        paid     = sum of every plan line's Amount Paid, i.e. what the Deal
-                   form's Installment Plan tab totals to - it counts what the
-                   rebates settled as well as cash.
-        due      = sum of every plan line's Amount Due, same tab's total.
-        of which paid: dealer rebate / marketing rebate applied against the
-        deal's invoices, and the cash actually collected (midland.payment
-        lines; old-pipeline lines fall back to rebate_adjustment / net_payment).
+        total             = the deal's total amount - context, not summed
+                             from these lines.
+        downpayment_total = the down payment's own scheduled amount (these
+                             lines' Amount) - what was supposed to be paid.
+        paid              = sum of every plan line's Amount Paid, i.e. what
+                             the Deal form's Installment Plan tab totals to
+                             for these lines - counts what rebates settled
+                             as well as cash.
+        advance_received  = how much of `paid` came out of a pre-recorded
+                             Advance Payment (is_advance_payment on the old
+                             pipeline / midland.payment.advance_applied on
+                             the new one) rather than a fresh payment.
+        due               = sum of every plan line's Amount Due, same tab's
+                             total.
+        dealer_rebate / marketing_rebate: rebate applied against these
+        lines' invoices (old-pipeline lines fall back to rebate_adjustment).
+        cash: the cash actually collected, old-pipeline lines falling back
+        to net_payment.
         """
         invoices_map = self._midland_invoices_for(plan_lines, 'investment_installment_id')
-        dealer_rebate = marketing_rebate = cash = 0.0
+        dealer_rebate = marketing_rebate = cash = advance_received = 0.0
+        seen_payments = self.env['midland.payment']
         for plan_line in plan_lines:
             invs = invoices_map.get(plan_line.id)
             if invs:
                 dealer_rebate += sum(invs.mapped('rebate_total'))
                 marketing_rebate += sum(invs.mapped('marketing_rebate_total'))
                 cash += self._midland_cash_paid(invs)
+                new_payments = invs.payment_line_ids.filtered(
+                    lambda l: l.payment_id.state == 'confirmed').payment_id - seen_payments
+                seen_payments |= new_payments
+                advance_received += sum(new_payments.mapped('advance_applied'))
             else:
                 dealer_rebate += plan_line.rebate_adjustment
                 cash += plan_line.net_payment
+                if plan_line.invoice_id:
+                    advance_received += sum(
+                        self._advance_payment_lines(plan_line.invoice_id).mapped('payment_amount'))
         return {
             'label': investment.name,
             'total': investment.total_amount,
+            'downpayment_total': sum(plan_lines.mapped('amount')),
             'paid': sum(plan_lines.mapped('amount_paid')),
+            'advance_received': advance_received,
             'dealer_rebate': dealer_rebate,
             'marketing_rebate': marketing_rebate,
             'cash': cash,
@@ -192,9 +222,11 @@ class DealerStatementReport(models.AbstractModel):
                             'payment_type': mi.name,
                             'date': mpl.payment_date,
                             'amount_paid': mpl.payment_amount,
-                            # midland.payment has no cheque/bank reference fields
+                            # midland.payment has no cheque/bank reference field -
+                            # its Payment Journal is the closest equivalent.
                             'cheque_no': '',
-                            'bank_ref': '',
+                            'bank_ref': mpl.payment_id.journal_id.name,
+                            'payment_method': self._payment_method_label(mpl.payment_id),
                         })
             elif plan_line.invoice_id:
                 for mp in self._advance_payment_lines(plan_line.invoice_id):
@@ -206,6 +238,7 @@ class DealerStatementReport(models.AbstractModel):
                         'amount_paid': mp.payment_amount,
                         'cheque_no': mp.payment_id.cheque_no,
                         'bank_ref': mp.payment_id.bank_ref,
+                        'payment_method': self._payment_method_label(mp.payment_id),
                     })
         return lines
 
@@ -362,15 +395,16 @@ class DealerStatementReport(models.AbstractModel):
             confirmation_lines = self._confirmation_lines(files_confirmation_lines, confirmation_invoices)
             confirmation_rebate += sum(l['payment_difference'] for l in confirmation_lines)
 
-            # Payment Details: one row per deal (Booking/Confirmation
-            # breakdowns stay hidden per client request, see the template).
+            # Payment Details: one row per deal, scoped to that deal's Down
+            # Payment lines (Booking/Confirmation breakdowns stay hidden per
+            # client request, see the template).
             payment_rows = [
-                self._deal_payment_row(inv, investments_lines.filtered(lambda l, inv=inv: l.investment_id == inv))
+                self._deal_payment_row(inv, down_payment_lines_src.filtered(lambda l, inv=inv: l.investment_id == inv))
                 for inv in investor_investments
             ]
             payment_totals = {
                 key: sum(r[key] for r in payment_rows)
-                for key in ('total', 'paid', 'dealer_rebate', 'marketing_rebate', 'cash', 'due')
+                for key in ('total', 'downpayment_total', 'paid', 'advance_received', 'dealer_rebate', 'marketing_rebate', 'cash', 'due')
             }
 
             data.append({
