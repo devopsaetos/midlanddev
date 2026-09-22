@@ -98,7 +98,7 @@
                                         <field name="sector_id" options="{'no_create': True, 'no_open': True}"
                                                required="1" force_save="1"/>
                                         <field name="street_id" options="{'no_create': True, 'no_open': True}"
-                                               required="1" force_save="1"/>
+                                               force_save="1"/>
                                         <field name="house_id" options="{'no_create': True, 'no_open': True}"
                                                required="1" force_save="1"/>
                                         <field name="category_id" options="{'no_create': True, 'no_open': True}"
