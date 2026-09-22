@@ -55,6 +55,7 @@
                                    readonly="state != 'draft'"/>
                             <field name="is_maintenance_batch"
                                    readonly="state != 'draft'"/>
+                            <field name="is_advance_payment"/>
                             <field name="payment_no"
                                    readonly="state != 'draft'"/>
                             <field name="property_invoice_type"

@@ -66,6 +66,30 @@ class DealerStatementReport(models.AbstractModel):
             mapping[key] = mapping.get(key, self.env['midland.invoice'].sudo()) | inv
         return mapping
 
+    def _extra_down_payment_invoices(self, investment, linked_invoice_ids):
+        """midland.invoice(s) for `investment` explicitly flagged Advance
+        Payment (is_advance_payment) that are NOT already linked to a plan
+        line via investment_installment_id - e.g. a top-up receipt invoiced
+        outside the installment plan (Invoice Type "Others" in the UI).
+        investment_installment_id-driven totals silently skip these, even
+        though the cash was genuinely received against this deal.
+
+        is_advance_payment is a manual checkbox on midland.invoice (see its
+        help text) - there's no reliable automatic signal for "this
+        particular invoice is a deal-level advance, not a plan-line
+        payment", so it's the one thing this method trusts. An earlier
+        version of this guessed from the invoice line's product instead,
+        which was reliable for finding the invoice but wrong for deciding
+        whether it counted as an advance - not every unlinked Down Payment
+        invoice is one.
+        """
+        return self.env['midland.invoice'].sudo().search([
+            ('investment_id', '=', investment.id),
+            ('is_advance_payment', '=', True),
+            ('state', '!=', 'cancelled'),
+            ('id', 'not in', linked_invoice_ids),
+        ])
+
     def _midland_cash_paid(self, invoices):
         """Real cash collected against `invoices`, from midland.payment.line.payment_amount.
 
@@ -167,67 +191,110 @@ class DealerStatementReport(models.AbstractModel):
                              the Deal form's Installment Plan tab totals to
                              for these lines - counts what rebates settled
                              as well as cash.
-        advance_received  = how much of `paid` came out of a pre-recorded
-                             Advance Payment (is_advance_payment on the old
-                             pipeline / midland.payment.advance_applied on
-                             the new one) rather than a fresh payment.
+        advance_received  = confirmed-payment cash collected against
+                             whichever of these invoices has the manual
+                             Advance Payment checkbox ticked (midland.invoice
+                             .is_advance_payment - old-pipeline lines use
+                             their invoice_id.is_advance_payment the same
+                             way). Not inferred any other way: there's no
+                             reliable automatic signal for "this cash was
+                             specifically an advance", so the checkbox is
+                             the one thing this trusts.
         due               = sum of every plan line's Amount Due, same tab's
-                             total.
+                             total, plus any extra invoices' own residual.
         dealer_rebate / marketing_rebate: rebate applied against these
         lines' invoices (old-pipeline lines fall back to rebate_adjustment).
         cash: the cash actually collected, old-pipeline lines falling back
         to net_payment.
+
+        Also folds in any Down Payment invoice for this deal that was never
+        linked to a plan line at all (see _extra_down_payment_invoices) -
+        without this, a top-up receipt invoiced outside the installment
+        plan (Invoice Type "Others") would silently disappear from every
+        total here even though the cash was genuinely received. Only
+        Advance-Payment-flagged ones are picked up this way; an unlinked,
+        unflagged invoice is a data-entry question for the user to fix at
+        the source, not something this report should guess about.
         """
         invoices_map = self._midland_invoices_for(plan_lines, 'investment_installment_id')
         dealer_rebate = marketing_rebate = cash = advance_received = 0.0
-        seen_payments = self.env['midland.payment']
+        downpayment_total = sum(plan_lines.mapped('amount'))
+        paid = sum(plan_lines.mapped('amount_paid'))
+        due = sum(plan_lines.mapped('residual'))
+        linked_invoice_ids = []
         for plan_line in plan_lines:
             invs = invoices_map.get(plan_line.id)
             if invs:
+                linked_invoice_ids += invs.ids
                 dealer_rebate += sum(invs.mapped('rebate_total'))
                 marketing_rebate += sum(invs.mapped('marketing_rebate_total'))
                 cash += self._midland_cash_paid(invs)
-                new_payments = invs.payment_line_ids.filtered(
-                    lambda l: l.payment_id.state == 'confirmed').payment_id - seen_payments
-                seen_payments |= new_payments
-                advance_received += sum(new_payments.mapped('advance_applied'))
+                advance_invs = invs.filtered('is_advance_payment')
+                if advance_invs:
+                    advance_received += self._midland_cash_paid(advance_invs)
             else:
                 dealer_rebate += plan_line.rebate_adjustment
                 cash += plan_line.net_payment
-                if plan_line.invoice_id:
+                if plan_line.invoice_id and plan_line.invoice_id.is_advance_payment:
                     advance_received += sum(
                         self._advance_payment_lines(plan_line.invoice_id).mapped('payment_amount'))
+
+        # Every invoice _extra_down_payment_invoices returns is, by
+        # definition, Advance-Payment-flagged - all of its cash counts.
+        extra_invoices = self._extra_down_payment_invoices(investment, linked_invoice_ids)
+        if extra_invoices:
+            downpayment_total += sum(extra_invoices.mapped('amount_total'))
+            due += sum(extra_invoices.mapped('amount_residual'))
+            dealer_rebate += sum(extra_invoices.mapped('rebate_total'))
+            marketing_rebate += sum(extra_invoices.mapped('marketing_rebate_total'))
+            extra_cash = self._midland_cash_paid(extra_invoices)
+            cash += extra_cash
+            paid += extra_cash
+            advance_received += extra_cash
+
         return {
             'label': investment.name,
             'total': investment.total_amount,
-            'downpayment_total': sum(plan_lines.mapped('amount')),
-            'paid': sum(plan_lines.mapped('amount_paid')),
+            'downpayment_total': downpayment_total,
+            'paid': paid,
             'advance_received': advance_received,
             'dealer_rebate': dealer_rebate,
             'marketing_rebate': marketing_rebate,
             'cash': cash,
-            'due': sum(plan_lines.mapped('residual')),
+            'due': due,
+            'extra_invoices': extra_invoices,
         }
+
+    def _midland_invoice_lines(self, invoices, investment_name):
+        """One dict per confirmed payment against `invoices` (midland.invoice
+        recordset), in the shape the Payment Details line tables use. Shared
+        by _booking_lines (plan-line-linked invoices) and the extra,
+        unlinked Down Payment invoices from _extra_down_payment_invoices -
+        both need identical rows in the same table.
+        """
+        lines = []
+        for mi in invoices:
+            for mpl in mi.payment_line_ids.filtered(lambda l: l.payment_id.state == 'confirmed'):
+                lines.append({
+                    'invoice_number': mpl.payment_id.name,
+                    'investment_name': investment_name,
+                    'payment_type': mi.name,
+                    'date': mpl.payment_date,
+                    'amount_paid': mpl.payment_amount,
+                    # midland.payment has no cheque/bank reference field -
+                    # its Payment Journal is the closest equivalent.
+                    'cheque_no': '',
+                    'bank_ref': mpl.payment_id.journal_id.name,
+                    'payment_method': self._payment_method_label(mpl.payment_id),
+                })
+        return lines
 
     def _booking_lines(self, investments_booking_lines, midland_invoices_map):
         lines = []
         for plan_line in investments_booking_lines:
             invs = midland_invoices_map.get(plan_line.id)
             if invs:
-                for mi in invs:
-                    for mpl in mi.payment_line_ids.filtered(lambda l: l.payment_id.state == 'confirmed'):
-                        lines.append({
-                            'invoice_number': mpl.payment_id.name,
-                            'investment_name': plan_line.investment_id.name,
-                            'payment_type': mi.name,
-                            'date': mpl.payment_date,
-                            'amount_paid': mpl.payment_amount,
-                            # midland.payment has no cheque/bank reference field -
-                            # its Payment Journal is the closest equivalent.
-                            'cheque_no': '',
-                            'bank_ref': mpl.payment_id.journal_id.name,
-                            'payment_method': self._payment_method_label(mpl.payment_id),
-                        })
+                lines += self._midland_invoice_lines(invs, plan_line.investment_id.name)
             elif plan_line.invoice_id:
                 for mp in self._advance_payment_lines(plan_line.invoice_id):
                     lines.append({
@@ -427,7 +494,15 @@ class DealerStatementReport(models.AbstractModel):
                 'confirmation_amount_due': confirmation_amount_due,
                 'confirmation_rebate': confirmation_rebate,
                 'booking_lines': self._booking_lines(booking_lines_src, booking_invoices),
-                'down_payment_lines': self._booking_lines(down_payment_lines_src, down_payment_invoices),
+                # + each deal's extra Down Payment invoices (see
+                # _extra_down_payment_invoices) - not reachable through
+                # down_payment_lines_src since they're not linked to any
+                # plan line, so _booking_lines alone would miss them.
+                'down_payment_lines': self._booking_lines(down_payment_lines_src, down_payment_invoices) + [
+                    line
+                    for row in payment_rows
+                    for line in self._midland_invoice_lines(row['extra_invoices'], row['label'])
+                ],
                 'confirmation_lines': confirmation_lines,
             })
 

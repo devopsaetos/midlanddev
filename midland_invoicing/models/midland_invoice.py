@@ -40,6 +40,13 @@ class MidlandInvoice(models.Model):
     # ── Header info ───────────────────────────────────────────────────────────
     ref = fields.Char(string='Reference', tracking=True)
     is_maintenance_batch = fields.Boolean(string='Is Maintenance Batch', tracking=True)
+    is_advance_payment = fields.Boolean(
+        string='Advance Payment', tracking=True,
+        help="Marks this invoice's cash as an advance payment against the "
+             "deal. Drives the Dealer Statement Report's Advance Received "
+             "column and Installment Type payment detail - the report "
+             "cannot infer this on its own, so it has to be set here.",
+    )
     payment_no = fields.Char(string='Payment No.', tracking=True)
     property_invoice_type = fields.Selection([
         ('initial_payment', 'Initial Payment'),
