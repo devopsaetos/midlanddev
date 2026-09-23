@@ -11,6 +11,7 @@ class DealerStatementWizard(models.TransientModel):
     report_type = fields.Selection([
         ('summary', 'Summary'),
         ('detailed', 'Detailed'),
+        ('general_rebate', 'General Rebate'),
     ], default='detailed', required=True)
     date_from = fields.Date()
     date_to = fields.Date()

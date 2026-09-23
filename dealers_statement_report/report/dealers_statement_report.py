@@ -206,6 +206,10 @@ class DealerStatementReport(models.AbstractModel):
         lines' invoices (old-pipeline lines fall back to rebate_adjustment).
         cash: the cash actually collected, old-pipeline lines falling back
         to net_payment.
+        general_rebate_rate / general_rebate_amount: the deal's own Marketing
+        Company rebate configuration (Rebate tab) - the configured rate/
+        amount, not what's been invoiced yet, so this is set even before any
+        invoice exists.
 
         Also folds in any Down Payment invoice for this deal that was never
         linked to a plan line at all (see _extra_down_payment_invoices) -
@@ -252,14 +256,25 @@ class DealerStatementReport(models.AbstractModel):
             paid += extra_cash
             advance_received += extra_cash
 
+        # General Rebate = the deal's Marketing Company rebate configuration
+        # (Rebate tab, Agent Type "Marketing Company") - the rate and money
+        # amount as configured on the deal itself, not what's been invoiced
+        # so far (unlike dealer_rebate/marketing_rebate above, which only
+        # count rebate already applied against an invoice).
+        general_rebate_lines = investment.rebate_on_allotment_ids.filtered(
+            lambda l: l.agent_type == 'marketing_company')
+
         return {
             'label': investment.name,
+            'dealer': investment.partner_id.investor_id,
             'total': investment.total_amount,
             'downpayment_total': downpayment_total,
             'paid': paid,
             'advance_received': advance_received,
             'dealer_rebate': dealer_rebate,
             'marketing_rebate': marketing_rebate,
+            'general_rebate_rate': general_rebate_lines[:1].total_rebate,
+            'general_rebate_amount': sum(general_rebate_lines.mapped('rebate_amount')),
             'cash': cash,
             'due': due,
             'extra_invoices': extra_invoices,

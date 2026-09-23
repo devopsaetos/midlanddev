@@ -784,12 +784,12 @@ class ResMember(models.Model):
             },
         }
 
-    @api.constrains('cnic', 'email', 'mobile', 'vat')
+    @api.constrains('email', 'mobile', 'vat')
     def _check_something(self):
         res = self.env['res.member']
 
-        if self.cnic and res.search_count([('cnic', '=', self.cnic), ('company_type', '=', self.company_type), ('company_id', '=', self.company_id.id)]) > 1:
-            raise ValidationError("CNIC No should be unique: %s" % self.cnic)
+        # CNIC uniqueness check removed on request: the same CNIC now
+        # legitimately needs more than one member record.
 
         if self.email and res.search_count([('email', '=', self.email)]) > 1:
             raise ValidationError("Email should be unique: %s" % self.email)
