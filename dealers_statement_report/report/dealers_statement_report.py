@@ -407,7 +407,21 @@ class DealerStatementReport(models.AbstractModel):
         if docs.investment_ids:
             domain.append(('id', 'in', docs.investment_ids.ids))
         if docs.investor_id:
-            domain.append(('partner_id', '=', docs.investor_id.id))
+            # Summary/General Rebate: a main Dealer whose own "Show Sale
+            # Summary" is set to "All" gets their Sub Dealers' deals folded
+            # into the same report (one combined row list under the main
+            # Dealer), not just their own - Detailed stays scoped to
+            # exactly the one investor picked, since combining there would
+            # mean pulling in every Sub Dealer's full Inventory/Payment
+            # Details breakdown, not just a summary row each.
+            investor_ids = docs.investor_id.ids
+            if (docs.report_type in ('summary', 'general_rebate')
+                    and docs.investor_id.show_sale_summary == 'all'):
+                sub_dealers = self.env['res.investor'].sudo().search([
+                    ('main_investor_id', '=', docs.investor_id.id),
+                ])
+                investor_ids += sub_dealers.ids
+            domain.append(('partner_id', 'in', investor_ids))
         if docs.date_from:
             domain.append(('booking_date', '>=', docs.date_from))
         if docs.date_to:

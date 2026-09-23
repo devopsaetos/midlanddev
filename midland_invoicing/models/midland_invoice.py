@@ -178,18 +178,24 @@ class MidlandInvoice(models.Model):
     # ── Receipt display (File flow vs Investment flow) ────────────────────────
     receipt_ref = fields.Char(string='File/Investment No.', compute='_compute_receipt_display')
     receipt_category = fields.Char(string='Category', compute='_compute_receipt_display')
+    receipt_unit_size = fields.Char(string='Unit Size', compute='_compute_receipt_display')
     receipt_product = fields.Char(string='Product', compute='_compute_receipt_display')
     receipt_unit_no = fields.Char(string='Unit Number', compute='_compute_receipt_display')
+    receipt_unit_count = fields.Integer(string='Total Num. of Units', compute='_compute_receipt_display')
     receipt_payment_type = fields.Char(string='Payment Type', compute='_compute_receipt_display')
 
     # ── Compute ───────────────────────────────────────────────────────────────
 
     @api.depends(
         'file_ids.name', 'file_ids.category_id', 'file_ids.unit_number', 'file_ids.payment_type',
+        'file_ids.unit_category_type_id',
         'dealer_id.ref', 'investment_id.sequence_no',
         'investment_id.reservation_type', 'investment_id.payment_type',
         'investment_id.inventory_ids.name', 'investment_id.inventory_ids.category_id',
+        'investment_id.inventory_ids.unit_category_type_id',
         'investment_id.investment_line_ids.category_id',
+        'investment_id.investment_line_ids.unit_category_type_id',
+        'investment_id.investment_line_ids.no_of_units',
         'invoice_line_ids.product_id',
     )
     def _compute_receipt_display(self):
@@ -201,8 +207,11 @@ class MidlandInvoice(models.Model):
         payment_type_labels = {'installments': 'Installment', 'lump_sum': 'Lump Sum'}
         for rec in self:
             # Product always comes straight from the invoice's own lines
-            # (product.realestate) — the actual thing being invoiced, not a
-            # derived category from the File/Investment.
+            # (product.realestate) — the actual thing being invoiced (e.g.
+            # "Down Payment"), not a derived category from the File/
+            # Investment. Shown under the receipt's "Type" column, not
+            # "Product" — "Product" there means the plot's own unit size
+            # (e.g. "3 Marla"), which receipt_unit_size below provides.
             rec.receipt_product = ', '.join(filter(None, rec.invoice_line_ids.mapped('product_id.name')))
             if rec.dealer_id:
                 # Dealer's own Investor Code, not the deal's sequence number.
@@ -210,25 +219,37 @@ class MidlandInvoice(models.Model):
                 inv = rec.investment_id
                 if inv and inv.reservation_type == 'unit' and inv.inventory_ids:
                     rec.receipt_category = ', '.join(inv.inventory_ids.mapped('category_id.name'))
+                    rec.receipt_unit_size = ', '.join(filter(
+                        None, inv.inventory_ids.mapped('unit_category_type_id.name')))
                     rec.receipt_unit_no = ', '.join(inv.inventory_ids.mapped('name'))
+                    rec.receipt_unit_count = len(inv.inventory_ids)
                 elif inv:
                     rec.receipt_category = ', '.join(filter(
                         None, inv.investment_line_ids.mapped('category_id.name')))
+                    rec.receipt_unit_size = ', '.join(filter(
+                        None, inv.investment_line_ids.mapped('unit_category_type_id.name')))
                     rec.receipt_unit_no = ''
+                    rec.receipt_unit_count = sum(inv.investment_line_ids.mapped('no_of_units'))
                 else:
                     rec.receipt_category = ''
+                    rec.receipt_unit_size = ''
                     rec.receipt_unit_no = ''
+                    rec.receipt_unit_count = 0
                 rec.receipt_payment_type = payment_type_labels.get(inv.payment_type, '') if inv else ''
             elif rec.file_ids:
                 f = rec.file_ids
                 rec.receipt_ref = f.name
                 rec.receipt_category = f.category_id.name or ''
+                rec.receipt_unit_size = f.unit_category_type_id.name or ''
                 rec.receipt_unit_no = f.unit_number or ''
+                rec.receipt_unit_count = 1
                 rec.receipt_payment_type = payment_type_labels.get(f.payment_type, '')
             else:
                 rec.receipt_ref = ''
                 rec.receipt_category = ''
+                rec.receipt_unit_size = ''
                 rec.receipt_unit_no = ''
+                rec.receipt_unit_count = 0
                 rec.receipt_payment_type = ''
 
     @api.depends('payment_line_ids.payment_id')

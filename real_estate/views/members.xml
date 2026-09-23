@@ -348,8 +348,9 @@
 
                                         <field widget="mask"
                                                name="mobile"
+                                               data-inputmask="'mask': '9999-9999999'"
                                                required="company_type == 'person' and (not id or edit_unlocked)"
-                                               placeholder='+92-300-8765432'
+                                               placeholder='0320-7834234'
                                                class="o_phone_number" readonly="id and not edit_unlocked"/>
                                         <field invisible="1"
                                                name="country_code_mobile2_id"

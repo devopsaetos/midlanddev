@@ -621,108 +621,16 @@
                                 <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <strong>Society:</strong>
                                 </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
+                                <td colspan="3" style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
                                     <span t-field="file.society_id.name"/>
                                 </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Phase:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.phase_id.name"/>
-                                </td>
                             </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Sector:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.sector_id.name"/>
-                                </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Total Area (SQFT):</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.standard_area"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Size:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-esc="(file.size_id.name or '').replace('×', 'x').replace('Ã—', 'x')"/>
-                                </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Plan Type:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.plan_type"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Payment Type:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.payment_type"/>
-                                </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Sale Price:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.ttl_sale_amount"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>No of Installments:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.total_installment"/>
-                                </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Less Discount:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.discount_amount"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Payment Interval:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.interval_id.name"/>
-                                </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Down Payment:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.down_payment_amount"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Start Date:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.starting_date" t-options="{'widget': 'date'}"/>
-                                </td>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Balance Amount:</strong>
-                                </td>
-                                <td style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-field="file.balance_amount"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="background:#edf7fc; padding:4px 6px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <strong>Mode Of Payment:</strong>
-                                </td>
-                                <td colspan="3" style="background:#ffffff; padding:4px 6px; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
-                                    <span t-esc="', '.join(file.installment_plan_ids.mapped('payment_journal_id').mapped('name'))"/>
-                                </td>
-                            </tr>
+                            <!-- Phase, Sector, Total Area, Size, Plan Type, Payment Type,
+                                 Sale Price, No of Installments, Less Discount, Payment
+                                 Interval, Down Payment, Start Date, Balance Amount and Mode
+                                 Of Payment rows removed from this FILE DETAILS block on
+                                 request - kept only on the Membership Form page's own Unit
+                                 Details/Contract Detail sections, not here. -->
                         </table>
                                 </td>
                             </tr>

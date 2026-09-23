@@ -61,16 +61,18 @@
                             </tr>
                             <tr>
                                 <td style="width:160px; font-weight:bold; padding:2px 0; white-space:nowrap;">Payment
+                                    Method:
+                                </td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.mode_of_payments"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:160px; font-weight:bold; padding:2px 0; white-space:nowrap;">Payment
                                     Journal:
                                 </td>
                                 <td style="padding-left:35px;">
                                     <span t-field="o.journal_id.name"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="width:160px; font-weight:bold; padding:2px 0; white-space:nowrap;">Memo:</td>
-                                <td style="padding-left:35px;">
-                                    <span t-field="o.remarks"/>
                                 </td>
                             </tr>
                         </table>
@@ -83,6 +85,12 @@
                                 </td>
                                 <td style="padding-left:35px;">
                                     <span t-field="o.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width:100px; font-weight:bold; padding:2px 0; white-space:nowrap;">Memo:</td>
+                                <td style="padding-left:35px;">
+                                    <span t-field="o.remarks"/>
                                 </td>
                             </tr>
                             <tr>
@@ -105,7 +113,11 @@
                         </th>
                         <th style="padding:5px; font-weight:normal;">Category</th>
                         <th style="padding:5px; font-weight:normal;">Product</th>
-                        <th style="padding:5px; font-weight:normal;">Unit Number</th>
+                        <th style="padding:5px; font-weight:normal;">
+                            <t t-if="o.payment_for == 'investor'">Total Num. of Units</t>
+                            <t t-else="">Unit Number</t>
+                        </th>
+                        <th style="padding:5px; font-weight:normal;">Type</th>
                         <th style="padding:5px; font-weight:normal;">Due Date</th>
                         <th style="padding:5px; font-weight:normal;">Payment Type</th>
                         <th style="padding:5px; font-weight:normal;">Total</th>
@@ -122,10 +134,23 @@
                             <span t-field="line.invoice_id.receipt_category"/>
                         </td>
                         <td style="padding:5px;">
-                            <span t-field="line.invoice_id.receipt_product"/>
+                            <t t-if="o.payment_for == 'investor'">
+                                <span t-field="line.invoice_id.receipt_product"/>
+                            </t>
+                            <t t-else="">
+                                <span t-field="line.invoice_id.receipt_unit_size"/>
+                            </t>
                         </td>
                         <td style="padding:5px;">
-                            <span t-field="line.invoice_id.receipt_unit_no"/>
+                            <t t-if="o.payment_for == 'investor'">
+                                <span t-field="line.invoice_id.receipt_unit_count"/>
+                            </t>
+                            <t t-else="">
+                                <span t-field="line.invoice_id.receipt_unit_no"/>
+                            </t>
+                        </td>
+                        <td style="padding:5px;">
+                            <span t-if="o.payment_for != 'investor'" t-field="line.invoice_id.receipt_product"/>
                         </td>
                         <td style="padding:5px; text-align:center;">
                             <span t-field="line.due_date"/>
@@ -144,7 +169,7 @@
                 </tbody>
                 <tfoot>
                     <tr style="font-weight:bold;">
-                        <td colspan="6" style="padding:5px;">Total</td>
+                        <td colspan="7" style="padding:5px;">Total</td>
                         <td style="padding:5px; text-align:right;">Rs.
                             <t t-esc="'{:,.2f}'.format(sum(line.total for line in o.invoice_line_ids))"/>
                         </td>

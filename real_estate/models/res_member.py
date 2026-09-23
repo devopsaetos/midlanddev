@@ -23,6 +23,21 @@ def _format_cnic(value):
     return digits
 
 
+MOBILE_RE = re.compile(r'^\d{4}-\d{7}$')
+
+
+def _format_mobile(value):
+    """Reformat a Pakistani mobile number to the 4-7 layout (9999-9999999,
+    e.g. 0320-7834234) as the user types/tabs out, capped at 11 digits.
+    Pure in-memory formatting for use in onchange methods — no DB access."""
+    if not value:
+        return value
+    digits = re.sub(r'\D', '', value)[:11]
+    if len(digits) > 4:
+        return '%s-%s' % (digits[:4], digits[4:])
+    return digits
+
+
 class ResMember(models.Model):
     _name = 'res.member'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -251,6 +266,10 @@ class ResMember(models.Model):
     @api.onchange('kin_cnic')
     def _onchange_kin_cnic_format(self):
         self.kin_cnic = _format_cnic(self.kin_cnic)
+
+    @api.onchange('mobile')
+    def _onchange_mobile_format(self):
+        self.mobile = _format_mobile(self.mobile)
 
     @api.onchange('city_id')
     def onchange_city(self):
@@ -793,6 +812,14 @@ class ResMember(models.Model):
 
         if self.email and res.search_count([('email', '=', self.email)]) > 1:
             raise ValidationError("Email should be unique: %s" % self.email)
+
+        # Server-side, not just the form's mask widget: guarantees every
+        # saved Mobile is in the 0320-7834234 layout regardless of entry
+        # path (import, API, another view), so it reads consistently
+        # wherever it's shown - not just wherever this widget is used.
+        if self.mobile and not MOBILE_RE.match(self.mobile):
+            raise ValidationError(
+                _("Mobile should be in the format 0320-7834234: %s") % self.mobile)
 
     def copy(self, default=None):
         default = dict(default or {})
