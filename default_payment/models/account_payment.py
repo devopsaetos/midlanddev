@@ -338,10 +338,11 @@ class AccountPayment(models.Model):
     def unlink(self):
         for rec in self:
             self.env['multi.invoice.payment'].search([('payment_id', '=', rec.id)]).unlink()
-            register_line = self.env['cash.register.line'].search(
-                [('transaction_type', '=', 'refill'), ('record_id', '=', rec.id)])
-            if register_line:
-                register_line.unlink()
+            # 'cash.register.line' lookup removed: that model doesn't exist
+            # anywhere in this addons tree (nor in core/Enterprise) - a
+            # leftover reference to a feature that was since removed. It
+            # made every account.payment deletion raise
+            # "KeyError: 'cash.register.line'" unconditionally.
 
         return super(AccountPayment, self).unlink()
 
