@@ -695,6 +695,24 @@
                                 <tr t-if="not file.installment_plan_ids">
                                     <td colspan="8" style="padding:5px; border:none;">No installment plan created</td>
                                 </tr>
+                                <!-- Grand total as the last tbody row, not a <tfoot>:
+                                     wkhtmltopdf repeats tfoot on every sheet, but the
+                                     total should print once, after the final line. -->
+                                <tr t-if="file.installment_plan_ids"
+                                    style="font-weight:bold; font-size:15px; background:#edf7fc; page-break-inside:avoid;">
+                                    <td colspan="5" style="padding:4px; border:none; border-top:2px solid #40a4d5; border-bottom:2px solid #40a4d5; text-align:right;">
+                                        Total
+                                    </td>
+                                    <td style="padding:4px; border:none; border-top:2px solid #40a4d5; border-bottom:2px solid #40a4d5; text-align:right;">
+                                        <span t-esc="'{:,.2f}'.format(sum(file.installment_plan_ids.mapped('amount')))"/>
+                                    </td>
+                                    <td style="padding:4px; border:none; border-top:2px solid #40a4d5; border-bottom:2px solid #40a4d5; text-align:right;">
+                                        <span t-esc="'{:,.2f}'.format(sum(file.installment_plan_ids.mapped('amount_paid')))"/>
+                                    </td>
+                                    <td style="padding:4px; border:none; border-top:2px solid #40a4d5; border-bottom:2px solid #40a4d5; text-align:right;">
+                                        <span t-esc="'{:,.2f}'.format(sum(file.installment_plan_ids.mapped('residual')))"/>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
