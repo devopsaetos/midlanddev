@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="project_receivables_wizard_view_form" model="ir.ui.view">
+        <field name="name">project.receivables.wizard.form</field>
+        <field name="model">project.receivables.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Receivables Report">
+                <group>
+                    <group>
+                        <field name="society_id" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+                    <group>
+                        <field name="month"/>
+                        <field name="year" options="{'enable_formatting': false}"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_pdf" string="Print PDF" type="object"
+                            default_focus="1" class="btn-primary"/>
+                    <button name="action_generate_xlsx" string="Print Excel" type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="project_receivables_action" model="ir.actions.act_window">
+        <field name="name">Member (Receivables)</field>
+        <field name="res_model">project.receivables.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="project_receivables_wizard_view_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="project_receivables_menu"
+              name="Member (Receivables)"
+              parent="real_estate.menu_reports"
+              action="project_receivables_action"
+              sequence="50"/>
+</odoo>

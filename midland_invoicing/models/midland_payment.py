@@ -195,6 +195,48 @@ class MidlandPayment(models.Model):
             limit=1
         )
 
+    # ── Payment Receipt helpers ───────────────────────────────────────────────
+
+    def _receipt_payment_method(self):
+        """Payment Method as printed on the Payment Receipt.
+
+        mode_of_payments defaults to 'cash' and is often left untouched, so
+        many receipts read "Cash" with a Bank journal right under it. When
+        the two contradict, the journal wins: fall back to the deal's own
+        Mode of Payment for dealer receipts, else just "Bank".
+        """
+        self.ensure_one()
+        labels = dict(self._fields['mode_of_payments'].selection)
+        mode = self.mode_of_payments
+        if self.journal_id.type == 'cash':
+            return labels['cash']
+        if mode == 'cash' and self.journal_id.type == 'bank':
+            deal_mode = self.investment_id.mode_of_payments
+            if deal_mode and deal_mode != 'cash':
+                return labels.get(deal_mode, '')
+            return _('Bank')
+        return labels.get(mode, '')
+
+    def _receipt_project_name(self):
+        """Project (society) this receipt is for, e.g. "Capital Valley" -
+        printed under the group company's name on the Payment Receipt."""
+        self.ensure_one()
+        society = self.file_id.society_id or self.investment_id.society_id
+        if not society:
+            files = self.invoice_line_ids.invoice_id.file_ids
+            society = files[:1].society_id or self.invoice_line_ids.invoice_id.investment_id[:1].society_id
+        return society.name or ''
+
+    # Project slogans for the Payment Receipt letterhead, keyed by lower-case
+    # society name - taken from each project's own signboard.
+    _RECEIPT_TAGLINES = {
+        'capital valley': 'Live Modern  Live Better',
+    }
+
+    def _receipt_project_tagline(self):
+        self.ensure_one()
+        return self._RECEIPT_TAGLINES.get((self._receipt_project_name() or '').strip().lower(), '')
+
     def _invoice_rebate_amount(self, inv):
         """Dealer rebate funded for `inv` under the Investor/Dealer Booking /
         Down Payment rebate flow (0.0 if that flow doesn't apply). Only

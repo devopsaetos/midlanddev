@@ -950,6 +950,9 @@ class InvestmentExt(models.Model):
                     'payment_amount': total_net,
                     'currency_id': self.env.company.currency_id.id,
                     'journal_id': self.journal_id.id or self.env.company.account_journal_id.id,
+                    # The deal's own Mode of Payment - left out, the payment
+                    # (and its receipt) silently defaulted to Cash.
+                    'mode_of_payments': self.mode_of_payments,
                     'company_id': self.env.company.id,
                     'remarks': ', '.join(invoices.mapped('name')),
                     'invoice_line_ids': payment_lines,

@@ -40,7 +40,10 @@
                         <!--  DATE / OFFICE COPY ROW  -->
                         <table style="width:100%; margin-bottom:6px;">
                             <tr>
-                                <td style="width:50%; vertical-align:top;">
+                                <!-- Salutation sits beside the member photo (not below
+                                     it) so the larger photo doesn't push the page onto a
+                                     second sheet. -->
+                                <td style="width:78%; vertical-align:top;">
                                     <div style="margin-bottom:4px; font-size:15px; margin-left:-4px;">
                                         <span>Date:
                                             <span t-field="file.booking_date" t-options="{'widget': 'date'}"/>
@@ -50,29 +53,26 @@
                                         <br/>
                                         <span t-field="file.society_id.name"/>
                                     </div>
+                                    <p style="margin:4px 0;">Dear Sir/Madam,</p>
+                                    <p style="margin:4px 0;">I Undertake to be bound by all such conditions, obligations and
+                                        responsibilities as printed overleaf in this respect, made there under.
+                                    </p>
                                 </td>
-                                <td style="width:50%; text-align:right; vertical-align:top;">
+                                <td style="width:22%; text-align:right; vertical-align:top;">
                                     <div style="font-weight:bold; font-size:15px; margin-bottom:4px;">
                                         <span t-esc="copy_label"/>
                                     </div>
                                     <t t-if="file.membership_id.image_1920">
                                         <img t-att-src="image_data_uri(file.membership_id.image_1920)"
-                                             style="height:70px; width:70px; object-fit:cover; border:1px solid #ccc; display:inline-block; max-width:100%;"/>
+                                             style="height:110px; width:110px; object-fit:cover; border:1px solid #ccc; display:inline-block; max-width:100%;"/>
                                     </t>
                                 </td>
                             </tr>
                         </table>
-                        <div style="margin-bottom:8px;">
-                            <p style="margin:4px 0;">Dear Sir/Madam,</p>
-                            <p style="margin:4px 0;">I Undertake to be bound by all such conditions, obligations and
-                                responsibilities as printed overleaf in this respect, made there under.
-                            </p>
-                        </div>
                         <!--  OWNER DETAILS  -->
-                        <div style="color:#40a4d5; font-weight:bold; font-size:16px; padding:4px 0px; letter-spacing:.3px; margin-bottom:0;">
+                        <div style="background-color:#40a4d5; color:#ffffff; font-weight:bold; font-size:16px; padding:3px 8px; letter-spacing:.3px; margin:0 0 4px 0;">
                             OWNER DETAILS
                         </div>
-                        <hr style="background-color:#40a4d5; border:none; height:1px; margin-top:-6px;"/>
                         <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px; font-size:15px;">
                             <tr>
                                 <td style="width:15%; background:#edf7fc; padding:3px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #d7e9f3;">
@@ -122,10 +122,9 @@
                             </tr>
                         </table>
                         <!--  NEXT OF KIN  -->
-                        <div style="color:#40a4d5; font-weight:bold; font-size:16px; padding:4px 0px; letter-spacing:.3px; margin-bottom:0;">
+                        <div style="background-color:#40a4d5; color:#ffffff; font-weight:bold; font-size:16px; padding:3px 8px; letter-spacing:.3px; margin:0 0 4px 0;">
                             NEXT OF KIN
                         </div>
-                        <hr style="background-color:#40a4d5; border:none; height:1px; margin-top:-6px;"/>
                         <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
                             <thead>
                                 <tr style="font-size:15px; color:#222;">
@@ -166,10 +165,9 @@
                             </tbody>
                         </table>
                         <!--  UNIT DETAILS  -->
-                        <div style="color:#40a4d5; font-weight:bold; font-size:16px; padding:4px 0px; letter-spacing:.3px; margin-bottom:0;">
+                        <div style="background-color:#40a4d5; color:#ffffff; font-weight:bold; font-size:16px; padding:3px 8px; letter-spacing:.3px; margin:0 0 4px 0;">
                             UNIT DETAILS
                         </div>
-                        <hr style="background-color:#40a4d5; border:none; height:1px; margin-top:-6px;"/>
                         <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px; font-size:15px;">
                             <tr>
                                 <td style="width:15%; background:#edf7fc; padding:3px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">
@@ -239,10 +237,9 @@
                             </tr>
                         </table>
                         <!--  CONTRACT DETAIL  -->
-                        <div style="color:#40a4d5; font-weight:bold; font-size:16px; padding:4px 0px; letter-spacing:.3px; margin-bottom:0;">
+                        <div style="background-color:#40a4d5; color:#ffffff; font-weight:bold; font-size:16px; padding:3px 8px; letter-spacing:.3px; margin:0 0 4px 0;">
                             CONTRACT DETAIL
                         </div>
-                        <hr style="background-color:#40a4d5; border:none; height:1px; margin-top:-6px;"/>
                         <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:8px; font-size:15px;">
                             <tr>
                                 <td style="width:20%; background:#edf7fc; padding:3px 8px; font-weight:bold; border-top:none; border-left:none; border-right:none; border-bottom:1px solid #ddebf2;">

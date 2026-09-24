@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_project_receivables" model="report.paperformat">
+        <field name="name">Project Receivables Report</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">12</field>
+        <field name="margin_left">6</field>
+        <field name="margin_right">6</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_project_receivables" model="ir.actions.report">
+        <field name="name">Project Receivables Report</field>
+        <field name="model">project.receivables.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">project_receivables_report.receivables_pdf</field>
+        <field name="report_file">project_receivables_report.receivables_pdf</field>
+        <field name="print_report_name">'%s - %s %s' % (object._report_title(), dict(object._fields['month'].selection).get(object.month), object.year)</field>
+        <field name="paperformat_id" ref="paperformat_project_receivables"/>
+    </record>
+
+    <template id="receivables_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="reports" t-as="rep">
+                <div class="page" style="font-family: Arial, sans-serif; font-size:13px; color:#222;">
+                    <div style="text-align:center; font-size:20px; font-weight:bold;">
+                        <span t-esc="rep['title']"/>
+                    </div>
+                    <div style="text-align:center; font-size:15px; font-weight:bold; background:#BDD7EE; border:1px solid #888; padding:4px; margin:6px 0 0 0;">
+                        Till Month: <span t-esc="rep['month_label']"/>
+                    </div>
+                    <t t-set="th" t-value="'background:#BDD7EE; border:1px solid #888; padding:4px 3px; text-align:center; vertical-align:middle; font-weight:bold;'"/>
+                    <t t-set="td" t-value="'border:1px solid #aaa; padding:3px;'"/>
+                    <t t-set="num" t-value="'border:1px solid #aaa; padding:3px; text-align:right; white-space:nowrap;'"/>
+                    <t t-set="ctr" t-value="'border:1px solid #aaa; padding:3px; text-align:center;'"/>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <!-- thead repeats on every sheet; the Total row is the last
+                             tbody row (not tfoot) so it prints once, at the end. -->
+                        <thead>
+                            <tr>
+                                <th t-att-style="th">S.No.</th>
+                                <th t-att-style="th">Plot Number</th>
+                                <th t-att-style="th">Member Name</th>
+                                <th t-att-style="th">Mobile Num.</th>
+                                <th t-att-style="th">Size</th>
+                                <th t-att-style="th">Category</th>
+                                <th t-att-style="th">Total Amount</th>
+                                <th t-att-style="th">Amount Paid</th>
+                                <th t-att-style="th">Amount Due</th>
+                                <th t-att-style="th">Current Month Installment</th>
+                                <th t-att-style="th">Installment Paid</th>
+                                <th t-att-style="th">Overdue Amount</th>
+                                <th t-att-style="th">Due Amount</th>
+                                <th t-att-style="th">Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="rep['rows']" t-as="r" style="page-break-inside:avoid;">
+                                <td t-att-style="ctr"><span t-esc="r_index + 1"/></td>
+                                <td t-att-style="ctr"><span t-esc="r['plot']"/></td>
+                                <td t-att-style="td"><span t-esc="r['member']"/></td>
+                                <td t-att-style="ctr"><span t-esc="r['mobile']"/></td>
+                                <td t-att-style="ctr + ' white-space:nowrap;'"><span t-esc="r['size']"/></td>
+                                <td t-att-style="ctr"><span t-esc="r['category']"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['total'])"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['paid'])"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['amount_due'])"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['current_amount'])"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['current_paid'])"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['overdue'])"/></td>
+                                <td t-att-style="num"><span t-esc="'{:,.0f}'.format(r['due_amount'])"/></td>
+                                <td t-att-style="ctr + ' white-space:nowrap;'">
+                                    <span t-if="r['due_date']" t-esc="r['due_date'].strftime('%d/%m/%Y')"/>
+                                </td>
+                            </tr>
+                            <tr style="font-weight:bold; background:#BDD7EE; page-break-inside:avoid;">
+                                <td colspan="6" t-att-style="td + ' text-align:right;'">Total</td>
+                                <t t-foreach="['total', 'paid', 'amount_due', 'current_amount', 'current_paid', 'overdue', 'due_amount']" t-as="k">
+                                    <td t-att-style="num"><span t-esc="'{:,.0f}'.format(rep['totals'][k])"/></td>
+                                </t>
+                                <td t-att-style="td"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:8px; font-size:11px; color:#666;">
+                        Printed By: <span t-esc="printed_by"/> On <span t-esc="print_date"/>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Earlier versions created one "<Project> (Receivables)" menu per
+         project; they're replaced by the single Member (Receivables) menu. -->
+    <function model="project.receivables.wizard" name="_remove_per_project_menus"/>
+</odoo>
