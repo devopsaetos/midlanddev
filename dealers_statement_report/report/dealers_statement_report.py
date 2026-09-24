@@ -183,48 +183,38 @@ class DealerStatementReport(models.AbstractModel):
         """One Payment Details row for a deal's Down Payment (`plan_lines`
         is that deal's installment_type == 'down_payment' lines only).
 
-        total             = the deal's total amount - context, not summed
-                             from these lines.
-        downpayment_total = the down payment's own scheduled amount (these
-                             lines' Amount) - what was supposed to be paid.
-        paid              = sum of every plan line's Amount Paid, i.e. what
-                             the Deal form's Installment Plan tab totals to
-                             for these lines - counts what rebates settled
-                             as well as cash.
-        advance_received  = confirmed-payment cash collected against
-                             whichever of these invoices has the manual
-                             Advance Payment checkbox ticked (midland.invoice
-                             .is_advance_payment - old-pipeline lines use
-                             their invoice_id.is_advance_payment the same
-                             way). Not inferred any other way: there's no
-                             reliable automatic signal for "this cash was
-                             specifically an advance", so the checkbox is
-                             the one thing this trusts.
-        due               = sum of every plan line's Amount Due, same tab's
-                             total, plus any extra invoices' own residual.
-        dealer_rebate / marketing_rebate: rebate applied against these
-        lines' invoices (old-pipeline lines fall back to rebate_adjustment).
-        cash: the cash actually collected, old-pipeline lines falling back
-        to net_payment.
-        general_rebate_rate / general_rebate_amount: the deal's own Marketing
-        Company rebate configuration (Rebate tab) - the configured rate/
-        amount, not what's been invoiced yet, so this is set even before any
-        invoice exists.
+        Client rule (2026-09-24) - the dealer owes the Down Payment net of
+        rebate, and every rupee received beyond that is Advance:
 
-        Also folds in any Down Payment invoice for this deal that was never
-        linked to a plan line at all (see _extra_down_payment_invoices) -
-        without this, a top-up receipt invoiced outside the installment
-        plan (Invoice Type "Others") would silently disappear from every
-        total here even though the cash was genuinely received. Only
-        Advance-Payment-flagged ones are picked up this way; an unlinked,
-        unflagged invoice is a data-entry question for the user to fix at
-        the source, not something this report should guess about.
+        downpayment_total = the down payment's own scheduled amount (these
+                            lines' Amount).
+        rebate            = dealer + marketing rebate on these lines'
+                            invoices. Both are funded rather than cash
+                            (MidlandPayment._invoice_rebate_amount /
+                            _invoice_marketing_rebate_amount net both out of
+                            the cash owed), so both come off the receivable.
+                            Old-pipeline lines fall back to rebate_adjustment.
+        net_receivable    = downpayment_total - rebate: what the dealer owes.
+        received          = all cash actually collected against the deal's
+                            Down Payment - its plan-line invoices plus any
+                            unlinked Advance-Payment-flagged invoices (see
+                            _extra_down_payment_invoices).
+        adjusted          = the part of `received` settled against the Down
+                            Payment, capped at net_receivable.
+        advance           = everything received above net_receivable. Not
+                            adjusted against the Down Payment; shown on its
+                            own.
+        due               = net_receivable still unpaid.
+
+        total: the deal's total amount - context, not summed from these
+        lines. general_rebate_rate / general_rebate_amount: the deal's own
+        Marketing Company rebate configuration (Rebate tab) - the configured
+        rate/amount, not what's been invoiced yet, so this is set even
+        before any invoice exists.
         """
         invoices_map = self._midland_invoices_for(plan_lines, 'investment_installment_id')
-        dealer_rebate = marketing_rebate = cash = advance_received = 0.0
+        dealer_rebate = marketing_rebate = received = 0.0
         downpayment_total = sum(plan_lines.mapped('amount'))
-        paid = sum(plan_lines.mapped('amount_paid'))
-        due = sum(plan_lines.mapped('residual'))
         linked_invoice_ids = []
         for plan_line in plan_lines:
             invs = invoices_map.get(plan_line.id)
@@ -232,29 +222,21 @@ class DealerStatementReport(models.AbstractModel):
                 linked_invoice_ids += invs.ids
                 dealer_rebate += sum(invs.mapped('rebate_total'))
                 marketing_rebate += sum(invs.mapped('marketing_rebate_total'))
-                cash += self._midland_cash_paid(invs)
-                advance_invs = invs.filtered('is_advance_payment')
-                if advance_invs:
-                    advance_received += self._midland_cash_paid(advance_invs)
+                received += self._midland_cash_paid(invs)
             else:
                 dealer_rebate += plan_line.rebate_adjustment
-                cash += plan_line.net_payment
-                if plan_line.invoice_id and plan_line.invoice_id.is_advance_payment:
-                    advance_received += sum(
-                        self._advance_payment_lines(plan_line.invoice_id).mapped('payment_amount'))
+                received += plan_line.net_payment
 
-        # Every invoice _extra_down_payment_invoices returns is, by
-        # definition, Advance-Payment-flagged - all of its cash counts.
+        # Cash on unlinked Advance-Payment-flagged invoices is still money
+        # received from the dealer against this deal - it counts toward
+        # `received`, but the invoice's own amount is not part of the Down
+        # Payment itself, so downpayment_total is left alone.
         extra_invoices = self._extra_down_payment_invoices(investment, linked_invoice_ids)
-        if extra_invoices:
-            downpayment_total += sum(extra_invoices.mapped('amount_total'))
-            due += sum(extra_invoices.mapped('amount_residual'))
-            dealer_rebate += sum(extra_invoices.mapped('rebate_total'))
-            marketing_rebate += sum(extra_invoices.mapped('marketing_rebate_total'))
-            extra_cash = self._midland_cash_paid(extra_invoices)
-            cash += extra_cash
-            paid += extra_cash
-            advance_received += extra_cash
+        received += self._midland_cash_paid(extra_invoices)
+
+        rebate = dealer_rebate + marketing_rebate
+        net_receivable = max(downpayment_total - rebate, 0.0)
+        adjusted = min(received, net_receivable)
 
         # General Rebate = the deal's Marketing Company rebate configuration
         # (Rebate tab, Agent Type "Marketing Company") - the rate and money
@@ -269,14 +251,16 @@ class DealerStatementReport(models.AbstractModel):
             'dealer': investment.partner_id.investor_id,
             'total': investment.total_amount,
             'downpayment_total': downpayment_total,
-            'paid': paid,
-            'advance_received': advance_received,
+            'rebate': rebate,
             'dealer_rebate': dealer_rebate,
             'marketing_rebate': marketing_rebate,
+            'net_receivable': net_receivable,
+            'received': received,
+            'adjusted': adjusted,
+            'advance': received - adjusted,
+            'due': net_receivable - adjusted,
             'general_rebate_rate': general_rebate_lines[:1].total_rebate,
             'general_rebate_amount': sum(general_rebate_lines.mapped('rebate_amount')),
-            'cash': cash,
-            'due': due,
             'extra_invoices': extra_invoices,
         }
 
@@ -500,7 +484,8 @@ class DealerStatementReport(models.AbstractModel):
             ]
             payment_totals = {
                 key: sum(r[key] for r in payment_rows)
-                for key in ('total', 'downpayment_total', 'paid', 'advance_received', 'dealer_rebate', 'marketing_rebate', 'cash', 'due')
+                for key in ('total', 'downpayment_total', 'rebate', 'dealer_rebate', 'marketing_rebate',
+                            'net_receivable', 'received', 'adjusted', 'advance', 'due')
             }
 
             data.append({
