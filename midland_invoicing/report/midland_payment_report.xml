@@ -4,6 +4,9 @@
         <field name="name">Midland Payment Receipt</field>
         <field name="default" eval="False"/>
         <field name="format">A4</field>
+        <!-- Portrait: Office and Customer copy are stacked top/bottom on
+             one sheet (report_midland_payment_document). -->
+        <field name="orientation">Portrait</field>
         <field name="margin_top">10</field>
         <field name="margin_bottom">10</field>
         <field name="margin_left">7</field>
@@ -32,22 +35,25 @@
          REUSABLE BLOCK — ek copy ka pura design
     ═══════════════════════════════════════════════════════════ -->
     <template id="report_midland_payment_copy">
-        <div class="page" style="font-size:11px; font-family: Arial, sans-serif; margin-top:0;">
+        <!-- Half an A4 sheet: both copies print on one page (see
+             report_midland_payment_document). min-height keeps the cut
+             line in the middle of the sheet for typical 1-3 line receipts. -->
+        <div style="font-size:11px; font-family: Arial, sans-serif; margin-top:0; min-height:138mm; page-break-inside:avoid;">
 
             <table style="width:auto; margin:0 auto; border-collapse:collapse;" cellspacing="0" cellpadding="0">
                 <tr>
-                    <td style="background:#40a4d5; padding:8px 40px; text-align:center;">
-                        <h2 style="color:white; margin:0; padding:0; letter-spacing:2px; font-size:35px;">PAYMENT
+                    <td style="background:#40a4d5; padding:5px 30px; text-align:center;">
+                        <h2 style="color:white; margin:0; padding:0; letter-spacing:2px; font-size:24px;">PAYMENT
                             RECEIPT
                         </h2>
                     </td>
                 </tr>
             </table>
-            <p style="text-align:center; letter-spacing:5px; margin:6px 0 14px 0; padding:0; font-weight:bold; font-size:25px; color:#40a4d5;">
+            <p style="text-align:center; letter-spacing:5px; margin:4px 0 8px 0; padding:0; font-weight:bold; font-size:16px; color:#40a4d5;">
                 <span t-esc="copy_label"/>
             </p>
 
-            <table style="width:100%; margin-bottom:15px;">
+            <table style="width:100%; margin-bottom:8px;">
                 <tr>
                     <td style="width:50%; vertical-align:top;">
                         <table>
@@ -158,35 +164,35 @@
                         <td style="padding:5px; text-align:center;">
                             <span t-field="line.invoice_id.receipt_payment_type"/>
                         </td>
-                        <td style="padding:5px; text-align:right;">Rs.
+                        <td style="padding:5px; text-align:right; white-space:nowrap;">Rs.
                             <t t-esc="'{:,.2f}'.format(line.total)"/>
                         </td>
-                        <td style="padding:5px; text-align:right;">Rs.
+                        <td style="padding:5px; text-align:right; white-space:nowrap;">Rs.
                             <t t-esc="'{:,.2f}'.format(line.payment_amount_paid)"/>
                         </td>
-                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
+                        <td style="padding:5px; text-align:right; white-space:nowrap;">Rs. 0.00</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr style="font-weight:bold;">
                         <td colspan="7" style="padding:5px;">Total</td>
-                        <td style="padding:5px; text-align:right;">Rs.
+                        <td style="padding:5px; text-align:right; white-space:nowrap;">Rs.
                             <t t-esc="'{:,.2f}'.format(sum(line.total for line in o.invoice_line_ids))"/>
                         </td>
-                        <td style="padding:5px; text-align:right;">Rs.
+                        <td style="padding:5px; text-align:right; white-space:nowrap;">Rs.
                             <t t-esc="'{:,.2f}'.format(sum(line.payment_amount_paid for line in o.invoice_line_ids))"/>
                         </td>
-                        <td style="padding:5px; text-align:right;">Rs. 0.00</td>
+                        <td style="padding:5px; text-align:right; white-space:nowrap;">Rs. 0.00</td>
                     </tr>
                 </tfoot>
             </table>
 
-            <p style="margin-top:10px; font-weight:bold; font-size:16px;">
+            <p style="margin-top:8px; font-weight:bold; font-size:13px;">
                 <strong>Amount In Words:</strong>
                 <span t-esc="o.currency_id.amount_to_text(sum(line.payment_amount_paid for line in o.invoice_line_ids))"/>
             </p>
 
-            <table style="width:100%; margin-top:110px;">
+            <table style="width:100%; margin-top:45px;">
                 <tr>
                     <td style="width:33%; text-align:center;">
                         <span t-field="o.create_uid.name" style="color:#40a4d5;"/>
@@ -205,15 +211,15 @@
                 </tr>
             </table>
 
-            <table style="width:100%; margin-top:70px;">
+            <table style="width:100%; margin-top:20px;">
                 <tr>
-                    <td style="width:50%; font-size:20px; color:#40a4d5;">
+                    <td style="width:50%; font-size:12px; color:#40a4d5;">
                         Printed By:
                         <span t-esc="env.user.name"/>
                         On
                         <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
                     </td>
-                    <td style="width:50%; text-align:right; font-size:20px; color:#40a4d5;">
+                    <td style="width:50%; text-align:right; font-size:12px; color:#40a4d5;">
                         <strong>
                             <span t-field="o.branch_id.name"/>
                         </strong>
@@ -226,21 +232,25 @@
     </template>
 
     <!-- ══════════════════════════════════════════════════════════
-         MAIN DOCUMENT — 2 copies (Office + Customer)
+         MAIN DOCUMENT — 2 copies (Office + Customer) on one sheet
     ═══════════════════════════════════════════════════════════ -->
     <template id="report_midland_payment_document">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
 
-                <t t-call="midland_invoicing.report_midland_payment_copy">
-                    <t t-set="copy_label">OFFICE COPY</t>
-                </t>
+                <!-- Office and Customer copy share one sheet, split by a
+                     dashed cut line; each receipt starts on its own sheet. -->
+                <div class="page" t-attf-style="#{'' if o_first else 'page-break-before: always;'}">
+                    <t t-call="midland_invoicing.report_midland_payment_copy">
+                        <t t-set="copy_label">OFFICE COPY</t>
+                    </t>
 
-                <div style="page-break-before: always;"/>
+                    <div style="border-top:1px dashed #999; margin:8mm 0 8mm 0; page-break-inside:avoid;"/>
 
-                <t t-call="midland_invoicing.report_midland_payment_copy">
-                    <t t-set="copy_label">CUSTOMER COPY</t>
-                </t>
+                    <t t-call="midland_invoicing.report_midland_payment_copy">
+                        <t t-set="copy_label">CUSTOMER COPY</t>
+                    </t>
+                </div>
 
             </t>
         </t>
