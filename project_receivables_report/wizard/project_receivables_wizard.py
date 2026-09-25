@@ -151,7 +151,7 @@ class ProjectReceivablesWizard(models.TransientModel):
         f_left = wb.add_format({'border': 1})
         f_money = wb.add_format({'border': 1, 'num_format': '#,##0'})
         f_date = wb.add_format({'border': 1, 'align': 'center', 'num_format': 'dd/mm/yyyy'})
-        f_total_lbl = wb.add_format({'bold': True, 'border': 1, 'bg_color': blue, 'align': 'right'})
+        f_total_lbl = wb.add_format({'bold': True, 'border': 1, 'bg_color': blue})
         f_total = wb.add_format({'bold': True, 'border': 1, 'bg_color': blue, 'num_format': '#,##0'})
 
         last_col = len(self.COLUMNS) - 1
@@ -183,7 +183,10 @@ class ProjectReceivablesWizard(models.TransientModel):
 
         # Totals under every money column.
         money_cols = [i for i, c in enumerate(self.COLUMNS) if c[3] == 'money']
-        ws.merge_range(row, 0, row, money_cols[0] - 1, 'Total', f_total_lbl)
+        # "Total" under Member Name, like the PDF.
+        member_col = [c[1] for c in self.COLUMNS].index('member')
+        for col in range(money_cols[0]):
+            ws.write(row, col, 'Total' if col == member_col else '', f_total_lbl)
         for col in range(money_cols[0], last_col + 1):
             key, kind = self.COLUMNS[col][1], self.COLUMNS[col][3]
             if kind == 'money':

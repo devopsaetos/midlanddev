@@ -44,23 +44,21 @@
              middle - see copy_height there. -->
         <div t-attf-style="font-size:11px; font-family: Arial, sans-serif; margin:0; height:#{copy_height}; overflow:hidden; page-break-inside:avoid; box-sizing:border-box; padding-top:6mm;">
 
-            <!-- Letterhead, same on both copies, laid out like the project's
-                 own signboard: logo | project name + tagline | "A project of"
-                 the group company (root of the payment's company tree -
-                 Shabraj Developers for Capital Valley receipts). -->
+            <!-- Letterhead, same on both copies: logo | project name + tagline
+                 | the group company's name and address, top right as on the
+                 other reports (root of the payment's company tree - Shabraj
+                 Developers for Capital Valley receipts). -->
             <t t-set="header_company" t-value="o.company_id.root_id or o.company_id"/>
             <t t-set="header_project" t-value="o._receipt_project_name()"/>
             <t t-set="header_tagline" t-value="o._receipt_project_tagline()"/>
-            <!-- "Shabraj Developers (Pvt) Ltd" -> big "SHABRAJ DEVELOPERS",
-                 small "(Pvt) Ltd" line under it, as on the signboard. -->
-            <t t-set="company_parts" t-value="(header_company.name or '').split('(', 1)"/>
+            <t t-set="address" t-value="header_company.partner_id"/>
             <table style="width:100%; margin-bottom:6px; border-collapse:collapse;">
                 <tr>
-                    <td style="width:25%; vertical-align:middle; text-align:left;">
+                    <td style="width:20%; vertical-align:middle; text-align:left;">
                         <img t-if="header_company.logo" t-att-src="image_data_uri(header_company.logo)"
                              style="max-height:80px; max-width:150px;"/>
                     </td>
-                    <td style="width:50%; vertical-align:middle; text-align:center; color:#5a4a4d;">
+                    <td style="width:48%; vertical-align:middle; text-align:center; color:#5a4a4d;">
                         <div t-if="header_project" style="font-size:30px; letter-spacing:8px; line-height:1.1; text-transform:uppercase;">
                             <span t-esc="header_project"/>
                         </div>
@@ -68,28 +66,27 @@
                             <span t-esc="header_tagline"/>
                         </div>
                     </td>
-                    <td style="width:25%; vertical-align:middle; text-align:center; color:#5b2d82;">
-                        <div t-if="header_project" style="font-size:8px; letter-spacing:1px;">A PROJECT OF</div>
-                        <div style="font-size:16px; font-weight:bold; line-height:1.1; text-transform:uppercase;">
-                            <span t-esc="company_parts[0].strip()"/>
+                    <td style="width:32%; vertical-align:top; text-align:right; font-size:11px; line-height:1.35; color:#222;">
+                        <div style="font-weight:bold; font-size:12px;"><span t-esc="header_company.name"/></div>
+                        <div t-if="address.street"><span t-esc="address.street"/></div>
+                        <div t-if="address.street2 or address.city">
+                            <span t-esc="' '.join(filter(None, [address.street2, address.city]))"/>
                         </div>
-                        <div t-if="len(company_parts) &gt; 1" style="font-size:10px;">
-                            <span t-esc="'(' + company_parts[1]"/>
-                        </div>
+                        <div t-if="address.country_id"><span t-esc="address.country_id.name"/></div>
                     </td>
                 </tr>
             </table>
 
             <table style="width:auto; margin:0 auto; border-collapse:collapse;" cellspacing="0" cellpadding="0">
                 <tr>
-                    <td style="background:#40a4d5; padding:5px 30px; text-align:center;">
-                        <h2 style="color:white; margin:0; padding:0; letter-spacing:2px; font-size:24px;">PAYMENT
+                    <td style="background:#40a4d5; padding:3px 20px; text-align:center;">
+                        <h2 style="color:white; margin:0; padding:0; letter-spacing:2px; font-size:16px;">PAYMENT
                             RECEIPT
                         </h2>
                     </td>
                 </tr>
             </table>
-            <p style="text-align:center; letter-spacing:5px; margin:4px 0 8px 0; padding:0; font-weight:bold; font-size:16px; color:#40a4d5;">
+            <p style="text-align:center; letter-spacing:3px; margin:3px 0 8px 0; padding:0; font-weight:bold; font-size:11px; color:#40a4d5;">
                 <span t-esc="copy_label"/>
             </p>
 

@@ -18,6 +18,10 @@ class ProjectReceivablesReport(models.AbstractModel):
             money_keys = [c[1] for c in wizard.COLUMNS if c[3] == 'money']
             reports.append({
                 'title': wizard._report_title(),
+                # Group company (root of the project's company tree - Shabraj
+                # Developers for Capital Valley) for the logo and address.
+                'company': (wizard.society_id.company_id.root_id or wizard.society_id.company_id
+                            or self.env.company).sudo(),
                 'month_label': '%s %s' % (calendar.month_name[int(wizard.month)], wizard.year),
                 'rows': rows,
                 'totals': {k: sum(r[k] or 0.0 for r in rows) for k in money_keys},

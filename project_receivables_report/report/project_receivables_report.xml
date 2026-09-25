@@ -28,9 +28,29 @@
         <t t-call="web.html_container">
             <t t-foreach="reports" t-as="rep">
                 <div class="page" style="font-family: Arial, sans-serif; font-size:13px; color:#222;">
-                    <div style="text-align:center; font-size:20px; font-weight:bold;">
-                        <span t-esc="rep['title']"/>
-                    </div>
+                    <!-- Letterhead: logo | title | group company's name and address,
+                         as on the other reports. -->
+                    <t t-set="company" t-value="rep['company']"/>
+                    <t t-set="address" t-value="company.partner_id"/>
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:4px;">
+                        <tr>
+                            <td style="width:25%; vertical-align:top; text-align:left;">
+                                <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                                     style="max-height:100px; max-width:200px;"/>
+                            </td>
+                            <td style="width:50%; vertical-align:top; text-align:center; font-size:20px; font-weight:bold; padding-top:4px;">
+                                <span t-esc="rep['title']"/>
+                            </td>
+                            <td style="width:25%; vertical-align:top; text-align:right; font-size:11px; line-height:1.35;">
+                                <div style="font-weight:bold; font-size:12px;"><span t-esc="company.name"/></div>
+                                <div t-if="address.street"><span t-esc="address.street"/></div>
+                                <div t-if="address.street2 or address.city">
+                                    <span t-esc="' '.join(filter(None, [address.street2, address.city]))"/>
+                                </div>
+                                <div t-if="address.country_id"><span t-esc="address.country_id.name"/></div>
+                            </td>
+                        </tr>
+                    </table>
                     <div style="text-align:center; font-size:15px; font-weight:bold; background:#BDD7EE; border:1px solid #888; padding:4px; margin:6px 0 0 0;">
                         Till Month: <span t-esc="rep['month_label']"/>
                     </div>
@@ -79,7 +99,10 @@
                                 </td>
                             </tr>
                             <tr style="font-weight:bold; background:#BDD7EE; page-break-inside:avoid;">
-                                <td colspan="6" t-att-style="td + ' text-align:right;'">Total</td>
+                                <!-- "Total" sits under Member Name. -->
+                                <td colspan="2" t-att-style="td"/>
+                                <td t-att-style="td">Total</td>
+                                <td colspan="3" t-att-style="td"/>
                                 <t t-foreach="['total', 'paid', 'amount_due', 'current_amount', 'current_paid', 'overdue', 'due_amount']" t-as="k">
                                     <td t-att-style="num"><span t-esc="'{:,.0f}'.format(rep['totals'][k])"/></td>
                                 </t>
