@@ -42,7 +42,10 @@
              report_midland_payment_document). The fixed height (not
              min-height) is what puts the cut line at the sheet's exact
              middle - see copy_height there. -->
-        <div t-attf-style="font-size:11px; font-family: Arial, sans-serif; margin:0; height:#{copy_height}; overflow:hidden; page-break-inside:avoid; box-sizing:border-box; padding-top:6mm;">
+        <div t-attf-style="font-size:11px; font-family: Arial, sans-serif; margin:0; height:#{copy_height}; overflow:hidden; page-break-inside:avoid; box-sizing:border-box;">
+        <!-- Content is vertically centred in its half, so the blank space
+             above the letterhead matches the space below "Printed By". -->
+        <table t-attf-style="width:100%; height:#{copy_height}; border-collapse:collapse;"><tr><td style="vertical-align:middle; padding:8px 0 0 0;">
 
             <!-- Letterhead, same on both copies: logo | project name + tagline
                  | the group company's name and address, top right as on the
@@ -54,25 +57,25 @@
             <t t-set="address" t-value="header_company.partner_id"/>
             <table style="width:100%; margin-bottom:6px; border-collapse:collapse;">
                 <tr>
-                    <td style="width:20%; vertical-align:middle; text-align:left;">
+                    <td style="width:28%; vertical-align:middle; text-align:left;">
                         <img t-if="header_company.logo" t-att-src="image_data_uri(header_company.logo)"
                              style="max-height:80px; max-width:150px;"/>
                     </td>
-                    <td style="width:48%; vertical-align:middle; text-align:center; color:#5a4a4d;">
-                        <div t-if="header_project" style="font-size:30px; letter-spacing:8px; line-height:1.1; text-transform:uppercase;">
+                    <td style="width:44%; vertical-align:middle; text-align:center; color:#5a4a4d;">
+                        <div t-if="header_project" style="font-size:30px; letter-spacing:8px; line-height:1.1; text-transform:uppercase; white-space:nowrap;">
                             <span t-esc="header_project"/>
                         </div>
                         <div t-if="header_tagline" style="font-size:10px; letter-spacing:3px; margin-top:3px; text-transform:uppercase;">
                             <span t-esc="header_tagline"/>
                         </div>
                     </td>
-                    <td style="width:32%; vertical-align:top; text-align:right; font-size:11px; line-height:1.35; color:#222;">
+                    <td style="width:28%; vertical-align:top; text-align:right; font-size:11px; line-height:1.35; color:#222;">
                         <div style="font-weight:bold; font-size:12px;"><span t-esc="header_company.name"/></div>
                         <div t-if="address.street"><span t-esc="address.street"/></div>
-                        <div t-if="address.street2 or address.city">
-                            <span t-esc="' '.join(filter(None, [address.street2, address.city]))"/>
+                        <div t-if="address.street2"><span t-esc="address.street2"/></div>
+                        <div t-if="address.city or address.country_id">
+                            <span t-esc="', '.join(filter(None, [address.city, address.country_id.name]))"/>
                         </div>
-                        <div t-if="address.country_id"><span t-esc="address.country_id.name"/></div>
                     </td>
                 </tr>
             </table>
@@ -265,6 +268,7 @@
                     </td>
                 </tr>
             </table>
+        </td></tr></table>
         </div>
     </template>
 
@@ -294,7 +298,7 @@
                         <t t-set="copy_label">CUSTOMER COPY</t>
                         <!-- A little short of a full half, so the sheet never
                              spills a trailing blank page. -->
-                        <t t-set="copy_height" t-value="'630px'"/>
+                        <t t-set="copy_height" t-value="'650px'"/>
                     </t>
                 </div>
 
