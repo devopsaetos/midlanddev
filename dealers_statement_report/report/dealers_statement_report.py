@@ -94,36 +94,33 @@ class DealerStatementReport(models.AbstractModel):
         """(date_from, date_to) the wizard asked for, either may be None -
         set on the context by _get_report_values.
 
-        The period decides two things (see _get_report_values for which
-        deals are listed at all):
-        - balances (Received/Adjusted/Advance/Due) are "as of" date_to: only
-          payments made up to date_to count, so a month's statement doesn't
-          show next month's cash.
-        - the payment line tables only list payments made inside the period.
+        The whole statement runs on payment date: only deals with a payment
+        in the period are listed (_investments_paid_in_period), Amount
+        Received (and Adjusted/Advance/Due derived from it) counts only
+        payments made in the period, and the payment line tables only list
+        those payments.
         """
         return (self.env.context.get('statement_date_from'),
                 self.env.context.get('statement_date_to'))
 
-    def _in_period(self, date, as_of=False):
-        """Whether `date` falls in the statement period - or, with `as_of`,
-        anywhere up to its date_to (for cumulative balances).
-        """
+    def _in_period(self, date):
+        """Whether payment date `date` falls in the statement period."""
         date_from, date_to = self._statement_period()
         if date_to and (not date or date > date_to):
             return False
-        if date_from and not as_of and (not date or date < date_from):
+        if date_from and (not date or date < date_from):
             return False
         return True
 
-    def _confirmed_payment_lines(self, invoices, as_of=False):
+    def _confirmed_payment_lines(self, invoices):
         """midland.payment.line rows of confirmed payments against `invoices`,
         limited to the statement period (see _in_period)."""
         return invoices.payment_line_ids.filtered(
-            lambda l: l.payment_id.state == 'confirmed' and self._in_period(l.payment_date, as_of=as_of))
+            lambda l: l.payment_id.state == 'confirmed' and self._in_period(l.payment_date))
 
     def _midland_cash_paid(self, invoices):
-        """Real cash collected against `invoices` up to the statement's
-        date_to, from midland.payment.line.payment_amount.
+        """Real cash collected against `invoices` within the statement
+        period, from midland.payment.line.payment_amount.
 
         Not midland.invoice.amount_paid / payment_line.payment_amount_paid -
         those bake the dealer/marketing rebate into the FIRST payment against
@@ -133,7 +130,7 @@ class DealerStatementReport(models.AbstractModel):
         makes them wrong for a dealer-facing cash statement - payment_amount
         is the actual amount collected, matching what the Payments list shows.
         """
-        return sum(self._confirmed_payment_lines(invoices, as_of=True).mapped('payment_amount'))
+        return sum(self._confirmed_payment_lines(invoices).mapped('payment_amount'))
 
     # investor.file states from "File Created" onwards - the unit has left the
     # dealer's stock and been turned into a customer file. 'open', 'selected'
@@ -391,27 +388,26 @@ class DealerStatementReport(models.AbstractModel):
                            'net_receivable', 'received', 'adjusted', 'advance', 'due',
                            'general_rebate_amount')
 
-    def _investments_active_in_period(self, investments):
-        """`investments` (already booked on/before date_to) that had activity
-        inside the statement period: booked in it, or a confirmed payment
-        against one of the deal's invoices dated in it.
+    def _investments_paid_in_period(self, investments):
+        """`investments` with a confirmed payment, against any of the deal's
+        invoices, dated inside the statement period.
 
-        Filtering on booking_date alone made month-wise statements useless -
-        a deal is booked once, but paid for over the following months, so
-        every month after the booking month came out empty.
+        Not booking_date: a deal is booked once but paid for over the
+        following months, so filtering on it left every month after the
+        booking month empty - the client wants the statement by payment date.
         """
         date_from, date_to = self._statement_period()
-        booked = investments.filtered(lambda i: i.booking_date and i.booking_date >= date_from)
         payment_domain = [
             ('invoice_id.investment_id', 'in', investments.ids),
             ('invoice_id.state', '!=', 'cancelled'),
             ('payment_id.state', '=', 'confirmed'),
-            ('payment_date', '>=', date_from),
         ]
+        if date_from:
+            payment_domain.append(('payment_date', '>=', date_from))
         if date_to:
             payment_domain.append(('payment_date', '<=', date_to))
         paid = self.env['midland.payment.line'].sudo().search(payment_domain).invoice_id.investment_id
-        return investments & (booked | paid)
+        return investments & paid
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -468,8 +464,6 @@ class DealerStatementReport(models.AbstractModel):
                 ])
                 investor_ids += sub_dealers.ids
             domain.append(('partner_id', 'in', investor_ids))
-        if docs.date_to:
-            domain.append(('booking_date', '<=', docs.date_to))
 
         self = self.with_context(statement_date_from=docs.date_from, statement_date_to=docs.date_to)
 
@@ -482,8 +476,8 @@ class DealerStatementReport(models.AbstractModel):
         # out. The domain above already scopes everything to one explicit
         # company, so this doesn't widen what the report can show.
         investments = self.env['investment'].sudo().search(domain)
-        if docs.date_from:
-            investments = self._investments_active_in_period(investments)
+        if docs.date_from or docs.date_to:
+            investments = self._investments_paid_in_period(investments)
         investors = investments.mapped('partner_id')
         data = []
         for investor in investors:
