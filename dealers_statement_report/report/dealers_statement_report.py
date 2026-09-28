@@ -90,8 +90,40 @@ class DealerStatementReport(models.AbstractModel):
             ('id', 'not in', linked_invoice_ids),
         ])
 
+    def _statement_period(self):
+        """(date_from, date_to) the wizard asked for, either may be None -
+        set on the context by _get_report_values.
+
+        The period decides two things (see _get_report_values for which
+        deals are listed at all):
+        - balances (Received/Adjusted/Advance/Due) are "as of" date_to: only
+          payments made up to date_to count, so a month's statement doesn't
+          show next month's cash.
+        - the payment line tables only list payments made inside the period.
+        """
+        return (self.env.context.get('statement_date_from'),
+                self.env.context.get('statement_date_to'))
+
+    def _in_period(self, date, as_of=False):
+        """Whether `date` falls in the statement period - or, with `as_of`,
+        anywhere up to its date_to (for cumulative balances).
+        """
+        date_from, date_to = self._statement_period()
+        if date_to and (not date or date > date_to):
+            return False
+        if date_from and not as_of and (not date or date < date_from):
+            return False
+        return True
+
+    def _confirmed_payment_lines(self, invoices, as_of=False):
+        """midland.payment.line rows of confirmed payments against `invoices`,
+        limited to the statement period (see _in_period)."""
+        return invoices.payment_line_ids.filtered(
+            lambda l: l.payment_id.state == 'confirmed' and self._in_period(l.payment_date, as_of=as_of))
+
     def _midland_cash_paid(self, invoices):
-        """Real cash collected against `invoices`, from midland.payment.line.payment_amount.
+        """Real cash collected against `invoices` up to the statement's
+        date_to, from midland.payment.line.payment_amount.
 
         Not midland.invoice.amount_paid / payment_line.payment_amount_paid -
         those bake the dealer/marketing rebate into the FIRST payment against
@@ -101,8 +133,7 @@ class DealerStatementReport(models.AbstractModel):
         makes them wrong for a dealer-facing cash statement - payment_amount
         is the actual amount collected, matching what the Payments list shows.
         """
-        lines = invoices.payment_line_ids.filtered(lambda l: l.payment_id.state == 'confirmed')
-        return sum(lines.mapped('payment_amount'))
+        return sum(self._confirmed_payment_lines(invoices, as_of=True).mapped('payment_amount'))
 
     # investor.file states from "File Created" onwards - the unit has left the
     # dealer's stock and been turned into a customer file. 'open', 'selected'
@@ -273,7 +304,7 @@ class DealerStatementReport(models.AbstractModel):
         """
         lines = []
         for mi in invoices:
-            for mpl in mi.payment_line_ids.filtered(lambda l: l.payment_id.state == 'confirmed'):
+            for mpl in self._confirmed_payment_lines(mi):
                 lines.append({
                     'invoice_number': mpl.payment_id.name,
                     'investment_name': investment_name,
@@ -296,6 +327,8 @@ class DealerStatementReport(models.AbstractModel):
                 lines += self._midland_invoice_lines(invs, plan_line.investment_id.name)
             elif plan_line.invoice_id:
                 for mp in self._advance_payment_lines(plan_line.invoice_id):
+                    if not self._in_period(mp.payment_id.date):
+                        continue
                     lines.append({
                         'invoice_number': mp.payment_id.name,
                         'investment_name': plan_line.investment_id.name,
@@ -315,7 +348,7 @@ class DealerStatementReport(models.AbstractModel):
             invs = midland_invoices_map.get(plan_line.id)
             if invs:
                 for mi in invs:
-                    for mpl in mi.payment_line_ids.filtered(lambda l: l.payment_id.state == 'confirmed'):
+                    for mpl in self._confirmed_payment_lines(mi):
                         serial += 1
                         lines.append({
                             'serial': serial,
@@ -335,6 +368,8 @@ class DealerStatementReport(models.AbstractModel):
                         })
             elif plan_line.invoice_id:
                 for mp in self._advance_payment_lines(plan_line.invoice_id):
+                    if not self._in_period(mp.payment_id.date):
+                        continue
                     serial += 1
                     advance = mp.payment_id.advance_payment_id
                     lines.append({
@@ -350,6 +385,33 @@ class DealerStatementReport(models.AbstractModel):
                         'bank_ref': advance.bank_ref,
                     })
         return lines
+
+    # _deal_payment_row keys summed into the per-investor and grand Total rows.
+    _PAYMENT_TOTAL_KEYS = ('total', 'downpayment_total', 'rebate', 'dealer_rebate', 'marketing_rebate',
+                           'net_receivable', 'received', 'adjusted', 'advance', 'due',
+                           'general_rebate_amount')
+
+    def _investments_active_in_period(self, investments):
+        """`investments` (already booked on/before date_to) that had activity
+        inside the statement period: booked in it, or a confirmed payment
+        against one of the deal's invoices dated in it.
+
+        Filtering on booking_date alone made month-wise statements useless -
+        a deal is booked once, but paid for over the following months, so
+        every month after the booking month came out empty.
+        """
+        date_from, date_to = self._statement_period()
+        booked = investments.filtered(lambda i: i.booking_date and i.booking_date >= date_from)
+        payment_domain = [
+            ('invoice_id.investment_id', 'in', investments.ids),
+            ('invoice_id.state', '!=', 'cancelled'),
+            ('payment_id.state', '=', 'confirmed'),
+            ('payment_date', '>=', date_from),
+        ]
+        if date_to:
+            payment_domain.append(('payment_date', '<=', date_to))
+        paid = self.env['midland.payment.line'].sudo().search(payment_domain).invoice_id.investment_id
+        return investments & (booked | paid)
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -406,10 +468,10 @@ class DealerStatementReport(models.AbstractModel):
                 ])
                 investor_ids += sub_dealers.ids
             domain.append(('partner_id', 'in', investor_ids))
-        if docs.date_from:
-            domain.append(('booking_date', '>=', docs.date_from))
         if docs.date_to:
             domain.append(('booking_date', '<=', docs.date_to))
+
+        self = self.with_context(statement_date_from=docs.date_from, statement_date_to=docs.date_to)
 
         # sudo(): investment/investor.file's multi-company rule checks
         # society_id.company_id (the branch/project company), while
@@ -420,6 +482,8 @@ class DealerStatementReport(models.AbstractModel):
         # out. The domain above already scopes everything to one explicit
         # company, so this doesn't widen what the report can show.
         investments = self.env['investment'].sudo().search(domain)
+        if docs.date_from:
+            investments = self._investments_active_in_period(investments)
         investors = investments.mapped('partner_id')
         data = []
         for investor in investors:
@@ -482,11 +546,7 @@ class DealerStatementReport(models.AbstractModel):
                 self._deal_payment_row(inv, down_payment_lines_src.filtered(lambda l, inv=inv: l.investment_id == inv))
                 for inv in investor_investments
             ]
-            payment_totals = {
-                key: sum(r[key] for r in payment_rows)
-                for key in ('total', 'downpayment_total', 'rebate', 'dealer_rebate', 'marketing_rebate',
-                            'net_receivable', 'received', 'adjusted', 'advance', 'due')
-            }
+            payment_totals = {key: sum(r[key] for r in payment_rows) for key in self._PAYMENT_TOTAL_KEYS}
 
             data.append({
                 'investor': investor,
@@ -520,11 +580,18 @@ class DealerStatementReport(models.AbstractModel):
                 'confirmation_lines': confirmation_lines,
             })
 
+        # Grand Total row at the end of the report, across every investor.
+        grand_totals = {
+            key: sum(record['payment_totals'][key] for record in data)
+            for key in self._PAYMENT_TOTAL_KEYS
+        }
+
         return {
             'doc_ids': docids,
             'doc_model': 'dealer.statement.wizard',
             'docs': docs,
             'data': data,
+            'grand_totals': grand_totals,
             'printed_by': self.env.user.name,
             'print_date': fields.Date.context_today(self).strftime('%d-%m-%Y'),
         }

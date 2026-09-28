@@ -150,6 +150,18 @@
                                             </tr>
                                         </t>
                                     </tbody>
+                                    <tfoot>
+                                        <tr style="font-weight:bold;">
+                                            <td colspan="2">Total</td>
+                                            <td class="text-right"><span t-esc="grand_totals['total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['downpayment_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['net_receivable']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['received']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['advance']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -180,6 +192,14 @@
                                             </tr>
                                         </t>
                                     </tbody>
+                                    <tfoot>
+                                        <tr style="font-weight:bold;">
+                                            <td colspan="2">Total</td>
+                                            <td class="text-right"><span t-esc="grand_totals['downpayment_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td/>
+                                            <td class="text-right"><span t-esc="grand_totals['general_rebate_amount']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -252,7 +272,7 @@
                                                 <td class="text-right"><span t-esc="deal['advance']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="deal['due']" t-options='{"widget": "float", "precision": 2}'/></td>
                                             </tr>
-                                            <tr t-if="len(record['payment_rows']) > 1" style="font-weight:bold;">
+                                            <tr style="font-weight:bold;">
                                                 <td>Total</td>
                                                 <td class="text-right"><span t-esc="record['payment_totals']['total']" t-options='{"widget": "float", "precision": 2}'/></td>
                                                 <td class="text-right"><span t-esc="record['payment_totals']['downpayment_total']" t-options='{"widget": "float", "precision": 2}'/></td>
@@ -321,6 +341,11 @@
                                                 <td><span t-esc="line['bank_ref']"/></td>
                                                 <td><span t-esc="line['payment_method']"/></td>
                                             </tr>
+                                            <tr t-if="record['down_payment_lines']" style="font-weight:bold;">
+                                                <td colspan="4">Total</td>
+                                                <td class="text-right"><span t-esc="sum(l['amount_paid'] for l in record['down_payment_lines'])" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td colspan="2"/>
+                                            </tr>
                                         </tbody>
                                     </table>
 
@@ -369,6 +394,38 @@
                                         </tfoot>
                                     </table> -->
                                 </t>
+
+                                <!-- Grand Total across every investor above - the per-investor
+                                     Payment Details tables already carry their own Total row. -->
+                                <table t-if="len(data) > 1" class="table table-bordered" style="line-height: 1.2px !important;font-size:12px !important;">
+                                    <thead>
+                                        <tr style="background-color:#4472C4;color:#fff;">
+                                            <th style="color:#fff;" colspan="8" class="text-center text-uppercase">grand total</th>
+                                        </tr>
+                                        <tr style="background-color:#FFCC80;color:#000;">
+                                            <th style="color:#000;" class="text-center">Total deal Amount</th>
+                                            <th style="color:#000;" class="text-center">Down Payment</th>
+                                            <th style="color:#000;" class="text-center">Rebate</th>
+                                            <th style="color:#000;" class="text-center">Net Receivable</th>
+                                            <th style="color:#000;" class="text-center">Amount Received</th>
+                                            <th style="color:#000;" class="text-center">Adjusted Against Down Payment</th>
+                                            <th style="color:#000;" class="text-center">Advance</th>
+                                            <th style="color:#000;" class="text-center">Due Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="font-weight:bold;">
+                                            <td class="text-right"><span t-esc="grand_totals['total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['downpayment_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['rebate']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['net_receivable']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['received']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['adjusted']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['advance']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td class="text-right"><span t-esc="grand_totals['due']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

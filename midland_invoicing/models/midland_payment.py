@@ -801,13 +801,7 @@ class MidlandPayment(models.Model):
                 # Reverse the payment JV — this also unreconciles any matched lines
                 rec.jv_id.button_draft()
                 rec.jv_id.button_cancel()
-            # Revert midland.invoice custom payment fields
-            for line in rec.invoice_line_ids:
-                inv = line.invoice_id
-                if inv:
-                    new_paid = max(0.0, inv.amount_paid - line.payment_amount_paid)
-                    new_state = 'not_paid' if new_paid <= 0 else 'partial'
-                    inv.write({'amount_paid': new_paid, 'payment_state': new_state})
+            rec._revert_invoice_payment()
             rec._delete_installment_payment_records()
             rec.state = 'cancelled'
 
@@ -817,8 +811,43 @@ class MidlandPayment(models.Model):
                 raise ValidationError(
                     _('Cannot reset to draft: journal entry %s is posted.') % rec.jv_id.name
                 )
+            # a cancelled payment was already reverted in action_cancel
+            if rec.state == 'confirmed':
+                rec._revert_invoice_payment()
+                rec.invoice_line_ids.write({'payment_amount_paid': 0.0})
             rec._delete_installment_payment_records()
             rec.write({'state': 'draft', 'jv_id': False})
+
+    def _revert_invoice_payment(self):
+        # Revert midland.invoice custom payment fields
+        for line in self.invoice_line_ids:
+            inv = line.invoice_id
+            if inv:
+                new_paid = max(0.0, inv.amount_paid - line.payment_amount_paid)
+                new_state = 'not_paid' if new_paid <= 0 else 'partial'
+                inv.write({'amount_paid': new_paid, 'payment_state': new_state})
+                # Plan lines linked to an account.move recompute from its
+                # residual; only the ones _update_*installment wrote need undoing
+                install = inv.installment_id
+                if install and not install.invoice_id:
+                    plan_total = (install.amount or 0.0) + (install.tax_amount or 0.0)
+                    install.write(self._reverted_plan_vals(install, plan_total, line.payment_amount_paid))
+                install = inv.investment_installment_id
+                if install and not install.invoice_id:
+                    vals = self._reverted_plan_vals(install, install.amount or 0.0, line.payment_amount_paid)
+                    vals['balance_amount'] = vals['residual']
+                    install.write(vals)
+
+    def _reverted_plan_vals(self, install, plan_total, payment_amount):
+        new_paid = max(0.0, (install.amount_paid or 0.0) - payment_amount)
+        remaining = max(plan_total - new_paid, 0.0)
+        if new_paid <= 0:
+            status = 'not_paid'
+        elif remaining <= 0:
+            status = 'paid'
+        else:
+            status = 'in_payment'
+        return {'payment_status': status, 'amount_paid': new_paid, 'residual': remaining}
 
     @api.model
     def _migrate_create_missing_installment_records(self):
