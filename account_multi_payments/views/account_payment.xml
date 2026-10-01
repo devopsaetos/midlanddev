@@ -1,0 +1,50 @@
+<odoo>
+    <data>
+        <record id="account_multi_payment_form" model="ir.ui.view">
+            <field name="name">Account Multi Payment Form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date']" position="after">
+                    <field name="multi_payment_check" readonly="state != 'draft'"/>
+                </xpath>
+
+                <xpath expr="//notebook[@name='payment_notebook']" position="inside">
+                    <page string="Multi Invoices" invisible="not multi_payment_check">
+                        <field name="multi_invoice_payment_ids" readonly="state != 'draft'">
+                            <list string="Invoices" editable="bottom">
+                                <field name="invoice_id"/>
+                                <field name="invoice_date"/>
+                                <field name="invoice_date_due"/>
+                                <field name="amount_total_signed" string="Total"/>
+                                <field name="payment_due" string="Amount Due" readonly="1"/>
+                                <field name="payment_amount"/>
+                                <field name="currency_id" column_invisible="1"/>
+                            </list>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="account.action_account_payments" model="ir.actions.act_window">
+            <field name="context">{
+                'default_payment_type': 'inbound',
+                'default_partner_type': 'customer',
+                'search_default_inbound_filter': 1,
+                'default_move_journal_types': ('bank', 'cash'),
+                'default_multi_payment_check': True,
+            }</field>
+        </record>
+
+        <record id="account.action_account_payments_payable" model="ir.actions.act_window">
+            <field name="context">{
+                'default_payment_type': 'outbound',
+                'default_partner_type': 'supplier',
+                'search_default_outbound_filter': 1,
+                'default_move_journal_types': ('bank', 'cash'),
+                'default_multi_payment_check': True,
+            }</field>
+        </record>
+    </data>
+</odoo>

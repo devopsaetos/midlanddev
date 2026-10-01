@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_multi_invoice_payment_user,multi.invoice.payment.user,model_multi_invoice_payment,account.group_account_user,1,1,1,0
+access_multi_invoice_payment_manager,multi.invoice.payment.manager,model_multi_invoice_payment,account.group_account_manager,1,1,1,1

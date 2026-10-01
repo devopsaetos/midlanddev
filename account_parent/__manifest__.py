@@ -21,10 +21,10 @@ This module
     For any support contact o4odoo@gmail.com or omalbastin@gmail.com
     """,
 
-    'author': 'Omal Bastin / O4ODOO',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     # 'live_test_url': 'https://ap.o4odoo.com/',
     'license': 'OPL-1',
-    'website': 'http://o4odoo.com',
+    'website': "https://www.aetostechnology.com",
     'category': 'Accounting',
     'version': '19.0.1.1.2',
     'depends': ['account'],

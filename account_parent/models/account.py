@@ -9,7 +9,6 @@ import ast
 
 from odoo import api, fields, models
 from odoo.fields import Domain
-from odoo.osv import expression
 
 
 # class AccountAccountTemplate(models.Model):
@@ -126,7 +125,7 @@ class AccountAccount(models.Model):
 	debit = fields.Float(compute="compute_values", digits=(16, 4), string='Debit')
 	parent_id = fields.Many2one('account.account', 'Parent Account', ondelete="set null")
 	child_ids = fields.One2many('account.account', 'parent_id', 'Child Accounts')
-	parent_path = fields.Char(index=True, unaccent=False)
+	parent_path = fields.Char(index=True)
 	initial_balance = fields.Float(compute="compute_values", digits=(16, 4), string='Initial Balance')
 
 	_parent_name = "parent_id"
@@ -249,6 +248,5 @@ class AccountMoveLine(models.Model):
 			# _where_calc()/_apply_ir_rules() SQL-building (both removed from the ORM).
 			return self.search(domain)
 		return self.browse()
-
 
 
