@@ -9,7 +9,7 @@
                     <field name="multi_payment_check" readonly="state != 'draft'"/>
                 </xpath>
 
-                <xpath expr="//notebook[@name='payment_notebook']" position="inside">
+                <xpath expr="//notebook" position="inside">
                     <page string="Multi Invoices" invisible="not multi_payment_check">
                         <field name="multi_invoice_payment_ids" readonly="state != 'draft'">
                             <list string="Invoices" editable="bottom">

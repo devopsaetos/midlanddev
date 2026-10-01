@@ -106,7 +106,7 @@
                                        readonly="state != 'draft'"/>
                             </group>
                         </group>
-                        <notebook>
+                        <notebook name="payment_notebook">
                             <page id="invoice_tab" default_focus="1" string="Invoices"
                                   invisible="payment_category == 'advance_payment'">
                                 <field name="invoice_ids"
