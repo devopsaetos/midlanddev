@@ -5,13 +5,14 @@
         <field name="default" eval="False"/>
         <field name="format">A4</field>
         <field name="orientation">Landscape</field>
-        <field name="margin_top">6</field>
-        <field name="margin_bottom">6</field>
-        <field name="margin_left">6</field>
-        <field name="margin_right">6</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
         <field name="header_spacing">0</field>
         <field name="dpi">96</field>
+        <field name="disable_shrinking" eval="True"/>
     </record>
 
     <record id="action_report_maintenance_bill" model="ir.actions.report">
@@ -28,82 +29,99 @@
 
     <template id="report_maintenance_bill_copy">
         <t t-set="fmt" t-value="lambda v: '{:,.2f}'.format(v or 0.0)"/>
-        <div class="mb-copy">
-            <table class="mb-head">
-                <tr>
-                    <td style="width: 22%;">
-                        <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 46px; max-width: 70px;"/>
-                    </td>
-                    <td style="text-align: center;">
-                        <div class="mb-company" t-out="o.company_id.name"/>
-                        <div class="mb-society" t-out="(o.society_id.name or '').upper()"/>
-                    </td>
-                </tr>
-            </table>
-            <div class="mb-title" t-out="copy_title"/>
-            <div style="text-align: center; font-size: 9px;">Monthly Bill</div>
-            <div class="mb-bank" t-out="o.bank_note"/>
+        <t t-set="dt" t-value="lambda d: d and d.strftime('%d-%b-%Y') or ''"/>
+        <table class="mb-copy">
+            <tr>
+                <td class="mb-top">
+                    <table class="mb-head">
+                        <tr>
+                            <td style="width: 24%;">
+                                <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 44px; max-width: 64px;"/>
+                            </td>
+                            <td style="text-align: center;">
+                                <div class="mb-company" t-out="o.company_id.name"/>
+                                <div class="mb-society" t-out="(o.society_id.name or '').upper()"/>
+                            </td>
+                            <td style="width: 24%;"/>
+                        </tr>
+                    </table>
+                    <div class="mb-title" t-out="copy_title"/>
+                    <div class="mb-subtitle">Monthly Bill</div>
+                    <div class="mb-bank" t-out="o.bank_note"/>
 
-            <table class="mb-info">
-                <tr>
-                    <td class="lbl">Name:</td><td class="val" t-out="o.member_name"/>
-                    <td class="lbl">Arrears:</td><td class="val num" t-out="fmt(o.arrears)"/>
-                </tr>
-                <tr>
-                    <td class="lbl">Plot Info:</td><td class="val" t-out="o.unit_number"/>
-                    <td class="lbl">Billing:</td><td class="val" t-out="o.bill_month and o.bill_month.strftime('%b-%Y')"/>
-                </tr>
-                <tr>
-                    <td class="lbl">Date of Issue:</td><td class="val" t-out="o.issue_date and o.issue_date.strftime('%d-%b-%Y')"/>
-                    <td class="lbl">Due Date:</td><td class="val" t-out="o.due_date and o.due_date.strftime('%d-%b-%Y')"/>
-                </tr>
-                <tr t-if="o.current_reading or o.meter_no">
-                    <td class="lbl">Meter No:</td><td class="val" t-out="o.meter_no or '-'"/>
-                    <td class="lbl">Reading:</td>
-                    <td class="val"><t t-out="int(o.previous_reading)"/> to <t t-out="int(o.current_reading)"/></td>
-                </tr>
-            </table>
+                    <table class="mb-info">
+                        <colgroup><col style="width: 80px;"/><col style="width: 88px;"/><col style="width: 62px;"/><col style="width: 88px;"/></colgroup>
+                        <tr>
+                            <td class="lbl">Name:</td><td class="val wrap" colspan="3" t-out="o.member_name"/>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Plot Info:</td><td class="val" t-out="o.unit_number"/>
+                            <td class="lbl">Billing:</td><td class="val" t-out="o.bill_month and o.bill_month.strftime('%b-%Y')"/>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Date of Issue:</td><td class="val" t-out="dt(o.issue_date)"/>
+                            <td class="lbl">Due Date:</td><td class="val" t-out="dt(o.due_date)"/>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Meter No:</td><td class="val" t-out="o.meter_no or '-'"/>
+                            <td class="lbl">Reading:</td>
+                            <td class="val"><t t-if="o.current_reading"><t t-out="int(o.previous_reading)"/> to <t t-out="int(o.current_reading)"/></t><t t-else="">-</t></td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">Arrears:</td><td class="val" t-out="fmt(o.arrears)"/>
+                            <td class="lbl">Units:</td><td class="val" t-out="int(o.units) if o.current_reading else '-'"/>
+                        </tr>
+                    </table>
 
-            <table class="mb-lines">
-                <thead>
-                    <tr><th style="width: 9%;">Sr.#</th><th>Description</th><th style="width: 26%; text-align: right;">Amount</th></tr>
-                </thead>
-                <tbody>
-                    <t t-set="sr" t-value="0"/>
-                    <tr t-foreach="o._bill_lines()" t-as="line">
-                        <t t-set="sr" t-value="sr + 1"/>
-                        <td t-out="sr"/><td t-out="line[0]"/><td class="num" t-out="fmt(line[1])"/>
-                    </tr>
-                    <tr t-if="o.arrears_utility">
-                        <td/><td>Arrears (Utility)</td><td class="num" t-out="fmt(o.arrears_utility)"/>
-                    </tr>
-                    <tr t-if="o.arrears_electricity">
-                        <td/><td>Arrears (Electricity)</td><td class="num" t-out="fmt(o.arrears_electricity)"/>
-                    </tr>
-                </tbody>
-            </table>
+                    <table class="mb-lines">
+                        <colgroup><col style="width: 32px;"/><col style="width: 200px;"/><col style="width: 86px;"/></colgroup>
+                        <thead>
+                            <tr><th>Sr.#</th><th>Description</th><th class="num">Amount</th></tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="sr" t-value="0"/>
+                            <tr t-foreach="o._bill_lines()" t-as="line">
+                                <t t-set="sr" t-value="sr + 1"/>
+                                <td t-out="sr"/><td t-out="line[0]"/><td class="num" t-out="fmt(line[1])"/>
+                            </tr>
+                            <tr>
+                                <td/><td>Arrears (Utility)</td><td class="num" t-out="fmt(o.arrears_utility)"/>
+                            </tr>
+                            <tr>
+                                <td/><td>Arrears (Electricity)</td><td class="num" t-out="fmt(o.arrears_electricity)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="mb-desc">Utility = Water, Sewerage, Security, Street Lights &amp; Maintenance</div>
 
-            <table class="mb-total">
-                <tr><td>Due Amount:</td><td class="num"><b t-out="fmt(o.due_amount)"/></td></tr>
-                <tr><td>Surcharge on Late Payment:</td><td class="num" t-out="fmt(o.surcharge)"/></tr>
-                <tr><td>Payable after due date:</td><td class="num"><b t-out="fmt(o.payable_after_due)"/></td></tr>
-            </table>
-
-            <table style="width: 100%; margin-top: 4px;">
-                <tr>
-                    <td style="width: 34%;">
-                        <t t-set="qr" t-value="o._qr_data_uri()"/>
-                        <img t-if="qr" t-att-src="qr" style="width: 64px; height: 64px;"/>
-                        <div style="font-size: 8px;" t-out="o.name"/>
-                    </td>
-                    <td style="vertical-align: bottom; font-size: 9px;">
-                        <div style="margin-bottom: 14px;">Issued By: ____________</div>
-                        <div>Received By: ____________</div>
-                    </td>
-                </tr>
-            </table>
-            <div class="mb-note" t-out="o.payment_note"/>
-        </div>
+                    <table class="mb-total">
+                        <colgroup><col style="width: 64%;"/><col style="width: 36%;"/></colgroup>
+                        <tr><td>Current Month:</td><td class="num" t-out="fmt(o.current_amount)"/></tr>
+                        <tr class="strong"><td>Due Amount:</td><td class="num" t-out="fmt(o.due_amount)"/></tr>
+                        <tr><td>Surcharge on Late Payment:</td><td class="num" t-out="fmt(o.surcharge)"/></tr>
+                        <tr class="strong"><td>Payable after due date:</td><td class="num" t-out="fmt(o.payable_after_due)"/></tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="mb-bottom">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="width: 32%; vertical-align: bottom;">
+                                <t t-set="qr" t-value="o._qr_data_uri()"/>
+                                <img t-if="qr" t-att-src="qr" style="width: 70px; height: 70px;"/>
+                                <div class="mb-small" t-out="o.name"/>
+                            </td>
+                            <td style="vertical-align: bottom;" class="mb-sign">
+                                <div style="margin-bottom: 16px;">Issued By: ________________</div>
+                                <div>Received By: ______________</div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="mb-note" t-out="o.payment_note"/>
+                </td>
+            </tr>
+        </table>
     </template>
 
     <template id="report_maintenance_bill">
@@ -111,31 +129,43 @@
             <t t-foreach="docs" t-as="o">
                 <div class="page" style="font-family: Arial, Helvetica, sans-serif;">
                     <style>
-                        .mb-row { width: 100%; border-collapse: separate; border-spacing: 8px 0; table-layout: fixed; }
-                        .mb-row > tbody > tr > td { vertical-align: top; width: 33.33%; }
-                        .mb-copy { border: 1px solid #000; padding: 6px 8px; font-size: 10px; min-height: 175mm; }
-                        .mb-head { width: 100%; }
+                        .mb-row { width: 1040px; table-layout: fixed; border-collapse: collapse; margin: 0 auto; }
+                        .mb-row > tbody > tr > td.mb-cell { width: 340px; vertical-align: top; padding: 0; }
+                        .mb-row > tbody > tr > td.mb-gap { width: 10px; }
+                        .mb-copy { width: 340px; height: 738px; border: 1px solid #000; border-collapse: collapse; table-layout: fixed; font-size: 10px; }
+                        .mb-top { vertical-align: top; padding: 8px 10px 0 10px; }
+                        .mb-bottom { vertical-align: bottom; padding: 0 10px 8px 10px; height: 1px; }
+                        .mb-head { width: 100%; table-layout: fixed; }
                         .mb-company { font-weight: bold; font-size: 12px; }
-                        .mb-society { font-weight: bold; font-size: 11px; letter-spacing: 1px; }
-                        .mb-title { text-align: center; font-weight: bold; font-size: 13px; margin-top: 4px; }
-                        .mb-bank { text-align: center; font-weight: bold; font-size: 8.5px; margin: 4px 0 6px 0; }
-                        .mb-info { width: 100%; margin-bottom: 6px; }
-                        .mb-info td { padding: 2px 2px; }
-                        .mb-info .lbl { font-weight: bold; white-space: nowrap; }
-                        .mb-info .val { text-decoration: underline; }
-                        .mb-lines { width: 100%; border-collapse: collapse; }
-                        .mb-lines th, .mb-lines td { border: 1px solid #000; padding: 3px 4px; }
-                        .mb-lines th { background: #eee; }
-                        .mb-total { width: 100%; margin-top: 8px; }
-                        .mb-total td { padding: 3px 2px; }
+                        .mb-society { font-weight: bold; font-size: 10px; letter-spacing: 1px; }
+                        .mb-title { text-align: center; font-weight: bold; font-size: 13px; margin-top: 6px; }
+                        .mb-subtitle { text-align: center; font-size: 9px; }
+                        .mb-bank { text-align: center; font-weight: bold; font-size: 8px; margin: 6px 0 10px 0; height: 22px; overflow: hidden; }
+                        .mb-info { width: 100%; table-layout: fixed; margin-bottom: 8px; }
+                        .mb-info td { padding: 4px 2px; white-space: nowrap; overflow: hidden; font-size: 10px; }
+                        .mb-info td.wrap { white-space: normal; }
+                        .mb-info .lbl { font-weight: bold; }
+                        .mb-info .val { border-bottom: 1px solid #000; }
+                        .mb-lines { width: 100%; table-layout: fixed; border-collapse: collapse; }
+                        .mb-lines th, .mb-lines td { border: 1px solid #000; padding: 5px 5px; vertical-align: top; white-space: nowrap; overflow: hidden; font-size: 10px; }
+                        .mb-lines th { background: #e9e9e9; text-align: left; }
+                        .mb-total { width: 100%; table-layout: fixed; margin-top: 10px; }
+                        .mb-total td { padding: 5px 2px; font-size: 11px; }
+                        .mb-info td.val { font-size: 10.5px; }
+                        .mb-total tr.strong td { font-weight: bold; }
                         .num { text-align: right; white-space: nowrap; }
-                        .mb-note { font-size: 8px; margin-top: 6px; }
+                        .mb-sign { font-size: 10px; }
+                        .mb-small { font-size: 8px; }
+                        .mb-note { font-size: 8px; margin-top: 6px; height: 22px; overflow: hidden; }
+                        .mb-desc { font-size: 8px; color: #333; margin: 4px 0 0 0; }
                     </style>
                     <table class="mb-row">
                         <tr>
-                            <td><t t-call="maintenance_monthly_bill.report_maintenance_bill_copy"><t t-set="copy_title" t-value="'Customer Copy'"/></t></td>
-                            <td><t t-call="maintenance_monthly_bill.report_maintenance_bill_copy"><t t-set="copy_title" t-value="'Society Office Copy'"/></t></td>
-                            <td><t t-call="maintenance_monthly_bill.report_maintenance_bill_copy"><t t-set="copy_title" t-value="'Bank Copy'"/></t></td>
+                            <td class="mb-cell"><t t-call="maintenance_monthly_bill.report_maintenance_bill_copy"><t t-set="copy_title" t-value="'Customer Copy'"/></t></td>
+                            <td class="mb-gap"/>
+                            <td class="mb-cell"><t t-call="maintenance_monthly_bill.report_maintenance_bill_copy"><t t-set="copy_title" t-value="'Society Office Copy'"/></t></td>
+                            <td class="mb-gap"/>
+                            <td class="mb-cell"><t t-call="maintenance_monthly_bill.report_maintenance_bill_copy"><t t-set="copy_title" t-value="'Bank Copy'"/></t></td>
                         </tr>
                     </table>
                 </div>

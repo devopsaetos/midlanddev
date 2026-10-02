@@ -220,10 +220,9 @@ class MaintenanceBill(models.Model):
     def _bill_lines(self):
         """Rows printed in the bill table: (description, amount)."""
         self.ensure_one()
-        lines = []
-        if self.utility_amount:
-            lines.append((_('Utility Charges (Water, Sewerage, Security, Street Lights & Maintenance)'), self.utility_amount))
-        if self.electricity_amount or self.current_reading:
-            lines.append((_('Electricity Charges: %(units)s units @ %(rate)s',
-                            units=int(self.units), rate=self.unit_rate), self.electricity_amount))
-        return lines
+        # Always the same rows, so every printed bill has the same layout.
+        return [
+            (_('Utility Charges'), self.utility_amount),
+            (_('Electricity (%(units)s units @ %(rate)s)', units=int(self.units), rate=self.unit_rate),
+             self.electricity_amount),
+        ]
