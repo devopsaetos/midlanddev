@@ -92,7 +92,8 @@
             <table style="width: 100%; margin-top: 4px;">
                 <tr>
                     <td style="width: 34%;">
-                        <img t-att-src="'/report/barcode/?barcode_type=QR&amp;value=%s&amp;width=140&amp;height=140' % (o.name)" style="width: 64px; height: 64px;"/>
+                        <t t-set="qr" t-value="o._qr_data_uri()"/>
+                        <img t-if="qr" t-att-src="qr" style="width: 64px; height: 64px;"/>
                         <div style="font-size: 8px;" t-out="o.name"/>
                     </td>
                     <td style="vertical-align: bottom; font-size: 9px;">

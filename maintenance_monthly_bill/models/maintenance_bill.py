@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import base64
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -205,6 +207,16 @@ class MaintenanceBill(models.Model):
         return self.env.ref('maintenance_monthly_bill.action_report_maintenance_bill').report_action(self)
 
     # ------------------------------------------------------------------ report helpers
+    def _qr_data_uri(self):
+        """QR of the bill number, embedded in the PDF (wkhtmltopdf cannot always fetch
+        /report/barcode from the server, e.g. on staging)."""
+        self.ensure_one()
+        try:
+            png = self.env['ir.actions.report'].barcode('QR', self.name or '', width=140, height=140)
+        except Exception:  # barcode backend missing: print the bill without the QR
+            return False
+        return 'data:image/png;base64,%s' % base64.b64encode(png).decode()
+
     def _bill_lines(self):
         """Rows printed in the bill table: (description, amount)."""
         self.ensure_one()
