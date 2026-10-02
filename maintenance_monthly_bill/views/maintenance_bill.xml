@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Editable list: the monthly meter-reading sheet. -->
+        <record id="maintenance_bill_list" model="ir.ui.view">
+            <field name="name">maintenance.bill.list</field>
+            <field name="model">maintenance.bill</field>
+            <field name="arch" type="xml">
+                <list editable="bottom" create="0" decoration-muted="state == 'cancel'" decoration-success="state == 'posted'">
+                    <field name="name" readonly="1"/>
+                    <field name="bill_month" widget="date" readonly="1" optional="show"/>
+                    <field name="unit_number" readonly="1"/>
+                    <field name="member_name" readonly="1"/>
+                    <field name="meter_no" readonly="state != 'draft'" optional="show"/>
+                    <field name="previous_reading" readonly="state != 'draft'"/>
+                    <field name="current_reading" readonly="state != 'draft'"/>
+                    <field name="units" readonly="1"/>
+                    <field name="unit_rate" readonly="state != 'draft'" optional="hide"/>
+                    <field name="electricity_amount" readonly="1" sum="Total"/>
+                    <field name="utility_amount" readonly="state != 'draft'" sum="Total"/>
+                    <field name="arrears" readonly="1" sum="Total"/>
+                    <field name="due_amount" readonly="1" sum="Total"/>
+                    <field name="currency_id" column_invisible="1"/>
+                    <field name="state" readonly="1" widget="badge" decoration-success="state == 'posted'" decoration-info="state == 'draft'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="maintenance_bill_form" model="ir.ui.view">
+            <field name="name">maintenance.bill.form</field>
+            <field name="model">maintenance.bill</field>
+            <field name="arch" type="xml">
+                <form create="0">
+                    <header>
+                        <button name="action_post" string="Post Bill" type="object" class="oe_highlight" invisible="state != 'draft'"
+                                confirm="This creates and posts the utility and electricity invoices. Continue?"/>
+                        <button name="action_print" string="Print Bill" type="object" icon="fa-print"/>
+                        <button name="action_recompute_arrears" string="Recompute Arrears" type="object" invisible="state != 'draft'"/>
+                        <button name="action_cancel" string="Cancel" type="object" invisible="state != 'draft'"/>
+                        <button name="action_draft" string="Set to Draft" type="object" invisible="state != 'cancel'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group>
+                            <group string="Bill">
+                                <field name="file_id" readonly="state != 'draft'"/>
+                                <field name="member_name"/>
+                                <field name="unit_number"/>
+                                <field name="society_id"/>
+                                <field name="phase_id"/>
+                                <field name="journal_id" readonly="state != 'draft'"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group string="Dates">
+                                <field name="bill_month" readonly="state != 'draft'"/>
+                                <field name="issue_date" readonly="state != 'draft'"/>
+                                <field name="due_date" readonly="state != 'draft'"/>
+                                <field name="surcharge_percent" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Electricity (Meter Reading)">
+                                <field name="meter_no" readonly="state != 'draft'"/>
+                                <field name="previous_reading" readonly="state != 'draft'"/>
+                                <field name="current_reading" readonly="state != 'draft'"/>
+                                <field name="units"/>
+                                <field name="unit_rate" readonly="state != 'draft'"/>
+                                <field name="electricity_amount"/>
+                                <field name="electricity_product_id" readonly="state != 'draft'"/>
+                                <field name="electricity_invoice_id" invisible="not electricity_invoice_id"/>
+                            </group>
+                            <group string="Utility">
+                                <field name="utility_amount" readonly="state != 'draft'"/>
+                                <field name="utility_product_id" readonly="state != 'draft'"/>
+                                <field name="utility_invoice_id" invisible="not utility_invoice_id"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Arrears">
+                                <field name="arrears_utility" readonly="state != 'draft'"/>
+                                <field name="arrears_electricity" readonly="state != 'draft'"/>
+                                <field name="arrears"/>
+                            </group>
+                            <group string="Totals">
+                                <field name="current_amount"/>
+                                <field name="due_amount"/>
+                                <field name="surcharge"/>
+                                <field name="payable_after_due"/>
+                            </group>
+                        </group>
+                        <group string="Printed Notes">
+                            <field name="bank_note" readonly="state != 'draft'"/>
+                            <field name="payment_note" readonly="state != 'draft'"/>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="maintenance_bill_search" model="ir.ui.view">
+            <field name="name">maintenance.bill.search</field>
+            <field name="model">maintenance.bill</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="unit_number"/>
+                    <field name="file_id"/>
+                    <field name="partner_id"/>
+                    <field name="meter_no"/>
+                    <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                    <filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
+                    <filter name="no_reading" string="Reading Missing" domain="[('state', '=', 'draft'), ('current_reading', '=', 0)]"/>
+                    <separator/>
+                    <filter name="bill_month" string="Bill Month" date="bill_month"/>
+                    <group>
+                        <filter name="group_society" string="Society" context="{'group_by': 'society_id'}"/>
+                        <filter name="group_month" string="Month" context="{'group_by': 'bill_month:month'}"/>
+                        <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_maintenance_bill" model="ir.actions.act_window">
+            <field name="name">Monthly Bills</field>
+            <field name="res_model">maintenance.bill</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No monthly bills yet</p>
+                <p>Use <b>Generate Monthly Bills</b> to create the bills of a month, enter the meter readings here, then post and print.</p>
+            </field>
+        </record>
+
+        <!-- Post several bills from the list (Actions menu). -->
+        <record id="action_server_post_bills" model="ir.actions.server">
+            <field name="name">Post Bills</field>
+            <field name="model_id" ref="model_maintenance_bill"/>
+            <field name="binding_model_id" ref="model_maintenance_bill"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">records.action_post()</field>
+        </record>
+
+        <menuitem id="menu_maintenance_bill_root" name="Monthly Bills"
+                  parent="maintenance_charges.maintenance_charges_main_menu" sequence="5"/>
+        <menuitem id="menu_maintenance_bill" name="Monthly Bills" action="action_maintenance_bill"
+                  parent="menu_maintenance_bill_root" sequence="20"/>
+    </data>
+</odoo>

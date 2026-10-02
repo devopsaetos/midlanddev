@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="maintenance_bill_generate_form" model="ir.ui.view">
+            <field name="name">maintenance.bill.generate.form</field>
+            <field name="model">maintenance.bill.generate</field>
+            <field name="arch" type="xml">
+                <form string="Generate Monthly Bills">
+                    <group>
+                        <group string="Which Houses">
+                            <field name="society_id"/>
+                            <field name="phase_id"/>
+                            <field name="file_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Month">
+                            <field name="bill_month"/>
+                            <field name="due_date"/>
+                            <field name="journal_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Utility">
+                            <field name="utility_product_id"/>
+                            <field name="default_utility_amount"/>
+                        </group>
+                        <group string="Electricity">
+                            <field name="electricity_product_id"/>
+                            <field name="unit_rate"/>
+                            <field name="surcharge_percent"/>
+                        </group>
+                    </group>
+                    <group string="Printed on the Bill">
+                        <field name="bank_note"/>
+                        <field name="payment_note"/>
+                    </group>
+                    <footer>
+                        <button name="action_generate" string="Generate Draft Bills" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_maintenance_bill_generate" model="ir.actions.act_window">
+            <field name="name">Generate Monthly Bills</field>
+            <field name="res_model">maintenance.bill.generate</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_maintenance_bill_generate" name="Generate Monthly Bills"
+                  action="action_maintenance_bill_generate"
+                  parent="menu_maintenance_bill_root" sequence="10"/>
+    </data>
+</odoo>
