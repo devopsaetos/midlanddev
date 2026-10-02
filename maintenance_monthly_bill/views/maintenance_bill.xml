@@ -6,7 +6,7 @@
             <field name="name">maintenance.bill.list</field>
             <field name="model">maintenance.bill</field>
             <field name="arch" type="xml">
-                <list editable="bottom" create="0" decoration-muted="state == 'cancel'" decoration-success="state == 'posted'">
+                <list editable="bottom" create="0" open_form_view="1" decoration-muted="state == 'cancel'" decoration-success="state == 'posted'">
                     <field name="name" readonly="1"/>
                     <field name="bill_month" widget="date" readonly="1" optional="show"/>
                     <field name="unit_number" readonly="1"/>
