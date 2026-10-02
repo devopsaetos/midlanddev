@@ -16,6 +16,9 @@ class MaintenanceBillGenerate(models.TransientModel):
 
     society_id = fields.Many2one('society', required=True, domain="[('is_society', '=', True)]")
     phase_id = fields.Many2one('society', domain="[('is_society', '!=', True), ('society_id', '=', society_id)]")
+    unit_numbers = fields.Char(string='Only These Houses',
+                               help='Plot / house numbers separated by commas, e.g. CV2-R-42, CV2-R-43. '
+                                    'Leave empty to bill every file of the society/phase that has a member.')
     file_ids = fields.Many2many('file', string='Only These Files',
                                 domain="[('society_id', '=', society_id), ('membership_id', '!=', False)]",
                                 help='Leave empty to bill every file of the society/phase that has a member.')
@@ -50,6 +53,12 @@ class MaintenanceBillGenerate(models.TransientModel):
             self.journal_id = self.env['account.journal'].search(
                 [('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
             self.phase_id = False
+            if not self.journal_id:
+                return {'warning': {
+                    'title': _('Company not selected'),
+                    'message': _('No sales journal found for %s. Tick that company in the company '
+                                 'switcher (top right), then choose the society again.') % company.name,
+                }}
 
     def _utility_amount_for(self, file_rec):
         """Same matching as the existing maintenance cron: rule line by category, unit class
@@ -73,7 +82,15 @@ class MaintenanceBillGenerate(models.TransientModel):
     def action_generate(self):
         self.ensure_one()
         month = self.bill_month.replace(day=1)
-        if self.file_ids:
+        if self.unit_numbers:
+            wanted = [u.strip().upper() for u in self.unit_numbers.replace('\n', ',').split(',') if u.strip()]
+            files = self.env['file'].search([('society_id', '=', self.society_id.id),
+                                             ('unit_number', 'in', wanted), ('membership_id', '!=', False)])
+            missing = set(wanted) - {(u or '').upper() for u in files.mapped('unit_number')}
+            if missing:
+                raise UserError(_('No file with a member found in %(society)s for: %(units)s',
+                                  society=self.society_id.name, units=', '.join(sorted(missing))))
+        elif self.file_ids:
             files = self.file_ids
         else:
             domain = [('society_id', '=', self.society_id.id), ('membership_id', '!=', False)]
