@@ -17,6 +17,7 @@
                                 <field name="installment_number" string="Sr. No"/>
                                 <field name="double_check_paid_amount" invisible="1"/>
                                 <field name="date"/>
+                                <field name="charge_type" string="Charge Type"/>
                                 <field name="payment_date" string="Payment date" readonly="1"/>
                                 <field name="amount" sum="Total"/>
                                 <field name="invoice_created" invisible="1"/>

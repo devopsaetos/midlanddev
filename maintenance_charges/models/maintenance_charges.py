@@ -369,6 +369,10 @@ class MaintenanceChargesHistory(models.Model):
     _description = 'Maintenance Charges History'
 
     date = fields.Date(required=True)
+    charge_type = fields.Selection([
+        ('utility', 'Utility'),
+        ('electricity', 'Electricity'),
+    ], default='utility', required=True, index=True)
     amount = fields.Float()
     installment_number = fields.Integer(readonly=False)
     invoice_created = fields.Boolean(default=False)
