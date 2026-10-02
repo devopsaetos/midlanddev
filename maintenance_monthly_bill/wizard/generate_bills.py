@@ -19,9 +19,9 @@ class MaintenanceBillGenerate(models.TransientModel):
     unit_numbers = fields.Char(string='Only These Houses',
                                help='Plot / house numbers separated by commas, e.g. CV2-R-42, CV2-R-43. '
                                     'Leave empty to bill every file of the society/phase that has a member.')
-    file_ids = fields.Many2many('file', string='Only These Files',
-                                domain="[('society_id', '=', society_id), ('membership_id', '!=', False)]",
-                                help='Leave empty to bill every file of the society/phase that has a member.')
+    file_ids = fields.Many2many('file', string='Only These Houses',
+                                domain="[('society_id', '=', society_id), ('phase_id', '=?', phase_id), ('membership_id', '!=', False)]",
+                                help='Pick houses of the selected society / phase. Leave empty to bill every house that has a member.')
     bill_month = fields.Date(required=True, default=lambda self: fields.Date.context_today(self).replace(day=1))
     due_date = fields.Date(required=True, default=lambda self: fields.Date.context_today(self).replace(day=1) + relativedelta(days=9))
     journal_id = fields.Many2one('account.journal', required=True, domain="[('type', '=', 'sale')]")
@@ -53,12 +53,19 @@ class MaintenanceBillGenerate(models.TransientModel):
             self.journal_id = self.env['account.journal'].search(
                 [('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
             self.phase_id = False
+            self.file_ids = False
             if not self.journal_id:
                 return {'warning': {
                     'title': _('Company not selected'),
                     'message': _('No sales journal found for %s. Tick that company in the company '
                                  'switcher (top right), then choose the society again.') % company.name,
                 }}
+
+    @api.onchange('phase_id')
+    def _onchange_phase(self):
+        # keep only houses that belong to the newly chosen phase
+        if self.phase_id:
+            self.file_ids = self.file_ids.filtered(lambda f: f.phase_id == self.phase_id)
 
     def _utility_amount_for(self, file_rec):
         """Same matching as the existing maintenance cron: rule line by category, unit class
@@ -82,7 +89,9 @@ class MaintenanceBillGenerate(models.TransientModel):
     def action_generate(self):
         self.ensure_one()
         month = self.bill_month.replace(day=1)
-        if self.unit_numbers:
+        if self.file_ids:
+            files = self.file_ids
+        elif self.unit_numbers:
             wanted = [u.strip().upper() for u in self.unit_numbers.replace('\n', ',').split(',') if u.strip()]
             files = self.env['file'].search([('society_id', '=', self.society_id.id),
                                              ('unit_number', 'in', wanted), ('membership_id', '!=', False)])
@@ -90,8 +99,6 @@ class MaintenanceBillGenerate(models.TransientModel):
             if missing:
                 raise UserError(_('No file with a member found in %(society)s for: %(units)s',
                                   society=self.society_id.name, units=', '.join(sorted(missing))))
-        elif self.file_ids:
-            files = self.file_ids
         else:
             domain = [('society_id', '=', self.society_id.id), ('membership_id', '!=', False)]
             if self.phase_id:

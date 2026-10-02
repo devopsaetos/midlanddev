@@ -10,7 +10,8 @@
                         <group string="Which Houses">
                             <field name="society_id"/>
                             <field name="phase_id"/>
-                            <field name="unit_numbers" placeholder="e.g. CV2-R-42, CV2-R-43 (empty = all houses)"/>
+                            <field name="file_ids" widget="many2many_tags" context="{'show_unit_number': True}"
+                                   placeholder="Pick houses (empty = all houses)" options="{'no_create': True}"/>
                         </group>
                         <group string="Month">
                             <field name="bill_month"/>
