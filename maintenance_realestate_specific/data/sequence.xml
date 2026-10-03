@@ -7,7 +7,7 @@
             <field name="active">TRUE</field>
             <field name="prefix">EXE-</field>
             <field name="padding">5</field>
-            <field name="number_next">1</field>
+            <field name="company_id" eval="False"/>
             <field name="number_increment">1</field>
         </record>
 
@@ -18,7 +18,7 @@
             <field name="active">TRUE</field>
             <field name="prefix">EXEP-</field>
             <field name="padding">5</field>
-            <field name="number_next">1</field>
+            <field name="company_id" eval="False"/>
             <field name="number_increment">1</field>
         </record>
 
@@ -28,7 +28,7 @@
             <field name="active">TRUE</field>
             <field name="prefix">EXW-</field>
             <field name="padding">5</field>
-            <field name="number_next">1</field>
+            <field name="company_id" eval="False"/>
             <field name="number_increment">1</field>
         </record>
 
@@ -39,7 +39,7 @@
             <field name="active">TRUE</field>
             <field name="prefix">EXEW-</field>
             <field name="padding">5</field>
-            <field name="number_next">1</field>
+            <field name="company_id" eval="False"/>
             <field name="number_increment">1</field>
         </record>
     </data>

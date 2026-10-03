@@ -12,7 +12,7 @@
     'author': "Mudassar Ali Syed|| Axiom Team",
     'website': "https://www.axm.app",
     'category': 'Help Desk',
-    'version': '19.0.1.0.3',
+    'version': '19.0.1.0.4',
 
     # any module necessary for this one to work correctly
     # Odoo 19 migration note: 'website_axis_helpdesk' (an old Odoo 13/17 third-party
