@@ -39,7 +39,9 @@ class MaintenanceInquiryWizard(models.TransientModel):
             rec.maintenance_inquiry_line_ids.unlink()
             if rec.house_id and rec.file_id:
                 set_date = '2023-11-01'
-                for line in rec.file_id.maintenance_history_ids.filtered(lambda l: str(l.date) >= set_date):
+                # latest bill first, so the current dues are on top
+                history = rec.file_id.maintenance_history_ids.filtered(lambda l: str(l.date) >= set_date)
+                for line in history.sorted(lambda l: (l.date, l.id), reverse=True):
                     self.env['maintenance.inquiry.line'].sudo().create({
                         'date': line.date,
                         'amount': line.amount,
@@ -54,6 +56,7 @@ class MaintenanceInquiryWizard(models.TransientModel):
                         'maintenance_inquiry_wizard_id': rec.id
                     })
         return {
+            'name': _('Maintenance Inquiry'),
             'context': self.env.context,
             'view_mode': 'form',
             'res_model': self._name,

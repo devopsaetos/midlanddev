@@ -241,7 +241,7 @@
                                     <t t-set="total_amount" t-value="0"/>
                                     <t t-set="total_paid_amount" t-value="0"/>
                                     <t t-set="total_due_amount" t-value="0"/>
-                                    <t t-foreach="o.maintenance_inquiry_line_ids" t-as="line">
+                                    <t t-foreach="o.maintenance_inquiry_line_ids.sorted(lambda l: (l.date or l.create_date.date(), l.id))" t-as="line">
                                         <t t-set="serial_number" t-value="serial_number + 1"/>
                                         <tr>
                                             <td class="p-1 align-middle text-center">
