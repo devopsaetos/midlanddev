@@ -10,7 +10,7 @@
     'website': "http://www.axiomworld.net",
 
     'category': 'Real Estate',
-    'version': '19.0.1.0.4',
+    'version': '19.0.1.0.5',
 
     # any module necessary for this one to work correctly
     'depends': [

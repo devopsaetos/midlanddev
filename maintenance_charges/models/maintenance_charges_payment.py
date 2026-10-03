@@ -169,9 +169,10 @@ class MaintenanceChargesPayment(models.Model):
                     'multi_invoice_ids': invoices,
                 })
                 payment.post()
+                payment._maintenance_reconcile_invoices(rec.invoice_ids)
                 rec.payment_ref = payment.name
                 rec.payment_id = payment.id
-                rec.state = 'paid'
+                rec.state = 'paid' if not any(rec.invoice_ids.mapped('amount_residual')) else 'in_payment'
 
             charges_model = self.env['maintenance.charges']
             maintenance_product = charges_model._get_maintenance_charges_product_id()
@@ -278,6 +279,7 @@ class MaintenanceChargesPayment(models.Model):
                     'multi_invoice_ids': multi_invoices,
                 })
                 payment.post()
+                payment._maintenance_reconcile_invoices()
                 rec.write({'payment_ref': payment.name,
                            'payment_id': payment.id,
                            'state': 'paid',
@@ -356,6 +358,7 @@ class MaintenanceChargesPayment(models.Model):
                                                   })],
                 })
                 payment.post()
+                payment._maintenance_reconcile_invoices(inv)
                 maintenance_payment.payment_ref = payment.name
                 amount_residual = sum(maintenance_payment.invoice_ids.mapped('amount_residual_signed'))
                 if amount_residual == 0:

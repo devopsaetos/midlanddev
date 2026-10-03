@@ -141,6 +141,7 @@ class DailyMaintenanceBatch(models.Model):
             if rec.state == 'submit':
                 for payment_id in rec.account_payment_id:
                     payment_id.post()
+                    payment_id._maintenance_reconcile_invoices()
                 rec.state = 'approved'
                 rec.payment_created = True
             else:
