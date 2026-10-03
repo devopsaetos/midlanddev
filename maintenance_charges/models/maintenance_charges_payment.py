@@ -223,7 +223,8 @@ class MaintenanceChargesPayment(models.Model):
                                 'product_id': rec.product_id.id,
                                 'name': rec.product_id.name,
                                 'account_id': rec.product_id.property_account_income_id.id,
-                                'price_unit': line.amount / total_invoices
+                                'price_unit': line.amount / total_invoices,
+                                'tax_ids': [(6, 0, [])],
                             })]
                             invoice = self.env['account.move'].create({
                                 'partner_id': rec.membership_id.partner_id.id,

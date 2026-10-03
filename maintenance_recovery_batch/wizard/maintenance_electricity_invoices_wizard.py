@@ -123,6 +123,8 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                         'name': rec.product_id.name,
                         'account_id': rec.product_id.property_account_income_id.id,
                         'price_unit': amount,
+                        # the charge type amount is the bill amount (same as Monthly Bills): no sales tax
+                        'tax_ids': [(6, 0, [])],
                     })],
                     'property_invoice_type': invoice_type,
                 })

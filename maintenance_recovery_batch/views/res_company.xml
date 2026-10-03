@@ -33,17 +33,8 @@
                         </setting>
                     </block>
                     <block title="Maintenance Payment Settings">
-                        <setting>
-                            <label for="maintenance_payment_journal_id" string="Maintenance Payment Journal"/>
-                            <div class="text-muted">
-                                Maintenance Journal For Maintenance Payment.
-                            </div>
-                            <div class="content-group">
-                                <div class="row mt16">
-                                    <label for="maintenance_payment_journal_id" string="Maintenance Payment Journal" class="col-md-3 o_light_label"/>
-                                    <field name="maintenance_payment_journal_id"/>
-                                </div>
-                            </div>
+                        <setting help="Cash / bank journal offered first on Maintenance Charges Payment and Daily Transactions.">
+                            <field name="maintenance_payment_journal_id" string="Maintenance Payment Journal" options="{'no_create': True}"/>
                         </setting>
                     </block>
                 </app>

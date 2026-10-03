@@ -128,7 +128,8 @@ class MaintenanceCharges(models.Model):
                                                 'product_id': line.product_id.id,
                                                 'name': line.product_id.name,
                                                 'account_id': line.product_id.property_account_income_id.id,
-                                                'price_unit': amount
+                                                'price_unit': amount,
+                                                'tax_ids': [(6, 0, [])],
                                             })]
                                             invoice = self.env['account.move'].create({
                                                 'partner_id': file_rec.membership_id.partner_id.id,
@@ -240,7 +241,8 @@ class MaintenanceCharges(models.Model):
                                                 'product_id': line.product_id.id,
                                                 'name': line.product_id.name,
                                                 'account_id': line.product_id.property_account_income_id.id,
-                                                'price_unit': amount
+                                                'price_unit': amount,
+                                                'tax_ids': [(6, 0, [])],
                                             })]
                                             invoice = self.env['account.move'].create({
                                                 'partner_id': file_rec.membership_id.partner_id.id,
