@@ -57,11 +57,14 @@
             <field name="target">new</field>
         </record>
 
+        <!-- Hidden: bills and their invoices are made only from Monthly Bills
+             (maintenance_monthly_bill). generate_invoices() refuses as well. -->
         <menuitem
                 name="Maintenance / Electricity Invoices"
                 id="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_menu"
                 parent="maintenance_charges.maintenance_charges_main_menu"
                 sequence='25'
+                active="False"
                 action="maintenance_recovery_batch.maintenance_electricity_invoices_wizard_action"
         />
     </data>

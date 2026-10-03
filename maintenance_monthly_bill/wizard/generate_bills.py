@@ -83,8 +83,28 @@ class MaintenanceBillGenerate(models.TransientModel):
                 rule = line.maintenance_charges_type_id.maintenance_charges_type_line_ids.filtered(
                     lambda l: l.product_id == self.utility_product_id)[:1]
                 if rule:
-                    return rule.amount
-        return self.default_utility_amount
+                    return self._apply_exemption(file_rec, rule.amount)
+        return self._apply_exemption(file_rec, self.default_utility_amount)
+
+    def _apply_exemption(self, file_rec, amount):
+        """Approved Maintenance Exemption of the file that covers the billed month."""
+        if 'maintenance.exemption.history' not in self.env:
+            return amount
+        month_end = self.bill_month.replace(day=1) + relativedelta(months=1, days=-1)
+        exemption = self.env['maintenance.exemption.history'].search([
+            ('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'),
+            ('product_id', '=', self.utility_product_id.id),
+            ('from_date', '<=', month_end), ('to_date', '>=', self.bill_month.replace(day=1)),
+        ], limit=1)
+        if not exemption:
+            return amount
+        if exemption.exemption_nature == 'full':
+            return 0.0
+        if exemption.exemption_type == 'percentage' and exemption.exemption_percent:
+            return round(amount * (100 - exemption.exemption_percent) / 100.0, 2)
+        if exemption.exemption_type == 'fixed_amount' and exemption.exemption_amount:
+            return max(amount - exemption.exemption_amount, 0.0)
+        return amount
 
     def action_generate(self):
         self.ensure_one()

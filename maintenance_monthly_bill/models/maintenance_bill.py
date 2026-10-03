@@ -63,6 +63,32 @@ class MaintenanceBill(models.Model):
     utility_invoice_id = fields.Many2one('account.move', readonly=True, copy=False)
     electricity_invoice_id = fields.Many2one('account.move', readonly=True, copy=False)
 
+    # what the member has paid on this month's invoices (arrears are paid on their own invoices)
+    paid_amount = fields.Monetary(compute='_compute_payment', store=True, string='Paid')
+    payment_state = fields.Selection([
+        ('none', 'Not Posted'),
+        ('not_paid', 'Not Paid'),
+        ('partial', 'Partly Paid'),
+        ('paid', 'Paid'),
+    ], compute='_compute_payment', store=True, string='Payment')
+
+    @api.depends('state', 'utility_invoice_id.amount_residual', 'electricity_invoice_id.amount_residual',
+                 'utility_invoice_id.amount_total', 'electricity_invoice_id.amount_total')
+    def _compute_payment(self):
+        for rec in self:
+            invoices = rec.utility_invoice_id | rec.electricity_invoice_id
+            total = sum(invoices.mapped('amount_total'))
+            due = sum(invoices.mapped('amount_residual'))
+            rec.paid_amount = total - due
+            if rec.state != 'posted' or not invoices:
+                rec.payment_state = 'none'
+            elif not due:
+                rec.payment_state = 'paid'
+            elif due < total:
+                rec.payment_state = 'partial'
+            else:
+                rec.payment_state = 'not_paid'
+
     @api.depends('previous_reading', 'current_reading', 'unit_rate', 'utility_amount',
                  'arrears_utility', 'arrears_electricity', 'surcharge_percent')
     def _compute_amounts(self):
@@ -202,6 +228,32 @@ class MaintenanceBill(models.Model):
 
     def action_draft(self):
         self.filtered(lambda r: r.state == 'cancel').write({'state': 'draft'})
+
+    def action_receive_payment(self):
+        """Open Maintenance Charges Payment with this bill's unpaid invoices filled in."""
+        self.ensure_one()
+        invoices = (self.utility_invoice_id | self.electricity_invoice_id).filtered(lambda m: m.amount_residual > 0)
+        if self.state != 'posted':
+            raise UserError(_('Post the bill first.'))
+        if not invoices:
+            raise UserError(_('This bill is already paid.'))
+        plot = self.file_id.inventory_id or self.env['plot.inventory'].search(
+            [('name', '=', self.unit_number), ('society_id', '=', self.society_id.id)], limit=1)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Receive Payment'),
+            'res_model': 'maintenance.charges.payment',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'current',
+            'context': {
+                'default_inventory_id': plot.id,
+                'default_file_id': self.file_id.id,
+                'default_unit_class_id': plot.unit_class_id.id or self.file_id.unit_class_id.id,
+                'default_invoice_ids': [(6, 0, invoices.ids)],
+                'default_remarks': _('Monthly bill %s') % self.name,
+            },
+        }
 
     def action_print(self):
         return self.env.ref('maintenance_monthly_bill.action_report_maintenance_bill').report_action(self)

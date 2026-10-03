@@ -29,6 +29,13 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
         return [('id', 'in', self.env['maintenance.charges.type.lines'].sudo().search([]).mapped('product_id.id'))]
 
     def generate_invoices(self):
+        # Billing moved to Maintenance Charges > Monthly Bills: one bill per house with
+        # utility + electricity (meter reading), arrears and the printed 3-copy bill.
+        raise ValidationError(_('Maintenance and electricity invoices are now made from '
+                                'Maintenance Charges > Monthly Bills > Generate Monthly Bills.'))
+
+    def _generate_invoices_legacy(self):
+        """Previous per-charge-type invoice run, kept for reference; not reachable from the UI."""
         charges_model = self.env['maintenance.charges']
         maintenance_product = charges_model._get_maintenance_charges_product_id()
         society_product = charges_model._get_society_charges_product_id()

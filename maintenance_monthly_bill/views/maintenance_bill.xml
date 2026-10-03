@@ -22,6 +22,8 @@
                     <field name="due_amount" readonly="1" sum="Total"/>
                     <field name="currency_id" column_invisible="1"/>
                     <field name="state" readonly="1" widget="badge" decoration-success="state == 'posted'" decoration-info="state == 'draft'"/>
+                    <field name="payment_state" readonly="1" widget="badge" optional="show" invisible="payment_state == 'none'"
+                           decoration-success="payment_state == 'paid'" decoration-warning="payment_state == 'partial'" decoration-danger="payment_state == 'not_paid'"/>
                 </list>
             </field>
         </record>
@@ -35,6 +37,8 @@
                         <button name="action_post" string="Post Bill" type="object" class="oe_highlight" invisible="state != 'draft'"
                                 confirm="This creates and posts the utility and electricity invoices. Continue?"/>
                         <button name="action_print" string="Print Bill" type="object" icon="fa-print"/>
+                        <button name="action_receive_payment" string="Receive Payment" type="object" class="oe_highlight"
+                                invisible="state != 'posted' or payment_state == 'paid'"/>
                         <button name="action_recompute_arrears" string="Recompute Arrears" type="object" invisible="state != 'draft'"/>
                         <button name="action_cancel" string="Cancel" type="object" invisible="state != 'draft'"/>
                         <button name="action_draft" string="Set to Draft" type="object" invisible="state != 'cancel'"/>
@@ -86,6 +90,9 @@
                                 <field name="arrears"/>
                             </group>
                             <group string="Totals">
+                                <field name="payment_state" widget="badge" invisible="payment_state == 'none'"
+                                       decoration-success="payment_state == 'paid'" decoration-warning="payment_state == 'partial'" decoration-danger="payment_state == 'not_paid'"/>
+                                <field name="paid_amount" invisible="payment_state == 'none'"/>
                                 <field name="current_amount"/>
                                 <field name="due_amount"/>
                                 <field name="surcharge"/>
@@ -114,6 +121,8 @@
                     <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                     <filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
                     <filter name="no_reading" string="Reading Missing" domain="[('state', '=', 'draft'), ('current_reading', '=', 0)]"/>
+                    <filter name="unpaid" string="Not Paid" domain="[('payment_state', 'in', ('not_paid', 'partial'))]"/>
+                    <filter name="paid" string="Paid" domain="[('payment_state', '=', 'paid')]"/>
                     <separator/>
                     <filter name="bill_month" string="Bill Month" date="bill_month"/>
                     <group>
