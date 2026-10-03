@@ -20,13 +20,13 @@
                                 type="object"
                                 string="Approve"
                                 groups="maintenance_charges.group_maintenance_payment_manager"
-                                invisible="state != 'draft' or approved_app != False"/>
+                                invisible="state not in ('draft', 'submit') or approved_app != False"/>
                         <button class='btn btn-primary'
                                 name="button_cancel"
                                 type="object"
                                 string="Cancel"
                                 groups="maintenance_charges.group_maintenance_payment_manager"
-                                invisible="state != 'draft'"/>
+                                invisible="state not in ('draft', 'submit')"/>
                     </header>
                     <sheet>
                         <div class="oe_title">

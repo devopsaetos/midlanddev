@@ -10,7 +10,7 @@
                         <group>
                             <field name="society_id" required="1" options="{'no_create': True, 'no_open': True}"/>
                             <field name="phase_id" required="1" options="{'no_create': True, 'no_open': True}"/>
-                            <field name="sector_ids" required="1" widget="many2many_tags"
+                            <field name="sector_ids" widget="many2many_tags"
                                    options="{'no_create': True, 'no_open': True}"/>
                             <field name="street_id" required="0" options="{'no_create': True, 'no_open': True}"/>
                             <field name="house_id" required="0" options="{'no_create': True, 'no_open': True}"/>
@@ -24,6 +24,8 @@
                                    force_save="1"/>
                             <field name="file_ids" options="{'no_create': True, 'no_open': True}"
                                    force_save="1"
+                                   domain="[('society_id', '=', society_id), ('phase_id', '=', phase_id), ('membership_id', '!=', False)]"
+                                   help="Optional: bill only these files (Draft files are allowed here). Empty = all approved files matching the filters."
                                    widget="many2many_tags"
                             />
                         </group>
@@ -33,7 +35,7 @@
                             <field name="product_id" required="1" options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
-                            <field name="till_date" required="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="till_date" string="Invoice Month" required="1" help="Any date in the month to bill; invoices are dated the 1st of that month."/>
                         </group>
                     </group>
                     <footer>

@@ -41,6 +41,11 @@ class MaintenanceExemptionWithdrawal(models.Model):
 
     def button_submit(self):
         for rec in self:
+            if not rec.withdrawal_line_ids:
+                raise ValidationError(_('Add at least one plot in the Lines tab.'))
+            missing = rec.withdrawal_line_ids.filtered(lambda l: not l.maintenance_exemption_id)
+            if missing:
+                raise ValidationError(_('Choose the exemption to withdraw on: %s') % ', '.join(missing.mapped('inventory_id.display_name')))
             rec.write({'state': 'submit_approve'})
 
     def button_approve(self):

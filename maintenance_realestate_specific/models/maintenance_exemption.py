@@ -39,6 +39,17 @@ class MaintenanceExemption(models.Model):
 
     def button_submit(self):
         for rec in self:
+            if not rec.product_id:
+                raise ValidationError(_('Select the Charge Type first.'))
+            if not rec.exemption_line_ids:
+                raise ValidationError(_('Add at least one plot in the Lines tab.'))
+            for line in rec.exemption_line_ids:
+                if not line.file_id:
+                    raise ValidationError(_('No file is linked to plot %s.') % line.inventory_id.display_name)
+                if not line.exemption_type or not line.from_date or not line.to_date:
+                    raise ValidationError(_('Fill Exemption Type, From Date and To Date on line %s.') % line.inventory_id.display_name)
+                if line.from_date > line.to_date:
+                    raise ValidationError(_('From Date is after To Date on line %s.') % line.inventory_id.display_name)
             if rec.exemption_line_ids:
                 for line in rec.exemption_line_ids:
                     if line.file_id:
@@ -128,7 +139,8 @@ class MaintenanceExemptionLine(models.Model):
 
     def unlink(self):
         for rec in self:
-            if rec.exemption_state != 'inactive':
+            # lines of a draft batch were never applied, so they can be removed
+            if rec.exemption_state != 'inactive' and rec.maintenance_exemption_id.state != 'draft':
                 raise ValidationError(_('You cannot delete record that is in active state!'))
 
         return super(MaintenanceExemptionLine, self).unlink()

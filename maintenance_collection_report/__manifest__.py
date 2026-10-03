@@ -9,7 +9,7 @@
     'author': "Yasir Ali| Data Elite",
     'website': "dateelite.tech",
     'category': 'Account',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'depends': ['maintenance_charges'],
     'data': [
         'security/ir.model.access.csv',

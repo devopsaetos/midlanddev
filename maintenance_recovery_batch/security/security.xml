@@ -18,6 +18,8 @@
         </record>
         <record id="manager_group_id" model="res.groups">
             <field name="name">Maintenance Manager</field>
+            <!-- a manager can also do everything an officer does (submit batches, exemptions, ...) -->
+            <field name="implied_ids" eval="[Command.link(ref('maintenance_recovery_batch.officer_group_id'))]"/>
             <!-- <field name="category_id" ref="maintenance_recovery_batch.maintenance_groups_category_id"/> removed in Odoo 19, replaced below -->
             <field name="privilege_id" ref="maintenance_recovery_batch.privilege_maintenance_recovery_batch"/>
         </record>

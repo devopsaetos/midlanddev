@@ -20,4 +20,9 @@
         <field name="comment">Member of the groups are allowed to receive Maintenance Charges Payment.</field>
     </record>
 
+    <!-- a manager can also submit what a collector submits -->
+    <record id="maintenance_charges.group_maintenance_payment_manager" model="res.groups">
+        <field name="implied_ids" eval="[Command.link(ref('maintenance_charges.group_maintenance_payment_collector'))]"/>
+    </record>
+
 </odoo>

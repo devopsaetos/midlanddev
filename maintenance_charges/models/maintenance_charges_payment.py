@@ -128,12 +128,14 @@ class MaintenanceChargesPayment(models.Model):
                     }
                 }
 
-    @api.onchange('invoice_ids')
-    def _validation_invoices(self):
-        for rec in self:
-            if rec.invoice_ids:
-                for inv in rec.invoice_ids:
-                    inv.write({'is_maintenance_batch': True})
+    # The "picked in a maintenance payment/batch" flag is set when the record is saved, not in an
+    # onchange: writes done inside an onchange are committed even if the user discards the form,
+    # which left invoices flagged forever and hidden from every invoice picker.
+    def _sync_maintenance_batch_flag(self, before=None):
+        selected = self.mapped('invoice_ids')
+        selected.filtered(lambda m: not m.is_maintenance_batch).write({'is_maintenance_batch': True})
+        if before:
+            (before - selected).filtered('is_maintenance_batch').write({'is_maintenance_batch': False})
 
     def receive_payment(self):
         for rec in self:
@@ -407,7 +409,16 @@ class MaintenanceChargesPayment(models.Model):
             if vals.get('name', _('New')) == _('New'):
                 vals['name'] = self.env['ir.sequence'].next_by_code("maintenance.charges.payment") or _('New')
 
-        return super(MaintenanceChargesPayment, self).create(vals_list)
+        records = super(MaintenanceChargesPayment, self).create(vals_list)
+        records._sync_maintenance_batch_flag()
+        return records
+
+    def write(self, vals):
+        before = self.mapped('invoice_ids') if 'invoice_ids' in vals else None
+        res = super().write(vals)
+        if before is not None:
+            self._sync_maintenance_batch_flag(before)
+        return res
 
     def unlink(self):
         for rec in self:
@@ -416,8 +427,10 @@ class MaintenanceChargesPayment(models.Model):
                 raise ValidationError(_('You are not allowed delete record!'))
             if rec.state != 'draft':
                 raise ValidationError(_('You cannot delete record when payment is received!'))
-
-        return super(MaintenanceChargesPayment, self).unlink()
+        invoices = self.mapped('invoice_ids')
+        res = super(MaintenanceChargesPayment, self).unlink()
+        invoices.filtered('is_maintenance_batch').write({'is_maintenance_batch': False})
+        return res
 
     def print_receipt(self):
         # Original implementation printed the payment receipt via a report action defined in

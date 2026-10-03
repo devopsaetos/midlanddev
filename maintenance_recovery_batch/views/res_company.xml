@@ -21,6 +21,17 @@
         <field name="arch" type="xml">
             <form string="Maintenance Recovery Settings" class="oe_form_configuration" js_class="base_settings">
                 <app name="maintenance_recovery_batch" string="Maintenance Charges">
+                    <block title="Maintenance Invoice Settings">
+                        <setting help="Product used on monthly maintenance (utility) invoices.">
+                            <field name="maintenance_product_id" options="{'no_create': True}"/>
+                        </setting>
+                        <setting help="Product used on service / electricity charges invoices.">
+                            <field name="society_product_id" options="{'no_create': True}"/>
+                        </setting>
+                        <setting help="Sales journal used when maintenance invoices are created for this company.">
+                            <field name="maintenance_invoice_journal_id" options="{'no_create': True}"/>
+                        </setting>
+                    </block>
                     <block title="Maintenance Payment Settings">
                         <setting>
                             <label for="maintenance_payment_journal_id" string="Maintenance Payment Journal"/>

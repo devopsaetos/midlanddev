@@ -23,10 +23,10 @@ class MaintenanceCollectionWizard(models.TransientModel):
     date_from = fields.Date(default=lambda self: (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'))
     date_to = fields.Date(string='Date To', default=fields.Date.today())
     invoice_type = fields.Selection(
-        string='Invoice_type',
+        string='Invoice Type',
         selection=[('maintenance_charges', 'Maintenance Charges'),
                    ('society_charges', 'Society Charges'), ],
-        required=False, dafault='maintenance_charges')
+        required=False, help='Empty = both maintenance and service charges.')
 
     # def filter_category_ids(self):
     #     distinct_category_ids = self.env['file'].search([]).mapped('category_id').ids

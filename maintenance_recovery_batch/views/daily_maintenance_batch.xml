@@ -41,9 +41,9 @@
                                 invisible="payment_submit != False"
                                 groups="maintenance_recovery_batch.officer_group_id"
                         />
-                        <button name="approved" string="Approved"
+                        <button name="approved" string="Approve"
                                 class="oe_highlight" type="object"
-                                invisible="payment_created != False"
+                                invisible="state != 'submit'"
                                 groups="maintenance_recovery_batch.manager_group_id"/>
                         <field name="state" widget="statusbar"/>
                     </header>
@@ -163,7 +163,7 @@
                                             <notebook>
                                                 <page string="Invoices">
                                                     <field name="invoice_ids"
-                                                           domain="[('partner_id', '=', partner_id), ('payment_state', '=', 'not_paid'), ('amount_residual_signed', '>', 0.0), ('is_maintenance_batch', '=', False)]"
+                                                           domain="[('partner_id', '=', partner_id), ('move_type', '=', 'out_invoice'), ('state', '=', 'posted'), ('payment_state', 'in', ('not_paid', 'partial')), ('amount_residual_signed', '>', 0.0), ('is_maintenance_batch', '=', False)]"
                                                            options="{'no_create': True, 'no_open': True}">
                                                         <list editable="bottom">
                                                             <field name="name"/>

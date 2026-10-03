@@ -69,6 +69,12 @@ class ChangeUnitType(models.Model):
             rec.state = 'submit'
 
     def button_approve(self):
+        for rec in self:
+            if not rec.unit_change_typy_line_ids:
+                raise ValidationError(_('Add at least one plot in File Details before approving.'))
+            missing = rec.unit_change_typy_line_ids.filtered(lambda l: not l.new_unit_class_id)
+            if missing:
+                raise ValidationError(_('Choose the new type (Select Type) for: %s') % ', '.join(missing.mapped('inventory_id.name')))
         self.approved_app = True
         for record in self.unit_change_typy_line_ids:
             record.file_id.unit_class_id = record.new_unit_class_id.id

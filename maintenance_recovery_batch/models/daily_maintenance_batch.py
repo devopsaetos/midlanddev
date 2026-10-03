@@ -31,6 +31,7 @@ class DailyMaintenanceBatch(models.Model):
                                            tracking=True)
     payment_created = fields.Boolean(string='Approved', default=False)
     journal_id = fields.Many2one('account.journal', string='Journal',
+                                 default=lambda self: self.env.company.maintenance_payment_journal_id,
                                  domain=[('type', 'in', ('cash', 'bank')), ('show_in_maintenance', '=', True)])
     total_records = fields.Float(string='Daily Count', compute='_compute_total_records', store=True)
     account_payment_id = fields.Many2many('account.payment', string='Payment', tracking=True)
@@ -62,6 +63,8 @@ class DailyMaintenanceBatch(models.Model):
         current_date = datetime.today()
         last_day_of_month = datetime(current_date.year, current_date.month, 1) + relativedelta(months=1, days=-1)
         for rec in self:
+            if not rec.maintenance_line_ids:
+                raise ValidationError(_('Add at least one house line before submitting to the manager.'))
             account_payment_record = []
             for line in rec.maintenance_line_ids:
                 if not line.paid_amount:
@@ -249,7 +252,10 @@ class DailyMaintenanceLines(models.Model):
                     'base.group_erp_manager'):
                 raise ValidationError(_('You cannot delete record that is not in draft state!'))
 
-        return super(DailyMaintenanceLines, self).unlink()
+        invoices = self.mapped('invoice_ids')
+        res = super(DailyMaintenanceLines, self).unlink()
+        invoices.filtered('is_maintenance_batch').write({'is_maintenance_batch': False})
+        return res
 
     @api.onchange('house_id', 'product_id', 'partner_id')
     def _invoices_domain(self):
@@ -331,43 +337,30 @@ class DailyMaintenanceLines(models.Model):
 
     @api.onchange('invoice_ids', 'paid_amount', 'due_amount')
     def _validation_invoices(self):
+        # only warn here: flagging the invoices happens on save (see _sync_maintenance_batch_flag),
+        # because writes done in an onchange are kept even when the user discards the form
         for rec in self:
-            if rec.invoice_ids:
-                move_records = self.env['account.move'].search([('id', 'in', rec.invoice_ids.ids)],
-                                                               order='invoice_date')
-                for move in move_records:
-                    move.write({'is_maintenance_batch': True})
-                if rec.paid_amount:
-                    if rec.due_amount < rec.paid_amount:
-                        raise ValidationError(_('Paid Amount cannot be greater than total amount due of invoices'))
-                        rec.paid_amount = 0.0
-                    remaining_amount = rec.paid_amount
-                    move_records = self.env['account.move'].search([('id', 'in', rec.invoice_ids.ids)],
-                                                                   order='invoice_date')
-                    for move in move_records:
-                        if move.amount_residual_signed <= remaining_amount:
-                            move.write({'is_maintenance_batch': True})
-                            remaining_amount = remaining_amount - move.amount_residual_signed
-                        else:
-                            move.write({'is_maintenance_batch': False})
+            if rec.invoice_ids and rec.paid_amount and rec.due_amount < rec.paid_amount:
+                raise ValidationError(_('Paid Amount cannot be greater than total amount due of invoices'))
 
-    # fiscal.month model does not exist anywhere in this project - whole method disabled, not deleted.
-    # @api.onchange('company_id')
-    # def _compute_fiscal_data(self):
-    #     for rec in self:
-    #         current_year = datetime.utcnow().year
-    #         previous_year = current_year - 1
-    #         # Get the start and end dates of the current year
-    #         start_of_year = datetime(previous_year, 1, 1)
-    #         end_of_year = datetime(current_year, 12, 31)
-    #         fiscal_month = rec.env['fiscal.month'].search([
-    #             ('open_close', '=', False),
-    #             ('start_date', '>=', start_of_year),
-    #             ('end_date', '<=', end_of_year),
-    #             ('fiscal_year_id.company_id.id', '=', self.env.company.id)
-    #         ])
-    #         # fiscal_month.filtered(lambda c: c.fiscal_year_id.company_id == self.env.company)
-    #         return {'domain': {'fiscal_month_id': [('id', 'in', fiscal_month.ids)]}}
+    def _sync_maintenance_batch_flag(self, before=None):
+        selected = self.mapped('invoice_ids')
+        selected.filtered(lambda m: not m.is_maintenance_batch).write({'is_maintenance_batch': True})
+        if before:
+            (before - selected).filtered('is_maintenance_batch').write({'is_maintenance_batch': False})
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        lines._sync_maintenance_batch_flag()
+        return lines
+
+    def write(self, vals):
+        before = self.mapped('invoice_ids') if 'invoice_ids' in vals else None
+        res = super().write(vals)
+        if before is not None:
+            self._sync_maintenance_batch_flag(before)
+        return res
 
     @api.depends('invoice_ids', 'paid_amount')
     def _compute_amounts(self):

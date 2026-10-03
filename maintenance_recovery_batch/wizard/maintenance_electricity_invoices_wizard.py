@@ -32,32 +32,52 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
         charges_model = self.env['maintenance.charges']
         maintenance_product = charges_model._get_maintenance_charges_product_id()
         society_product = charges_model._get_society_charges_product_id()
+        if not maintenance_product or not society_product:
+            raise ValidationError(_(
+                'Set the Maintenance Charges Product and the Service Charges Product first '
+                '(Maintenance Charges > Configuration > Settings).'))
+        if not self.env.company.account_journal_id:
+            raise ValidationError(_(
+                'Set the Maintenance Invoice Journal for %s first '
+                '(Maintenance Charges > Configuration > Settings).') % self.env.company.name)
+        created = self.env['account.move']
+        skipped_existing, no_rule = [], []
         for rec in self:
-            domain = []
+            if rec.product_id not in (maintenance_product, society_product):
+                raise ValidationError(_('Charge Type must be "%s" or "%s".') % (
+                    maintenance_product.display_name, society_product.display_name))
+            invoice_type = 'maintenance_charges' if rec.product_id == maintenance_product else 'society_charges'
             month_first_day = rec.till_date.replace(day=1)
-            today_date = fields.Date.today()
-            month_last_day = datetime(month_first_day.year, month_first_day.month, 1) + relativedelta(months=1, days=-1)
-            if rec.street_id:
-                domain.append(('street_id', '=', rec.street_id.id))
-
-            if rec.house_id:
-                domain.append(('inventory_id', '=', rec.house_id.id))
-
-            domain.append(('society_id', '=', rec.society_id.id))
-            domain.append(('phase_id', '=', rec.phase_id.id))
-            domain.append(('sector_id', 'in', rec.sector_ids.ids))
-            domain.append(('file_status', '!=', 'draft'))
-            domain.append(('category_id', '=', rec.category_id.id))
-            domain.append(('unit_class_id', '=', rec.unit_class_id.id))
-            domain.append(('membership_id', '!=', False))
+            month_last_day = month_first_day + relativedelta(months=1, days=-1)
             if rec.file_ids:
                 domain = [('id', 'in', rec.file_ids.ids)]
-
+            else:
+                domain = [('society_id', '=', rec.society_id.id),
+                          ('phase_id', '=', rec.phase_id.id),
+                          ('category_id', '=', rec.category_id.id),
+                          ('unit_class_id', '=', rec.unit_class_id.id),
+                          ('membership_id', '!=', False)]
+                if rec.sector_ids:
+                    domain.append(('sector_id', 'in', rec.sector_ids.ids))
+                if rec.street_id:
+                    domain.append(('street_id', '=', rec.street_id.id))
+                if rec.house_id:
+                    domain.append(('inventory_id', '=', rec.house_id.id))
+                draft_files = self.env['file'].search_count(domain + [('file_status', '=', 'draft')])
+                domain.append(('file_status', '!=', 'draft'))
             files = self.env['file'].search(domain)
-            print("TOTAL FILES >>>>>>>>>>>> ", len(files))
-            total_inv = 0
+            if not files:
+                msg = _('No files match these filters.')
+                if not rec.file_ids and draft_files:
+                    msg += ' ' + _('%s matching file(s) are still in Draft status and are skipped; '
+                                   'pick them in "Files" to bill them anyway.') % draft_files
+                raise ValidationError(msg)
+            charge_lines = self.env['maintenance.charges.line'].sudo().search(
+                [('category_id', '=', rec.category_id.id),
+                 ('unit_class_id', '=', rec.unit_class_id.id),
+                 ('maintenance_charges_id.society_id.company_id', '=', self.env.company.id)])
             for file_rec in files:
-                move_line_records = self.env['account.move.line'].search([
+                already = self.env['account.move.line'].search_count([
                     ('product_id', '=', rec.product_id.id),
                     ('move_id.partner_id', '=', file_rec.membership_id.partner_id.id),
                     ('move_id.state', '=', 'posted'),
@@ -65,116 +85,90 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                     ('move_id.date', '<=', month_last_day),
                     ('move_id.file_ids', '=', file_rec.id)
                 ])
-                move_records = self.env['account.move'].sudo().browse(move_line_records.mapped('move_id.id'))
-                exemption_obj = self.env['maintenance.exemption.history'].search(
-                    [('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'),
-                     ('product_id.id', '=', rec.product_id.id),
-                     ('from_date', '<=', today_date), ('to_date', '>=', today_date)])
-
-                if move_records:
-                    print(
-                        f"Invoice already exists for {file_rec.name} in {month_first_day.strftime('%B')}. Skipping...")
+                if already:
+                    skipped_existing.append(file_rec.display_name)
                     continue
+                marla = round(file_rec.unit_category_type_id.area_marla)
+                in_range = charge_lines.filtered(lambda l: l.from_no <= marla <= l.to_no)
+                charge_line = (in_range.filtered(
+                    lambda l: l.maintenance_charges_id.society_id == file_rec.society_id) or in_range)[:1]
+                rule = charge_line.maintenance_charges_type_id.maintenance_charges_type_line_ids.filtered(
+                    lambda l: l.product_id == rec.product_id)[:1]
+                if not rule:
+                    no_rule.append('%s (%s marla)' % (file_rec.display_name, marla))
+                    continue
+                # exemption that is active in the billed month
+                exemption = self.env['maintenance.exemption.history'].search(
+                    [('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'),
+                     ('product_id', '=', rec.product_id.id),
+                     ('from_date', '<=', month_last_day), ('to_date', '>=', month_first_day)], limit=1)
+                amount = rule.amount
+                if exemption:
+                    if exemption.exemption_nature == 'full':
+                        continue
+                    if exemption.exemption_type == 'percentage' and exemption.exemption_percent:
+                        amount = rule.amount / 100 * (100 - exemption.exemption_percent)
+                    elif exemption.exemption_type == 'fixed_amount' and exemption.exemption_amount:
+                        amount = rule.amount - exemption.exemption_amount
                 installment_number = file_rec.maintenance_history_ids[
                                          -1].installment_number + 1 if file_rec.maintenance_history_ids else 1
-                maintenance_charges_line = self.env['maintenance.charges.line'].sudo().search(
-                    [('category_id', '=', rec.category_id.id),
-                     ('unit_class_id', '=', rec.unit_class_id.id),
-                     ('maintenance_charges_id.society_id.company_id',
-                      '=', self.env.company.id)])
-                maintenance_charges_line.filtered(
-                    lambda line: file_rec.unit_category_type_id.area_marla in range(line.from_no, line.to_no))
-                if maintenance_charges_line:
-                    for charge_line in maintenance_charges_line:
-                        if round(file_rec.unit_category_type_id.area_marla) in range(charge_line.from_no,
-                                                                                     charge_line.to_no + 1):
-                            maintenance_rule_line = charge_line.maintenance_charges_type_id.maintenance_charges_type_line_ids.filtered(
-                                lambda l: l.product_id.id == rec.product_id.id)
-                            if maintenance_rule_line:
-                                amount = False
-                                if exemption_obj:
-                                    if exemption_obj.exemption_type == 'percentage' and exemption_obj.exemption_percent:
-                                        amount = maintenance_rule_line.amount / 100 * (
-                                                100 - exemption_obj.exemption_percent)
-                                    elif exemption_obj.exemption_type == 'fixed_amount' and exemption_obj.exemption_nature == 'partial' and exemption_obj.exemption_amount:
-                                        amount = maintenance_rule_line.amount - exemption_obj.exemption_amount
-                                    elif exemption_obj.exemption_type == 'fixed_amount' and exemption_obj.exemption_nature == 'full':
-                                        amount = 0.0
-                                else:
-                                    amount = maintenance_rule_line.amount
-                                # For Service Charges / Electricity
-                                if rec.product_id.id == society_product.id:
-                                    if exemption_obj and exemption_obj.exemption_nature == 'full':
-                                        pass
-                                    else:
-                                        prod = [(0, 0, {
-                                            'product_id': rec.product_id.id,
-                                            'name': rec.product_id.name,
-                                            'account_id': rec.product_id.property_account_income_id.id,
-                                            'price_unit': amount
-                                        })]
-                                        invoice = self.env['account.move'].create({
-                                            'partner_id': file_rec.membership_id.partner_id.id,
-                                            # 'branch_id': self.env.branch.id,  # res.branch not available in this project
-                                            'move_type': 'out_invoice',
-                                            'maintenance_charges_id': charge_line.maintenance_charges_id.id,
-                                            'invoice_date': month_first_day,
-                                            'journal_id': self.env.company.account_journal_id.id,
-                                            'invoice_line_ids': prod,
-                                            'property_invoice_type': 'society_charges',
-                                        })
-                                        invoice.file_ids = file_rec.id
-                                        invoice.action_post()
-                                        print("FILE ID:>>>>>>>", file_rec.id)
-                                        print("INVOICE ID:>>>>>>>", invoice.id)
-                                        file_rec.maintenance_history_ids.create({
-                                            'date': month_first_day,
-                                            'installment_number': installment_number,
-                                            'amount': invoice.amount_total,
-                                            'invoice_created': True,
-                                            'invoice_id': invoice.id,
-                                            'amount_paid': invoice.amount_total - invoice.amount_residual,
-                                            'residual': invoice.amount_residual,
-                                            'payment_status': invoice.payment_state,
-                                            'file_id': file_rec.id
-                                        })
-                                # For Maintenance Charges
-                                if rec.product_id.id == maintenance_product.id:
-                                    if exemption_obj and exemption_obj.exemption_nature == 'full':
-                                        pass
-                                    else:
-                                        prod = [(0, 0, {
-                                            'product_id': rec.product_id.id,
-                                            'name': rec.product_id.name,
-                                            'account_id': rec.product_id.property_account_income_id.id,
-                                            'price_unit': amount
-                                        })]
-                                        invoice = self.env['account.move'].create({
-                                            'partner_id': file_rec.membership_id.partner_id.id,
-                                            # 'branch_id': self.env.branch.id,  # res.branch not available in this project
-                                            'move_type': 'out_invoice',
-                                            'maintenance_charges_id': charge_line.maintenance_charges_id.id,
-                                            'invoice_date': month_first_day,
-                                            'journal_id': self.env.company.account_journal_id.id,
-                                            'invoice_line_ids': prod,
-                                            'property_invoice_type': 'maintenance_charges',
-                                        })
-                                        invoice.file_ids = file_rec.id
-                                        invoice.action_post()
-                                        total_inv = total_inv + 1
-                                        print("FILE ID:>>>>>>>", file_rec.id)
-                                        print("INVOICE ID:>>>>>>>", invoice.id)
-                                        file_rec.maintenance_history_ids.create({
-                                            'date': month_first_day,
-                                            'installment_number': installment_number,
-                                            'amount': invoice.amount_total,
-                                            'invoice_created': True,
-                                            'invoice_id': invoice.id,
-                                            'amount_paid': invoice.amount_total - invoice.amount_residual,
-                                            'residual': invoice.amount_residual,
-                                            'payment_status': invoice.payment_state,
-                                            'file_id': file_rec.id
-                                        })
-            print('Total Invoices >>>> ', total_inv)
-
-
+                invoice = self.env['account.move'].create({
+                    'partner_id': file_rec.membership_id.partner_id.id,
+                    'move_type': 'out_invoice',
+                    'maintenance_charges_id': charge_line.maintenance_charges_id.id,
+                    'invoice_date': month_first_day,
+                    'journal_id': self.env.company.account_journal_id.id,
+                    'invoice_line_ids': [(0, 0, {
+                        'product_id': rec.product_id.id,
+                        'name': rec.product_id.name,
+                        'account_id': rec.product_id.property_account_income_id.id,
+                        'price_unit': amount,
+                    })],
+                    'property_invoice_type': invoice_type,
+                })
+                # real_estate's create() drops file_ids, so set it afterwards
+                invoice.file_ids = file_rec.id
+                invoice.action_post()
+                file_rec.maintenance_history_ids.create({
+                    'date': month_first_day,
+                    'installment_number': installment_number,
+                    'amount': invoice.amount_total,
+                    'invoice_created': True,
+                    'invoice_id': invoice.id,
+                    'amount_paid': invoice.amount_total - invoice.amount_residual,
+                    'residual': invoice.amount_residual,
+                    'payment_status': invoice.payment_state,
+                    'file_id': file_rec.id,
+                    'charge_type': 'utility' if invoice_type == 'maintenance_charges' else 'electricity',
+                })
+                created |= invoice
+        if not created:
+            reasons = []
+            if skipped_existing:
+                reasons.append(_('already billed this month: %s') % ', '.join(skipped_existing[:10]))
+            if no_rule:
+                reasons.append(_('no Maintenance Charges rule for: %s') % ', '.join(no_rule[:10]))
+            raise ValidationError(_('No invoice was created.') + ('\n' + '\n'.join(reasons) if reasons else ''))
+        message = _('%s invoice(s) created and posted.') % len(created)
+        if skipped_existing:
+            message += ' ' + _('%s file(s) skipped (already billed this month).') % len(skipped_existing)
+        if no_rule:
+            message += ' ' + _('%s file(s) skipped (no matching rule).') % len(no_rule)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Invoices generated'),
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'name': _('Generated Invoices'),
+                    'res_model': 'account.move',
+                    'view_mode': 'list,form',
+                    'views': [(False, 'list'), (False, 'form')],
+                    'domain': [('id', 'in', created.ids)],
+                },
+            },
+        }
