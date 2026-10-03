@@ -119,7 +119,9 @@ class MaintenanceExemptionLine(models.Model):
                 rec.category_id = rec.file_id.category_id
                 rec.unit_category_type_id = rec.file_id.unit_category_type_id
                 rec.size_id = rec.file_id.size_id
-                rec.inventory_id = rec.file_id.inventory_id
+                # imported files may have no plot linked: keep the plot the user picked
+                if rec.file_id.inventory_id:
+                    rec.inventory_id = rec.file_id.inventory_id
             elif rec.inventory_id:
                 rec.society_id = rec.inventory_id.society_id
                 rec.phase_id = rec.inventory_id.phase_id
