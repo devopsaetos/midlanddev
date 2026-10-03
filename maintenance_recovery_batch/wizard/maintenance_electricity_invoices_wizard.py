@@ -21,7 +21,7 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company.id)
     street_id = fields.Many2one('street', string='Street', domain="[('sector_id', 'in', sector_ids)]")
     house_id = fields.Many2one('plot.inventory', string='House',
-                               domain="[('sector_id', 'in', sector_ids), ('street_id', '=', street_id)]")
+                               domain="[('society_id', '=', society_id), ('phase_id', '=', phase_id), ('street_id', '=?', street_id)]")
     file_ids = fields.Many2many('file', string='Files')
 
     @api.model
@@ -49,8 +49,10 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
             invoice_type = 'maintenance_charges' if rec.product_id == maintenance_product else 'society_charges'
             month_first_day = rec.till_date.replace(day=1)
             month_last_day = month_first_day + relativedelta(months=1, days=-1)
-            if rec.file_ids:
-                domain = [('id', 'in', rec.file_ids.ids)]
+            if rec.file_ids or rec.house_id:
+                # explicitly picked files / house are billed even when the file is still Draft
+                picked = rec.file_ids | (rec.house_id._get_maintenance_file() if rec.house_id else self.env['file'])
+                domain = [('id', 'in', picked.ids)]
             else:
                 domain = [('society_id', '=', rec.society_id.id),
                           ('phase_id', '=', rec.phase_id.id),
@@ -61,14 +63,12 @@ class MaintenanceElectricityInvoicesWizard(models.TransientModel):
                     domain.append(('sector_id', 'in', rec.sector_ids.ids))
                 if rec.street_id:
                     domain.append(('street_id', '=', rec.street_id.id))
-                if rec.house_id:
-                    domain.append(('inventory_id', '=', rec.house_id.id))
                 draft_files = self.env['file'].search_count(domain + [('file_status', '=', 'draft')])
                 domain.append(('file_status', '!=', 'draft'))
             files = self.env['file'].search(domain)
             if not files:
                 msg = _('No files match these filters.')
-                if not rec.file_ids and draft_files:
+                if not (rec.file_ids or rec.house_id) and draft_files:
                     msg += ' ' + _('%s matching file(s) are still in Draft status and are skipped; '
                                    'pick them in "Files" to bill them anyway.') % draft_files
                 raise ValidationError(msg)

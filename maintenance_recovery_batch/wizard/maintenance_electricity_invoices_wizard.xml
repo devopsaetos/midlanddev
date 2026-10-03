@@ -13,7 +13,8 @@
                             <field name="sector_ids" widget="many2many_tags"
                                    options="{'no_create': True, 'no_open': True}"/>
                             <field name="street_id" required="0" options="{'no_create': True, 'no_open': True}"/>
-                            <field name="house_id" required="0" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="house_id" required="0" options="{'no_create': True, 'no_open': True}"
+                                   help="Optional: bill only this house (Draft files are allowed)."/>
                         </group>
                         <group>
                             <field name="category_id" required="1" options="{'no_create': True, 'no_open': True}"/>
