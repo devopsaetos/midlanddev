@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from io import BytesIO
 import pandas as pd
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 from dateutil.relativedelta import relativedelta
 
 
@@ -54,7 +55,7 @@ class MaintenancePaymentSummaryWizard(models.TransientModel):
                 f.name as File,
                 sector.name AS Sector,
                 street.name AS Street,
-                inventory.name AS House_No,
+                COALESCE(inventory.name, f.unit_number) AS House_No,
                 product.name AS Product,
                 INITCAP(am.property_invoice_type) as Property_Invoice_Type,
                 am.name as Invoice,
@@ -83,7 +84,7 @@ class MaintenancePaymentSummaryWizard(models.TransientModel):
             LEFT JOIN 
                 plot_inventory inventory ON inventory.id = f.inventory_id
             LEFT JOIN 
-                sector sector ON sector.id = inventory.sector_id
+                sector sector ON sector.id = COALESCE(inventory.sector_id, f.sector_id)
             LEFT JOIN 
                 res_partner customer ON customer.id = am.partner_id
             LEFT JOIN 
@@ -120,6 +121,8 @@ class MaintenancePaymentSummaryWizard(models.TransientModel):
         # Execute the SQL query
         self._cr.execute(sql_query)
         data = self._cr.dictfetchall()
+        if not data:
+            raise UserError(_('No payments found for the selected filters. Please widen your date range or filters and try again.'))
 
         # Convert the result to a DataFrame
         df = pd.DataFrame(data)

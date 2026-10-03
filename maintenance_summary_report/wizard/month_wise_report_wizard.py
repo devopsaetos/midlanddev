@@ -77,7 +77,7 @@ class MonthWiseReportWizard(models.TransientModel):
                     customer.name AS customer_name,
                     sector.name AS sector,
                     street.name AS street,
-                    inventory.name AS house_no,
+                    COALESCE(inventory.name, f.unit_number) AS house_no,
                     product.name AS product,
                     am.property_invoice_type 
                 FROM 
@@ -93,7 +93,7 @@ class MonthWiseReportWizard(models.TransientModel):
                 LEFT JOIN 
                     plot_inventory inventory ON inventory.id = f.inventory_id
                 LEFT JOIN 
-                    sector sector ON sector.id = inventory.sector_id
+                    sector sector ON sector.id = COALESCE(inventory.sector_id, f.sector_id)
                 LEFT JOIN 
                     res_partner customer ON customer.id = am.partner_id
                 LEFT JOIN 
@@ -202,6 +202,9 @@ class MonthWiseReportWizard(models.TransientModel):
 
         # Convert the result to a DataFrame
         df = pd.DataFrame(data)
+        # pandas drops rows with an empty group key (no street / sector), so use '' instead of None
+        for key in ['customer_name', 'sector', 'street', 'house_no', 'product', 'property_invoice_type']:
+            df[key] = df[key].fillna('')
 
         # Capitalize column headings
         df.columns = map(str.capitalize, df.columns)

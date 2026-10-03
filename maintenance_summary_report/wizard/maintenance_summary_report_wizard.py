@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from io import BytesIO
 import pandas as pd
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
 class MaintenanceSummaryReportWizard(models.TransientModel):
@@ -50,7 +51,7 @@ class MaintenanceSummaryReportWizard(models.TransientModel):
                 INITCAP(customer.name) AS Customer,
                 INITCAP(sector.name) AS Sector,
                 INITCAP(street.name) AS StreetNo,
-                INITCAP(inventory.name) AS HouseNo,
+                INITCAP(COALESCE(inventory.name, f.unit_number)) AS HouseNo,
                 INITCAP(category.name) AS Category,
                 INITCAP(product.name) AS Product,
                 INITCAP(size.name) AS Size,
@@ -73,7 +74,7 @@ class MaintenanceSummaryReportWizard(models.TransientModel):
             LEFT JOIN 
                 plot_inventory inventory ON inventory.id = f.inventory_id
             LEFT JOIN 
-                sector sector ON sector.id = inventory.sector_id
+                sector sector ON sector.id = COALESCE(inventory.sector_id, f.sector_id)
             LEFT JOIN 
                 res_partner customer ON customer.id = am.partner_id
             LEFT JOIN 
@@ -98,14 +99,17 @@ class MaintenanceSummaryReportWizard(models.TransientModel):
                 AND am.company_id = {self.env.company.id}
                 AND am.property_invoice_type IN ('maintenance_charges', 'society_charges')
             GROUP BY 
-                customer.name, sector.name, street.name, inventory.name, category.name, product.name, size.name, class.name, am.property_invoice_type, am.company_id, am.partner_id, am.amount_residual_signed, pa.arrears
+                customer.name, sector.name, street.name, inventory.name, f.unit_number, category.name, product.name, size.name, class.name, am.property_invoice_type, am.company_id, am.partner_id, am.amount_residual_signed, pa.arrears
             ORDER BY 
-                sector.name, street.name, inventory.name ASC;
+                sector.name, street.name, COALESCE(inventory.name, f.unit_number) ASC;
             """
 
         # Execute the SQL query
         self._cr.execute(sql_query)
         data = self._cr.dictfetchall()
+        if not data:
+            raise UserError(_('No records found for %s with the selected filters. '
+                              'Check the company selected at the top right, or widen the dates.') % self.env.company.name)
 
         # Convert the result to a DataFrame
         df = pd.DataFrame(data)
