@@ -72,8 +72,7 @@ class DailyMaintenanceBatch(models.Model):
                 payment_lines = []
                 invoice_ids = []
                 payment_vals_list = []
-                file = self.env['file'].sudo().search(
-                    [('inventory_id', '=', line.house_id.id)], limit=1)
+                file = line.house_id._get_maintenance_file()
                 # fiscal_month_id field removed (fiscal.month model does not exist in this project)
                 # if line.fiscal_month_id and line.paid_amount > line.due_amount:
                 #     raise ValidationError("Cannot Pay Advance if Month is Selected.")
@@ -262,7 +261,7 @@ class DailyMaintenanceLines(models.Model):
         for rec in self:
             file = self.env['file']
             if rec.house_id:
-                file = file.search([('inventory_id', '=', rec.house_id.id)], limit=1)
+                file = rec.house_id._get_maintenance_file()
             set_date = '2023-11-01'
             # This branch (gated on rec.fiscal_month_id) is disabled: fiscal_month_id was removed
             # because its comodel 'fiscal.month' does not exist anywhere in this project. The
@@ -390,5 +389,5 @@ class DailyMaintenanceLines(models.Model):
     @api.depends('house_id')
     def _compute_partner(self):
         for rec in self:
-            file = self.env['file'].sudo().search([('inventory_id', '=', rec.house_id.id)], limit=1)
+            file = rec.house_id._get_maintenance_file() if rec.house_id else False
             rec.partner_id = file.membership_id.partner_id.id if file else False

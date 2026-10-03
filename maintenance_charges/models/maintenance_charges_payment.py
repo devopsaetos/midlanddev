@@ -95,7 +95,7 @@ class MaintenanceChargesPayment(models.Model):
     def _invoices_domain(self):
         for rec in self:
             if rec.inventory_id:
-                file = self.env['file'].search([('inventory_id', '=', rec.inventory_id.id)], limit=1)
+                file = rec.inventory_id._get_maintenance_file()
                 rec.file_id = file.id
             set_date = '2023-11-01'
             if rec.membership_id and rec.inventory_id and rec.product_id:

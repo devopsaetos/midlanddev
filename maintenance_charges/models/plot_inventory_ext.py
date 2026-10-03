@@ -8,6 +8,17 @@ from os.path import dirname, realpath
 class PlotInventoryExt(models.Model):
     _inherit = 'plot.inventory'
 
+    def _get_maintenance_file(self):
+        """File of this plot. Imported files are not always linked to their plot
+        (inventory_id empty), so fall back to the plot number in the same society."""
+        self.ensure_one()
+        File = self.env['file'].sudo()
+        file = File.search([('inventory_id', '=', self.id)], limit=1)
+        if not file and self.name:
+            file = File.search([('inventory_id', '=', False), ('unit_number', '=', self.name),
+                                ('society_id', '=', self.society_id.id)], limit=1)
+        return file.with_env(self.env)
+
     @api.model
     def get_inventory_details(self, **kwargs):
         domain = kwargs["domain"]

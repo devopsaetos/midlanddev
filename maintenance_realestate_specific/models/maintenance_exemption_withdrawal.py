@@ -110,7 +110,7 @@ class MaintenanceExemptionWithdrawalLine(models.Model):
                 rec.category_id = rec.inventory_id.category_id
                 rec.unit_category_type_id = rec.inventory_id.unit_category_type_id
                 rec.size_id = rec.inventory_id.size_id
-                rec.file_id = self.env['file'].search([('inventory_id', '=', rec.inventory_id.id)])
+                rec.file_id = rec.inventory_id._get_maintenance_file()
                 # rec.maintenance_exemption_id = self.env['maintenance.exemption.line'].search(
                     # [('maintenance_exemption_id.state', '=', 'approved'), ('inventory_id', '=', rec.inventory_id.id)],
                     # limit=1)

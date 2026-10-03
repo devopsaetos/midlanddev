@@ -50,7 +50,7 @@ class ChangeUnitType(models.Model):
     @api.onchange('inventory_id')
     def _onchange_inventory(self):
         if self.inventory_id:
-            file = self.env['file'].search([('inventory_id', '=', self.inventory_id.id)])
+            file = self.inventory_id._get_maintenance_file()
             self.file_id = file.id
             self.membership_id = file.membership_id.id
             self.tracking_id = file.tracking_id
@@ -124,7 +124,7 @@ class ChangeUnitTypeLines(models.Model):
     def _inventory_data(self):
         for record in self:
             if record.inventory_id:
-                file = self.env['file'].search([('inventory_id', '=', record.inventory_id.id)])
+                file = record.inventory_id._get_maintenance_file()
                 record.file_id = file.id
                 record.membership_id = file.membership_id.id
                 record.tracking_id = file.tracking_id

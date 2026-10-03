@@ -25,7 +25,7 @@ class MaintenanceInquiryWizard(models.TransientModel):
     @api.onchange('house_id')
     def onchange_house_id(self):
         for rec in self:
-            file = self.env['file'].sudo().search([('inventory_id', '=', rec.house_id.id)], limit=1)
+            file = rec.house_id._get_maintenance_file() if rec.house_id else self.env['file']
             if rec.house_id:
                 rec.partner_id = file.membership_id.partner_id.id
                 rec.category_id = file.category_id.id

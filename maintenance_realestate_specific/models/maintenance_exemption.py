@@ -128,7 +128,7 @@ class MaintenanceExemptionLine(models.Model):
                 rec.category_id = rec.inventory_id.category_id
                 rec.unit_category_type_id = rec.inventory_id.unit_category_type_id
                 rec.size_id = rec.inventory_id.size_id
-                rec.file_id = self.env['file'].search([('inventory_id', '=', rec.inventory_id.id)])
+                rec.file_id = rec.inventory_id._get_maintenance_file()
 
     @api.model_create_multi
     def create(self, vals_list):
