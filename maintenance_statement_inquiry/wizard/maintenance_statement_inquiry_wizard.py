@@ -84,5 +84,8 @@ class MaintenanceInquiryLines(models.TransientModel):
     payment_status = fields.Selection(selection=[
         ('not_paid', 'Not Paid'),
         ('in_payment', 'In Payment'),
-        ('paid', 'Paid'), ('cancel', 'Cancelled')],
+        ('paid', 'Paid'), ('cancel', 'Cancelled'),
+        # every invoice payment state can come from the history (partly paid bills crashed the Search)
+        ('partial', 'Partially Paid'), ('reversed', 'Reversed'), ('blocked', 'Blocked'),
+        ('invoicing_legacy', 'Invoicing App Legacy')],
         string='Status')

@@ -273,7 +273,7 @@
                                                 <t t-set="total_due_amount" t-value="total_due_amount + line.residual"/>
                                             </td>
                                             <td class="text-right">
-                                                <span t-esc="line.payment_status"/>
+                                                <span t-esc="dict(line._fields['payment_status'].selection).get(line.payment_status, line.payment_status)"/>
                                             </td>
                                         </tr>
                                     </t>
