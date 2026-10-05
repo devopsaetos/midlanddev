@@ -437,18 +437,10 @@ class MaintenanceChargesPayment(models.Model):
         return res
 
     def print_receipt(self):
-        # Original implementation printed the payment receipt via a report action defined in
-        # 'axiom_payment_report', which is not available in this addons tree (dependency
-        # commented out in __manifest__.py). Preserved below so it can be restored if that
-        # module is ever added back to this project.
-        # for rec in self:
-        #     print(f"Payment ID: {rec.payment_id}")
-        #     payment = self.env['account.payment'].search([('id', '=', rec.payment_id.id)])
-        #     report = self.env.ref('axiom_payment_report.action_payment_receipt_report_customer').report_action(payment)
-        #     return report
-        raise ValidationError(_(
-            "Printing the payment receipt is not available: the 'axiom_payment_report' "
-            "module that provides this report is not installed in this project."))
+        payments = self.mapped('payment_id')
+        if not payments:
+            raise ValidationError(_('Receive the payment first: there is no payment to print a receipt for.'))
+        return self.env.ref('maintenance_charges.action_maintenance_payment_receipt').report_action(payments)
 
     def payment_receipt(self):
         return {

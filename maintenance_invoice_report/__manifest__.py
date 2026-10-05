@@ -11,10 +11,11 @@
     'author': "Yasir Ali || Axiom Team",
     'website': "http://www.axm.app",
     'category': 'Real Estate',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
 
     'depends': [
         'file_financials',
+        'maintenance_monthly_bill',  # invoices print due date, arrears and meter readings of their bill
         # 'accounting_pdf_reports',  # not available in Odoo 19 project (only exists in old Odoo 13/17 source trees)
     ],
     'data': [

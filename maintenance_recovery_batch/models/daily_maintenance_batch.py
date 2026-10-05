@@ -371,21 +371,10 @@ class DailyMaintenanceLines(models.Model):
                 record.balance = record.due_amount - record.paid_amount
 
     def print_receipt(self):
-        # Original implementation printed the payment receipt via a report action defined in
-        # 'axiom_payment_report', which is not available in this addons tree (dependency
-        # commented out in maintenance_charges/__manifest__.py during its own Odoo 19
-        # conversion). Preserved below so it can be restored if that module is ever added
-        # back to this project. Mirrors the fix already applied in
-        # maintenance_charges/models/maintenance_charges_payment.py::print_receipt.
-        # for rec in self:
-        #     print(f"Payment ID: {rec.payment_id}")
-        #     # rec.payment_id.sudo().print_payment_receipt_office()
-        #     payment = self.env['account.payment'].search([('id', '=', rec.payment_id.id)])
-        #     report = self.env.ref('axiom_payment_report.action_payment_receipt_report_customer').report_action(payment)
-        #     return report
-        raise ValidationError(_(
-            "Printing the payment receipt is not available: the 'axiom_payment_report' "
-            "module that provides this report is not installed in this project."))
+        payments = self.mapped('payment_id')
+        if not payments:
+            raise ValidationError(_('This line has no payment yet: submit the batch first.'))
+        return self.env.ref('maintenance_charges.action_maintenance_payment_receipt').report_action(payments)
 
     @api.depends('house_id')
     def _compute_partner(self):

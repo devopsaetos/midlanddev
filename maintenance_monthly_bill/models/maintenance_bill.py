@@ -133,18 +133,9 @@ class MaintenanceBill(models.Model):
 
     # ------------------------------------------------------------------ arrears
     def _arrears_for(self, charge_type):
-        """Outstanding amount before this bill's month for one charge type.
-
-        Imported Excel history stores a running balance (each row already includes the
-        arrears before it), so only the latest imported row's residual counts. Rows that
-        come from real invoices count with the invoice's live residual."""
+        """Outstanding amount before this bill's month for one charge type."""
         self.ensure_one()
-        history = self.file_id.maintenance_history_ids.filtered(
-            lambda h: h.charge_type == charge_type and h.date and h.date < self.bill_month)
-        imported = history.filtered(lambda h: not h.invoice_id).sorted(lambda h: (h.date, h.id))
-        opening = imported[-1].residual if imported else 0.0
-        invoices = history.mapped('invoice_id').filtered(lambda m: m.state == 'posted')
-        return opening + sum(invoices.mapped('amount_residual'))
+        return self.file_id._maintenance_arrears(charge_type, self.bill_month)
 
     def action_recompute_arrears(self):
         for rec in self:

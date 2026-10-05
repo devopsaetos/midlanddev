@@ -10,7 +10,7 @@
     'website': "http://www.axiomworld.net",
 
     'category': 'Real Estate',
-    'version': '19.0.1.0.6',
+    'version': '19.0.1.0.7',
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -33,6 +33,7 @@
         'views/res_users.xml',
         'views/account_move_ext.xml',
         'wizard/assign_agent.xml',
+        'report/payment_receipt.xml',
     ],
 
     # 'test': ['static/html/index.html'],

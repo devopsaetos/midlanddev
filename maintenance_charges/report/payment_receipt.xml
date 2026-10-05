@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_maintenance_receipt" model="report.paperformat">
+        <field name="name">Maintenance Receipt A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_maintenance_payment_receipt" model="ir.actions.report">
+        <field name="name">Maintenance Payment Receipt</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">maintenance_charges.report_maintenance_payment_receipt</field>
+        <field name="report_file">maintenance_charges.report_maintenance_payment_receipt</field>
+        <field name="print_report_name">'Receipt %s' % (object.name or '')</field>
+        <field name="paperformat_id" ref="paperformat_maintenance_receipt"/>
+    </record>
+
+    <!-- One copy. Expects `o` (account.payment), `v` (o._maintenance_receipt_values()) and `copy_title`. -->
+    <template id="report_maintenance_payment_receipt_copy">
+        <t t-set="fmt" t-value="lambda x: '{:,.2f}'.format(x or 0.0)"/>
+        <t t-set="dt" t-value="lambda d: d and d.strftime('%d-%m-%Y') or ''"/>
+        <t t-set="company" t-value="o.company_id"/>
+        <t t-set="file" t-value="v['file']"/>
+        <div class="mr-copy">
+            <table class="mr-head">
+                <tr>
+                    <td class="mr-logo">
+                        <img t-if="not company.uses_default_logo" t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+                    </td>
+                    <td class="mr-titles">
+                        <div class="mr-company"><t t-out="company.name"/></div>
+                        <div class="mr-title">Maintenance Payment Receipt</div>
+                        <div class="mr-copyname"><t t-out="copy_title"/></div>
+                    </td>
+                    <td class="mr-logo mr-no">
+                        <div>Receipt No.</div>
+                        <div class="mr-strong"><t t-out="o.name"/></div>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="mr-info">
+                <colgroup><col style="width: 16%;"/><col style="width: 34%;"/><col style="width: 16%;"/><col style="width: 34%;"/></colgroup>
+                <tr>
+                    <td class="lbl">Member</td><td class="val"><t t-out="file.membership_id.name or o.partner_id.name"/></td>
+                    <td class="lbl">Date</td><td class="val"><t t-out="dt(o.date)"/></td>
+                </tr>
+                <tr>
+                    <td class="lbl">File No.</td><td class="val"><t t-out="file.display_name"/></td>
+                    <td class="lbl">House No</td><td class="val"><t t-out="v['house_no']"/></td>
+                </tr>
+                <tr>
+                    <td class="lbl">Society</td><td class="val"><t t-out="file.society_id.name"/></td>
+                    <td class="lbl">Sector</td><td class="val"><t t-out="file.sector_id.name"/></td>
+                </tr>
+                <tr>
+                    <td class="lbl">Size</td><td class="val"><t t-out="v['size']"/></td>
+                    <td class="lbl">Paid By</td><td class="val"><t t-out="v['mode']"/></td>
+                </tr>
+                <tr t-if="v['reference'] or v['remarks']">
+                    <td class="lbl">Reference</td><td class="val"><t t-out="v['reference']"/></td>
+                    <td class="lbl">Remarks</td><td class="val"><t t-out="v['remarks']"/></td>
+                </tr>
+            </table>
+
+            <table class="mr-lines">
+                <colgroup><col style="width: 6%;"/><col style="width: 22%;"/><col style="width: 16%;"/><col style="width: 14%;"/><col style="width: 22%;"/><col style="width: 20%;"/></colgroup>
+                <thead>
+                    <tr><th>Sr.</th><th>Invoice</th><th>Type</th><th>Month</th><th>Bill No.</th><th class="num">Amount Paid</th></tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="v['lines']" t-as="line">
+                        <td class="c"><t t-out="line_index + 1"/></td>
+                        <td><t t-out="line['invoice'].name"/></td>
+                        <td><t t-out="line['kind']"/></td>
+                        <td class="c"><t t-out="line['month']"/></td>
+                        <td><t t-out="line['ref']"/></td>
+                        <td class="num"><t t-out="fmt(line['amount'])"/></td>
+                    </tr>
+                    <tr class="mr-total">
+                        <td colspan="5">Total Received</td>
+                        <td class="num"><t t-out="fmt(v['total'])"/></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="mr-words"><strong>Amount In Words:</strong> <t t-out="v['amount_words']"/></div>
+            <div class="mr-balance">Balance outstanding after this payment: <strong><t t-out="fmt(v['balance'])"/></strong></div>
+
+            <table class="mr-sign">
+                <tr>
+                    <td>Received By: <t t-out="o.create_uid.name"/></td>
+                    <td class="num"><span class="mr-line">Signature &amp; Stamp</span></td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <template id="report_maintenance_payment_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="v" t-value="o._maintenance_receipt_values()"/>
+                <t t-call="web.basic_layout">
+                    <div class="page" style="font-family: 'Roboto', Arial, sans-serif; color: #000;">
+                        <style>
+                            .mr-copy { border: 1.5px solid #000; padding: 14px 18px; height: 540px; overflow: hidden; }
+                            .mr-cut { border-top: 1px dashed #777; margin: 16px 0; text-align: center; font-size: 9px; color: #777; }
+                            .mr-head { width: 100%; table-layout: fixed; border-bottom: 1px solid #000; margin-bottom: 10px; }
+                            .mr-head td { border: 0; vertical-align: middle; padding-bottom: 8px; }
+                            .mr-logo { width: 20%; }
+                            .mr-logo img { max-width: 90px; max-height: 64px; }
+                            .mr-no { text-align: right; font-size: 11px; }
+                            .mr-titles { text-align: center; }
+                            .mr-company { font-size: 17px; font-weight: bold; }
+                            .mr-title { font-size: 15px; font-weight: bold; color: #191970; margin-top: 2px; }
+                            .mr-copyname { font-size: 11px; font-weight: bold; text-decoration: underline; margin-top: 2px; }
+                            .mr-strong { font-weight: bold; font-size: 12px; }
+                            .mr-info { width: 100%; table-layout: fixed; margin-bottom: 12px; }
+                            .mr-info td { border: 0; padding: 4px 4px; font-size: 12px; white-space: nowrap; overflow: hidden; }
+                            .mr-info td.lbl { font-weight: bold; }
+                            .mr-info td.val { border-bottom: 1px solid #999; }
+                            .mr-lines { width: 100%; table-layout: fixed; border-collapse: collapse; }
+                            .mr-lines th, .mr-lines td { border: 1px solid #999; padding: 5px 6px; font-size: 12px; }
+                            .mr-lines thead th, .mr-lines tr.mr-total td { background-color: #191970; color: #fff; font-weight: bold; }
+                            .mr-lines .num { text-align: right; white-space: nowrap; }
+                            .mr-lines .c { text-align: center; }
+                            .mr-words { color: #191970; font-size: 12px; margin-top: 10px; }
+                            .mr-balance { font-size: 12px; margin-top: 6px; }
+                            .mr-sign { width: 100%; margin-top: 40px; }
+                            .mr-sign td { border: 0; font-size: 12px; }
+                            .mr-sign .num { text-align: right; }
+                            .mr-line { border-top: 1px solid #000; padding: 2px 30px 0 30px; }
+                        </style>
+                        <t t-call="maintenance_charges.report_maintenance_payment_receipt_copy"><t t-set="copy_title" t-value="'Customer Copy'"/></t>
+                        <div class="mr-cut">cut here</div>
+                        <t t-call="maintenance_charges.report_maintenance_payment_receipt_copy"><t t-set="copy_title" t-value="'Office Copy'"/></t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

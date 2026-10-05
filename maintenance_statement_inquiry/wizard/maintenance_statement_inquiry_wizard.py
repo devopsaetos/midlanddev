@@ -21,6 +21,20 @@ class MaintenanceInquiryWizard(models.TransientModel):
     partner_id = fields.Many2one('res.partner', string='Member')
     maintenance_inquiry_line_ids = fields.One2many('maintenance.inquiry.line', 'maintenance_inquiry_wizard_id',
                                                    string='Maintenance Inquiry Lines')
+    # Canal Valley-I/II/III have no streets: hide the Street field there
+    has_streets = fields.Boolean(compute='_compute_has_streets')
+
+    @api.depends('society_id', 'sector_id')
+    def _compute_has_streets(self):
+        Street = self.env['street'].sudo()
+        for rec in self:
+            if rec.sector_id:
+                domain = [('sector_id', '=', rec.sector_id.id)]
+            elif rec.society_id:
+                domain = [('sector_id.society_id', '=', rec.society_id.id)]
+            else:
+                domain = []
+            rec.has_streets = bool(Street.search_count(domain, limit=1))
 
     @api.onchange('house_id')
     def onchange_house_id(self):
@@ -30,7 +44,8 @@ class MaintenanceInquiryWizard(models.TransientModel):
                 rec.partner_id = file.membership_id.partner_id.id
                 rec.category_id = file.category_id.id
                 rec.unit_category_type_id = file.unit_category_type_id.id
-                rec.size_id = file.size_id.id
+                # imported files are often not linked to their plot: the size is on the plot
+                rec.size_id = (file.size_id or rec.house_id.size_id).id
                 rec.unit_class_id = file.unit_class_id.id
                 rec.file_id = file.id
 
@@ -41,6 +56,12 @@ class MaintenanceInquiryWizard(models.TransientModel):
                 set_date = '2023-11-01'
                 # latest bill first, so the current dues are on top
                 history = rec.file_id.maintenance_history_ids.filtered(lambda l: str(l.date) >= set_date)
+                invoice_ids = history.invoice_id.ids
+                bills = {}
+                for bill in self.env['maintenance.bill'].sudo().search(
+                        ['|', ('utility_invoice_id', 'in', invoice_ids), ('electricity_invoice_id', 'in', invoice_ids)]):
+                    bills[bill.utility_invoice_id.id] = bill
+                    bills[bill.electricity_invoice_id.id] = bill
                 for line in history.sorted(lambda l: (l.date, l.id), reverse=True):
                     self.env['maintenance.inquiry.line'].sudo().create({
                         'date': line.date,
@@ -48,7 +69,8 @@ class MaintenanceInquiryWizard(models.TransientModel):
                         'installment_number': line.installment_number,
                         'invoice_created': line.invoice_created,
                         'invoice_id': line.invoice_id.id if line.invoice_id else None,
-                        'payment_date': line.payment_date,
+                        'payment_date': line.payment_date or self._invoice_payment_date(line.invoice_id),
+                        'description': self._line_description(line, bills.get(line.invoice_id.id)),
                         'amount_paid': line.amount_paid,
                         'residual': line.residual,
                         'payment_status': line.payment_status,
@@ -65,6 +87,30 @@ class MaintenanceInquiryWizard(models.TransientModel):
             'target': 'new',
         }
 
+    @api.model
+    def _line_description(self, history, bill):
+        """e.g. 'Utility - Nov-2026 - MB/2026/00024'"""
+        kind = dict(history._fields['charge_type']._description_selection(self.env)).get(history.charge_type)
+        return ' - '.join(filter(None, [kind, history.date and history.date.strftime('%b-%Y'), bill.name if bill else '']))
+
+    @api.model
+    def _invoice_payment_date(self, invoice):
+        """Date of the latest payment reconciled with the invoice. The history's own
+        payment date only knows payments made through multi-invoice payments."""
+        if not invoice or invoice.payment_state not in ('paid', 'in_payment', 'partial'):
+            return False
+        receivable = invoice.line_ids.filtered(
+            lambda l: l.account_id.account_type in ('asset_receivable', 'liability_payable'))
+        counterparts = (receivable.matched_credit_ids.credit_move_id
+                        | receivable.matched_debit_ids.debit_move_id) - receivable
+        return max(counterparts.mapped('date')) if counterparts else False
+
+    def _report_company(self):
+        """Society company of the printed file (its logo goes on the report)."""
+        self.ensure_one()
+        return (self.maintenance_inquiry_line_ids.invoice_id.company_id[:1]
+                or self.society_id.company_id or self.env.company)
+
     def print_pdf(self):
         for rec in self:
             report = self.env.ref('maintenance_statement_inquiry.action_maintenance_inquiry_report').report_action(rec)
@@ -80,6 +126,7 @@ class MaintenanceInquiryLines(models.TransientModel):
     installment_number = fields.Integer(string="Sr. No")
     invoice_created = fields.Boolean(default=False)
     invoice_id = fields.Many2one('account.move', string="Invoice#")
+    description = fields.Char()
     state = fields.Char(string='Status')
     payment_date = fields.Date('Payment Date')
     amount_paid = fields.Float('Amount Paid')

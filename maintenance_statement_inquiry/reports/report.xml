@@ -1,58 +1,35 @@
 <odoo>
     <template id="maintenance_statement_inquiry.maintenance_customized_header">
+        <t t-set="company" t-value="o._report_company()"/>
         <div class="header">
-            <div class="o_clean_header">
-                <div class="row text-dark" style="font-family:'Roboto',sans-serif;">
-                    <div class="col-3">
-                        <img t-if="o.env.company.logo"
-                             t-att-src="image_data_uri(o.env.company.logo)"
-                             alt="Logo"
-                             class="center" style="max-height: 70px;"/>
-                    </div>
-                    <div class="col-6 text-center"
-                         style="margin-top:70px;font-style:Octarine;font-size:30px;color:black;">
-                        <h2 style="color:#191970;width:100% !important;text-align:center;font-size:26px !important;">
-                            <strong>
-                                Maintenance Inquiry Report
-                                <br/>
-                            </strong>
-                        </h2>
-                    </div>
-                    <div class="col-3" style="text-align:right; font-size:11px;margin-top:15px;">
-                        <h7 style="color:black;">
-                            <t t-if="o.env.company">
-                                <t t-esc="o.env.company.street"/>,
-                                <br/>
-                                <t t-esc="o.env.company.street2"/>,
-                                <br/>
-                                <t t-esc="o.env.company.city"/>
-                            </t>
-                        </h7>
-                    </div>
-                </div>
-            </div>
+            <table style="width: 100%; font-family: 'Roboto', sans-serif; color: #000;">
+                <tr>
+                    <td style="width: 25%; vertical-align: middle;">
+                        <img t-if="not company.uses_default_logo" t-att-src="image_data_uri(company.logo)"
+                             alt="Logo" style="max-height: 70px; max-width: 160px;"/>
+                    </td>
+                    <td style="text-align: center; vertical-align: middle;">
+                        <div style="font-size: 18px; font-weight: bold;" t-out="company.name"/>
+                        <div style="color: #191970; font-size: 24px; font-weight: bold;">Maintenance Inquiry Report</div>
+                    </td>
+                    <td style="width: 25%; text-align: right; vertical-align: middle; font-size: 11px;">
+                        <t t-foreach="[p for p in (company.street, company.street2, company.city) if p]" t-as="part">
+                            <div t-out="part"/>
+                        </t>
+                    </td>
+                </tr>
+            </table>
         </div>
     </template>
 
     <template id="maintenance_statement_inquiry.maintenance_customized_footer">
-        <div class="footer" style="font-size:11px;font-family:'Roboto',sans-serif">
-            <div class="row" style="color:#191970;margin-top:40px;">
-                <div class="col-4 text-center" style="margin-top:50px;">
-                    <span>Printed By:
-                        <u>
-                            <span t-esc="request.env.user.name"/>
-                        </u>
-                    </span>
-                </div>
-                <div class="col-4 text-center" style="margin-top:50px;"/>
-                <div class="col-4 text-center" style="margin-top:50px;">
-                    <span>Print Date:
-                        <u>
-                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
-                        </u>
-                    </span>
-                </div>
-            </div>
+        <div class="footer">
+            <table style="width: 100%; font-size: 11px; font-family: 'Roboto', sans-serif; color: #191970;">
+                <tr>
+                    <td style="width: 50%;">Printed By: <u t-out="user.name"/></td>
+                    <td style="width: 50%; text-align: right;">Print Date: <u t-out="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/></td>
+                </tr>
+            </table>
         </div>
     </template>
 
@@ -61,258 +38,100 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="maintenance_statement_inquiry.maintenance_customized_header"/>
                 <t t-call="maintenance_statement_inquiry.maintenance_customized_footer"/>
-                <t t-call="web.external_layout">
+                <t t-call="web.basic_layout">
+                    <t t-set="dt" t-value="lambda d: d and d.strftime('%d-%m-%Y') or ''"/>
+                    <t t-set="fmt" t-value="lambda v: '{:,.2f}'.format(v or 0.0)"/>
                     <style>
-                        .page{padding-top:25px !important;}
-                        .table th, .table td {
-                        padding: 0.35rem !important;
-                        }
-                        th{text-align: center !important;}
-                        thead { display: table-header-group }
-                        tfoot { display: table-row-group }
-                        tr { page-break-inside: avoid }
-                        @media print {
-                        .export-table {
-                        overflow: visible !important;
-                        }
-                        .class-name-which-holds-the-table {
-                        overflow: visible !important;
-                        }
-                        }
+                        .mq { font-family: 'Roboto', sans-serif; color: #000; }
+                        .mq-info { width: 100%; table-layout: fixed; margin: 10px 0 14px 0; }
+                        .mq-info td { font-size: 14px; padding: 3px 4px; vertical-align: top; }
+                        .mq-info td.lbl { font-weight: bold; width: 14%; }
+                        .mq-lines { width: 100%; border-collapse: collapse; }
+                        .mq-lines th, .mq-lines td { font-size: 12px; padding: 5px 4px; border: 1px solid #999; }
+                        .mq-lines th { background-color: #191970; color: #fff; text-align: center; font-weight: bold; white-space: nowrap; }
+                        .mq-lines tbody tr:nth-child(even) td { background-color: #f4f5fa; }
+                        .mq-lines tbody tr.mq-total td { background-color: #191970; color: #fff; font-weight: bold; }
+                        .mq-lines .c { text-align: center; white-space: nowrap; }
+                        .mq-lines .num { text-align: right; white-space: nowrap; }
+                        thead { display: table-header-group; }
+                        tr { page-break-inside: avoid; }
                     </style>
-                    <hr/>
-                    <div class="page text-dark" style="font-family:'Roboto',sans-serif; font-size:15px;">
-                        <div class="row text-capitalize text-dark" style="margin-top:30px;">
-                            <div class="col-6">
-                                <div class="row">
-                                    <div class="col-4">
-                                        <strong>
-                                            <span>Society:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <t t-if="o.society_id">
-                                            <t t-esc="o.society_id.name"/>
-                                        </t>
-                                    </div>
-                                    <div class="col-2"/>
-                                </div>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <strong>
-                                            <span>Phase:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <t t-if="o.phase_id">
-                                            <t t-esc="o.phase_id.name"/>
-                                        </t>
-                                    </div>
-                                    <div class="col-2"/>
-                                </div>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <strong>
-                                            <span>Sector:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <t t-if="o.sector_id">
-                                            <t t-esc="o.sector_id.name"/>
-                                        </t>
-                                    </div>
-                                    <div class="col-2"/>
-                                </div>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <strong>
-                                            <span>Category:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <t t-if="o.category_id">
-                                            <t t-esc="o.category_id.name"/>
-                                        </t>
-                                    </div>
-                                    <div class="col-2"/>
-                                </div>
-                                <div class="row">
-                                    <div class="col-4">
-                                        <strong>
-                                            <span>Product:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <t t-if="o.unit_category_type_id">
-                                            <t t-esc="o.unit_category_type_id.name"/>
-                                        </t>
-                                    </div>
-                                    <div class="col-2"/>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="row">
-                                    <div class="col-1"/>
-                                    <div class="col-3">
-                                        <strong>
-                                            <span>Street:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-8">
-                                        <t t-if="o.street_id">
-                                            <!--                                            <p t-esc="o.date.strftime('%d-%m-%Y')"/>-->
-                                            <p t-esc="o.street_id.name"/>
-                                        </t>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-1"/>
-                                    <div class="col-3">
-                                        <strong>
-                                            <span>House:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-8">
-                                        <t t-if="o.house_id">
-                                            <p t-esc="o.house_id.name"/>
-                                        </t>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-1"/>
-                                    <div class="col-3">
-                                        <strong>
-                                            <span>Member:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-8">
-                                        <t t-if="o.partner_id">
-                                            <p t-esc="o.partner_id.name"/>
-                                        </t>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-1"/>
-                                    <div class="col-3">
-                                        <strong>
-                                            <span>SIze:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-8">
-                                        <t t-if="o.size_id">
-                                            <p t-esc="o.size_id.name"/>
-                                        </t>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-1"/>
-                                    <div class="col-3">
-                                        <strong>
-                                            <span>Type:</span>
-                                        </strong>
-                                    </div>
-                                    <div class="col-8">
-                                        <t t-if="o.unit_class_id">
-                                            <p t-esc="o.unit_class_id.name"/>
-                                        </t>
-                                    </div>
-                                </div>
+                    <div class="page mq">
+                        <table class="mq-info">
+                            <tr>
+                                <td class="lbl">Society:</td><td><t t-out="o.society_id.name"/></td>
+                                <td class="lbl">House:</td><td><t t-out="o.house_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td class="lbl">Phase:</td><td><t t-out="o.phase_id.name"/></td>
+                                <td class="lbl">Member:</td><td><t t-out="o.partner_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td class="lbl">Sector:</td><td><t t-out="o.sector_id.name"/></td>
+                                <td class="lbl">Size:</td><td><t t-out="o.size_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td class="lbl">Category:</td><td><t t-out="o.category_id.name"/></td>
+                                <td class="lbl">Type:</td><td><t t-out="o.unit_class_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td class="lbl">Product:</td><td><t t-out="o.unit_category_type_id.name"/></td>
+                                <t t-if="o.street_id">
+                                    <td class="lbl">Street:</td><td><t t-out="o.street_id.name"/></td>
+                                </t>
+                                <t t-else=""><td/><td/></t>
+                            </tr>
+                        </table>
 
-                            </div>
-                        </div>
-                        <hr/>
-                        <div class="row mt-3 ml-0 mr-0">
-                            <table class="table table-lg table-bordered table-striped">
-                                <thead style="background-color:#191970;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;background-color:#191970;font-size:14px;"
-                                       class="text-white">
-                                    <th class="text-white text-center">
-                                        <span>Sr No.</span>
-                                    </th>
-                                    <th class="text-white text-center">Date</th>
-                                    <th class="text-white text-center">Payment Date</th>
-                                    <th class="text-center text-white">Invoice #</th>
-                                    <th class="text-center text-white">Amount</th>
-                                    <th class="text-white text-center">Amount Paid</th>
-                                    <th class="text-white text-center">Amount Due</th>
-                                    <th class="text-center text-white">Status</th>
-                                </thead>
-                                <tbody style="font-size:14px;">
-                                    <t t-set="serial_number" t-value="0"/>
-                                    <t t-set="total_amount" t-value="0"/>
-                                    <t t-set="total_paid_amount" t-value="0"/>
-                                    <t t-set="total_due_amount" t-value="0"/>
-                                    <t t-foreach="o.maintenance_inquiry_line_ids.sorted(lambda l: (l.date or l.create_date.date(), l.id))" t-as="line">
-                                        <t t-set="serial_number" t-value="serial_number + 1"/>
-                                        <tr>
-                                            <td class="p-1 align-middle text-center">
-                                                <span t-esc="serial_number"/>.
-                                            </td>
-                                            <td class="text-center">
-                                                <span t-field="line.date"/>
-                                            </td>
-                                            <td class="text-center">
-                                                <span t-field="line.payment_date"/>
-                                            </td>
-                                            <td class="text-center">
-                                                <span t-esc="line.invoice_id.name"/>
-                                            </td>
-                                            <td class="text-center">
-                                                <span t-esc="line.amount"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
-                                                <t t-set="total_amount" t-value="total_amount + line.amount"/>
-                                            </td>
-                                            <td class="text-right">
-                                                <span t-esc="line.amount_paid"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
-                                                <t t-set="total_paid_amount"
-                                                   t-value="total_paid_amount + line.amount_paid"/>
-                                            </td>
-                                            <td class="text-right">
-                                                <span t-esc="line.residual"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
-                                                <t t-set="total_due_amount" t-value="total_due_amount + line.residual"/>
-                                            </td>
-                                            <td class="text-right">
-                                                <span t-esc="dict(line._fields['payment_status'].selection).get(line.payment_status, line.payment_status)"/>
-                                            </td>
-                                        </tr>
-                                    </t>
-                                    <tr style="background-color:#191970;color:#fff;font-size:14px;">
-                                        <td class="p-1 align-middle text-left" colspan="4">
-                                            <strong>Total</strong>
-                                        </td>
-                                        <td class="text-right">
-                                            <span t-esc="'{0:,.2f}'.format(total_amount)"/>
-                                        </td>
-                                        <td class="text-right">
-                                            <span t-esc="'{0:,.2f}'.format(total_paid_amount)"/>
-                                        </td>
-                                        <td class="text-right">
-                                            <span t-esc="'{0:,.2f}'.format(total_due_amount)"/>
-                                        </td>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="row" style="margin-top:120px;color:#191970">
-                            <div class="col-4 text-left">
-                                <span t-esc="o.create_uid.name"/>
-                            </div>
-                            <div class="col-4"/>
-                            <div class="col-4"/>
-                        </div>
-                        <div class="row" style="color:#191970">
-                            <div class="col-4 text-left">
-                                <span style="text-decoration:overline" class="text-capitalize">prepared by</span>
-                            </div>
-                            <div class="col-4 text-center">
-                                <span style="text-decoration:overline" class="text-capitalize">approved by</span>
-                            </div>
-                            <div class="col-4 text-right">
-                                <span style="text-decoration:overline" class="text-capitalize">received by</span>
-                            </div>
-                        </div>
+                        <!-- same order as the screen: newest first -->
+                        <t t-set="lines" t-value="o.maintenance_inquiry_line_ids"/>
+                        <table class="mq-lines">
+                            <thead>
+                                <tr>
+                                    <th>Sr No.</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Invoice #</th>
+                                    <th>Payment Date</th>
+                                    <th>Amount</th>
+                                    <th>Amount Paid</th>
+                                    <th>Amount Due</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="lines" t-as="line">
+                                    <td class="c"><t t-out="line_index + 1"/>.</td>
+                                    <td class="c"><t t-out="dt(line.date)"/></td>
+                                    <td><t t-out="line.description"/></td>
+                                    <td class="c"><t t-out="line.invoice_id.name"/></td>
+                                    <td class="c"><t t-out="dt(line.payment_date)"/></td>
+                                    <td class="num"><t t-out="fmt(line.amount)"/></td>
+                                    <td class="num"><t t-out="fmt(line.amount_paid)"/></td>
+                                    <td class="num"><t t-out="fmt(line.residual)"/></td>
+                                    <td class="c"><t t-out="dict(line._fields['payment_status']._description_selection(line.env)).get(line.payment_status, '')"/></td>
+                                </tr>
+                                <tr class="mq-total">
+                                    <td colspan="5">Total</td>
+                                    <td class="num"><t t-out="fmt(sum(lines.mapped('amount')))"/></td>
+                                    <td class="num"><t t-out="fmt(sum(lines.mapped('amount_paid')))"/></td>
+                                    <td class="num"><t t-out="fmt(sum(lines.mapped('residual')))"/></td>
+                                    <td/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table style="width: 100%; margin-top: 110px; color: #191970; font-size: 13px;">
+                            <tr>
+                                <td style="width: 33%;"><t t-out="o.create_uid.name"/></td>
+                                <td/><td/>
+                            </tr>
+                            <tr>
+                                <td style="width: 33%;"><span style="text-decoration: overline;">Prepared By</span></td>
+                                <td style="width: 34%; text-align: center;"><span style="text-decoration: overline;">Approved By</span></td>
+                                <td style="width: 33%; text-align: right;"><span style="text-decoration: overline;">Received By</span></td>
+                            </tr>
+                        </table>
                     </div>
                 </t>
             </t>
@@ -326,12 +145,12 @@
         <field name="page_height">297</field>
         <field name="page_width">210</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">25</field>
+        <field name="margin_top">40</field>
         <field name="margin_bottom">20</field>
         <field name="margin_left">5</field>
         <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">22</field>
+        <field name="header_spacing">8</field>
         <field name="dpi">90</field>
     </record>
 

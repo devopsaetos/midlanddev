@@ -1,6 +1,12 @@
-from odoo import fields, models, api, tools, _
-from odoo.exceptions import ValidationError
-from datetime import datetime
+import re
+
+from odoo import models, api, _
+
+# property_invoice_type -> (printed title, maintenance history charge type)
+INVOICE_KINDS = {
+    'maintenance_charges': ('Utility Invoice', 'utility'),
+    'society_charges': ('Electricity Invoice', 'electricity'),
+}
 
 
 class MaintenanceChargesInvoiceReportModel(models.AbstractModel):
@@ -10,63 +16,75 @@ class MaintenanceChargesInvoiceReportModel(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data):
         records = self.env['account.move'].browse(docids)
-        invoice_month = records.invoice_date.strftime('%B %Y') if records.invoice_date else ''
-        current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        if current_month_start.month == 12:
-            current_month_end = current_month_start.replace(year=current_month_start.year + 1, month=1)
-        else:
-            current_month_end = current_month_start.replace(month=current_month_start.month + 1)
-
-        # Calculate the start date for August 2023
-        nov_2023_start = datetime(2023, 11, 1)
-
-        # Filter account moves for the current month
-        account_moves_current_month = self.env['account.move'].search(
-            [('payment_state', '=', 'not_paid'),
-             ('partner_id', '=', records.partner_id.id),
-             ('file_ids', '=', records.file_ids.id),
-             ('date', '>=', current_month_start.strftime('%Y-%m-%d %H:%M:%S')),
-             ('date', '<', current_month_end.strftime('%Y-%m-%d %H:%M:%S')),
-             ('invoice_line_ids.product_id.name', '=', 'Maintenance Charges')]
-        )
-        account_moves_previous_months = self.env['account.move'].search(
-            [('payment_state', '=', 'not_paid'),
-             ('partner_id', '=', records.partner_id.id),
-             ('file_ids', '=', records.file_ids.id),
-             ('property_invoice_type', '=', 'maintenance_charges'),
-             ('date', '>=', nov_2023_start.strftime('%Y-%m-%d %H:%M:%S')),
-             ('date', '<', max(record.invoice_date for record in records))])
-        total_amount_residual_signed = sum(x.amount_residual_signed for x in account_moves_previous_months)
         return {
             'data': data,
             'docs': records,
-            'total_amount_residual_signed': total_amount_residual_signed,
-            'invoice_month': invoice_month,
+            'info': {move.id: self._invoice_info(move) for move in records},
         }
 
-    # @api.model
-    # def _get_report_values(self, docids, data):
-    #     records = self.env['account.move'].browse(docids)
-    #     invoice_month = records.invoice_date.strftime('%B %Y') if records.invoice_date else ''
-    #     current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    #     current_month_end = current_month_start.replace(month=current_month_start.month + 1)
-    #     account_moves_current_month = self.env['account.move'].search(
-    #         [('invoice_payment_state', '=', 'not_paid'),
-    #          ('partner_id', '=', records.partner_id.id),
-    #          ('date', '>=', current_month_start.strftime('%Y-%m-%d %H:%M:%S')),
-    #          ('date', '<', current_month_end.strftime('%Y-%m-%d %H:%M:%S')),
-    #          ('invoice_line_ids.product_id.name', '=', 'Maintenance Charges')]
-    #     )
-    #     account_moves_previous_months = self.env['account.move'].search(
-    #         [('invoice_payment_state', '=', 'not_paid'),
-    #          ('partner_id', '=', records.partner_id.id),
-    #          ('property_invoice_type', '=', 'maintenance_charges'),
-    #          ('date', '<', current_month_start.strftime('%Y-%m-%d %H:%M:%S'))]
-    #     )
-    #     total_amount_residual_signed = sum(x.amount_residual_signed for x in account_moves_previous_months)
-    #     return {
-    #         'data': data,
-    #         'docs': records,
-    #         'total_amount_residual_signed': total_amount_residual_signed,
-    #         'invoice_month': invoice_month,
-    #     }
+    def _invoice_info(self, move):
+        """Everything the printed invoice shows that is not a plain field of the move.
+
+        Invoices posted from a Monthly Bill take due date, arrears and meter readings from
+        that bill, so the invoice prints the same figures as the bill."""
+        title, charge_type = INVOICE_KINDS.get(move.property_invoice_type, ('Maintenance Invoice', False))
+        file = move.file_ids[:1]
+        bill = self.env['maintenance.bill'].search(
+            ['|', ('utility_invoice_id', '=', move.id), ('electricity_invoice_id', '=', move.id)], limit=1)
+        lines = move.invoice_line_ids.filtered(lambda l: l.display_type == 'product')
+        month = move.invoice_date and move.invoice_date.strftime('%B %Y') or ''
+
+        if bill:
+            arrears = bill.arrears_electricity if charge_type == 'electricity' else bill.arrears_utility
+        elif charge_type and file and move.invoice_date:
+            arrears = file._maintenance_arrears(charge_type, move.invoice_date)
+        else:
+            arrears = 0.0
+
+        electricity = False
+        if charge_type == 'electricity':
+            if bill:
+                electricity = {
+                    'previous': '%d' % bill.previous_reading,
+                    'current': '%d' % bill.current_reading,
+                    'units': '%d' % bill.units,
+                    'rate': bill.unit_rate,
+                }
+            else:  # electricity invoice made outside Monthly Bills: no meter readings
+                electricity = {
+                    'previous': '-',
+                    'current': '-',
+                    'units': '%d' % sum(lines.mapped('quantity')),
+                    'rate': lines[:1].price_unit,
+                }
+
+        member = file.membership_id
+        current = move.amount_total
+        return {
+            'title': title,
+            'charge_label': {'utility': _('Utility Charges'), 'electricity': _('Electricity Charges')}.get(charge_type),
+            'month': month,
+            'due_date': bill.due_date or move.invoice_date_due,
+            'lines': lines,
+            'current': current,
+            'arrears': arrears,
+            'total': current + arrears,
+            'amount_words': self._amount_in_words(move.currency_id, current + arrears),
+            'electricity': electricity,
+            'phone': move.partner_id.phone or member.mobile or member.phone or member.secondary_phone or '',
+            'house_no': file.unit_number or file.inventory_id.name or '',
+            'size': file.size_id.name or file.unit_category_type_id.name or '',
+            'address': [p for p in (move.company_id.street, move.company_id.street2, move.company_id.city) if p],
+        }
+
+    @api.model
+    def _amount_in_words(self, currency, amount):
+        """amount_to_text() always uses the singular unit label ("Rupee"): make it plural
+        unless the amount is exactly one."""
+        if not currency:
+            return ''
+        text = currency.amount_to_text(amount)
+        label = currency.currency_unit_label
+        if label and int(round(abs(amount), 2)) != 1 and not label.endswith('s'):
+            text = re.sub(r'\b%s\b' % re.escape(label), label + 's', text)
+        return text

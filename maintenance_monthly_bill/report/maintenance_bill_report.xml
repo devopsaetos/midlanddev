@@ -35,46 +35,46 @@
                 <td class="mb-top">
                     <table class="mb-head">
                         <tr>
-                            <td style="width: 24%;">
-                                <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 44px; max-width: 64px;"/>
+                            <td class="mb-logo">
+                                <img t-if="not o.company_id.uses_default_logo" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo"/>
                             </td>
-                            <td style="text-align: center;">
+                            <td class="mb-titles">
                                 <div class="mb-company" t-out="o.company_id.name"/>
                                 <div class="mb-society" t-out="(o.society_id.name or '').upper()"/>
+                                <div class="mb-title" t-out="copy_title"/>
+                                <div class="mb-subtitle">Monthly Bill</div>
                             </td>
-                            <td style="width: 24%;"/>
+                            <td class="mb-logo"/>
                         </tr>
                     </table>
-                    <div class="mb-title" t-out="copy_title"/>
-                    <div class="mb-subtitle">Monthly Bill</div>
                     <div class="mb-bank" t-out="o.bank_note"/>
 
                     <table class="mb-info">
-                        <colgroup><col style="width: 80px;"/><col style="width: 88px;"/><col style="width: 62px;"/><col style="width: 88px;"/></colgroup>
+                        <colgroup><col style="width: 25%;"/><col style="width: 26%;"/><col style="width: 21%;"/><col style="width: 28%;"/></colgroup>
                         <tr>
-                            <td class="lbl">Name:</td><td class="val wrap" colspan="3" t-out="o.member_name"/>
+                            <td class="lbl">Name:</td><td class="val wrap" colspan="3"><t t-out="o.member_name"/></td>
                         </tr>
                         <tr>
-                            <td class="lbl">Plot Info:</td><td class="val" t-out="o.unit_number"/>
-                            <td class="lbl">Billing:</td><td class="val" t-out="o.bill_month and o.bill_month.strftime('%b-%Y')"/>
+                            <td class="lbl">Plot Info:</td><td class="val"><t t-out="o.unit_number"/></td>
+                            <td class="lbl">Billing:</td><td class="val"><t t-out="o.bill_month and o.bill_month.strftime('%b-%Y')"/></td>
                         </tr>
                         <tr>
-                            <td class="lbl">Date of Issue:</td><td class="val" t-out="dt(o.issue_date)"/>
-                            <td class="lbl">Due Date:</td><td class="val" t-out="dt(o.due_date)"/>
+                            <td class="lbl">Date of Issue:</td><td class="val"><t t-out="dt(o.issue_date)"/></td>
+                            <td class="lbl">Due Date:</td><td class="val"><t t-out="dt(o.due_date)"/></td>
                         </tr>
                         <tr>
-                            <td class="lbl">Meter No:</td><td class="val" t-out="o.meter_no or '-'"/>
+                            <td class="lbl">Meter No:</td><td class="val"><t t-out="o.meter_no or '-'"/></td>
                             <td class="lbl">Reading:</td>
                             <td class="val"><t t-if="o.current_reading"><t t-out="int(o.previous_reading)"/> to <t t-out="int(o.current_reading)"/></t><t t-else="">-</t></td>
                         </tr>
                         <tr>
-                            <td class="lbl">Arrears:</td><td class="val" t-out="fmt(o.arrears)"/>
-                            <td class="lbl">Units:</td><td class="val" t-out="int(o.units) if o.current_reading else '-'"/>
+                            <td class="lbl">Arrears:</td><td class="val"><t t-out="fmt(o.arrears)"/></td>
+                            <td class="lbl">Units:</td><td class="val"><t t-out="int(o.units) if o.current_reading else '-'"/></td>
                         </tr>
                     </table>
 
                     <table class="mb-lines">
-                        <colgroup><col style="width: 32px;"/><col style="width: 200px;"/><col style="width: 86px;"/></colgroup>
+                        <colgroup><col style="width: 11%;"/><col style="width: 61%;"/><col style="width: 28%;"/></colgroup>
                         <thead>
                             <tr><th>Sr.#</th><th>Description</th><th class="num">Amount</th></tr>
                         </thead>
@@ -82,13 +82,13 @@
                             <t t-set="sr" t-value="0"/>
                             <tr t-foreach="o._bill_lines()" t-as="line">
                                 <t t-set="sr" t-value="sr + 1"/>
-                                <td t-out="sr"/><td t-out="line[0]"/><td class="num" t-out="fmt(line[1])"/>
+                                <td><t t-out="sr"/></td><td><t t-out="line[0]"/></td><td class="num"><t t-out="fmt(line[1])"/></td>
                             </tr>
                             <tr>
-                                <td/><td>Arrears (Utility)</td><td class="num" t-out="fmt(o.arrears_utility)"/>
+                                <td/><td>Arrears (Utility)</td><td class="num"><t t-out="fmt(o.arrears_utility)"/></td>
                             </tr>
                             <tr>
-                                <td/><td>Arrears (Electricity)</td><td class="num" t-out="fmt(o.arrears_electricity)"/>
+                                <td/><td>Arrears (Electricity)</td><td class="num"><t t-out="fmt(o.arrears_electricity)"/></td>
                             </tr>
                         </tbody>
                     </table>
@@ -96,10 +96,10 @@
 
                     <table class="mb-total">
                         <colgroup><col style="width: 64%;"/><col style="width: 36%;"/></colgroup>
-                        <tr><td>Current Month:</td><td class="num" t-out="fmt(o.current_amount)"/></tr>
-                        <tr class="strong"><td>Due Amount:</td><td class="num" t-out="fmt(o.due_amount)"/></tr>
-                        <tr><td>Surcharge on Late Payment:</td><td class="num" t-out="fmt(o.surcharge)"/></tr>
-                        <tr class="strong"><td>Payable after due date:</td><td class="num" t-out="fmt(o.payable_after_due)"/></tr>
+                        <tr><td>Current Month:</td><td class="num"><t t-out="fmt(o.current_amount)"/></td></tr>
+                        <tr class="strong"><td>Due Amount:</td><td class="num"><t t-out="fmt(o.due_amount)"/></td></tr>
+                        <tr><td>Surcharge on Late Payment:</td><td class="num"><t t-out="fmt(o.surcharge)"/></td></tr>
+                        <tr class="strong"><td>Payable after due date:</td><td class="num"><t t-out="fmt(o.payable_after_due)"/></td></tr>
                     </table>
                 </td>
             </tr>
@@ -132,29 +132,32 @@
                         .mb-row { width: 1040px; table-layout: fixed; border-collapse: collapse; margin: 0 auto; }
                         .mb-row > tbody > tr > td.mb-cell { width: 340px; vertical-align: top; padding: 0; }
                         .mb-row > tbody > tr > td.mb-gap { width: 10px; }
-                        .mb-copy { width: 340px; height: 738px; border: 1px solid #000; border-collapse: collapse; table-layout: fixed; font-size: 10px; }
-                        .mb-top { vertical-align: top; padding: 8px 10px 0 10px; }
-                        .mb-bottom { vertical-align: bottom; padding: 0 10px 8px 10px; height: 1px; }
-                        .mb-head { width: 100%; table-layout: fixed; }
-                        .mb-company { font-weight: bold; font-size: 12px; }
+                        .mb-copy { width: 340px; height: 738px; border: 1px solid #000; border-collapse: collapse; table-layout: fixed; font-size: 10px; line-height: 1.25; }
+                        .mb-top { vertical-align: top; padding: 10px 10px 0 10px; }
+                        .mb-bottom { vertical-align: bottom; padding: 0 10px 10px 10px; height: 1px; }
+                        .mb-head { width: 100%; table-layout: fixed; border-bottom: 1px solid #000; }
+                        .mb-head td { vertical-align: middle; padding-bottom: 6px; }
+                        .mb-logo { width: 64px; height: 60px; }
+                        .mb-logo img { max-width: 60px; max-height: 56px; }
+                        .mb-titles { text-align: center; }
+                        .mb-company { font-weight: bold; font-size: 13px; }
                         .mb-society { font-weight: bold; font-size: 10px; letter-spacing: 1px; }
-                        .mb-title { text-align: center; font-weight: bold; font-size: 13px; margin-top: 6px; }
-                        .mb-subtitle { text-align: center; font-size: 9px; }
-                        .mb-bank { text-align: center; font-weight: bold; font-size: 8px; margin: 6px 0 10px 0; height: 22px; overflow: hidden; }
-                        .mb-info { width: 100%; table-layout: fixed; margin-bottom: 8px; }
-                        .mb-info td { padding: 4px 2px; white-space: nowrap; overflow: hidden; font-size: 10px; }
+                        .mb-title { font-weight: bold; font-size: 13px; margin-top: 4px; }
+                        .mb-subtitle { font-size: 10px; }
+                        .mb-bank { text-align: center; font-weight: bold; font-size: 8px; margin: 6px 0 8px 0; height: 22px; overflow: hidden; }
+                        .mb-info { width: 100%; table-layout: fixed; margin-bottom: 10px; }
+                        .mb-info td { padding: 5px 3px; white-space: nowrap; overflow: hidden; font-size: 11px; }
                         .mb-info td.wrap { white-space: normal; }
                         .mb-info .lbl { font-weight: bold; }
                         .mb-info .val { border-bottom: 1px solid #000; }
                         .mb-lines { width: 100%; table-layout: fixed; border-collapse: collapse; }
-                        .mb-lines th, .mb-lines td { border: 1px solid #000; padding: 5px 5px; vertical-align: top; white-space: nowrap; overflow: hidden; font-size: 10px; }
+                        .mb-lines th, .mb-lines td { border: 1px solid #000; padding: 6px 5px; vertical-align: top; white-space: nowrap; overflow: hidden; font-size: 11px; }
                         .mb-lines th { background: #e9e9e9; text-align: left; }
                         .mb-total { width: 100%; table-layout: fixed; margin-top: 10px; }
-                        .mb-total td { padding: 5px 2px; font-size: 11px; }
-                        .mb-info td.val { font-size: 10.5px; }
-                        .mb-total tr.strong td { font-weight: bold; }
+                        .mb-total td { padding: 5px 3px; font-size: 11px; }
+                        .mb-total tr.strong td { font-weight: bold; font-size: 12px; }
                         .num { text-align: right; white-space: nowrap; }
-                        .mb-sign { font-size: 10px; }
+                        .mb-sign { font-size: 11px; }
                         .mb-small { font-size: 8px; }
                         .mb-note { font-size: 8px; margin-top: 6px; height: 22px; overflow: hidden; }
                         .mb-desc { font-size: 8px; color: #333; margin: 4px 0 0 0; }

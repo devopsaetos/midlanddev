@@ -14,7 +14,9 @@
                                 <field name="sector_id" options="{'no_create': True, 'no_open': True}"/>
                             </group>
                             <group>
-                                <field name="street_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="has_streets" invisible="1"/>
+                                <field name="street_id" options="{'no_create': True, 'no_open': True}"
+                                       invisible="not has_streets"/>
                                 <field name="house_id" options="{'no_create': True, 'no_open': True}"/>
                                 <field name="partner_id" options="{'no_create': True, 'no_open': True}" readonly="1"
                                        force_save="1"/>
@@ -47,6 +49,7 @@
                                     <field name="date"/>
                                     <field name="payment_date"/>
                                     <field name="invoice_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="description"/>
                                     <field name="invoice_created" force_save="1" column_invisible="True"/>
                                     <field name="amount" sum="Total Amount"/>
                                     <field name="amount_paid" sum="Total Paid Amount"/>
