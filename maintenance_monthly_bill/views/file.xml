@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="file_form_meter" model="ir.ui.view">
+        <field name="name">file.form.meter</field>
+        <field name="model">file</field>
+        <field name="inherit_id" ref="maintenance_charges.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <field name="maintenance_recovery_agent_id" position="after">
+                <field name="meter_no"/>
+                <field name="opening_meter_reading"/>
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_maintenance_excel_import_manager,maintenance.excel.import manager,model_maintenance_excel_import,maintenance_charges.group_maintenance_payment_manager,1,1,1,1

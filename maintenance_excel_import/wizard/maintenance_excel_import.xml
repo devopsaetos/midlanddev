@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="maintenance_excel_import_form" model="ir.ui.view">
+        <field name="name">maintenance.excel.import.form</field>
+        <field name="model">maintenance.excel.import</field>
+        <field name="arch" type="xml">
+            <form string="Import from Excel">
+                <field name="state" invisible="1"/>
+                <field name="file_ids" invisible="1"/>
+                <group>
+                    <group string="1. Company">
+                        <field name="company_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                        <field name="society_ids" widget="many2many_tags" readonly="state != 'draft'"
+                               options="{'no_create': True}"/>
+                    </group>
+                    <group string="2. Template">
+                        <field name="with_data"/>
+                        <button name="action_download_template" type="object" string="Download Template"
+                                icon="fa-download" class="btn-secondary" colspan="2"/>
+                    </group>
+                </group>
+                <group string="3. Upload the filled Excel file">
+                    <field name="import_file" filename="import_name" readonly="state == 'done'"/>
+                    <field name="import_name" invisible="1"/>
+                </group>
+                <div class="alert alert-info" role="alert" invisible="state != 'draft'">
+                    Sheet <b>Houses</b>: one row per house (Society + Plot No + member, nominee, size, meter).
+                    Sheet <b>Bill History</b>: one row per house + charge type + month (Bill Amount, Paid, Balance).
+                    Press <b>Check File</b> first: it shows what will happen and saves nothing.
+                </div>
+                <div class="alert alert-danger" role="alert" invisible="state == 'draft' or error_count == 0">
+                    <field name="error_count" readonly="1" class="oe_inline"/> row(s) have errors and are skipped.
+                    Fix them in Excel and check again, or import the other rows.
+                </div>
+                <field name="result_html" invisible="not result_html" nolabel="1"/>
+                <footer>
+                    <button name="action_check" type="object" string="Check File" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"
+                            invisible="state != 'checked'"
+                            confirm="Save the houses, members and bill rows listed in the report?"/>
+                    <button name="action_check" type="object" string="Check Again" class="btn-secondary"
+                            invisible="state != 'checked'"/>
+                    <button name="action_show_files" type="object" string="Show Imported Houses" class="btn-primary"
+                            invisible="state != 'done'"/>
+                    <button name="action_reset" type="object" string="Import Another File" class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_maintenance_excel_import" model="ir.actions.act_window">
+        <field name="name">Import from Excel</field>
+        <field name="res_model">maintenance.excel.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_maintenance_excel_import" name="Import from Excel"
+              action="action_maintenance_excel_import"
+              parent="maintenance_monthly_bill.menu_maintenance_bill_root" sequence="30"/>
+</odoo>
