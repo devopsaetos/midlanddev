@@ -13,7 +13,7 @@
                             <h4 class="text-capitalize">
                                 <strong style="background-color:#4472C4;vertical-align:middle !important;">
                                     <br/>
-                                    &amp;nbsp;DEALER STATEMENT REPORT&amp;nbsp;
+                                    &amp;nbsp;<t t-if="o.report_type == 'summary'">DEALER SUMMARY REPORT</t><t t-elif="o.report_type == 'general_rebate'">DEALER GENERAL REBATE REPORT</t><t t-else="">DEALER STATEMENT REPORT</t>&amp;nbsp;
                                 </strong>
                             </h4>
                         </div>
@@ -29,9 +29,8 @@
                         <li t-if="o.env.company.street">
                             <span t-field="o.env.company.street"/>
                         </li>
-                        <li t-if="o.env.company.street2">
-                            <span t-field="o.env.company.street2"/>
-                            <span t-field="o.env.company.city"/>
+                        <li t-if="o.env.company.street2 or o.env.company.city">
+                            <t t-out="', '.join(p for p in (o.env.company.street2, o.env.company.city) if p)"/>
                         </li>
                         <li t-if="o.env.company.country_id">
                             <span t-field="o.env.company.country_id.name"/>
