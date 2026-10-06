@@ -22,6 +22,7 @@
                 <group string="3. Upload the filled Excel file">
                     <field name="import_file" filename="import_name" readonly="state == 'done'"/>
                     <field name="import_name" invisible="1"/>
+                    <field name="update_existing" readonly="state == 'done'"/>
                 </group>
                 <div class="alert alert-info" role="alert" invisible="state != 'draft'">
                     Sheet <b>Houses</b>: one row per house (Society + Plot No + member, nominee, size, meter).

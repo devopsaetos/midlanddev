@@ -6,7 +6,7 @@
         plot, meter) and their utility / electricity bill history.""",
     'author': "Midland Developers",
     'category': 'Real Estate',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'license': 'LGPL-3',
     'depends': ['maintenance_monthly_bill'],
     'external_dependencies': {'python': ['openpyxl']},

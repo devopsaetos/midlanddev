@@ -207,6 +207,11 @@ class MaintenanceExcelImport(models.TransientModel):
                                     'Untick for an empty template.')
     template_file = fields.Binary(readonly=True, attachment=False)
     template_name = fields.Char()
+    update_existing = fields.Boolean(
+        'Overwrite Bill Rows Already in Odoo', default=False,
+        help='Off: bill rows (house + charge type + month) that Odoo already has are kept as they are, so '
+             'payments received in Odoo are never lost; only new months are added. '
+             'On: amounts / paid / balance of those rows are replaced by the Excel values.')
     import_file = fields.Binary('Excel File', attachment=False)
     import_name = fields.Char()
     state = fields.Selection([('draft', 'Upload'), ('checked', 'Checked'), ('done', 'Imported')], default='draft')
@@ -220,7 +225,7 @@ class MaintenanceExcelImport(models.TransientModel):
             rec.society_ids = self.env['society'].search(
                 [('is_society', '=', True), ('company_id', '=', rec.company_id.id)])
 
-    @api.onchange('import_file')
+    @api.onchange('import_file', 'update_existing')
     def _onchange_import_file(self):
         self.state = 'draft'
         self.result_html = False
@@ -408,7 +413,7 @@ class MaintenanceExcelImport(models.TransientModel):
             ('Paid Amount = what was paid against it. Balance = left to pay; when empty it is Bill Amount - Paid Amount.', False),
             ('The Balance of the latest month is the arrears that the next Monthly Bill shows.', False),
             ('Status, Member Name and Invoice are for reading only. Rows that have an Invoice come from real bills and are never changed.', False),
-            ('The same month again for the same house + charge type updates that row (no duplicates).', False),
+            ('Importing the file again updates the same rows (no duplicates). Two rows of one month are kept as two rows.', False),
             ('', False),
             ('How to import', True),
             ('Maintenance Charges > Monthly Bills > Import from Excel: pick the company, upload the file, press Check File,', False),
@@ -767,12 +772,11 @@ class MaintenanceExcelImport(models.TransientModel):
             paid = paid or 0.0
             if balance is None:
                 balance = max(amount - paid, 0.0)
+            # old bill sheets often carry two rows for one month (bill + adjustment): the
+            # n-th Excel row of a house / type / month matches the n-th row already in Odoo
             hkey = (key, ctype, month)
-            if hkey in seen_rows:
-                err(sheet, row, _('%(plot)s %(type)s %(month)s is already on row %(row)s.', plot=plot,
-                                  type=CHARGE_LABEL[ctype], month=month.strftime('%b-%Y'), row=seen_rows[hkey]))
-                continue
-            seen_rows[hkey] = row
+            occurrence = seen_rows.get(hkey, 0)
+            seen_rows[hkey] = occurrence + 1
             status = 'paid' if balance <= 0.005 and amount > 0 else ('partial' if paid > 0 else 'not_paid')
             vals = {'charge_type': ctype, 'date': month, 'amount': amount, 'amount_paid': paid,
                     'residual': balance, 'payment_status': status, 'payment_date': pay_date or False}
@@ -780,8 +784,10 @@ class MaintenanceExcelImport(models.TransientModel):
             if old and any(h.invoice_id for h in old):
                 plan['stats']['history_from_bill'] += 1
                 continue
-            if old:
-                h = old[0]
+            if occurrence < len(old) and not self.update_existing:
+                plan['stats']['history_kept'] += 1
+            elif occurrence < len(old):
+                h = old[occurrence]
                 changes = {f: val for f, val in vals.items()
                            if f in ('amount', 'amount_paid', 'residual') and abs((h[f] or 0.0) - val) > 0.005
                            or f == 'payment_status' and h[f] != val
@@ -814,6 +820,7 @@ class MaintenanceExcelImport(models.TransientModel):
             (_('New bill rows'), s['history_new']),
             (_('Bill rows updated'), s['history_updated']),
             (_('Bill rows unchanged'), s['history_unchanged']),
+            (_('Bill rows already in Odoo (kept, not overwritten)'), s['history_kept']),
             (_('Rows from real bills (kept as they are)'), s['history_from_bill']),
             (_('Rows with errors (skipped)'), len(plan['errors'])),
             (_('Warnings'), len(plan['warnings'])),
