@@ -2,12 +2,6 @@ import re
 
 from odoo import models, api, _
 
-# property_invoice_type -> (printed title, maintenance history charge type)
-INVOICE_KINDS = {
-    'maintenance_charges': ('Utility Invoice', 'utility'),
-    'society_charges': ('Electricity Invoice', 'electricity'),
-}
-
 
 class MaintenanceChargesInvoiceReportModel(models.AbstractModel):
     _name = 'report.maintenance_invoice_report.maintenance_invoice_report'
@@ -27,22 +21,37 @@ class MaintenanceChargesInvoiceReportModel(models.AbstractModel):
 
         Invoices posted from a Monthly Bill take due date, arrears and meter readings from
         that bill, so the invoice prints the same figures as the bill."""
-        title, charge_type = INVOICE_KINDS.get(move.property_invoice_type, ('Maintenance Invoice', False))
         file = move.file_ids[:1]
         bill = self.env['maintenance.bill'].search(
-            ['|', ('utility_invoice_id', '=', move.id), ('electricity_invoice_id', '=', move.id)], limit=1)
+            ['|', '|', ('invoice_id', '=', move.id), ('utility_invoice_id', '=', move.id),
+             ('electricity_invoice_id', '=', move.id)], limit=1)
         lines = move.invoice_line_ids.filtered(lambda l: l.display_type == 'product')
         month = move.invoice_date and move.invoice_date.strftime('%B %Y') or ''
-
-        if bill:
-            arrears = bill.arrears_electricity if charge_type == 'electricity' else bill.arrears_utility
-        elif charge_type and file and move.invoice_date:
-            arrears = file._maintenance_arrears(charge_type, move.invoice_date)
+        # one row per charge on the invoice (a Monthly Bill invoice has utility + electricity)
+        parts = move._maintenance_parts_map().get(move.id) or []
+        kinds = [kind for kind, _amount in parts]
+        if 'utility' in kinds and 'electricity' in kinds:
+            title = 'Utility & Electricity Invoice'
+        elif kinds == ['utility']:
+            title = 'Utility Invoice'
+        elif kinds == ['electricity']:
+            title = 'Electricity Invoice'
         else:
-            arrears = 0.0
+            title = 'Maintenance Invoice'
+        labels = {'utility': _('Utility Charges'), 'electricity': _('Electricity Charges'),
+                  'service': _('Service Charges')}
+        rows = [(_('%(charge)s for the Month of %(month)s', charge=labels[kind], month=month), amount)
+                for kind, amount in parts] or [(line.name, line.price_total) for line in lines]
+
+        arrears = 0.0
+        for kind in kinds:
+            if bill and kind in ('utility', 'electricity'):
+                arrears += bill.arrears_electricity if kind == 'electricity' else bill.arrears_utility
+            elif kind in ('utility', 'electricity') and file and move.invoice_date:
+                arrears += file._maintenance_arrears(kind, move.invoice_date)
 
         electricity = False
-        if charge_type == 'electricity':
+        if 'electricity' in kinds:
             if bill:
                 electricity = {
                     'previous': '%d' % bill.previous_reading,
@@ -62,10 +71,9 @@ class MaintenanceChargesInvoiceReportModel(models.AbstractModel):
         current = move.amount_total
         return {
             'title': title,
-            'charge_label': {'utility': _('Utility Charges'), 'electricity': _('Electricity Charges')}.get(charge_type),
             'month': month,
             'due_date': bill.due_date or move.invoice_date_due,
-            'lines': lines,
+            'rows': rows,
             'current': current,
             'arrears': arrears,
             'total': current + arrears,

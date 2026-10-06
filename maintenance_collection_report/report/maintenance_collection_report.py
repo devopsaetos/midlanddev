@@ -3,6 +3,9 @@ from datetime import timedelta
 
 from odoo import models, api
 
+# charge (account.move._maintenance_parts_map) -> the wizard's invoice_type value
+KIND_KEYS = {'utility': 'maintenance_charges', 'electricity': 'electricity', 'service': 'society_charges'}
+
 # collection kind -> label (keys are the wizard's invoice_type values)
 KINDS = {
     'maintenance_charges': 'Utility / Maintenance',
@@ -86,33 +89,22 @@ class MaintenanceCollectionReport(models.AbstractModel):
         }
 
     @api.model
-    def _invoice_kind(self, invoice):
-        if invoice.property_invoice_type == 'maintenance_charges':
-            return 'maintenance_charges'
-        if invoice.property_invoice_type == 'society_charges':
-            # Monthly Bills and the electricity invoice wizard book electricity as society
-            # charges; their maintenance history row tells it apart from service charges.
-            electricity = self.env['maintenance.charges.history'].sudo().search_count(
-                [('invoice_id', '=', invoice.id), ('charge_type', '=', 'electricity')], limit=1)
-            return 'electricity' if electricity else 'society_charges'
-        return False
-
-    @api.model
     def _payment_allocations(self, payment):
-        """{kind: amount} of one payment, from what it actually paid on each invoice
-        (reconciliation). The amounts stored on multi_invoice_ids are often 0."""
+        """{kind: amount} of one payment, from what it actually paid on each invoice and
+        charge (reconciliation; a Monthly Bill invoice holds utility and electricity, filled
+        utility first). The amounts stored on multi_invoice_ids are often 0."""
         result = defaultdict(float)
         receivable = payment.move_id.line_ids.filtered(lambda l: l.account_id.account_type == 'asset_receivable')
-        for partial in receivable.matched_debit_ids:
-            kind = self._invoice_kind(partial.debit_move_id.move_id)
-            if kind:
-                result[kind] += partial.amount
-        if not receivable.matched_debit_ids:
+        invoices = receivable.matched_debit_ids.debit_move_id.move_id
+        for _invoice, paid_by, _date, kind, amount in invoices._maintenance_paid_parts():
+            if paid_by == payment:
+                result[KIND_KEYS[kind]] += amount
+        if not invoices:
             # not reconciled (yet): fall back to the invoices recorded on the payment
-            lines = payment.multi_invoice_ids.filtered(lambda l: self._invoice_kind(l.invoice_id))
-            if len(lines) == 1 and not lines.payment_amount:
-                result[self._invoice_kind(lines.invoice_id)] += payment.amount
-            else:
-                for line in lines:
-                    result[self._invoice_kind(line.invoice_id)] += line.payment_amount
+            lines = payment.multi_invoice_ids.filtered('invoice_id')
+            parts_map = lines.invoice_id._maintenance_parts_map()
+            for line in lines:
+                amount = line.payment_amount or (payment.amount if len(lines) == 1 else 0.0)
+                for kind, value in self.env['account.move']._maintenance_split(parts_map[line.invoice_id.id], 0.0, amount).items():
+                    result[KIND_KEYS[kind]] += value
         return {kind: amount for kind, amount in result.items() if amount}

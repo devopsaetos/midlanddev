@@ -35,7 +35,7 @@
                 <form create="0">
                     <header>
                         <button name="action_post" string="Post Bill" type="object" class="oe_highlight" invisible="state != 'draft'"
-                                confirm="This creates and posts the utility and electricity invoices. Continue?"/>
+                                confirm="This creates and posts one invoice for this bill (utility and electricity). Continue?"/>
                         <button name="action_print" string="Print Bill" type="object" icon="fa-print"/>
                         <button name="action_receive_payment" string="Receive Payment" type="object" class="oe_highlight"
                                 invisible="state != 'posted' or payment_state == 'paid'"/>
@@ -64,6 +64,7 @@
                                 <field name="issue_date" readonly="state != 'draft'"/>
                                 <field name="due_date" readonly="state != 'draft'"/>
                                 <field name="surcharge_percent" readonly="state != 'draft'"/>
+                                <field name="invoice_id" invisible="not invoice_id"/>
                             </group>
                         </group>
                         <group>
@@ -75,12 +76,12 @@
                                 <field name="unit_rate" readonly="state != 'draft'"/>
                                 <field name="electricity_amount"/>
                                 <field name="electricity_product_id" readonly="state != 'draft'"/>
-                                <field name="electricity_invoice_id" invisible="not electricity_invoice_id"/>
+                                <field name="electricity_invoice_id" invisible="invoice_id or not electricity_invoice_id"/>
                             </group>
                             <group string="Utility">
                                 <field name="utility_amount" readonly="state != 'draft'"/>
                                 <field name="utility_product_id" readonly="state != 'draft'"/>
-                                <field name="utility_invoice_id" invisible="not utility_invoice_id"/>
+                                <field name="utility_invoice_id" invisible="invoice_id or not utility_invoice_id"/>
                             </group>
                         </group>
                         <group>

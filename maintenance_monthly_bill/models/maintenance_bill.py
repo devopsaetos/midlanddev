@@ -60,6 +60,10 @@ class MaintenanceBill(models.Model):
     bank_note = fields.Char(string='Bank Account Line')
     payment_note = fields.Text()
 
+    invoice_id = fields.Many2one('account.move', string='Invoice', readonly=True, copy=False,
+                                 help='The invoice of this bill (utility and electricity lines).')
+    # Bills posted before one-invoice-per-bill have a separate invoice per charge; newer bills
+    # point both fields at invoice_id.
     utility_invoice_id = fields.Many2one('account.move', readonly=True, copy=False)
     electricity_invoice_id = fields.Many2one('account.move', readonly=True, copy=False)
 
@@ -72,11 +76,12 @@ class MaintenanceBill(models.Model):
         ('paid', 'Paid'),
     ], compute='_compute_payment', store=True, string='Payment')
 
-    @api.depends('state', 'utility_invoice_id.amount_residual', 'electricity_invoice_id.amount_residual',
+    @api.depends('state', 'invoice_id.amount_residual', 'invoice_id.amount_total',
+                 'utility_invoice_id.amount_residual', 'electricity_invoice_id.amount_residual',
                  'utility_invoice_id.amount_total', 'electricity_invoice_id.amount_total')
     def _compute_payment(self):
         for rec in self:
-            invoices = rec.utility_invoice_id | rec.electricity_invoice_id
+            invoices = rec._invoices()
             total = sum(invoices.mapped('amount_total'))
             due = sum(invoices.mapped('amount_residual'))
             rec.paid_amount = total - due
@@ -147,23 +152,51 @@ class MaintenanceBill(models.Model):
             })
 
     # ------------------------------------------------------------------ posting
-    def _make_invoice(self, product, invoice_type, line_name, quantity, price_unit):
+    def _invoice_lines(self):
+        """[(charge type, line values)] of this bill's invoice: one line per charge."""
         self.ensure_one()
+        month = self.bill_month.strftime('%b %Y')
+        lines = []
+        if self.utility_amount > 0:
+            if not self.utility_product_id:
+                raise UserError(_('%s: set the Utility product first.') % self.name)
+            lines.append(('utility', {
+                'product_id': self.utility_product_id.id,
+                'name': _('Utility / Maintenance Charges %s') % month,
+                'quantity': 1,
+                'price_unit': self.utility_amount,
+                'tax_ids': [(6, 0, [])],
+            }))
+        if self.electricity_amount > 0:
+            if not self.electricity_product_id:
+                raise UserError(_('%s: set the Electricity product first.') % self.name)
+            lines.append(('electricity', {
+                'product_id': self.electricity_product_id.id,
+                'name': _('Electricity %(month)s: %(units)s units (%(prev)s to %(cur)s) @ %(rate)s',
+                          month=month, units=int(self.units), prev=int(self.previous_reading),
+                          cur=int(self.current_reading), rate=self.unit_rate),
+                # the bill rounds the electricity charge: invoice exactly what the bill shows
+                'quantity': 1,
+                'price_unit': self.electricity_amount,
+                'tax_ids': [(6, 0, [])],
+            }))
+        return lines
+
+    def _make_invoice(self, lines):
+        """One invoice for the whole bill (utility and electricity lines)."""
+        self.ensure_one()
+        kinds = [kind for kind, _vals in lines]
         move = self.env['account.move'].with_company(self.company_id).create({
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
             'journal_id': self.journal_id.id,
             'invoice_date': self.bill_month,
             'invoice_date_due': self.due_date,
-            'property_invoice_type': invoice_type,
+            # a bill with utility is a maintenance invoice (the payment screens list those);
+            # electricity alone stays a society-charges invoice as before
+            'property_invoice_type': 'maintenance_charges' if 'utility' in kinds else 'society_charges',
             'ref': self.name,
-            'invoice_line_ids': [(0, 0, {
-                'product_id': product.id,
-                'name': line_name,
-                'quantity': quantity,
-                'price_unit': price_unit,
-                'tax_ids': [(6, 0, [])],
-            })],
+            'invoice_line_ids': [(0, 0, vals) for _kind, vals in lines],
         })
         # Set after create, like the maintenance cron: real_estate's account.move.create()
         # strips file_ids from the values and logs a file payment-history row instead.
@@ -171,14 +204,14 @@ class MaintenanceBill(models.Model):
         move.action_post()
         return move
 
-    def _add_history(self, invoice, charge_type):
+    def _add_history(self, invoice, charge_type, amount):
         last = self.file_id.maintenance_history_ids.sorted(lambda h: h.installment_number)[-1:]
         self.env['maintenance.charges.history'].create({
             'file_id': self.file_id.id,
             'date': self.bill_month,
             'charge_type': charge_type,
             'installment_number': (last.installment_number or 0) + 1,
-            'amount': invoice.amount_total,
+            'amount': amount,
             'invoice_created': True,
             'invoice_id': invoice.id,
         })
@@ -189,28 +222,26 @@ class MaintenanceBill(models.Model):
                 continue
             if not rec.partner_id:
                 raise UserError(_('%s: the file has no member / accounting partner.') % rec.unit_number)
-            month = rec.bill_month.strftime('%b %Y')
+            lines = rec._invoice_lines()
             vals = {'state': 'posted'}
-            if rec.utility_amount > 0:
-                if not rec.utility_product_id:
-                    raise UserError(_('%s: set the Utility product first.') % rec.name)
-                inv = rec._make_invoice(rec.utility_product_id, 'maintenance_charges',
-                                       _('Utility / Maintenance Charges %s') % month, 1, rec.utility_amount)
-                rec._add_history(inv, 'utility')
-                vals['utility_invoice_id'] = inv.id
-            if rec.electricity_amount > 0:
-                if not rec.electricity_product_id:
-                    raise UserError(_('%s: set the Electricity product first.') % rec.name)
-                inv = rec._make_invoice(
-                    rec.electricity_product_id, 'society_charges',
-                    _('Electricity %(month)s: %(units)s units (%(prev)s to %(cur)s) @ %(rate)s',
-                      month=month, units=int(rec.units), prev=int(rec.previous_reading),
-                      cur=int(rec.current_reading), rate=rec.unit_rate),
-                    rec.units, rec.unit_rate)
-                rec._add_history(inv, 'electricity')
-                vals['electricity_invoice_id'] = inv.id
+            if lines:
+                invoice = rec._make_invoice(lines)
+                # one history row per charge, all on the same invoice: the reports and the
+                # arrears split the invoice per charge from these rows
+                for kind, line in lines:
+                    rec._add_history(invoice, kind, line['price_unit'] * line['quantity'])
+                vals['invoice_id'] = invoice.id
+                # kept for the screens/reports that look a bill up by its old invoice fields
+                if any(kind == 'utility' for kind, _line in lines):
+                    vals['utility_invoice_id'] = invoice.id
+                if any(kind == 'electricity' for kind, _line in lines):
+                    vals['electricity_invoice_id'] = invoice.id
             rec.write(vals)
         return True
+
+    def _invoices(self):
+        self.ensure_one()
+        return self.invoice_id | self.utility_invoice_id | self.electricity_invoice_id
 
     def action_cancel(self):
         if self.filtered(lambda r: r.state == 'posted'):
@@ -223,7 +254,7 @@ class MaintenanceBill(models.Model):
     def action_receive_payment(self):
         """Open Maintenance Charges Payment with this bill's unpaid invoices filled in."""
         self.ensure_one()
-        invoices = (self.utility_invoice_id | self.electricity_invoice_id).filtered(lambda m: m.amount_residual > 0)
+        invoices = self._invoices().filtered(lambda m: m.amount_residual > 0)
         if self.state != 'posted':
             raise UserError(_('Post the bill first.'))
         if not invoices:

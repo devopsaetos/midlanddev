@@ -6,7 +6,7 @@
         and printed as a 3-copy bill (Customer / Society Office / Bank).""",
     'author': "Midland Developers",
     'category': 'Real Estate',
-    'version': '19.0.1.0.8',
+    'version': '19.0.1.0.9',
     'license': 'LGPL-3',
     'depends': ['maintenance_charges', 'account'],
     'data': [

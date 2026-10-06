@@ -10,7 +10,7 @@
                     </td>
                     <td style="text-align: center; vertical-align: middle;">
                         <div style="font-size: 18px; font-weight: bold;" t-out="company.name"/>
-                        <div style="color: #191970; font-size: 24px; font-weight: bold;">Maintenance Inquiry Report</div>
+                        <div style="color: #2b4c7e; font-size: 24px; font-weight: bold;">Maintenance Inquiry Report</div>
                     </td>
                     <td style="width: 25%; text-align: right; vertical-align: middle; font-size: 11px;">
                         <t t-foreach="[p for p in (company.street, company.street2, company.city) if p]" t-as="part">
@@ -24,7 +24,7 @@
 
     <template id="maintenance_statement_inquiry.maintenance_customized_footer">
         <div class="footer">
-            <table style="width: 100%; font-size: 11px; font-family: 'Roboto', sans-serif; color: #191970;">
+            <table style="width: 100%; font-size: 11px; font-family: 'Roboto', sans-serif; color: #2b4c7e;">
                 <tr>
                     <td style="width: 50%;">Printed By: <u t-out="user.name"/></td>
                     <td style="width: 50%; text-align: right;">Print Date: <u t-out="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/></td>
@@ -47,10 +47,10 @@
                         .mq-info td { font-size: 14px; padding: 3px 4px; vertical-align: top; }
                         .mq-info td.lbl { font-weight: bold; width: 14%; }
                         .mq-lines { width: 100%; border-collapse: collapse; }
-                        .mq-lines th, .mq-lines td { font-size: 12px; padding: 5px 4px; border: 1px solid #999; }
-                        .mq-lines th { background-color: #191970; color: #fff; text-align: center; font-weight: bold; white-space: nowrap; }
+                        .mq-lines th, .mq-lines td { font-size: 12px; padding: 5px 4px; border: 1px solid #c5cee0; }
+                        .mq-lines th { background-color: #e8eef8; color: #1f2a44; text-align: center; font-weight: bold; white-space: nowrap; }
                         .mq-lines tbody tr:nth-child(even) td { background-color: #f4f5fa; }
-                        .mq-lines tbody tr.mq-total td { background-color: #191970; color: #fff; font-weight: bold; }
+                        .mq-lines tbody tr.mq-total td { background-color: #f3f5f9; color: #1f2a44; font-weight: bold; }
                         .mq-lines .c { text-align: center; white-space: nowrap; }
                         .mq-lines .num { text-align: right; white-space: nowrap; }
                         thead { display: table-header-group; }
@@ -121,7 +121,7 @@
                             </tbody>
                         </table>
 
-                        <table style="width: 100%; margin-top: 110px; color: #191970; font-size: 13px;">
+                        <table style="width: 100%; margin-top: 110px; color: #2b4c7e; font-size: 13px;">
                             <tr>
                                 <td style="width: 33%;"><t t-out="o.create_uid.name"/></td>
                                 <td/><td/>

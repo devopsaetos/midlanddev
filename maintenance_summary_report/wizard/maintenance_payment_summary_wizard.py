@@ -1,167 +1,67 @@
 # -*- coding: utf-8 -*-
-import base64
-import datetime
-from datetime import timedelta, datetime
-from io import BytesIO
-import pandas as pd
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
-from dateutil.relativedelta import relativedelta
+from odoo import models, fields, _
+
+from .report_filter_mixin import CHARGE_LABELS, SECTOR_DOMAIN, UNIT_DOMAIN
 
 
 class MaintenancePaymentSummaryWizard(models.TransientModel):
     _name = 'maintenance.payment.summary.wizard'
+    _inherit = 'maintenance.report.filter.mixin'
     _description = 'Maintenance Payment Summary Wizard'
 
     society_id = fields.Many2one('society', string='Society', domain="[('is_society','=',True)]")
     phase_id = fields.Many2one('society', string='Phase', domain="[('society_id','=',society_id)]")
-    sector_ids = fields.Many2many('sector', string='Sector', domain="[('phase_id','=',phase_id)]")
+    sector_ids = fields.Many2many('sector', string='Sector', domain=SECTOR_DOMAIN)
     street_ids = fields.Many2many('street', string='Street', domain="[('sector_id', 'in', sector_ids)]")
     category_ids = fields.Many2many('plot.category', string='Category')
     unit_category_type_ids = fields.Many2many('unit.category.type', string="Product")
-    product_id = fields.Many2one('product.product', string='Charge Type', domain=lambda self: self._product_domain())
-    inventory_ids = fields.Many2many('plot.inventory', domain="[('street_id','in',street_ids)]")
-    unit_class_id = fields.Many2one('unit.class', default=lambda self: self._default_unit_class())
+    # kept for old saved wizards; the report filters on charge_type
+    product_id = fields.Many2one('product.product', string='Charge Product')
+    inventory_ids = fields.Many2many('plot.inventory', domain=UNIT_DOMAIN)
+    unit_class_id = fields.Many2one('unit.class', help='Empty = every unit class (Plot, House, ...).')
     from_date = fields.Date(string='From Date', required=True)
     to_date = fields.Date(string='To Date', required=True)
-    created_by = fields.Many2one('res.users')
+    created_by = fields.Many2one('res.users', help='User who recorded the payment.')
     maintenance_payment_summary_xl = fields.Binary('Maintenance Summary Report Excel File')
 
-    @api.model
-    def _product_domain(self):
-        return [('id', 'in', self.env['maintenance.charges.type.lines'].sudo().search([]).mapped('product_id.id'))]
-
-    def _default_unit_class(self):
-        house = self.env['unit.class'].search([('name', '=', 'House')], limit=1)
-        return house.id if house else False
-
     def generate_xlsx_report(self):
-        # Determine the property_invoice_type condition based on product_id
-        maintenance_product = self.env['maintenance.charges']._get_maintenance_charges_product_id()
-        property_invoice_type_condition = (
-            "AND am.property_invoice_type = 'maintenance_charges'"
-            if self.product_id.id == maintenance_product.id
-            else "AND am.property_invoice_type = 'society_charges'"
-        )
-
-        # Construct the SQL query
-        # Odoo 19 field-name fixes vs. the version this SQL was originally written for:
-        #  - account_move: 'type' -> 'move_type', 'invoice_payment_state' -> 'payment_state'
-        #  - account_payment: no 'payment_date' column (it's 'date'); cancelled state value
-        #    is spelled 'canceled' (single L), not 'cancelled'.
-        sql_query = f"""
-            SELECT
-                customer.name AS Customer,
-                f.name as File,
-                sector.name AS Sector,
-                street.name AS Street,
-                COALESCE(inventory.name, f.unit_number) AS House_No,
-                product.name AS Product,
-                INITCAP(am.property_invoice_type) as Property_Invoice_Type,
-                am.name as Invoice,
-                am.invoice_date as Invoice_Date,
-                ap.name as Payment,
-                mip.payment_date as Payment_Date, 
-                am.amount_total as Total_Amount,
-                mip.payment_amount as Payment_Amount,
-                am.amount_residual as Amount_Due,
-                mip.discount_amount as Discount_Amount,
-                INITCAP(am.payment_state) as Payment_State
-            FROM 
-                multi_invoice_payment mip
-            LEFT JOIN 
-                account_payment ap on ap.id = mip.payment_id 
-            LEFT JOIN
-                account_move am ON am.id = mip.invoice_id
-            LEFT JOIN 
-                account_move_line aml ON am.id = aml.move_id
-            LEFT JOIN 
-                file f ON f.id = am.file_ids
-            LEFT JOIN 
-                society s ON s.id = f.society_id
-            LEFT JOIN 
-                society p ON p.id = f.phase_id
-            LEFT JOIN 
-                plot_inventory inventory ON inventory.id = f.inventory_id
-            LEFT JOIN 
-                sector sector ON sector.id = COALESCE(inventory.sector_id, f.sector_id)
-            LEFT JOIN 
-                res_partner customer ON customer.id = am.partner_id
-            LEFT JOIN 
-                street street ON street.id = inventory.street_id
-            LEFT JOIN 
-                unit_category_type product ON product.id = f.unit_category_type_id
-            LEFT JOIN 
-                plot_category pc ON pc.id = f.category_id
-            LEFT JOIN 
-                product_product pp ON pp.id = aml.product_id
-            WHERE
-                am.move_type = 'out_invoice'
-                AND am.state = 'posted'
-                AND ap.state NOT IN ('draft', 'canceled')
-                AND am.invoice_date >= '2023-11-01'
-                AND ap.date >= '{str(self.from_date)}'
-                AND ap.date <= '{str(self.to_date)}'
-                AND f.unit_class_id = {str(self.unit_class_id.id)}
-                AND aml.product_id = {str(self.product_id.id)}
-                {"AND f.society_id = " + str(self.society_id.id) if self.society_id else ""}
-                {"AND f.phase_id = " + str(self.phase_id.id) if self.phase_id else ""}
-                {"AND ap.create_uid = " + str(self.created_by.id) if self.created_by else ""}
-                {property_invoice_type_condition}
-                {'AND sector.id IN (' + ','.join(map(str, self.sector_ids.ids)) + ')' if self.sector_ids else ''}
-                {'AND street.id IN (' + ','.join(map(str, self.street_ids.ids)) + ')' if self.street_ids else ''}
-                {'AND pc.id IN (' + ','.join(map(str, self.category_ids.ids)) + ')' if self.category_ids else ''}
-                {'AND inventory.id IN (' + ','.join(map(str, self.inventory_ids.ids)) + ')' if self.inventory_ids else ''}
-                {'AND product.id IN (' + ','.join(map(str, self.unit_category_type_ids.ids)) + ')' if self.unit_category_type_ids else ''}
-            ORDER BY
-                customer,
-                invoice
-        """
-
-        # Execute the SQL query
-        self._cr.execute(sql_query)
-        data = self._cr.dictfetchall()
-        if not data:
-            raise UserError(_('No payments found for the selected filters. Please widen your date range or filters and try again.'))
-
-        # Convert the result to a DataFrame
-        df = pd.DataFrame(data)
-
-        # Capitalize column headings
-        df.columns = map(str.capitalize, df.columns)
-
-        # Export DataFrame to Excel
-        # Create a BytesIO buffer to save the Excel file
-        excel_buffer = BytesIO()
-
-        # Use pandas to save the DataFrame to the buffer as an Excel file with proper column widths
-        with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Maintenance Payments Summary')
-            # Set column widths
-            for column in df:
-                column_width = max(df[column].astype(str).map(len).max(), len(column))
-                col_idx = df.columns.get_loc(column)
-                writer.sheets['Maintenance Payments Summary'].set_column(col_idx, col_idx, column_width)
-
-        # Get the bytes data from the buffer
-        excel_bytes = excel_buffer.getvalue()
-
-        # Encode the bytes data using base64
-        excel_base64 = base64.b64encode(excel_bytes)
-
-        # Convert the base64 data to a string
-        excel_base64_str = excel_base64.decode('utf-8')
-
-        # Close the buffer
-        excel_buffer.close()
-
-        # Save the base64-encoded Excel data to the desired field in your model
-        self.maintenance_payment_summary_xl = excel_base64_str
-        file_name = f'Maintenance Payments Summary - [{datetime.now().strftime("%d-%m-%Y %I:%M:%S %p")}].xlsx'
-
-        # Return the action to download the file
-        return {
-            'type': 'ir.actions.act_url',
-            'url': 'web/content/?model=maintenance.payment.summary.wizard&field=maintenance_payment_summary_xl&download=true&id=%s&filename=%s' % (
-            self.id, file_name),
-        }
+        """One row per payment and invoice it paid, for payments dated in the period."""
+        self.ensure_one()
+        rows = []
+        invoices = self._report_invoices()
+        charges = {(it['invoice'].id, it['kind']): it for it in invoices._maintenance_items()}
+        for invoice, payment, date, kind, amount in invoices._maintenance_paid_parts():
+            if not date or date < self.from_date or date > self.to_date:
+                continue
+            if self.charge_type and kind != self.charge_type:
+                continue
+            if self.created_by and (payment.create_uid if payment else False) != self.created_by:
+                continue
+            file = invoice.file_ids[:1]
+            rows.append(dict(
+                self._file_info(file),
+                charge=CHARGE_LABELS.get(kind, ''),
+                invoice=invoice.name,
+                invoice_month=invoice.invoice_date and invoice.invoice_date.strftime('%b-%Y') or '',
+                bill=invoice.ref or '',
+                payment=payment.name if payment else '',
+                payment_date=date.strftime('%d-%m-%Y'),
+                journal=payment.journal_id.name if payment else '',
+                invoice_amount=charges[(invoice.id, kind)]['amount'],
+                paid=amount,
+                due=charges[(invoice.id, kind)]['due'],
+                state=dict(invoice._fields['payment_state']._description_selection(self.env)).get(invoice.payment_state, ''),
+                created_by=payment.create_uid.name if payment else '',
+                _sort=(date, invoice.name),
+            ))
+        rows.sort(key=lambda r: r.pop('_sort'))
+        columns = [('customer', 'Customer'), ('file', 'File'), ('sector', 'Sector'), ('street', 'Street'),
+                   ('house_no', 'House No'), ('product', 'Product'), ('charge', 'Charge Type'),
+                   ('invoice', 'Invoice'), ('invoice_month', 'Bill Month'), ('bill', 'Bill No.'),
+                   ('payment', 'Payment'), ('payment_date', 'Payment Date'), ('journal', 'Journal'),
+                   ('invoice_amount', 'Charge Amount'), ('paid', 'Amount Paid'), ('due', 'Amount Due Now'),
+                   ('state', 'Invoice Status'), ('created_by', 'Received By')]
+        if not any(r['street'] for r in rows):
+            columns.remove(('street', 'Street'))
+        return self._xlsx_download('maintenance_payment_summary_xl', _('Maintenance Payments Summary'), columns,
+                                   rows, money={'invoice_amount', 'paid', 'due'})

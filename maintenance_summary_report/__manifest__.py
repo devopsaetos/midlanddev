@@ -11,10 +11,10 @@
     'website': 'https://siddiqchauhdry.com',
 
     'category': 'Real Estate',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
 
     # any module necessary for this one to work correctly
-    'depends': ['file_financials', 'maintenance_collection_report'],
+    'depends': ['file_financials', 'maintenance_charges', 'maintenance_collection_report'],
 
     # always loaded
     'data': [

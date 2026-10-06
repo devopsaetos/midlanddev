@@ -121,7 +121,7 @@
                             .mr-no { text-align: right; font-size: 11px; }
                             .mr-titles { text-align: center; }
                             .mr-company { font-size: 17px; font-weight: bold; }
-                            .mr-title { font-size: 15px; font-weight: bold; color: #191970; margin-top: 2px; }
+                            .mr-title { font-size: 15px; font-weight: bold; color: #2b4c7e; margin-top: 2px; }
                             .mr-copyname { font-size: 11px; font-weight: bold; text-decoration: underline; margin-top: 2px; }
                             .mr-strong { font-weight: bold; font-size: 12px; }
                             .mr-info { width: 100%; table-layout: fixed; margin-bottom: 12px; }
@@ -129,11 +129,12 @@
                             .mr-info td.lbl { font-weight: bold; }
                             .mr-info td.val { border-bottom: 1px solid #999; }
                             .mr-lines { width: 100%; table-layout: fixed; border-collapse: collapse; }
-                            .mr-lines th, .mr-lines td { border: 1px solid #999; padding: 5px 6px; font-size: 12px; }
-                            .mr-lines thead th, .mr-lines tr.mr-total td { background-color: #191970; color: #fff; font-weight: bold; }
+                            .mr-lines th, .mr-lines td { border: 1px solid #c5cee0; padding: 5px 6px; font-size: 12px; }
+                            .mr-lines thead th { background-color: #e8eef8; color: #1f2a44; font-weight: bold; }
+                            .mr-lines tr.mr-total td { background-color: #f3f5f9; color: #1f2a44; font-weight: bold; }
                             .mr-lines .num { text-align: right; white-space: nowrap; }
                             .mr-lines .c { text-align: center; }
-                            .mr-words { color: #191970; font-size: 12px; margin-top: 10px; }
+                            .mr-words { color: #2b4c7e; font-size: 12px; margin-top: 10px; }
                             .mr-balance { font-size: 12px; margin-top: 6px; }
                             .mr-sign { width: 100%; margin-top: 40px; }
                             .mr-sign td { border: 0; font-size: 12px; }

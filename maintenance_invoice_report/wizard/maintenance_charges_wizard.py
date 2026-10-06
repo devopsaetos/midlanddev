@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import base64
 from io import BytesIO
-import xlwt  # Odoo 19: xlwt is imported directly (odoo.tools.misc no longer re-exports it,
-             # it is patched at import time via odoo/_monkeypatches/xlwt.py)
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 
 class MaintenanceChargesWizard(models.TransientModel):
@@ -12,173 +11,119 @@ class MaintenanceChargesWizard(models.TransientModel):
 
     society_id = fields.Many2one('society', string='Society', domain="[('is_society','=',True)]")
     phase_id = fields.Many2one('society', string='Phase', domain="[('society_id','=',society_id)]")
-    sector_id = fields.Many2one('sector', string='Sector', domain="[('phase_id','=',phase_id)]")
+    sector_id = fields.Many2one('sector', string='Sector',
+                                domain="phase_id and [('phase_id', '=', phase_id)] or (society_id and [('society_id', '=', society_id)] or [])")
     street_id = fields.Many2many('street', string='Street', domain="[('sector_id', '=', sector_id)]")
     category_ids = fields.Many2many('plot.category', string='Category')
     unit_category_type_ids = fields.Many2many('unit.category.type', string="Product")
-    inventory_ids = fields.Many2many('plot.inventory', domain="[('street_id','in',street_id)]")
+    inventory_ids = fields.Many2many('plot.inventory', domain="street_id and [('street_id', 'in', street_id)] or (sector_id and [('sector_id', '=', sector_id)] or (society_id and [('society_id', '=', society_id)] or []))")
     from_date = fields.Date(string='From Date', required=True)
     to_date = fields.Date(string='To Date', required=True)
     maintenance_xl_file = fields.Binary('EOBI Excel Report')
     file_name = fields.Char('File Name')
 
-    def process_pdf_report(self):
-        data = {
-            'society_id': self.society_id,
-            'phase_id': self.phase_id,
-            'sector_id': self.sector_id,
-            'street_id': self.street_id,
-            'category_ids': self.category_ids,
-            'unit_category_type_ids': self.unit_category_type_ids,
-            'inventory_ids': self.inventory_ids,
-        }
-        return self.env.ref("maintenance_invoice_report.action_society_maintenance_charges_report").report_action(self,
-                                                                                                                  data=data)
-
-    def process_excel_report(self):
-        workbook = xlwt.Workbook()
-        worksheet = workbook.add_sheet('Maintenance Charges Excel Report', cell_overwrite_ok=True)
-        heading_style = xlwt.easyxf(
-            'font: bold on,height 300;align: wrap on,vert centre, horiz center; align: wrap yes,vert centre, horiz center;pattern: pattern solid, fore-colour aqua;')
-        table_heading_style = xlwt.easyxf(
-            'font: bold on,height 220;align: wrap on,vert centre, horiz center; align: wrap yes,vert centre, horiz center;pattern: pattern solid, fore-colour gray25;border: left thin,right thin,top thin,bottom thin')
-        columns_right_bold_style = xlwt.easyxf(
-            'font: height 200;align: wrap on,vert centre, horiz right; align: wrap yes,vert centre;')
-
-        '''set the Columns Width '''
-
-        zero_col = worksheet.col(0)
-        zero_col.width = 256 * 25
-        first_col = worksheet.col(1)
-        first_col.width = 256 * 30
-        second_col = worksheet.col(2)
-        second_col.width = 256 * 25
-        third_col = worksheet.col(3)
-        third_col.width = 256 * 20
-        fourth_col = worksheet.col(4)
-        fourth_col.width = 256 * 25
-        fifth_col = worksheet.col(5)
-        fifth_col.width = 256 * 20
-        sixth_col = worksheet.col(6)
-        sixth_col.width = 256 * 20
-        seven_col = worksheet.col(7)
-        seven_col.width = 256 * 25
-        eighth_col = worksheet.col(8)
-        eighth_col.width = 256 * 25
-        ninth_col = worksheet.col(9)
-        ninth_col.width = 256 * 25
-        tenth_col = worksheet.col(10)
-        tenth_col.width = 256 * 25
-
-        sr = 1
-        for wizard in self:
-            pass
-
-        '''This is the Table Headings'''
-        worksheet.write_merge(1, 2, 2, 7, _('Maintenance Invoices Summary').upper(), heading_style)
-        worksheet.write_merge(4, 4, 0, 0, _('Date From').upper(), table_heading_style)
-        worksheet.write_merge(4, 4, 8, 8, _('Date To').upper(), table_heading_style)
-        worksheet.write_merge(4, 4, 1, 1, _(self.from_date), table_heading_style)
-        worksheet.write_merge(4, 4, 9, 9, _(self.to_date), table_heading_style)
-        worksheet.write_merge(6, 6, 0, 0, _('Sr#').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 1, 1, _('Customer').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 2, 2, _('Society').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 3, 3, _('Phase').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 4, 4, _('Sector').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 5, 5, _('Street').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 6, 6, _('Size').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 7, 7, _('House No').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 8, 8, _('Current Month Bill').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 9, 9, _('Arrears').upper(), table_heading_style)
-        worksheet.write_merge(6, 6, 10, 10, _('Total Bill Amount').upper(), table_heading_style)
-
-        set_date = '2023-11-01'
-        domain = [
-            ('state', '=', 'posted'),
-            ('property_invoice_type', '=', 'maintenance_charges'),
-            ('invoice_line_ids.product_id.id', '=', 103),
-            ('payment_state', '!=', 'paid')
-        ]
-
+    def _invoice_domain(self):
+        """Unpaid maintenance invoices of the filtered units in the period."""
+        domain = [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'),
+                  ('property_invoice_type', 'in', ('maintenance_charges', 'society_charges')),
+                  ('payment_state', 'not in', ('paid', 'in_payment', 'reversed')),
+                  ('invoice_date', '>=', self.from_date), ('invoice_date', '<=', self.to_date)]
         if self.society_id:
             domain.append(('file_ids.society_id', '=', self.society_id.id))
-
         if self.phase_id:
             domain.append(('file_ids.phase_id', '=', self.phase_id.id))
-
         if self.sector_id:
             domain.append(('file_ids.sector_id', '=', self.sector_id.id))
-
         if self.street_id:
             domain.append(('file_ids.street_id', 'in', self.street_id.ids))
-
         if self.category_ids:
             domain.append(('file_ids.category_id', 'in', self.category_ids.ids))
-
         if self.unit_category_type_ids:
             domain.append(('file_ids.unit_category_type_id', 'in', self.unit_category_type_ids.ids))
-
         if self.inventory_ids:
-            domain.append(('file_ids.inventory_id', 'in', self.inventory_ids.ids))
+            # imported files are often not linked to their plot: match the plot number too
+            domain += ['|', ('file_ids.inventory_id', 'in', self.inventory_ids.ids),
+                       ('file_ids.unit_number', 'in', self.inventory_ids.mapped('name'))]
+        return domain
 
-        if self.from_date:
-            domain.append(('invoice_date', '>=', self.from_date))
+    def process_pdf_report(self):
+        """Print the unpaid invoices of the selected units with the invoice format
+        (one page per invoice: Bank / Account / Customer copies)."""
+        invoices = self.env['account.move'].with_context(
+            allowed_company_ids=self.env.user.company_ids.ids).search(self._invoice_domain(), order='invoice_date, name')
+        if not invoices:
+            raise UserError(_('No unpaid maintenance invoices for the selected filters and dates.'))
+        return self.env.ref('maintenance_invoice_report.action_maintenance_invoice_report').report_action(invoices)
 
-        if self.to_date:
-            domain.append(('invoice_date', '<=', self.to_date))
+    def process_excel_report(self):
+        """One row per unit and charge: this period's bills, arrears before the period
+        (imported Excel balances included) and the total to collect."""
+        import xlsxwriter
+        env = self.with_context(allowed_company_ids=self.env.user.company_ids.ids).env
+        domain = [d for d in self._invoice_domain() if not (isinstance(d, tuple) and d[0] == 'payment_state')]
+        invoices = env['account.move'].search(domain, order='invoice_date, name')
+        labels = {'utility': _('Utility / Maintenance'), 'electricity': _('Electricity'), 'service': _('Service Charges')}
+        rows = {}
+        # one item per invoice and charge: a Monthly Bill invoice holds utility and electricity
+        for item in invoices._maintenance_items():
+            invoice, kind = item['invoice'], item['kind']
+            file = invoice.file_ids[:1]
+            if (file.id, kind) not in rows:
+                plot = file.inventory_id or env['plot.inventory'].search(
+                    [('name', '=', file.unit_number), ('society_id', '=', file.society_id.id)], limit=1)
+                arrears = file._maintenance_arrears(kind, self.from_date) if kind in ('utility', 'electricity') else 0.0
+                rows[(file.id, kind)] = {
+                    'customer': file.membership_id.name or invoice.partner_id.name, 'society': file.society_id.name,
+                    'phase': file.phase_id.name, 'sector': file.sector_id.name or plot.sector_id.name,
+                    'street': file.street_id.name or plot.street_id.name, 'size': file.size_id.name or plot.size_id.name,
+                    'house': file.unit_number or plot.name, 'charge': labels.get(kind, ''),
+                    'bill': 0.0, 'arrears': arrears}
+            rows[(file.id, kind)]['bill'] += item['due']
+        if not rows:
+            raise UserError(_('No maintenance invoices for the selected filters and dates.'))
 
-        records = self.env['account.move'].search(domain)
-        rule_group = records.read_group(domain, ['file_ids'], ['file_ids'])
-
-        row = 7
-        for group in rule_group:
-            group_date = records.search(group['__domain'])
-            current_date = fields.Date.today()
-            current_month_invoice = group_date.filtered(
-                lambda l: l.invoice_date.month == self.from_date.month and l.invoice_date.year == self.from_date.year)
-            current_month_bill = 0.0
-            if current_month_invoice:
-                current_month_bill = current_month_invoice.amount_total
-            previous_invoices = self.env['account.move'].search([
-                    ('payment_state', '=', 'not_paid'),
-                    ('state', '=', 'posted'),
-                    ('property_invoice_type', '=', 'maintenance_charges'),
-                    ('partner_id', '=', group_date[0].partner_id.id),
-                    ('file_ids', 'in', group_date[0].file_ids.ids),
-                    ('invoice_date', '>=', set_date),
-                    ('invoice_date', '<', max(rec.invoice_date for rec in group_date)),
-                    ('payment_state', '!=', 'paid')
-                ])
-            previous_unpaid_amount = 0.0
-            if previous_invoices:
-                previous_unpaid_amount = sum(previous_invoices.mapped('amount_residual_signed'))
-            worksheet.write_merge(row, row, 0, 0, _(sr), columns_right_bold_style)
-            worksheet.write_merge(row, row, 1, 1, _(group_date[0].partner_id.name))
-            worksheet.write_merge(row, row, 2, 2, _(group_date[0].file_ids.society_id.name))
-            worksheet.write_merge(row, row, 3, 3, _(group_date[0].file_ids.phase_id.name))
-            worksheet.write_merge(row, row, 4, 4, _(group_date[0].file_ids.sector_id.name))
-            worksheet.write_merge(row, row, 5, 5, _(group_date[0].file_ids.street_id.name))
-            worksheet.write_merge(row, row, 6, 6, _(group_date[0].file_ids.size_id.name))
-            worksheet.write_merge(row, row, 7, 7, _(group_date[0].file_ids.inventory_id.name))
-            worksheet.write_merge(row, row, 8, 8, _('{0:,.2f}'.format(current_month_bill)), columns_right_bold_style)
-            worksheet.write_merge(row, row, 9, 9, _('{0:,.2f}'.format(previous_unpaid_amount)),
-                                  columns_right_bold_style)
-            worksheet.write_merge(row, row, 10, 10, _('{0:,.2f}'.format(current_month_bill + previous_unpaid_amount)),
-                                  columns_right_bold_style)
-
-            sr = sr + 1
-            row = row + 1
-
+        columns = [('customer', 'Customer'), ('society', 'Society'), ('phase', 'Phase'), ('sector', 'Sector'),
+                   ('street', 'Street'), ('size', 'Size'), ('house', 'House No'), ('charge', 'Charge Type'),
+                   ('bill', 'Current Bill (unpaid)'), ('arrears', 'Arrears'), ('total', 'Total Payable')]
+        if not any(r['street'] for r in rows.values()):
+            columns.remove(('street', 'Street'))
         fp = BytesIO()
-        workbook.save(fp)
-        # base64.encodestring() was removed in Python 3.9+; use encodebytes() instead.
-        excel_file = base64.encodebytes(fp.getvalue())
-        wizard.maintenance_xl_file = excel_file
-        wizard.file_name = 'Maintenance Charges Report.xls'
-        fp.close()
-
+        book = xlsxwriter.Workbook(fp, {'in_memory': True})
+        sheet = book.add_worksheet('Maintenance Charges')
+        title = book.add_format({'bold': True, 'font_size': 14, 'font_color': '#2B4C7E'})
+        head = book.add_format({'bold': True, 'bg_color': '#E8EEF8', 'font_color': '#1F2A44', 'border': 1,
+                                'border_color': '#C5CEE0', 'text_wrap': True})
+        text = book.add_format({'border': 1, 'border_color': '#D9DEE8'})
+        num = book.add_format({'border': 1, 'border_color': '#D9DEE8', 'num_format': '#,##0.00'})
+        total = book.add_format({'bold': True, 'bg_color': '#F3F5F9', 'border': 1, 'border_color': '#C5CEE0',
+                                 'num_format': '#,##0.00'})
+        sheet.write(0, 0, _('Maintenance Invoices Summary'), title)
+        sheet.write(1, 0, _('From %s to %s') % (self.from_date.strftime('%d-%m-%Y'), self.to_date.strftime('%d-%m-%Y')))
+        sheet.write(3, 0, _('Sr#'), head)
+        for col, (_key, label) in enumerate(columns, start=1):
+            sheet.write(3, col, label, head)
+            sheet.set_column(col, col, 22)
+        ordered = sorted(rows.values(), key=lambda r: (r['sector'] or '', r['house'] or '', r['charge']))
+        for idx, r in enumerate(ordered, start=1):
+            r['total'] = r['bill'] + r['arrears']
+            sheet.write(3 + idx, 0, idx, text)
+            for col, (key, _label) in enumerate(columns, start=1):
+                if key in ('bill', 'arrears', 'total'):
+                    sheet.write_number(3 + idx, col, r[key], num)
+                else:
+                    sheet.write(3 + idx, col, r[key] or '', text)
+        last = 4 + len(ordered)
+        sheet.write(last, 0, _('Total'), total)
+        for col, (key, _label) in enumerate(columns, start=1):
+            if key in ('bill', 'arrears', 'total'):
+                sheet.write_number(last, col, sum(r[key] for r in ordered), total)
+            else:
+                sheet.write(last, col, '', total)
+        book.close()
+        self.maintenance_xl_file = base64.b64encode(fp.getvalue())
+        self.file_name = 'Maintenance Charges Report.xlsx'
         return {
             'type': 'ir.actions.act_url',
             'url': 'web/content/?model=maintenance.charges.wizard&field=maintenance_xl_file&download=true&id=%s&filename=%s' % (
-                self.id, 'Maintenance Charges Report.xls'),
+                self.id, self.file_name),
         }

@@ -21,5 +21,7 @@ class FileExt(models.Model):
             lambda h: h.charge_type == charge_type and h.date and h.date < before_date)
         imported = history.filtered(lambda h: not h.invoice_id).sorted(lambda h: (h.date, h.id))
         opening = imported[-1].residual if imported else 0.0
-        invoices = history.mapped('invoice_id').filtered(lambda m: m.state == 'posted')
-        return opening + sum(invoices.mapped('amount_residual'))
+        # each invoice row carries its own share of the invoice (one invoice can hold
+        # utility and electricity)
+        billed = history.filtered(lambda h: h.invoice_id and h.invoice_id.state == 'posted')
+        return opening + sum(billed.mapped('residual'))

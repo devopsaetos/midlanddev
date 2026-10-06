@@ -9,7 +9,7 @@
     'author': "Muhammad Hamza Faizan | Data Elite",
     'website': "dateelite.tech",
     'category': 'Account',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'depends': [
         'base', 'account',
         # 'axiom_recovery_report',  # Odoo 19: not available anywhere in this project (only

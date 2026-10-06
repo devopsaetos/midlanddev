@@ -2,7 +2,7 @@
 <odoo>
     <template id="maintenance_charges_customized_footer">
         <div class="footer">
-            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#191970;">
+            <div class="row" style="font-size:11px;font-family:'Roboto',sans-serif;color:#2b4c7e;">
                 <div class="col-4 text-center" style="margin-top:40px;">
                     <span>Printed By:
                         <span t-esc="request.env.user.name"/>
@@ -102,12 +102,9 @@
                             <tr><th>Description</th><th class="num">Amount</th></tr>
                         </thead>
                         <tbody>
-                            <tr t-foreach="i['lines']" t-as="line">
-                                <td>
-                                    <t t-if="i['charge_label'] and len(i['lines']) == 1"><t t-out="i['charge_label']"/> for the Month of <t t-out="i['month']"/></t>
-                                    <t t-else="" t-out="line.name"/>
-                                </td>
-                                <td class="num"><t t-out="fmt(line.price_total)"/></td>
+                            <tr t-foreach="i['rows']" t-as="row">
+                                <td><t t-out="row[0]"/></td>
+                                <td class="num"><t t-out="fmt(row[1])"/></td>
                             </tr>
                             <tr>
                                 <td><strong>Arrears</strong></td>
@@ -168,18 +165,18 @@
                         .mi-info .lbl { font-weight: bold; }
                         .mi-info td.val { border-bottom: 1px solid #999; }
                         .mi-box { border: 1px solid #ccc; }
-                        .mi-copy .mi-section { color: #191970; font-weight: bold; font-size: 14px; margin: 6px 0 4px 0; }
+                        .mi-copy .mi-section { color: #2b4c7e; font-weight: bold; font-size: 14px; margin: 6px 0 4px 0; }
                         .mi-meter { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 10px; }
                         .mi-meter th, .mi-meter td { border: 1px solid #999; padding: 3px 4px; text-align: center; }
                         .mi-meter th { background: #eef0f7; font-weight: bold; }
                         .mi-lines { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; }
-                        .mi-lines th { background: #191970; color: #fff; font-weight: bold; text-align: left; padding: 5px 6px; border: 1px solid #191970; }
-                        .mi-lines td { border: 1px solid #999; padding: 5px 6px; vertical-align: top; }
-                        .mi-lines tr.mi-total td { font-weight: bold; background: #f2f2f2; }
-                        .mi-copy .mi-words { color: #191970; margin-top: 12px; }
-                        .mi-copy .mi-approved { text-align: right; margin: 0 10px 24px 0; color: #191970; }
-                        .mi-approved span { border-top: 1px solid #191970; padding: 2px 16px 0 16px; }
-                        .mi-printed { width: 100%; color: #191970; }
+                        .mi-lines th { background: #e8eef8; color: #1f2a44; font-weight: bold; text-align: left; padding: 5px 6px; border: 1px solid #c5cee0; }
+                        .mi-lines td { border: 1px solid #c5cee0; padding: 5px 6px; vertical-align: top; }
+                        .mi-lines tr.mi-total td { font-weight: bold; background: #f3f5f9; }
+                        .mi-copy .mi-words { color: #2b4c7e; margin-top: 12px; }
+                        .mi-copy .mi-approved { text-align: right; margin: 0 10px 24px 0; color: #2b4c7e; }
+                        .mi-approved span { border-top: 1px solid #2b4c7e; padding: 2px 16px 0 16px; }
+                        .mi-printed { width: 100%; color: #2b4c7e; }
                         .mi-copy .mi-printed td { font-size: 11px; }
                         .num { text-align: right; white-space: nowrap; }
                     </style>

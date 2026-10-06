@@ -407,17 +407,33 @@ class MaintenanceChargesHistory(models.Model):
             else:
                 rec.payment_date = ''
 
+    def _invoice_share(self):
+        """(paid, due) of this row's charge on its invoice. A Monthly Bill invoice carries
+        utility and electricity; payments fill utility first, then electricity."""
+        self.ensure_one()
+        invoice = self.invoice_id
+        parts = invoice._maintenance_parts_map().get(invoice.id) or []
+        if len(parts) <= 1:
+            return invoice.amount_total - invoice.amount_residual, invoice.amount_residual
+        split = invoice._maintenance_split(parts, 0.0, invoice.amount_total - invoice.amount_residual)
+        paid = split.get(self.charge_type, 0.0)
+        return paid, dict(parts).get(self.charge_type, self.amount) - paid
+
     def _double_check_paid_amount(self):
         for rec in self:
-            if rec.invoice_id and rec.amount_paid != rec.invoice_id.amount_total - rec.invoice_id.amount_residual:
+            if rec.invoice_id and abs(rec.amount_paid - rec._invoice_share()[0]) > 0.005:
                 rec._invoice_id_data()
             rec.double_check_paid_amount = True
 
     @api.depends('invoice_id', 'invoice_id.amount_residual', )
     def _invoice_id_data(self):
+        # Only recomputed when the invoice changes, so imported Excel rows (no invoice) keep
+        # the paid / due amounts they were imported with.
         for rec in self:
-            rec.amount_paid = rec.invoice_id.amount_total - rec.invoice_id.amount_residual
-            rec.residual = rec.invoice_id.amount_residual
+            if rec.invoice_id:
+                rec.amount_paid, rec.residual = rec._invoice_share()
+            else:
+                rec.amount_paid, rec.residual = 0.0, 0.0
 
     def unlink(self):
         for rec in self:

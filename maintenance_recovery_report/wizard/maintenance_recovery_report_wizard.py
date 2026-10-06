@@ -23,7 +23,9 @@ class MaintenanceRecoveryWizard(models.TransientModel):
     product_id = fields.Many2one('unit.category.type', 'Product')
     date_from = fields.Date('Start Date')
     date_to = fields.Date(string='End Date')
-    agent_ids = fields.Many2many('res.users', string="Recovery Agent")
+    agent_ids = fields.Many2many('res.users', string="Recovery Agent",
+                                 domain="[('maintenance_recovery_agent', '=', True)]",
+                                 help='Files assigned to these recovery agents. Empty = all files.')
 
     def process_report(self):
         data = {}
