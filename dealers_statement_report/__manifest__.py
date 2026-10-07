@@ -9,7 +9,7 @@
     'author': "Muhammad Hamza Faizan | Data Elites",
     'website': "linkedin.com/in/muhammad-hamza-faizan/",
     'category': 'Sales/Real Estate',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'depends': ['real_estate', 'file_financials', 'default_payment'],
     'data': [
         'security/ir.model.access.csv',

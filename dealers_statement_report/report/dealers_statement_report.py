@@ -313,6 +313,7 @@ class DealerStatementReport(models.AbstractModel):
                     'cheque_no': '',
                     'bank_ref': mpl.payment_id.journal_id.name,
                     'payment_method': self._payment_method_label(mpl.payment_id),
+                    'reference': mpl.payment_id.remarks or '',
                 })
         return lines
 
@@ -335,6 +336,7 @@ class DealerStatementReport(models.AbstractModel):
                         'cheque_no': mp.payment_id.cheque_no,
                         'bank_ref': mp.payment_id.bank_ref,
                         'payment_method': self._payment_method_label(mp.payment_id),
+                        'reference': mp.payment_id.memo or '',
                     })
         return lines
 
