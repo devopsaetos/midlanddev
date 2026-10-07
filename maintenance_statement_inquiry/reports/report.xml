@@ -36,6 +36,10 @@
     <template id="maintenance_statement_inquiry.report_maintenance_inquiry">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
+                <!-- size / category / product of a house can belong to another company than the
+                     ones ticked in the switcher (CV-I plots use Midland Developers' sizes): read the
+                     names the inquiry screen already shows without the multi-company rules -->
+                <t t-set="o" t-value="o.sudo()"/>
                 <t t-call="maintenance_statement_inquiry.maintenance_customized_header"/>
                 <t t-call="maintenance_statement_inquiry.maintenance_customized_footer"/>
                 <t t-call="web.basic_layout">
