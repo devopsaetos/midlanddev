@@ -6,6 +6,13 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
 
+BILL_TYPES = [
+    ('utility', 'Utility / Maintenance'),
+    ('electricity', 'Electricity'),
+    ('combined', 'Utility + Electricity (old)'),
+]
+
+
 class MaintenanceBill(models.Model):
     """One printed monthly bill of a file: utility charge + electricity from meter readings
     + arrears. Posting it creates the invoices (and Maintenance History rows) that the
@@ -22,6 +29,10 @@ class MaintenanceBill(models.Model):
         ('cancel', 'Cancelled'),
     ], default='draft', required=True, tracking=True, copy=False)
 
+    # Utility and electricity are billed separately: one bill (and one invoice, one PDF) per
+    # charge. 'combined' only for bills posted before that (one bill with both charges).
+    bill_type = fields.Selection(BILL_TYPES, string='Bill Type', required=True, index=True, tracking=True,
+                                 default=lambda self: self.env.context.get('default_bill_type') or 'utility')
     file_id = fields.Many2one('file', required=True, index=True, tracking=True)
     partner_id = fields.Many2one('res.partner', related='file_id.membership_id.partner_id', store=True)
     member_name = fields.Char(related='file_id.membership_id.name', string='Member')
@@ -94,14 +105,23 @@ class MaintenanceBill(models.Model):
             else:
                 rec.payment_state = 'not_paid'
 
-    @api.depends('previous_reading', 'current_reading', 'unit_rate', 'utility_amount',
+    def _has_utility(self):
+        return self.bill_type in ('utility', 'combined')
+
+    def _has_electricity(self):
+        return self.bill_type in ('electricity', 'combined')
+
+    @api.depends('bill_type', 'previous_reading', 'current_reading', 'unit_rate', 'utility_amount',
                  'arrears_utility', 'arrears_electricity', 'surcharge_percent')
     def _compute_amounts(self):
         for rec in self:
-            rec.units = max(rec.current_reading - rec.previous_reading, 0.0) if rec.current_reading else 0.0
+            electricity = rec._has_electricity()
+            rec.units = max(rec.current_reading - rec.previous_reading, 0.0) if electricity and rec.current_reading else 0.0
             rec.electricity_amount = round(rec.units * rec.unit_rate)
-            rec.arrears = rec.arrears_utility + rec.arrears_electricity
-            rec.current_amount = rec.utility_amount + rec.electricity_amount
+            utility_amount = rec.utility_amount if rec._has_utility() else 0.0
+            rec.arrears = (rec.arrears_utility if rec._has_utility() else 0.0) + \
+                (rec.arrears_electricity if electricity else 0.0)
+            rec.current_amount = utility_amount + rec.electricity_amount
             rec.due_amount = rec.current_amount + rec.arrears
             rec.surcharge = round(rec.due_amount * rec.surcharge_percent / 100.0)
             rec.payable_after_due = rec.due_amount + rec.surcharge
@@ -113,14 +133,20 @@ class MaintenanceBill(models.Model):
                 raise ValidationError(_('%(unit)s: current reading (%(cur)s) is lower than previous reading (%(prev)s).',
                                         unit=rec.unit_number, cur=rec.current_reading, prev=rec.previous_reading))
 
-    @api.constrains('file_id', 'bill_month', 'state')
+    @api.constrains('file_id', 'bill_month', 'state', 'bill_type')
     def _check_one_bill_per_month(self):
+        """One utility bill and one electricity bill per house and month (an old combined
+        bill counts as both)."""
+        overlapping = {'utility': ['utility', 'combined'], 'electricity': ['electricity', 'combined'],
+                       'combined': ['utility', 'electricity', 'combined']}
         for rec in self.filtered(lambda r: r.state != 'cancel'):
             dup = self.search_count([('id', '!=', rec.id), ('file_id', '=', rec.file_id.id),
-                                     ('bill_month', '=', rec.bill_month), ('state', '!=', 'cancel')])
+                                     ('bill_month', '=', rec.bill_month), ('state', '!=', 'cancel'),
+                                     ('bill_type', 'in', overlapping[rec.bill_type])])
             if dup:
-                raise ValidationError(_('%(unit)s already has a bill for %(month)s.',
-                                        unit=rec.unit_number, month=rec.bill_month.strftime('%b %Y')))
+                raise ValidationError(_('%(unit)s already has a %(type)s bill for %(month)s.',
+                                        unit=rec.unit_number, month=rec.bill_month.strftime('%b %Y'),
+                                        type=dict(BILL_TYPES)[rec.bill_type]))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -147,8 +173,8 @@ class MaintenanceBill(models.Model):
             if rec.state != 'draft':
                 raise UserError(_('Arrears can only be recomputed on draft bills.'))
             rec.write({
-                'arrears_utility': rec._arrears_for('utility'),
-                'arrears_electricity': rec._arrears_for('electricity'),
+                'arrears_utility': rec._arrears_for('utility') if rec._has_utility() else 0.0,
+                'arrears_electricity': rec._arrears_for('electricity') if rec._has_electricity() else 0.0,
             })
 
     # ------------------------------------------------------------------ posting
@@ -157,7 +183,7 @@ class MaintenanceBill(models.Model):
         self.ensure_one()
         month = self.bill_month.strftime('%b %Y')
         lines = []
-        if self.utility_amount > 0:
+        if self._has_utility() and self.utility_amount > 0:
             if not self.utility_product_id:
                 raise UserError(_('%s: set the Utility product first.') % self.name)
             lines.append(('utility', {
@@ -167,7 +193,7 @@ class MaintenanceBill(models.Model):
                 'price_unit': self.utility_amount,
                 'tax_ids': [(6, 0, [])],
             }))
-        if self.electricity_amount > 0:
+        if self._has_electricity() and self.electricity_amount > 0:
             if not self.electricity_product_id:
                 raise UserError(_('%s: set the Electricity product first.') % self.name)
             lines.append(('electricity', {
@@ -294,9 +320,25 @@ class MaintenanceBill(models.Model):
     def _bill_lines(self):
         """Rows printed in the bill table: (description, amount)."""
         self.ensure_one()
-        # Always the same rows, so every printed bill has the same layout.
-        return [
-            (_('Utility Charges'), self.utility_amount),
-            (_('Electricity (%(units)s units @ %(rate)s)', units=int(self.units), rate=self.unit_rate),
-             self.electricity_amount),
-        ]
+        # Always the same rows for a bill type, so every printed bill has the same layout.
+        lines = []
+        if self._has_utility():
+            lines.append((_('Utility Charges'), self.utility_amount))
+        if self._has_electricity():
+            lines.append((_('Electricity (%(units)s units @ %(rate)s)', units=int(self.units), rate=self.unit_rate),
+                          self.electricity_amount))
+        return lines
+
+    def _arrears_lines(self):
+        """Arrears rows printed below the charges: (description, amount)."""
+        self.ensure_one()
+        lines = []
+        if self._has_utility():
+            lines.append((_('Arrears (Utility)'), self.arrears_utility))
+        if self._has_electricity():
+            lines.append((_('Arrears (Electricity)'), self.arrears_electricity))
+        return lines
+
+    def _bill_title(self):
+        self.ensure_one()
+        return {'utility': _('Utility Bill'), 'electricity': _('Electricity Bill')}.get(self.bill_type, _('Monthly Bill'))

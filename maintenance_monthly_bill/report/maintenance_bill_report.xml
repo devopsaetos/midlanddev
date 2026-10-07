@@ -21,7 +21,7 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">maintenance_monthly_bill.report_maintenance_bill</field>
         <field name="report_file">maintenance_monthly_bill.report_maintenance_bill</field>
-        <field name="print_report_name">'Bill %s %s' % (object.unit_number or '', object.bill_month and object.bill_month.strftime('%b-%Y') or '')</field>
+        <field name="print_report_name">'%s %s %s' % ({'utility': 'Utility Bill', 'electricity': 'Electricity Bill'}.get(object.bill_type, 'Bill'), object.unit_number or '', object.bill_month and object.bill_month.strftime('%b-%Y') or '')</field>
         <field name="paperformat_id" ref="paperformat_maintenance_bill"/>
         <field name="binding_model_id" ref="model_maintenance_bill"/>
         <field name="binding_type">report</field>
@@ -42,7 +42,7 @@
                                 <div class="mb-company" t-out="o.company_id.name"/>
                                 <div class="mb-society" t-out="(o.society_id.name or '').upper()"/>
                                 <div class="mb-title" t-out="copy_title"/>
-                                <div class="mb-subtitle">Monthly Bill</div>
+                                <div class="mb-subtitle"><t t-out="o._bill_title()"/></div>
                             </td>
                             <td class="mb-logo"/>
                         </tr>
@@ -62,14 +62,17 @@
                             <td class="lbl">Date of Issue:</td><td class="val"><t t-out="dt(o.issue_date)"/></td>
                             <td class="lbl">Due Date:</td><td class="val"><t t-out="dt(o.due_date)"/></td>
                         </tr>
-                        <tr>
+                        <tr t-if="o._has_electricity()">
                             <td class="lbl">Meter No:</td><td class="val"><t t-out="o.meter_no or '-'"/></td>
                             <td class="lbl">Reading:</td>
                             <td class="val"><t t-if="o.current_reading"><t t-out="int(o.previous_reading)"/> to <t t-out="int(o.current_reading)"/></t><t t-else="">-</t></td>
                         </tr>
                         <tr>
                             <td class="lbl">Arrears:</td><td class="val"><t t-out="fmt(o.arrears)"/></td>
-                            <td class="lbl">Units:</td><td class="val"><t t-out="int(o.units) if o.current_reading else '-'"/></td>
+                            <t t-if="o._has_electricity()">
+                                <td class="lbl">Units:</td><td class="val"><t t-out="int(o.units) if o.current_reading else '-'"/></td>
+                            </t>
+                            <t t-else=""><td/><td/></t>
                         </tr>
                     </table>
 
@@ -84,15 +87,12 @@
                                 <t t-set="sr" t-value="sr + 1"/>
                                 <td><t t-out="sr"/></td><td><t t-out="line[0]"/></td><td class="num"><t t-out="fmt(line[1])"/></td>
                             </tr>
-                            <tr>
-                                <td/><td>Arrears (Utility)</td><td class="num"><t t-out="fmt(o.arrears_utility)"/></td>
-                            </tr>
-                            <tr>
-                                <td/><td>Arrears (Electricity)</td><td class="num"><t t-out="fmt(o.arrears_electricity)"/></td>
+                            <tr t-foreach="o._arrears_lines()" t-as="line">
+                                <td/><td><t t-out="line[0]"/></td><td class="num"><t t-out="fmt(line[1])"/></td>
                             </tr>
                         </tbody>
                     </table>
-                    <div class="mb-desc">Utility = Water, Sewerage, Security, Street Lights &amp; Maintenance</div>
+                    <div class="mb-desc" t-if="o._has_utility()">Utility = Water, Sewerage, Security, Street Lights &amp; Maintenance</div>
 
                     <table class="mb-total">
                         <colgroup><col style="width: 64%;"/><col style="width: 36%;"/></colgroup>

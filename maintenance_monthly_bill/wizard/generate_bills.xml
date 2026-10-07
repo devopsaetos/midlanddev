@@ -8,6 +8,7 @@
                 <form string="Generate Monthly Bills">
                     <group>
                         <group string="Which Houses">
+                            <field name="bill_type" invisible="1"/>
                             <field name="society_id"/>
                             <field name="phase_id"/>
                             <field name="file_ids" widget="many2many_tags" context="{'show_unit_number': True}"
@@ -17,17 +18,17 @@
                             <field name="bill_month"/>
                             <field name="due_date"/>
                             <field name="journal_id"/>
+                            <field name="surcharge_percent"/>
                         </group>
                     </group>
                     <group>
-                        <group string="Utility">
+                        <group string="Utility" invisible="bill_type != 'utility'">
                             <field name="utility_product_id"/>
                             <field name="default_utility_amount"/>
                         </group>
-                        <group string="Electricity">
+                        <group string="Electricity" invisible="bill_type != 'electricity'">
                             <field name="electricity_product_id"/>
                             <field name="unit_rate"/>
-                            <field name="surcharge_percent"/>
                         </group>
                     </group>
                     <group string="Printed on the Bill">
@@ -43,14 +44,26 @@
         </record>
 
         <record id="action_maintenance_bill_generate" model="ir.actions.act_window">
-            <field name="name">Generate Monthly Bills</field>
+            <field name="name">Generate Utility Bills</field>
             <field name="res_model">maintenance.bill.generate</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
+            <field name="context">{'default_bill_type': 'utility'}</field>
         </record>
 
-        <menuitem id="menu_maintenance_bill_generate" name="Generate Monthly Bills"
+        <record id="action_maintenance_bill_generate_electricity" model="ir.actions.act_window">
+            <field name="name">Generate Electricity Bills</field>
+            <field name="res_model">maintenance.bill.generate</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_bill_type': 'electricity'}</field>
+        </record>
+
+        <menuitem id="menu_maintenance_bill_generate" name="Generate Utility Bills"
                   action="action_maintenance_bill_generate"
                   parent="menu_maintenance_bill_root" sequence="10"/>
+        <menuitem id="menu_maintenance_bill_generate_electricity" name="Generate Electricity Bills"
+                  action="action_maintenance_bill_generate_electricity"
+                  parent="menu_maintenance_bill_root" sequence="30"/>
     </data>
 </odoo>

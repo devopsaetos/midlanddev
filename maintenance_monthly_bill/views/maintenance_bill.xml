@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Editable list: the monthly meter-reading sheet. -->
+        <!-- All bills (both types, and old combined bills). -->
         <record id="maintenance_bill_list" model="ir.ui.view">
             <field name="name">maintenance.bill.list</field>
             <field name="model">maintenance.bill</field>
@@ -10,6 +10,7 @@
                     <field name="name" readonly="1"/>
                     <field name="bill_month" widget="date" readonly="1" optional="show"/>
                     <field name="unit_number" readonly="1"/>
+                    <field name="bill_type" readonly="1" optional="show"/>
                     <field name="member_name" readonly="1"/>
                     <field name="meter_no" readonly="state != 'draft'" optional="show"/>
                     <field name="previous_reading" readonly="state != 'draft'"/>
@@ -28,6 +29,55 @@
             </field>
         </record>
 
+        <!-- Electricity bills: the monthly meter-reading sheet. -->
+        <record id="maintenance_bill_list_electricity" model="ir.ui.view">
+            <field name="name">maintenance.bill.list.electricity</field>
+            <field name="model">maintenance.bill</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <list editable="bottom" create="0" open_form_view="1" decoration-muted="state == 'cancel'" decoration-success="state == 'posted'">
+                    <field name="name" readonly="1"/>
+                    <field name="bill_month" widget="date" readonly="1" optional="show"/>
+                    <field name="unit_number" readonly="1"/>
+                    <field name="member_name" readonly="1"/>
+                    <field name="meter_no" readonly="state != 'draft'" optional="show"/>
+                    <field name="previous_reading" readonly="state != 'draft'"/>
+                    <field name="current_reading" readonly="state != 'draft'"/>
+                    <field name="units" readonly="1"/>
+                    <field name="unit_rate" readonly="state != 'draft'" optional="hide"/>
+                    <field name="electricity_amount" readonly="1" sum="Total"/>
+                    <field name="arrears_electricity" readonly="1" sum="Total" string="Arrears"/>
+                    <field name="due_amount" readonly="1" sum="Total"/>
+                    <field name="currency_id" column_invisible="1"/>
+                    <field name="state" readonly="1" widget="badge" decoration-success="state == 'posted'" decoration-info="state == 'draft'"/>
+                    <field name="payment_state" readonly="1" widget="badge" optional="show" invisible="payment_state == 'none'"
+                           decoration-success="payment_state == 'paid'" decoration-warning="payment_state == 'partial'" decoration-danger="payment_state == 'not_paid'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Utility / maintenance bills. -->
+        <record id="maintenance_bill_list_utility" model="ir.ui.view">
+            <field name="name">maintenance.bill.list.utility</field>
+            <field name="model">maintenance.bill</field>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <list editable="bottom" create="0" open_form_view="1" decoration-muted="state == 'cancel'" decoration-success="state == 'posted'">
+                    <field name="name" readonly="1"/>
+                    <field name="bill_month" widget="date" readonly="1" optional="show"/>
+                    <field name="unit_number" readonly="1"/>
+                    <field name="member_name" readonly="1"/>
+                    <field name="utility_amount" readonly="state != 'draft'" sum="Total"/>
+                    <field name="arrears_utility" readonly="1" sum="Total" string="Arrears"/>
+                    <field name="due_amount" readonly="1" sum="Total"/>
+                    <field name="currency_id" column_invisible="1"/>
+                    <field name="state" readonly="1" widget="badge" decoration-success="state == 'posted'" decoration-info="state == 'draft'"/>
+                    <field name="payment_state" readonly="1" widget="badge" optional="show" invisible="payment_state == 'none'"
+                           decoration-success="payment_state == 'paid'" decoration-warning="payment_state == 'partial'" decoration-danger="payment_state == 'not_paid'"/>
+                </list>
+            </field>
+        </record>
+
         <record id="maintenance_bill_form" model="ir.ui.view">
             <field name="name">maintenance.bill.form</field>
             <field name="model">maintenance.bill</field>
@@ -35,7 +85,7 @@
                 <form create="0">
                     <header>
                         <button name="action_post" string="Post Bill" type="object" class="oe_highlight" invisible="state != 'draft'"
-                                confirm="This creates and posts one invoice for this bill (utility and electricity). Continue?"/>
+                                confirm="This creates and posts the invoice of this bill. Continue?"/>
                         <button name="action_print" string="Print Bill" type="object" icon="fa-print"/>
                         <button name="action_receive_payment" string="Receive Payment" type="object" class="oe_highlight"
                                 invisible="state != 'posted' or payment_state == 'paid'"/>
@@ -50,6 +100,7 @@
                         </div>
                         <group>
                             <group string="Bill">
+                                <field name="bill_type" readonly="1"/>
                                 <field name="file_id" readonly="state != 'draft'"/>
                                 <field name="member_name"/>
                                 <field name="unit_number"/>
@@ -68,7 +119,7 @@
                             </group>
                         </group>
                         <group>
-                            <group string="Electricity (Meter Reading)">
+                            <group string="Electricity (Meter Reading)" invisible="bill_type == 'utility'">
                                 <field name="meter_no" readonly="state != 'draft'"/>
                                 <field name="previous_reading" readonly="state != 'draft'"/>
                                 <field name="current_reading" readonly="state != 'draft'"/>
@@ -78,7 +129,7 @@
                                 <field name="electricity_product_id" readonly="state != 'draft'"/>
                                 <field name="electricity_invoice_id" invisible="invoice_id or not electricity_invoice_id"/>
                             </group>
-                            <group string="Utility">
+                            <group string="Utility" invisible="bill_type == 'electricity'">
                                 <field name="utility_amount" readonly="state != 'draft'"/>
                                 <field name="utility_product_id" readonly="state != 'draft'"/>
                                 <field name="utility_invoice_id" invisible="invoice_id or not utility_invoice_id"/>
@@ -86,8 +137,8 @@
                         </group>
                         <group>
                             <group string="Arrears">
-                                <field name="arrears_utility" readonly="state != 'draft'"/>
-                                <field name="arrears_electricity" readonly="state != 'draft'"/>
+                                <field name="arrears_utility" readonly="state != 'draft'" invisible="bill_type == 'electricity'"/>
+                                <field name="arrears_electricity" readonly="state != 'draft'" invisible="bill_type == 'utility'"/>
                                 <field name="arrears"/>
                             </group>
                             <group string="Totals">
@@ -119,6 +170,9 @@
                     <field name="file_id"/>
                     <field name="partner_id"/>
                     <field name="meter_no"/>
+                    <filter name="utility" string="Utility" domain="[('bill_type', '=', 'utility')]"/>
+                    <filter name="electricity" string="Electricity" domain="[('bill_type', '=', 'electricity')]"/>
+                    <separator/>
                     <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                     <filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
                     <filter name="no_reading" string="Reading Missing" domain="[('state', '=', 'draft'), ('current_reading', '=', 0)]"/>
@@ -127,6 +181,7 @@
                     <separator/>
                     <filter name="bill_month" string="Bill Month" date="bill_month"/>
                     <group>
+                        <filter name="group_type" string="Bill Type" context="{'group_by': 'bill_type'}"/>
                         <filter name="group_society" string="Society" context="{'group_by': 'society_id'}"/>
                         <filter name="group_month" string="Month" context="{'group_by': 'bill_month:month'}"/>
                         <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
@@ -135,14 +190,39 @@
             </field>
         </record>
 
-        <record id="action_maintenance_bill" model="ir.actions.act_window">
-            <field name="name">Monthly Bills</field>
+        <record id="action_maintenance_bill_utility" model="ir.actions.act_window">
+            <field name="name">Utility Bills</field>
             <field name="res_model">maintenance.bill</field>
             <field name="view_mode">list,form</field>
+            <field name="view_id" ref="maintenance_bill_list_utility"/>
+            <field name="domain">[('bill_type', '=', 'utility')]</field>
+            <field name="context">{'default_bill_type': 'utility'}</field>
             <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">No monthly bills yet</p>
-                <p>Use <b>Generate Monthly Bills</b> to create the bills of a month, enter the meter readings here, then post and print.</p>
+                <p class="o_view_nocontent_smiling_face">No utility bills yet</p>
+                <p>Use <b>Generate Utility Bills</b> to create the utility / maintenance bills of a month, then post and print.</p>
             </field>
+        </record>
+
+        <record id="action_maintenance_bill_electricity" model="ir.actions.act_window">
+            <field name="name">Electricity Bills</field>
+            <field name="res_model">maintenance.bill</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="maintenance_bill_list_electricity"/>
+            <field name="domain">[('bill_type', '=', 'electricity')]</field>
+            <field name="context">{'default_bill_type': 'electricity'}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No electricity bills yet</p>
+                <p>Use <b>Generate Electricity Bills</b> to create the bills of a month, enter the meter readings here, then post and print.</p>
+            </field>
+        </record>
+
+        <!-- All bills, including the old combined ones (posted before utility and electricity were billed separately). -->
+        <record id="action_maintenance_bill" model="ir.actions.act_window">
+            <field name="name">All Bills</field>
+            <field name="res_model">maintenance.bill</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="maintenance_bill_list"/>
+            <field name="context">{'search_default_group_type': 1}</field>
         </record>
 
         <!-- Post several bills from the list (Actions menu). -->
@@ -157,7 +237,11 @@
 
         <menuitem id="menu_maintenance_bill_root" name="Monthly Bills"
                   parent="maintenance_charges.maintenance_charges_main_menu" sequence="5"/>
-        <menuitem id="menu_maintenance_bill" name="Monthly Bills" action="action_maintenance_bill"
+        <menuitem id="menu_maintenance_bill_utility" name="Utility Bills" action="action_maintenance_bill_utility"
                   parent="menu_maintenance_bill_root" sequence="20"/>
+        <menuitem id="menu_maintenance_bill_electricity" name="Electricity Bills" action="action_maintenance_bill_electricity"
+                  parent="menu_maintenance_bill_root" sequence="40"/>
+        <menuitem id="menu_maintenance_bill" name="All Bills" action="action_maintenance_bill"
+                  parent="menu_maintenance_bill_root" sequence="90"/>
     </data>
 </odoo>

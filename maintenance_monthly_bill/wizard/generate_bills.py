@@ -14,6 +14,8 @@ class MaintenanceBillGenerate(models.TransientModel):
     _name = 'maintenance.bill.generate'
     _description = 'Generate Maintenance Monthly Bills'
 
+    bill_type = fields.Selection([('utility', 'Utility / Maintenance'), ('electricity', 'Electricity')],
+                                 required=True, default=lambda self: self.env.context.get('default_bill_type') or 'utility')
     society_id = fields.Many2one('society', required=True, domain="[('is_society', '=', True)]")
     phase_id = fields.Many2one('society', domain="[('is_society', '!=', True), ('society_id', '=', society_id)]")
     unit_numbers = fields.Char(string='Only These Houses',
@@ -26,11 +28,11 @@ class MaintenanceBillGenerate(models.TransientModel):
     due_date = fields.Date(required=True, default=lambda self: fields.Date.context_today(self).replace(day=1) + relativedelta(days=9))
     journal_id = fields.Many2one('account.journal', required=True, domain="[('type', '=', 'sale')]")
 
-    utility_product_id = fields.Many2one('product.product', required=True,
+    utility_product_id = fields.Many2one('product.product',
                                          default=lambda self: self._default_product('Maintenance Charges'))
     default_utility_amount = fields.Float(
         string='Utility Charges', help='Used when no Maintenance Charges rule matches the file.')
-    electricity_product_id = fields.Many2one('product.product', required=True,
+    electricity_product_id = fields.Many2one('product.product',
                                              default=lambda self: self._default_product('Electricity'))
     unit_rate = fields.Float(string='Electricity Rate / Unit', digits=(16, 2))
     surcharge_percent = fields.Float(string='Late Surcharge %', default=10.0)
@@ -127,36 +129,54 @@ class MaintenanceBillGenerate(models.TransientModel):
         if not files:
             raise UserError(_('No files with a member found for this selection.'))
 
+        if self.bill_type == 'utility' and not self.utility_product_id:
+            raise UserError(_('Set the Utility product first.'))
+        if self.bill_type == 'electricity' and not self.electricity_product_id:
+            raise UserError(_('Set the Electricity product first.'))
         Bill = self.env['maintenance.bill']
-        existing = Bill.search([('file_id', 'in', files.ids), ('bill_month', '=', month), ('state', '!=', 'cancel')])
+        # a house gets one bill of this type per month (an old combined bill counts as both)
+        existing = Bill.search([('file_id', 'in', files.ids), ('bill_month', '=', month), ('state', '!=', 'cancel'),
+                                ('bill_type', 'in', (self.bill_type, 'combined'))])
         vals_list = []
         for file_rec in files - existing.mapped('file_id'):
-            last = Bill.search([('file_id', '=', file_rec.id), ('bill_month', '<', month),
-                                ('state', '!=', 'cancel')], order='bill_month desc', limit=1)
-            vals_list.append({
+            vals = {
+                'bill_type': self.bill_type,
                 'file_id': file_rec.id,
                 'journal_id': self.journal_id.id,
                 'bill_month': month,
                 'due_date': self.due_date,
-                'utility_product_id': self.utility_product_id.id,
-                'utility_amount': self._utility_amount_for(file_rec),
-                'electricity_product_id': self.electricity_product_id.id,
-                'meter_no': last.meter_no or file_rec.meter_no,
-                'previous_reading': last.current_reading if last else file_rec.opening_meter_reading,
-                'unit_rate': self.unit_rate,
                 'surcharge_percent': self.surcharge_percent,
                 'bank_note': self.bank_note,
                 'payment_note': self.payment_note,
-            })
+            }
+            if self.bill_type == 'utility':
+                vals.update({
+                    'utility_product_id': self.utility_product_id.id,
+                    'utility_amount': self._utility_amount_for(file_rec),
+                })
+            else:
+                # the meter continues from the last electricity reading of this house
+                last = Bill.search([('file_id', '=', file_rec.id), ('bill_month', '<', month), ('state', '!=', 'cancel'),
+                                    ('bill_type', 'in', ('electricity', 'combined'))], order='bill_month desc', limit=1)
+                vals.update({
+                    'electricity_product_id': self.electricity_product_id.id,
+                    'meter_no': last.meter_no or file_rec.meter_no,
+                    'previous_reading': last.current_reading if last else file_rec.opening_meter_reading,
+                    'unit_rate': self.unit_rate,
+                })
+            vals_list.append(vals)
         bills = Bill.create(vals_list)
         bills.action_recompute_arrears()
 
+        kind = dict(self._fields['bill_type']._description_selection(self.env))[self.bill_type]
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Bills %(month)s (%(new)s new, %(skip)s already existed)',
+            'name': _('%(kind)s Bills %(month)s (%(new)s new, %(skip)s already existed)', kind=kind,
                       month=month.strftime('%b %Y'), new=len(bills), skip=len(existing)),
             'res_model': 'maintenance.bill',
             'view_mode': 'list,form',
             'domain': [('id', 'in', (bills | existing).ids)],
-            'context': {'search_default_group_state': 0},
+            'views': [(self.env.ref('maintenance_monthly_bill.maintenance_bill_list_%s' % self.bill_type).id, 'list'),
+                      (False, 'form')],
+            'context': {'search_default_group_state': 0, 'default_bill_type': self.bill_type},
         }
