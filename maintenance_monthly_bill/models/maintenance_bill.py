@@ -248,6 +248,19 @@ class MaintenanceBill(models.Model):
                 continue
             if not rec.partner_id:
                 raise UserError(_('%s: the file has no member / accounting partner.') % rec.unit_number)
+            if rec.journal_id.type != 'sale':
+                raise UserError(_('%(bill)s: pick a Sales journal, not "%(journal)s" (%(type)s).',
+                                  bill=rec.name, journal=rec.journal_id.name, type=rec.journal_id.type))
+            if rec._has_electricity() and rec.bill_type == 'electricity':
+                if not rec.current_reading:
+                    raise UserError(_('%(bill)s (%(unit)s): enter the Current Reading before posting.',
+                                      bill=rec.name, unit=rec.unit_number))
+                if rec.unit_rate <= 0:
+                    raise UserError(_('%(bill)s (%(unit)s): set the Rate / Unit before posting.',
+                                      bill=rec.name, unit=rec.unit_number))
+            if rec.bill_type == 'utility' and rec.utility_amount <= 0:
+                raise UserError(_('%(bill)s (%(unit)s): Utility Charges are 0. Enter the amount, or cancel the bill '
+                                  'if the house pays nothing this month.', bill=rec.name, unit=rec.unit_number))
             lines = rec._invoice_lines()
             vals = {'state': 'posted'}
             if lines:

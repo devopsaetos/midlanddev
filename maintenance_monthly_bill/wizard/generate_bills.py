@@ -108,6 +108,35 @@ class MaintenanceBillGenerate(models.TransientModel):
             return max(amount - exemption.exemption_amount, 0.0)
         return amount
 
+    def _bill_vals(self, file_rec, month, draft=None):
+        """Values of a new bill of file_rec, or the values to refresh an existing draft with."""
+        Bill = self.env['maintenance.bill']
+        vals = {
+            'journal_id': self.journal_id.id,
+            'due_date': self.due_date,
+            'surcharge_percent': self.surcharge_percent,
+            'bank_note': self.bank_note,
+            'payment_note': self.payment_note,
+        }
+        if self.bill_type == 'utility':
+            amount = self._utility_amount_for(file_rec)
+            vals['utility_product_id'] = self.utility_product_id.id
+            # an amount typed on the draft is kept when nothing better is known
+            if not draft or amount:
+                vals['utility_amount'] = amount
+        else:
+            vals.update({'electricity_product_id': self.electricity_product_id.id, 'unit_rate': self.unit_rate})
+            # the meter continues from the last electricity reading of this house; a draft that
+            # already has a current reading keeps its readings
+            if not draft or not draft.current_reading:
+                last = Bill.search([('file_id', '=', file_rec.id), ('bill_month', '<', month), ('state', '!=', 'cancel'),
+                                    ('bill_type', 'in', ('electricity', 'combined'))], order='bill_month desc', limit=1)
+                vals.update({
+                    'meter_no': last.meter_no or file_rec.meter_no,
+                    'previous_reading': last.current_reading if last else file_rec.opening_meter_reading,
+                })
+        return vals
+
     def action_generate(self):
         self.ensure_one()
         month = self.bill_month.replace(day=1)
@@ -133,46 +162,38 @@ class MaintenanceBillGenerate(models.TransientModel):
             raise UserError(_('Set the Utility product first.'))
         if self.bill_type == 'electricity' and not self.electricity_product_id:
             raise UserError(_('Set the Electricity product first.'))
+        # 2026-10-06: drafts were generated with "Maintenance Charges" as the electricity product
+        maintenance_product = self._default_product('Maintenance Charges')
+        if self.bill_type == 'electricity' and self.electricity_product_id == maintenance_product:
+            raise UserError(_('Electricity Product is "%s", the utility product. Pick the Electricity product.',
+                              self.electricity_product_id.display_name))
+        if self.bill_type == 'utility' and self.utility_product_id == self._default_product('Electricity'):
+            raise UserError(_('Utility Product is "%s", the electricity product. Pick the Maintenance Charges product.',
+                              self.utility_product_id.display_name))
+        if self.journal_id.type != 'sale':
+            raise UserError(_('Pick a Sales journal.'))
         Bill = self.env['maintenance.bill']
-        # a house gets one bill of this type per month (an old combined bill counts as both)
+        # a house gets one bill of this type per month (an old combined bill counts as both).
+        # Posted bills are kept; draft bills of this type are refreshed with the values entered
+        # here (rate, charges, dates), so generating again after a mistake fixes the drafts.
         existing = Bill.search([('file_id', 'in', files.ids), ('bill_month', '=', month), ('state', '!=', 'cancel'),
                                 ('bill_type', 'in', (self.bill_type, 'combined'))])
+        drafts = existing.filtered(lambda b: b.state == 'draft' and b.bill_type == self.bill_type)
+        kept = existing - drafts
         vals_list = []
         for file_rec in files - existing.mapped('file_id'):
-            vals = {
-                'bill_type': self.bill_type,
-                'file_id': file_rec.id,
-                'journal_id': self.journal_id.id,
-                'bill_month': month,
-                'due_date': self.due_date,
-                'surcharge_percent': self.surcharge_percent,
-                'bank_note': self.bank_note,
-                'payment_note': self.payment_note,
-            }
-            if self.bill_type == 'utility':
-                vals.update({
-                    'utility_product_id': self.utility_product_id.id,
-                    'utility_amount': self._utility_amount_for(file_rec),
-                })
-            else:
-                # the meter continues from the last electricity reading of this house
-                last = Bill.search([('file_id', '=', file_rec.id), ('bill_month', '<', month), ('state', '!=', 'cancel'),
-                                    ('bill_type', 'in', ('electricity', 'combined'))], order='bill_month desc', limit=1)
-                vals.update({
-                    'electricity_product_id': self.electricity_product_id.id,
-                    'meter_no': last.meter_no or file_rec.meter_no,
-                    'previous_reading': last.current_reading if last else file_rec.opening_meter_reading,
-                    'unit_rate': self.unit_rate,
-                })
+            vals = dict(self._bill_vals(file_rec, month), bill_type=self.bill_type, file_id=file_rec.id, bill_month=month)
             vals_list.append(vals)
         bills = Bill.create(vals_list)
-        bills.action_recompute_arrears()
+        for bill in drafts:
+            bill.write(self._bill_vals(bill.file_id, month, bill))
+        (bills | drafts).action_recompute_arrears()
 
         kind = dict(self._fields['bill_type']._description_selection(self.env))[self.bill_type]
         return {
             'type': 'ir.actions.act_window',
-            'name': _('%(kind)s Bills %(month)s (%(new)s new, %(skip)s already existed)', kind=kind,
-                      month=month.strftime('%b %Y'), new=len(bills), skip=len(existing)),
+            'name': _('%(kind)s Bills %(month)s (%(new)s new, %(updated)s drafts updated, %(skip)s already posted)',
+                      kind=kind, month=month.strftime('%b %Y'), new=len(bills), updated=len(drafts), skip=len(kept)),
             'res_model': 'maintenance.bill',
             'view_mode': 'list,form',
             'domain': [('id', 'in', (bills | existing).ids)],

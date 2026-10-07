@@ -238,10 +238,10 @@
         <menuitem id="menu_maintenance_bill_root" name="Monthly Bills"
                   parent="maintenance_charges.maintenance_charges_main_menu" sequence="5"/>
         <menuitem id="menu_maintenance_bill_utility" name="Utility Bills" action="action_maintenance_bill_utility"
-                  parent="menu_maintenance_bill_root" sequence="20"/>
+                  parent="menu_maintenance_bill_root" sequence="15"/>
         <menuitem id="menu_maintenance_bill_electricity" name="Electricity Bills" action="action_maintenance_bill_electricity"
-                  parent="menu_maintenance_bill_root" sequence="40"/>
+                  parent="menu_maintenance_bill_root" sequence="25"/>
         <menuitem id="menu_maintenance_bill" name="All Bills" action="action_maintenance_bill"
-                  parent="menu_maintenance_bill_root" sequence="90"/>
+                  parent="menu_maintenance_bill_root" sequence="28"/>
     </data>
 </odoo>

@@ -64,6 +64,6 @@
                   parent="menu_maintenance_bill_root" sequence="10"/>
         <menuitem id="menu_maintenance_bill_generate_electricity" name="Generate Electricity Bills"
                   action="action_maintenance_bill_generate_electricity"
-                  parent="menu_maintenance_bill_root" sequence="30"/>
+                  parent="menu_maintenance_bill_root" sequence="20"/>
     </data>
 </odoo>
