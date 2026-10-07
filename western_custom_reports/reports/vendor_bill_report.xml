@@ -157,10 +157,10 @@
                                             <td class="tc"><t t-esc="row_num"/></td>
                                             <td class="tl"><t t-esc="line.product_id.default_code or ''"/></td>
                                             <td class="tl"><t t-esc="line.name or ''"/></td>
-                                            <td class="tc"><t t-esc="'%.2f' % line.quantity"/></td>
-                                            <td class="tr"><t t-esc="'%.2f' % line.price_unit"/></td>
+                                            <td class="tc"><t t-esc="'{:,.2f}'.format(line.quantity)"/></td>
+                                            <td class="tr"><t t-esc="'{:,.2f}'.format(line.price_unit)"/></td>
                                             <td class="tc"><t t-esc="', '.join(t.name for t in line.tax_ids) if line.tax_ids else ''"/></td>
-                                            <td class="tr"><t t-esc="'%.2f' % line.price_subtotal"/></td>
+                                            <td class="tr"><t t-esc="'{:,.2f}'.format(line.price_subtotal)"/></td>
                                         </tr>
                                     </t>
                                 </t>
@@ -168,10 +168,10 @@
                                 <tr class="tot-row">
                                     <td colspan="3" style="text-align:right; font-weight:bold;">Total Qty</td>
                                     <td class="tc" style="font-weight:bold;">
-                                        <t t-esc="'%.2f' % sum(line.quantity for line in o.line_ids if line.display_type == 'product')"/>
+                                        <t t-esc="'{:,.2f}'.format(sum(line.quantity for line in o.line_ids if line.display_type == 'product'))"/>
                                     </td>
                                     <td style="text-align:right; font-weight:bold;" colspan="2">Total</td>
-                                    <td class="tr" style="font-weight:bold;"><t t-esc="'%.2f' % o.amount_untaxed"/></td>
+                                    <td class="tr" style="font-weight:bold;"><t t-esc="'{:,.2f}'.format(o.amount_untaxed)"/></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -181,17 +181,17 @@
                             <div class="tot-right">
                                 <div class="tot-row">
                                     <span class="tot-lbl">Subtotal</span>
-                                    <span class="tot-val"><t t-esc="'%.2f' % o.amount_untaxed"/></span>
+                                    <span class="tot-val"><t t-esc="'{:,.2f}'.format(o.amount_untaxed)"/></span>
                                     <div class="tot-clear"></div>
                                 </div>
                                 <div class="tot-row">
                                     <span class="tot-lbl">Tax Amount</span>
-                                    <span class="tot-val"><t t-esc="'%.2f' % o.amount_tax"/></span>
+                                    <span class="tot-val"><t t-esc="'{:,.2f}'.format(o.amount_tax)"/></span>
                                     <div class="tot-clear"></div>
                                 </div>
 <!--                                <div class="tot-row">-->
 <!--                                    <span class="tot-lbl">Amount Due</span>-->
-<!--                                    <span class="tot-val"><t t-esc="'%.2f' % o.amount_residual"/></span>-->
+<!--                                    <span class="tot-val"><t t-esc="'{:,.2f}'.format(o.amount_residual)"/></span>-->
 <!--                                    <div class="tot-clear"></div>-->
 <!--                                </div>-->
                             </div>
@@ -206,9 +206,9 @@
 <!--                                    </span>-->
 <!--                                </div>-->
                                 <div style="float:right; width:36%;">
-                                    <span style="float:left; width:55%; text-align:right; padding-right:10px; font-weight:bold; font-size:10pt; color:#333;">Total US Dollar</span>
+                                    <span style="float:left; width:55%; text-align:right; padding-right:10px; font-weight:bold; font-size:10pt; color:#333;">Total <t t-esc="o.currency_id.name"/></span>
                                     <span style="float:right; width:43%; text-align:right; font-weight:bold; font-size:10pt; color:#000; white-space:nowrap;">
-                                        <t t-esc="'%.2f' % o.amount_total"/>
+                                        <t t-esc="'{:,.2f}'.format(o.amount_total)"/>
                                     </span>
                                     <div style="clear:both;"> </div>
                                 </div>

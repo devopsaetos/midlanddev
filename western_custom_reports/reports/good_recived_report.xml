@@ -290,10 +290,10 @@
                                                     <t t-esc="line.product_uom.name"/>
                                                 </td>
                                                 <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
-                                                    <t t-esc="'%.2f' % prod_ordered"/>
+                                                    <t t-esc="'{:,.2f}'.format(prod_ordered)"/>
                                                 </td>
                                                 <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg">
-                                                    <t t-esc="'%.2f' % prod_delivered"/>
+                                                    <t t-esc="'{:,.2f}'.format(prod_delivered)"/>
                                                 </td>
                                                 <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg"></td>
                                                 <td t-att-style="'padding:6px 8px; border:1px solid #000; text-align:center; background:' + row_bg"></td>
@@ -308,10 +308,10 @@
                                             Total Qty
                                         </td>
                                         <td style="padding:6px 8px; border:1px solid #000; text-align:center; font-weight:bold; border-top:2px solid #000; background:#fff;">
-                                            <t t-esc="'%.2f' % total_ordered"/>
+                                            <t t-esc="'{:,.2f}'.format(total_ordered)"/>
                                         </td>
                                         <td style="padding:6px 8px; border:1px solid #000; text-align:center; font-weight:bold; border-top:2px solid #000; background:#fff;">
-                                            <t t-esc="'%.2f' % total_delivered"/>
+                                            <t t-esc="'{:,.2f}'.format(total_delivered)"/>
                                         </td>
                                         <td style="padding:6px 8px; border:1px solid #000; border-top:2px solid #000; background:#fff;"></td>
                                         <td style="padding:6px 8px; border:1px solid #000; border-top:2px solid #000; background:#fff;"></td>
@@ -388,7 +388,7 @@
                                                     style="background-color:#dce8f5; color:#1a1a1a; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; vertical-align:middle;">
                                                     Total Qty
                                                     <br/>
-                                                    <t t-esc="'%.2f' % prod_total_qty"/>
+                                                    <t t-esc="'{:,.2f}'.format(prod_total_qty)"/>
                                                 </td>
                                             </tr>
                                             <!-- Serial number grid, quantity-wise -->

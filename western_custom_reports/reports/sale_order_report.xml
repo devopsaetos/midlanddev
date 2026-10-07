@@ -364,8 +364,8 @@
                                             <td class="td-n"><t t-esc="line.product_id.default_code or ''"/></td>
                                             <td class="td-n" style="text-align:left;"><t t-esc="line.name"/></td>
                                             <td class="td-n tc"><t t-esc="int(line.product_uom_qty)"/></td>
-                                            <td class="td-n tr"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(line.price_unit)"/></td>
-                                            <td class="td-n tr"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(line.price_subtotal)"/></td>
+                                            <td class="td-n tr"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(line.price_unit)"/></td>
+                                            <td class="td-n tr"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(line.price_subtotal)"/></td>
                                         </tr>
                                     </t>
                                 </t>
@@ -376,7 +376,7 @@
                                     </td>
                                     <td class="td-t tr">Total</td>
                                     <td class="td-t tr">
-                                        <t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(o.amount_untaxed)"/>
+                                        <t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(o.amount_untaxed)"/>
                                     </td>
                                 </tr>
                             </table>
@@ -388,28 +388,28 @@
                                     <!-- SHIPPING -->
                                     <div class="tot-row">
                                         <span class="t-lbl">Shipping</span>
-                                        <span class="t-val"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(shipping_amount)"/></span>
+                                        <span class="t-val"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(shipping_amount)"/></span>
                                         <div style="clear:both;"></div>
                                     </div>
 
                                     <!-- HANDLING -->
                                     <div class="tot-row">
                                         <span class="t-lbl">Handling</span>
-                                        <span class="t-val"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(handling_amount)"/></span>
+                                        <span class="t-val"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(handling_amount)"/></span>
                                         <div style="clear:both;"></div>
                                     </div>
 
                                     <!-- DISCOUNT -->
                                     <div class="tot-row" style="border-bottom:1px solid #000; padding-bottom:4px; margin-bottom:4px;">
                                         <span class="t-lbl">Discount</span>
-                                        <span class="t-val"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(total_discount)"/></span>
+                                        <span class="t-val"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(total_discount)"/></span>
                                         <div style="clear:both;"></div>
                                     </div>
 
                                     <!-- SUBTOTAL -->
                                     <div class="tot-row">
                                         <span class="t-lbl">Subtotal</span>
-                                        <span class="t-val"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(o.amount_untaxed)"/></span>
+                                        <span class="t-val"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(o.amount_untaxed)"/></span>
                                         <div style="clear:both;"></div>
                                     </div>
 
@@ -417,15 +417,15 @@
                                     <!-- No loop over tax_line_ids — all taxes summed into a single "Tax Amount" row              -->
                                     <div class="tot-row">
                                         <span class="t-lbl">Tax Amount</span>
-                                        <span class="t-val"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(o.amount_tax)"/></span>
+                                        <span class="t-val"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(o.amount_tax)"/></span>
                                         <div style="clear:both;"></div>
                                     </div>
 
                                     <!-- GRAND TOTAL -->
                                     <!-- ===================== UPDATED: Grand total = untaxed + o.amount_tax (consistent) ========= -->
                                     <div class="tot-row-grand">
-                                        <span class="t-lbl">Total In <t t-esc="o.currency_id.name or 'USD'"/></span>
-                                        <span class="t-val"><t t-esc="o.currency_id.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(o.amount_total)"/></span>
+                                        <span class="t-lbl">Total In <t t-esc="o.currency_id.name or ''"/></span>
+                                        <span class="t-val"><t t-esc="o.currency_id.symbol or ''"/> <t t-esc="'{:,.0f}'.format(o.amount_total)"/></span>
                                         <div style="clear:both;"></div>
                                     </div>
 
@@ -546,20 +546,20 @@
                         <strong>Total</strong>
                     </td>
                     <td name="td_total_amount" class="text-end o_price_total">
-                        <strong><span t-esc="doc.currency_id.symbol or '$'"/> <span t-esc="'{:,.0f}'.format(doc.amount_untaxed)"/></strong>
+                        <strong><span t-esc="doc.currency_id.symbol or ''"/> <span t-esc="'{:,.0f}'.format(doc.amount_untaxed)"/></strong>
                     </td>
                 </tr>
             </xpath>
 
             <!-- Line Items: Unit Price & Amount without decimals -->
             <xpath expr="//td[@name='td_product_priceunit']/span[@t-field='line.price_unit']" position="replace">
-                <span t-esc="line.currency_id.symbol or '$'"/> <span t-esc="'{:,.0f}'.format(line.price_unit)"/>
+                <span t-esc="line.currency_id.symbol or ''"/> <span t-esc="'{:,.0f}'.format(line.price_unit)"/>
             </xpath>
             <xpath expr="//td[@name='td_product_subtotal']//span[@t-field='line.price_subtotal']" position="replace">
-                <span t-esc="line.currency_id.symbol or '$'"/> <span t-esc="'{:,.0f}'.format(line.price_subtotal)"/>
+                <span t-esc="line.currency_id.symbol or ''"/> <span t-esc="'{:,.0f}'.format(line.price_subtotal)"/>
             </xpath>
             <xpath expr="//td[@name='td_product_subtotal']//span[@t-field='line.price_total']" position="replace">
-                <span t-esc="line.currency_id.symbol or '$'"/> <span t-esc="'{:,.0f}'.format(line.price_total)"/>
+                <span t-esc="line.currency_id.symbol or ''"/> <span t-esc="'{:,.0f}'.format(line.price_total)"/>
             </xpath>
 
             <!-- Total section without decimals (Replace standard t-call with custom logic) -->
@@ -573,7 +573,7 @@
                             <span t-out="subtotal['name']">Untaxed Amount</span>
                         </td>
                         <td class="text-end">
-                            <span t-esc="currency.symbol or '$'"/> <span t-esc="'{:,.0f}'.format(subtotal['base_amount_currency'])"/>
+                            <span t-esc="currency.symbol or ''"/> <span t-esc="'{:,.0f}'.format(subtotal['base_amount_currency'])"/>
                         </td>
                     </tr>
                     <t t-foreach="subtotal['tax_groups']" t-as="tax_group">
@@ -583,17 +583,17 @@
                                     <span t-out="tax_group['group_name']">Tax 15%</span>
                                 </td>
                                 <td class="text-end o_price_total">
-                                    <span class="text-nowrap"><t t-esc="currency.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(tax_group['tax_amount_currency'])"/></span>
+                                    <span class="text-nowrap"><t t-esc="currency.symbol or ''"/> <t t-esc="'{:,.0f}'.format(tax_group['tax_amount_currency'])"/></span>
                                 </td>
                             </t>
                             <t t-else="">
                                 <td>
                                     <span t-out="tax_group['group_name']">Tax 15%</span>
                                     <span> on </span>
-                                    <span class="text-nowrap"><t t-esc="currency.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(tax_group['display_base_amount_currency'])"/></span>
+                                    <span class="text-nowrap"><t t-esc="currency.symbol or ''"/> <t t-esc="'{:,.0f}'.format(tax_group['display_base_amount_currency'])"/></span>
                                 </td>
                                 <td class="text-end o_price_total">
-                                    <span class="text-nowrap"><t t-esc="currency.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(tax_group['tax_amount_currency'])"/></span>
+                                    <span class="text-nowrap"><t t-esc="currency.symbol or ''"/> <t t-esc="'{:,.0f}'.format(tax_group['tax_amount_currency'])"/></span>
                                 </td>
                             </t>
                         </tr>
@@ -602,7 +602,7 @@
                 <tr class="o_total">
                     <td><strong>Total</strong></td>
                     <td class="text-end">
-                        <strong><t t-esc="currency.symbol or '$'"/> <t t-esc="'{:,.0f}'.format(tax_totals['total_amount_currency'])"/></strong>
+                        <strong><t t-esc="currency.symbol or ''"/> <t t-esc="'{:,.0f}'.format(tax_totals['total_amount_currency'])"/></strong>
                     </td>
                 </tr>
             </xpath>

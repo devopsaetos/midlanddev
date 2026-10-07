@@ -292,13 +292,13 @@
                                                 <t t-esc="line.name or ''"/>
                                             </td>
                                             <td class="tc">
-                                                <t t-esc="'%.2f' % line.quantity"/>
+                                                <t t-esc="'{:,.2f}'.format(line.quantity)"/>
                                             </td>
                                             <td class="tr">
-                                                <t t-esc="'%.2f' % line.price_unit"/>
+                                                <t t-esc="'{:,.2f}'.format(line.price_unit)"/>
                                             </td>
                                             <td class="tr">
-                                                <t t-esc="'%.2f' % line.price_subtotal"/>
+                                                <t t-esc="'{:,.2f}'.format(line.price_subtotal)"/>
                                             </td>
                                         </tr>
                                     </t>
@@ -307,7 +307,7 @@
                                 <tr class="tot-row">
                                     <td colspan="4" style="text-align:right; font-weight:bold;">Total</td>
                                     <td class="tr" style="font-weight:bold;" colspan="2">
-                                        <t t-esc="'%.2f' % o.amount_untaxed"/>
+                                        <t t-esc="'{:,.2f}'.format(o.amount_untaxed)"/>
                                     </td>
                                 </tr>
                             </tbody>
@@ -334,21 +334,21 @@
                                 <div class="tot-row-item">
                                     <span class="tot-lbl">Subtotal</span>
                                     <span class="tot-val">
-                                        <t t-esc="'%.2f' % o.amount_untaxed"/>
+                                        <t t-esc="'{:,.2f}'.format(o.amount_untaxed)"/>
                                     </span>
                                     <div class="tot-clear"></div>
                                 </div>
                                 <div class="tot-row-item">
                                     <span class="tot-lbl">Tax Amount</span>
                                     <span class="tot-val">
-                                        <t t-esc="'%.2f' % o.amount_tax"/>
+                                        <t t-esc="'{:,.2f}'.format(o.amount_tax)"/>
                                     </span>
                                     <div class="tot-clear"></div>
                                 </div>
                                 <div class="tot-row-item" style="padding-top:4px;">
                                     <span class="tot-lbl">Amount Due</span>
                                     <span class="tot-val">
-                                        <t t-esc="'%.2f' % o.amount_residual"/>
+                                        <t t-esc="'{:,.2f}'.format(o.amount_residual)"/>
                                     </span>
                                     <div class="tot-clear"></div>
                                 </div>
@@ -359,10 +359,10 @@
                             <div style="width:100%; margin-top:6px; overflow:hidden;">
                                 <div style="float:right; width:46%; border-top:2px solid #000; padding-top:8px;">
                                     <span style="float:left; width:55%; text-align:right; padding-right:10px; font-weight:bold; font-size:10pt; color:#333;">
-                                        Total Amount
+                                        Total <t t-esc="o.currency_id.name"/>
                                     </span>
                                     <span style="float:right; width:43%; text-align:right; font-weight:bold; font-size:10pt; color:#000; white-space:nowrap;">
-                                        <t t-esc="'%.2f' % o.amount_total"/>
+                                        <t t-esc="'{:,.2f}'.format(o.amount_total)"/>
                                     </span>
                                     <div style="clear:both;"></div>
                                 </div>
@@ -484,7 +484,7 @@
                                                 style="background-color:#dce8f5; color:#1a1a1a; font-weight:bold; padding:6px 8px; border:1px solid #000; text-align:center; vertical-align:middle;">
                                                 Total Qty
                                                 <br/>
-                                                <t t-esc="'%.2f' % prod_total_qty"/>
+                                                <t t-esc="'{:,.2f}'.format(prod_total_qty)"/>
                                             </td>
                                         </tr>
                                         <!-- Serial number grid, quantity-wise -->

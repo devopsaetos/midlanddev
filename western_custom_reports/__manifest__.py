@@ -1,6 +1,6 @@
 {
     'name': "Midland Custom Reports",
-    'version': '19.0.0.2',
+    'version': '19.0.0.3',
     'depends': ['base', 'sale', 'account', 'purchase', 'stock'],
     'data': [
         'reports/sale_order_report.xml',
