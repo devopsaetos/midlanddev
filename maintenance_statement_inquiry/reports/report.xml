@@ -1,8 +1,10 @@
 <odoo>
+    <!-- Printed once at the top of the first page, inside the body. As a wkhtmltopdf header it
+         was placed over the first rows of the page (title over "House", logo over the table head). -->
     <template id="maintenance_statement_inquiry.maintenance_customized_header">
         <t t-set="company" t-value="o._report_company()"/>
-        <div class="header">
-            <table style="width: 100%; font-family: 'Roboto', sans-serif; color: #000;">
+        <div class="mq-head-wrap">
+            <table class="mq-head" style="width: 100%; font-family: 'Roboto', sans-serif; color: #000;">
                 <tr>
                     <td style="width: 25%; vertical-align: middle;">
                         <img t-if="not company.uses_default_logo" t-att-src="image_data_uri(company.logo)"
@@ -24,7 +26,7 @@
 
     <template id="maintenance_statement_inquiry.maintenance_customized_footer">
         <div class="footer">
-            <table style="width: 100%; font-size: 11px; font-family: 'Roboto', sans-serif; color: #2b4c7e;">
+            <table class="mq-foot" style="width: 100%; font-size: 11px; font-family: 'Roboto', sans-serif; color: #2b4c7e;">
                 <tr>
                     <td style="width: 50%;">Printed By: <u t-out="user.name"/></td>
                     <td style="width: 50%; text-align: right;">Print Date: <u t-out="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/></td>
@@ -40,13 +42,16 @@
                      ones ticked in the switcher (CV-I plots use Midland Developers' sizes): read the
                      names the inquiry screen already shows without the multi-company rules -->
                 <t t-set="o" t-value="o.sudo()"/>
-                <t t-call="maintenance_statement_inquiry.maintenance_customized_header"/>
                 <t t-call="maintenance_statement_inquiry.maintenance_customized_footer"/>
                 <t t-call="web.basic_layout">
                     <t t-set="dt" t-value="lambda d: d and d.strftime('%d-%m-%Y') or ''"/>
                     <t t-set="fmt" t-value="lambda v: '{:,.2f}'.format(v or 0.0)"/>
                     <style>
                         .mq { font-family: 'Roboto', sans-serif; color: #000; }
+                        .mq-head, .mq-head td, .mq-foot, .mq-foot td, .mq-sign, .mq-sign td { border: 0 !important; background: none !important; }
+                        .mq-head { margin-bottom: 6px; border-bottom: 2px solid #2b4c7e !important; }
+                        .mq-head td { padding: 0 0 8px 0; }
+                        .mq-info, .mq-info td { border: 0 !important; background: none !important; }
                         .mq-info { width: 100%; table-layout: fixed; margin: 10px 0 14px 0; }
                         .mq-info td { font-size: 14px; padding: 3px 4px; vertical-align: top; }
                         .mq-info td.lbl { font-weight: bold; width: 14%; }
@@ -61,6 +66,7 @@
                         tr { page-break-inside: avoid; }
                     </style>
                     <div class="page mq">
+                        <t t-call="maintenance_statement_inquiry.maintenance_customized_header"/>
                         <table class="mq-info">
                             <tr>
                                 <td class="lbl">Society:</td><td><t t-out="o.society_id.name"/></td>
@@ -125,7 +131,7 @@
                             </tbody>
                         </table>
 
-                        <table style="width: 100%; margin-top: 110px; color: #2b4c7e; font-size: 13px;">
+                        <table class="mq-sign" style="width: 100%; margin-top: 90px; color: #2b4c7e; font-size: 13px; page-break-inside: avoid;">
                             <tr>
                                 <td style="width: 33%;"><t t-out="o.create_uid.name"/></td>
                                 <td/><td/>
@@ -149,12 +155,12 @@
         <field name="page_height">297</field>
         <field name="page_width">210</field>
         <field name="orientation">Portrait</field>
-        <field name="margin_top">40</field>
+        <field name="margin_top">10</field>
         <field name="margin_bottom">20</field>
         <field name="margin_left">5</field>
         <field name="margin_right">5</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">8</field>
+        <field name="header_spacing">0</field>
         <field name="dpi">90</field>
     </record>
 
