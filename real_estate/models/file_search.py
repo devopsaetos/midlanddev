@@ -66,11 +66,7 @@ class ReturnLine(models.TransientModel):
 
     membership_id = fields.Many2one('res.member', string='Member No',
                                     related='file_id.membership_id', readonly=True)
-    company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Member Type', related='membership_id.company_type')
+    company_type = fields.Selection(string='Member Type', related='membership_id.company_type')
     cnic = fields.Char(related='file_id.membership_id.cnic')
     society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]", related='file_id.society_id')
     phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]", related='file_id.phase_id')
@@ -120,11 +116,7 @@ class ReturnLine(models.TransientModel):
         ('open_file', 'Open File')
     ])
     transferee_partner_id = fields.Many2one('res.member', 'Name ', domain="[('id', '!=', membership_id)]")
-    transferee_company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Transferee Type', related='transferee_partner_id.company_type', readonly=False)
+    transferee_company_type = fields.Selection(string='Transferee Type', related='transferee_partner_id.company_type', readonly=False)
     transferee_name = fields.Char('Transferee Name')
     transferee_cnic_number = fields.Char('CNIC Number')
     transferee_cnic_line_ids = fields.One2many('res.cnic', 'member_id', string='Details ', related='transferee_partner_id.cnic_line_ids', readonly=True)
@@ -145,18 +137,11 @@ class ReturnLine(models.TransientModel):
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states', readonly=True)
+    payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount', readonly=True)
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type', readonly=True)
+    discount_type = fields.Selection(related='file_id.discount_type', readonly=True)
     discount_amount = fields.Float(related='file_id.discount_amount', readonly=True)
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount', readonly=True)
     balloting_amount = fields.Float('Balloting Amount', related='file_id.balloting_amount')

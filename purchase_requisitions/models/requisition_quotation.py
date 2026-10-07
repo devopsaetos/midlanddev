@@ -52,16 +52,15 @@ class QuotationOrder(models.Model):
                                    "products as this reference is usually written on the "
                                    "delivery order sent by your vendor.")
     response_date = fields.Date('Response Date')
-    date_order = fields.Datetime('Quotation Closure Date', states=READONLY_STATES, index=True, copy=False,
+    date_order = fields.Datetime('Quotation Closure Date', index=True, copy=False,
                                  default=fields.Datetime.now, \
                                  help="Depicts the date where the Quotation should be validated and converted into a quotation order.")
-    date_approve = fields.Date('Approval Date', readonly=1, index=True, copy=False)
+    date_approve = fields.Date('Approval Date', readonly=True, index=True, copy=False)
 
     creation_date = fields.Datetime('Creation Date', default=fields.Datetime.now)
     date_validity = fields.Date('Quotation Validity')
-    partner_id = fields.Many2one('res.partner', string='Vendor', states=READONLY_STATES, change_default=True,
-                                 track_visibility='always')
-    currency_id = fields.Many2one('res.currency', 'Currency', required=True, states=READONLY_STATES, \
+    partner_id = fields.Many2one('res.partner', string='Vendor', change_default=True)
+    currency_id = fields.Many2one('res.currency', 'Currency', required=True, \
                                   default=lambda self: self.env.user.company_id.currency_id.id)
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -70,9 +69,8 @@ class QuotationOrder(models.Model):
         ('purchase', 'Purchase'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
-    ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
-    order_line = fields.One2many('quotation.order.line', 'order_id', string='Order Lines',
-                                 states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True)
+    ], string='Status', readonly=True, index=True, copy=False, default='draft')
+    order_line = fields.One2many('quotation.order.line', 'order_id', string='Order Lines', copy=True)
     order_line_details = fields.One2many('quotation.order.line', 'order_id', string='Order Lines', related='order_line',
                                          readonly=True)
     notes = fields.Text('Terms and Conditions')
@@ -83,7 +81,7 @@ class QuotationOrder(models.Model):
 
     product_id = fields.Many2one('product.product', related='order_line.product_id', string='Product')
     create_uid = fields.Many2one('res.users', 'Responsible')
-    company_id = fields.Many2one('res.company', 'Company', required=True, index=True, states=READONLY_STATES,
+    company_id = fields.Many2one('res.company', 'Company', required=True, index=True,
                                  default=lambda self: self.env.user.company_id.id)
     # branch_id = fields.Many2one('res.branch', string="Branch")
     # operation_type = fields.Selection(related='company_id.operation_type', store=True)
@@ -104,7 +102,7 @@ class QuotationOrder(models.Model):
     amount_tax = fields.Monetary(string='Taxes', store=True, readonly=True, compute='_amount_all')
     amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all')
     payment_term_id = fields.Many2one('account.payment.term', string='Payment Term')
-    evaluation_criteria_ids = fields.One2many('evaluation.connector', 'quotation_order_id', ondelete="cascade")
+    evaluation_criteria_ids = fields.One2many('evaluation.connector', 'quotation_order_id')
 
     @api.onchange('response_date')
     def response_date_validation(self):
@@ -331,14 +329,7 @@ class QuotationOrderLine(models.Model):
     origin = fields.Char(related="order_id.origin", store=True, string="RFQ Number")
     company_id = fields.Many2one('res.company', related='order_id.company_id', string='Company', store=True,
                                  readonly=True)
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('sent', 'RFQ Sent'),
-        ('quotation', 'Quotation'),
-        ('purchase', 'Purchase'),
-        ('done', 'Locked'),
-        ('cancel', 'Cancelled')
-    ], related='order_id.state', readonly=True, copy=False, store=True, default='draft')
+    state = fields.Selection(related='order_id.state', readonly=True, copy=False, store=True)
     po_created = fields.Boolean(default=False)
 
     currency_id = fields.Many2one(related='order_id.currency_id', store=True, string='Currency', readonly=True)
@@ -348,10 +339,7 @@ class QuotationOrderLine(models.Model):
     requisition_line_id = fields.Many2one('requisition.line', 'Requisition Line')
     price_after_discount = fields.Monetary(string='Price After Discount', readonly=True)
     partner_id = fields.Many2one('res.partner', 'Vendor', related="order_id.partner_id", store=True)
-    rfq_type = fields.Selection([
-        ('standard', 'Standard'),
-        ('bid', 'Bid RFQ')
-    ], related="order_id.rfq_type", store=True)
+    rfq_type = fields.Selection(related="order_id.rfq_type", store=True)
     closure_date = fields.Datetime(related='order_id.closure_date', store=True, string="RFQ Closure Date")
 
     price_subtotal = fields.Monetary(compute='_compute_amount', string='Subtotal', store=True)

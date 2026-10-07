@@ -1,9 +1,10 @@
 {
     'name': 'Construction Stock Bridge',
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Links Issue Requisitions and Stock Transactions to construction projects, tasks, and cost sheets',
-    'author': 'NCP',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'license': 'LGPL-3',
     'depends': [
         'supply_chain_customizations',

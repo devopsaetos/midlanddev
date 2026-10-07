@@ -12,9 +12,9 @@ Key Features:
 - Automatically tracks payment differences.
 - Supports customer and vendor bills.
 """,
-    'author': 'Aetos Technology',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'maintainer': 'Aetos Technology',
-    'website': 'https://www.aetostechnology.com',
+    'website': "https://www.aetostechnology.com",
     'category': 'Accounting',
     'license': 'OPL-1',
     # default_payment: it already defines the multi.invoice.payment model that this module

@@ -20,11 +20,7 @@ class AllotmentApplication(models.Model):
 
     # Member Details
     membership_id = fields.Many2one('res.member', string='Member No')
-    company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Member Type', related='membership_id.company_type')
+    company_type = fields.Selection(string='Member Type', related='membership_id.company_type')
     member_name = fields.Char(related='membership_id.name', string="Member Name")
     member_cnic = fields.Char('CNIC', related='membership_id.cnic')
     cnic_line_ids = fields.One2many('res.cnic', 'member_id', string='Details', related='membership_id.cnic_line_ids', readonly=True)
@@ -45,21 +41,14 @@ class AllotmentApplication(models.Model):
 
     # Payment Plan
     plan_description = fields.Char('Plan Description', related='file_id.plan_description', readonly=True)
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states', readonly=True)
+    payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount', readonly=True)
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type', readonly=True)
+    discount_type = fields.Selection(related='file_id.discount_type', readonly=True)
     discount_amount = fields.Float(related='file_id.discount_amount', readonly=True)
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount', readonly=True)
     installment_plan_ids = fields.One2many('installment.plan', 'file_id', related='file_id.installment_plan_ids',
@@ -174,7 +163,7 @@ class AllotmentApplication(models.Model):
 class RequiredTaxesExt(models.Model):
     _inherit = 'required.taxes'
 
-    allotment_application_id = fields.Many2one('file.allotment.application', string="Allotment application", tracking=True)
+    allotment_application_id = fields.Many2one('file.allotment.application', string="Allotment application")
     allotment_required_tax_ids = fields.One2many('required.taxes.line', 'required_taxes_allotment_id')
     allotment_total_tax = fields.Float(compute='_compute_total_tax')
 
@@ -191,7 +180,7 @@ class RequiredTaxesExt(models.Model):
 class RequiredTaxesLineExt(models.Model):
     _inherit = 'required.taxes.line'
 
-    required_taxes_allotment_id = fields.Many2one('required.taxes', tracking=True)
+    required_taxes_allotment_id = fields.Many2one('required.taxes')
 
     @api.depends('required_taxes_allotment_id.allotment_application_id', 'required_taxes_seller_id.transfer_req_id', 'required_taxes_buyer_id.transfer_req_id',
                  'rate')
@@ -208,7 +197,7 @@ class RequiredTaxesLineExt(models.Model):
 class RequiredDocumentsExt(models.Model):
     _inherit = 'required.documents'
 
-    allotment_application_id = fields.Many2one('file.allotment.application', string="Allotment application", tracking=True)
+    allotment_application_id = fields.Many2one('file.allotment.application', string="Allotment application")
 
 
 class FileAttachmentExt(models.Model):

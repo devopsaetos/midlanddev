@@ -10,10 +10,7 @@ class DealerRenewal(models.Model):
                            default=lambda self: _('New'))
     name = fields.Char(related='dealer_id.name')
     is_unit_booking_agent = fields.Boolean(related='dealer_id.is_unit_booking_agent')
-    unit_booking_agent_type = fields.Selection([
-        ('main_agent', "Main Dealer"),
-        ('sub_agent', "Sub Dealer")],
-        string="Dealer Type",
+    unit_booking_agent_type = fields.Selection(string="Dealer Type",
         help="""Type of the Dealer. Either the Main Dealer or the Sub Dealer""",
         related='dealer_id.unit_booking_agent_type'
     )
@@ -26,9 +23,9 @@ class DealerRenewal(models.Model):
                                             domain=[('unit_booking_agent_type', '=', 'main_agent')],
                                             related='dealer_id.unit_booking_agent_id')
     company_type = fields.Selection(related='dealer_id.company_type')
-    dealer_category_id = fields.Many2one('dealer.category', tracking=True, related='dealer_id.dealer_category_id')
-    registration_fee = fields.Float(tracking=True, related='dealer_id.registration_fee')
-    security_fee = fields.Float(tracking=True, related='dealer_id.security_fee')
+    dealer_category_id = fields.Many2one('dealer.category', related='dealer_id.dealer_category_id')
+    registration_fee = fields.Float(related='dealer_id.registration_fee')
+    security_fee = fields.Float(related='dealer_id.security_fee')
     valid_till = fields.Date(related='dealer_id.valid_till')
     renewal_fee = fields.Float()
     is_invoice_generation = fields.Boolean(default=False)

@@ -1,9 +1,10 @@
 {
     'name': 'Construction Costing',
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Construction job costing and cost sheet management',
-    'author': 'NCP',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'license': 'LGPL-3',
     'depends': [
         'project',

@@ -19,7 +19,7 @@ class ComparativeStatement(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'),
         ('approve', 'Approved'),
-    ], default='draft', track_visibility='always')
+    ], default='draft')
 
     comparative_statement_line_ids = fields.One2many('comparative.statement.line', 'comparative_statement_id')
 
@@ -147,8 +147,5 @@ class ComparativeStatementLines(models.Model):
     price_unit = fields.Float(string='Unit Price')
     partner_id = fields.Many2one('res.partner', string='Vendor')
     comparative_statement_id = fields.Many2one('comparative.statement', ondelete='cascade')
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('in progress', 'In Progress'),
-    ], related='comparative_statement_id.state')
+    state = fields.Selection(related='comparative_statement_id.state')
 

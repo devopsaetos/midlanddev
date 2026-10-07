@@ -9,8 +9,8 @@
         A rapper on Real Estate for adding Building with Real-Estate Management
     """,
 
-    'author': "Wahab Ali Malik || Syed Hamza || Axiom Team",
-    'website': "http://www.axm.app",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
     'version': '19.0.1.0.1',
     'license': 'OEEL-1',

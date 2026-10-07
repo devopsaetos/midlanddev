@@ -93,9 +93,4 @@ class BulkFileCancellationLine(models.Model):
     category_id = fields.Many2one('plot.category', string='Category')
     size_id = fields.Many2one('unit.size', string='Size')
     inventory_id = fields.Many2one('plot.inventory', string='Unit No')
-    file_state = fields.Selection([('available', 'Available'),
-                                   ('cancel', 'Cancel'),
-                                   ('inprocess', 'Inprocess'),
-                                   ('refund', 'Refund'),
-                                   ('merged', 'Merged')], related='file_id.state',
-                                  stroe=True, readonly=True)
+    file_state = fields.Selection(related='file_id.state', readonly=True)

@@ -56,14 +56,13 @@ class StockTransaction(models.Model):
 
     scrap_location_id = fields.Many2one(
         'stock.location', 'Scrap Location', default=_get_default_scrap_location_id,
-        domain="[('usage', '=', 'inventory'), ('company_id', 'in', [company_id, False])]", required=True,
-        state={'confirm': [('readonly', True)]}, check_company=True)
+        domain="[('usage', '=', 'inventory'), ('company_id', 'in', [company_id, False])]", required=True, check_company=True)
     request_by_id = fields.Many2one('res.users')
     # branch_id = fields.Many2one('res.branch', string="Branch", default=lambda self: self.env.user.branch_id, tracking=True)
     warehouse_id = fields.Many2one('stock.warehouse', 'Source Warehouse', tracking=True)
     target_warehouse_id = fields.Many2one('stock.warehouse', 'Target Warehouse',tracking=True)
     company_id = fields.Many2one('res.company', string="Company", default=lambda self: self.env.company, tracking=True)
-    location_id = fields.Many2one('stock.location', 'Location', domain="[('usage', '=', 'internal')]", state={'confirm': [('readonly', True)]}, tracking=True)
+    location_id = fields.Many2one('stock.location', 'Location', domain="[('usage', '=', 'internal')]", tracking=True)
     state = fields.Selection(
         [('draft', 'New'), ('confirm', 'Done'), ('cancelled', 'Cancelled'), ('rejected', 'Rejected')], string='Status',
         default='draft', tracking=True)

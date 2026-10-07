@@ -12,4 +12,4 @@ class InvestmentHistoryExt(models.Model):
     _inherit = 'investment.history'
     _description = 'Investment History'
 
-    company_id = fields.Many2one('res.company', default=lambda self: self.env.company, tracking=True)
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.company)

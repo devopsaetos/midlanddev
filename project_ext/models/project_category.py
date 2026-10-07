@@ -25,9 +25,12 @@ class ProjectCategory(models.Model):
         compute='_compute_sub_category_count',
     )
 
-    _sql_constraints = [
-        ('project_category_code_unique', 'UNIQUE(code)', 'Project category code must be unique.'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('project_category_code_unique', 'UNIQUE(code)', 'Project category code must be unique.'),
+    # ]
 
     def _compute_sub_category_count(self):
         data = self.env['project.sub.category']._read_group(
@@ -84,9 +87,12 @@ class ProjectSubCategory(models.Model):
         ondelete='cascade',
     )
 
-    _sql_constraints = [
-        ('project_sub_category_code_unique', 'UNIQUE(code)', 'Project sub-category code must be unique.'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('project_sub_category_code_unique', 'UNIQUE(code)', 'Project sub-category code must be unique.'),
+    # ]
 
     @api.onchange('name')
     def _onchange_name(self):

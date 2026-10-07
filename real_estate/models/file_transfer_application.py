@@ -28,12 +28,7 @@ class TransferApplication(models.Model):
         ('no', 'No'),
     ])
 
-    transfer_type = fields.Selection([
-        ('sale', 'Sale'),
-        ('gift', 'Gift'),
-        ('inherit', 'Inherit'),
-        ('open_file', 'Open File')
-        ],related="t_request_id.transfer_type")
+    transfer_type = fields.Selection(related="t_request_id.transfer_type")
     appointment_date = fields.Datetime(related='t_request_id.appointment_date')
     
     document_count = fields.Integer(compute='_document_count', string='# Documents')
@@ -43,11 +38,7 @@ class TransferApplication(models.Model):
     # Transferer
     image = fields.Binary(related='membership_id.image_1920', string="Image")
     membership_id = fields.Many2one('res.member', string='Member No')
-    company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Member Type', related='membership_id.company_type')
+    company_type = fields.Selection(string='Member Type', related='membership_id.company_type')
     member_name = fields.Char(related='membership_id.name',string="Member Name")
     member_cnic = fields.Char('CNIC', related='membership_id.cnic')
 
@@ -61,11 +52,7 @@ class TransferApplication(models.Model):
     transferee_image = fields.Binary(related='transferee_partner_id.image_1920', string='Transferee Image')
     transferee_partner_id = fields.Many2one('res.member', 'Member No ',
                                             store=True, tracking=True)
-    transferee_company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Transferee Type', related='transferee_partner_id.company_type')
+    transferee_company_type = fields.Selection(string='Transferee Type', related='transferee_partner_id.company_type')
     transferee_partner_id_name = fields.Char('Name ', related='t_request_id.transferee_partner_id.name')
     transferee_name = fields.Char('Transferee Name')
     transferee_cnic_number = fields.Char('CNIC ')
@@ -94,21 +81,14 @@ class TransferApplication(models.Model):
     file_payment_history_id = fields.One2many('file.payment.history', 'file_id',
                                               related='file_id.file_payment_history_id', readonly=True)
     plan_description = fields.Char('Plan Description', related='file_id.plan_description', readonly=True)
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states', readonly=True)
+    payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount', readonly=True)
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type', readonly=True)
+    discount_type = fields.Selection(related='file_id.discount_type', readonly=True)
     discount_amount = fields.Float(related='file_id.discount_amount', readonly=True)
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount', readonly=True)
     installment_plan_ids = fields.One2many('installment.plan', 'file_id', related='file_id.installment_plan_ids',

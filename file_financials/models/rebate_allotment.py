@@ -15,14 +15,12 @@ class RebateOnAllotmentExt(models.Model):
     # relational fields
     investment_id = fields.Many2one('investment')
     partner_id = fields.Many2one('res.partner')
-    agent_type = fields.Selection([('dealer', 'Dealer'), ('marketing_company', 'Marketing Company')], default="dealer", string="Agent Type", required=True,
-                                  tracking=True)
-    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation'), ('down_payment', 'Down Payment')], default="booking", string="Transaction Type", required=True,
-                                        tracking=True)
-    calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')], default="percentage", tracking=True)
+    agent_type = fields.Selection([('dealer', 'Dealer'), ('marketing_company', 'Marketing Company')], default="dealer", string="Agent Type", required=True)
+    transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation'), ('down_payment', 'Down Payment')], default="booking", string="Transaction Type", required=True)
+    calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')], default="percentage")
     # Numerical fields
-    marketing_rebate_percentage = fields.Float(tracking=True)
-    dealer_rebate_percentage = fields.Float(tracking=True)
+    marketing_rebate_percentage = fields.Float()
+    dealer_rebate_percentage = fields.Float()
     rebate_amount = fields.Float(string='Rebate Amount', compute='compute_rebate_amount', store=True)
     rebate_given = fields.Float(string='Rebate Given')
     move_id = fields.Many2one('account.move', string="Entry #")

@@ -17,21 +17,14 @@ class PlotMerger(models.TransientModel):
     file_payment_history_id = fields.One2many('file.payment.history', 'file_id',
                                               related='file_id.file_payment_history_id', readonly=True)
     plan_description = fields.Char('Plan Description', related='file_id.plan_description', readonly=True)
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states', readonly=True)
+    payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount', readonly=True)
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type', readonly=True)
+    discount_type = fields.Selection(related='file_id.discount_type', readonly=True)
     discount_amount = fields.Float(related='file_id.discount_amount', readonly=True)
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount', readonly=True)
     installment_plan_ids = fields.One2many('installment.plan', 'file_id', related='file_id.installment_plan_ids',
@@ -193,21 +186,14 @@ class FileMergerRequest(models.Model):
     file_payment_history_id = fields.One2many('file.payment.history', 'file_id',
                                               related='file_id.file_payment_history_id', readonly=True)
     plan_description = fields.Char('Plan Description', related='file_id.plan_description', readonly=True)
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states', readonly=True)
+    payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount', readonly=True)
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type', readonly=True)
+    discount_type = fields.Selection(related='file_id.discount_type', readonly=True)
     discount_amount = fields.Float(related='file_id.discount_amount', readonly=True)
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount', readonly=True)
     installment_plan_ids = fields.One2many('installment.plan', 'file_id', related='file_id.installment_plan_ids',

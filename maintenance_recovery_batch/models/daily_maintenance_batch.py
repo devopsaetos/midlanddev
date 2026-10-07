@@ -194,7 +194,7 @@ class DailyMaintenanceLines(models.Model):
     sequence = fields.Integer(string="Sr.No",
                               default=lambda self: self.env['ir.sequence'].next_by_code('daily.maintenance.line'))
     discount = fields.Float(string='Discount %')
-    payment_id = fields.Many2one('account.payment', string='Payment', tracking=True)
+    payment_id = fields.Many2one('account.payment', string='Payment')
     partner_id = fields.Many2one('res.partner', string='Member', compute='_compute_partner')
     invoice_ids = fields.Many2many('account.move', string='Invoice')
     is_inv_select = fields.Boolean(compute='_compute_inv_select')

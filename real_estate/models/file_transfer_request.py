@@ -16,11 +16,7 @@ class FileTransferRequest(models.Model):
                        default=lambda self: _('New'), tracking=True)
 
     membership_id = fields.Many2one('res.member', string='Member No', tracking=True)
-    company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Member Type', related='membership_id.company_type')
+    company_type = fields.Selection(string='Member Type', related='membership_id.company_type')
     cnic = fields.Char(related='file_id.membership_id.cnic')
     society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]", related='file_id.society_id')
     phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]", related='file_id.phase_id')
@@ -64,11 +60,7 @@ class FileTransferRequest(models.Model):
         ('no', 'No'),
     ], 'Is Member ?')
     transferee_partner_id = fields.Many2one('res.member', 'Name ', readonly=True, tracking=True)
-    transferee_company_type = fields.Selection([
-        ('person', 'Individual'),
-        ('company', 'Company'),
-        ('aop', 'Joint Owners'),
-    ], 'Transferee Type', related='transferee_partner_id.company_type')
+    transferee_company_type = fields.Selection(string='Transferee Type', related='transferee_partner_id.company_type')
     transferee_name = fields.Char('Transferee Name', readonly=True, tracking=True)
     relation_id = fields.Selection([
         ('S/O', 'S/O'),
@@ -88,21 +80,14 @@ class FileTransferRequest(models.Model):
     file_payment_history_id = fields.One2many('file.payment.history', 'file_id',
                                               related='file_id.file_payment_history_id')
     plan_description = fields.Char('Plan Description', related='file_id.plan_description')
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states')
+    payment_states = fields.Selection(related='file_id.payment_states')
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id')
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment')
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date')
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount')
     factor_amount = fields.Float(related='file_id.factor_amount')
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount')
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type')
+    discount_type = fields.Selection(related='file_id.discount_type')
     discount_amount = fields.Float(related='file_id.discount_amount')
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount')
     installment_plan_ids = fields.One2many('installment.plan', 'file_id', related='file_id.installment_plan_ids')

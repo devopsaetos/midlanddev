@@ -31,5 +31,4 @@ class IrAttachmentExt(models.Model):
         'doc_attachment_ids', 
         'attachment_id', 
         'file_attachment_id',
-        string="Attachment ",
-        invisible=1)
+        string="Attachment ")

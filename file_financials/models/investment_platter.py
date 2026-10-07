@@ -32,7 +32,7 @@ class InvestmentPlatterLines(models.Model):
     _name = 'investment.platter.line'
     _description = "Investment Platter Lines"
 
-    company_id = fields.Many2one('res.company', default=lambda self: self.env.company, tracking=True)
+    company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
     sector_id = fields.Many2one('sector')
     street_id = fields.Many2one('street')
     size_id = fields.Many2one('unit.size', 'Size', store=True,

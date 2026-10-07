@@ -1,5 +1,6 @@
 {
     'name': 'Midland Membership Form Report',
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.1.0.0',
     'summary': 'Membership Form & Installment Plan PDF report for Real Estate Files',
     'description': """
@@ -9,7 +10,7 @@ a combined PDF report containing:
     2. Installment Plan - Full payment schedule table
 """,
     'category': 'Real Estate',
-    'author': 'Midland Dev',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'depends': ['real_estate', 'midland_invoicing'],
     'data': [
         'security/ir.model.access.csv',

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "maintenance_ext",
+    'license': 'LGPL-3',
 
     'summary': """
         Maintenance Extension""",
@@ -9,8 +10,8 @@
         This module is build to deal with the maintenance issue
     """,
 
-    'author': "Hassan Raza|| Axiom Team",
-    'website': "https://www.axm.app",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Help Desk',
     'version': '19.0.1.0.0',
 

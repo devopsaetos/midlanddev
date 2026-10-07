@@ -110,13 +110,10 @@ class InvestmentRebateLine(models.TransientModel):
     investment_id = fields.Many2one('investment', string="Investment #",
                                     related='investment_rebate_line_id.investment_id')
     calculated_rebate = fields.Float(string="Calculated Rebate")
-    settlement_option = fields.Selection([('net_off', 'Net Off'), ('separate', 'Separate'), ('files', 'Files')],
-                                         tracking=True)
+    settlement_option = fields.Selection([('net_off', 'Net Off'), ('separate', 'Separate'), ('files', 'Files')])
     agent_type = fields.Selection([('dealer', 'Dealer'), ('marketing_company', 'Marketing Company')],
-                                  string="Agent Type", required=True,
-                                  tracking=True)
+                                  string="Agent Type", required=True)
     transaction_type = fields.Selection([('booking', 'Booking'), ('confirmation', 'Confirmation'), ('down_payment', 'Down Payment')],
-                                        string="Transaction Type", required=True,
-                                        tracking=True)
+                                        string="Transaction Type", required=True)
     actual_amount = fields.Float(string="Actual Amount")
     rebate_search_id = fields.Many2one('investment.rebate.wizard')

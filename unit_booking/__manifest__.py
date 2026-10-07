@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Unit Booking",
+    'license': 'LGPL-3',
 
     'summary': """
         This module generate bookings for plots/units.""",
 
-    'author': "Syed Hamza ||Mudassir Ali Zaidi|| Axiom World",
-    'website': "http://www.axiomworld.net",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
     'version': '19.0.1.0.1',
 

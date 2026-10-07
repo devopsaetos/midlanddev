@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Advance Payments in Partner Reports',
+    'website': "https://www.aetostechnology.com",
     'summary': 'Partner Ledger and Aged Receivable/Payable include advance payments booked on '
                'advance accounts (e.g. Advance to Suppliers), in the opening balance and the lines.',
     'description': """
@@ -13,7 +14,7 @@ Payable / Aged Receivable reports.
 The Partner Ledger also shows an Opening Balance column and a Closing Balance column per
 partner, and frames each unfolded partner with Opening Balance and Closing Balance lines.
 """,
-    'author': 'Midland Developers',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'category': 'Accounting/Accounting',
     'version': '19.0.1.1.0',
     'license': 'LGPL-3',

@@ -344,4 +344,4 @@ class CnicLinesExt(models.Model):
     _inherit = 'res.cnic'
 
     investor_id = fields.Many2one('res.investor', ondelete='cascade')
-    email = fields.Char(tracking=True)
+    email = fields.Char()

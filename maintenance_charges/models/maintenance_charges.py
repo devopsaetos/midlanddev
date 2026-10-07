@@ -385,11 +385,7 @@ class MaintenanceChargesHistory(models.Model):
     payment_date = fields.Date('Payment Date', store=True, compute='_payment_date', readonly=False)
     amount_paid = fields.Float('Amount Paid', store=True, compute='_invoice_id_data', readonly=False)
     residual = fields.Float('Amount Due', store=True, compute='_invoice_id_data', readonly=False)
-    payment_status = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment', store=True, readonly=False, copy=False, tracking=True,
+    payment_status = fields.Selection(string='Payment', store=True, readonly=False, copy=False,
         related='invoice_id.payment_state')
     double_check_paid_amount = fields.Boolean(compute="_double_check_paid_amount")
 

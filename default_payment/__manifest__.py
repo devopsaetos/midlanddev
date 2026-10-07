@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Default Payment",
+    'license': 'LGPL-3',
 
     'summary': """
         Change the default view of Invoice and Vendor payments to Payments form """,
@@ -8,8 +9,8 @@
     'description': """
         Change the default view of Invoice and Vendor payments to Payments form """,
 
-    'author': "Wahab Ali Malik || Axiom Team",
-    'website': "https://www.axiomworld.net",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Invoicing',
     'version': '1.2',
     'depends': ['account'],

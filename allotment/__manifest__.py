@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Allotment",
+    'license': 'LGPL-3',
 
     'summary': """
        This module make the allotment""",
@@ -9,8 +10,8 @@
         This module make the allotment request and further processing till the ending date
     """,
 
-    'author': "Umer Farooq||By Axiom World Team",
-    'website': "http://www.axiomworld.net",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
 
     'category': 'real_estate',
     'version': '19.0.1.0.0',

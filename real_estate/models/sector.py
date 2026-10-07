@@ -41,10 +41,13 @@ class Sector(models.Model):
                 raise ValidationError(
                     _(f"name: {rec.name} is already available with branch:{rec.branch_id.name}"))
 
-    _sql_constraints = [
-        ('code_uniq', 'unique (code)',
-         'Code must be unique !'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('code_uniq', 'unique (code)',
+    #      'Code must be unique !'),
+    # ]
 
     @api.constrains('floor_planning_ids')
     def _check_floor_planning_area(self):

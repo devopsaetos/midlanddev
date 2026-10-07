@@ -150,7 +150,7 @@ class ResPartnerExt(models.Model):
     def check_constrain_valid_email(self):
         for rec in self:
             if rec.email and rec.is_unit_booking_agent:
-                regex = re.compile('^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$')
+                regex = re.compile(r'^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$')
                 if not (re.search(regex, rec.email)):
                     raise ValidationError(_('Please Enter Valid Email'))
 
@@ -165,7 +165,7 @@ class ResPartnerExt(models.Model):
     def validate_fields(self):
         for rec in self:
             if rec.is_unit_booking_agent:
-                regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+                regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
                 if rec.form_b:
                     if regex.search(rec.form_b) is not None:
                         raise ValidationError(_('Please enter valid Form B Number'))

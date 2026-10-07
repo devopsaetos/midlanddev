@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Maintenance Collection Report",
+    'license': 'LGPL-3',
     'summary': """
         Generate Maintenance Collection Report based on various filters.""",
     'description': """
        Generate Maintenance Collection Report based on various filters""",
 
-    'author': "Yasir Ali| Data Elite",
-    'website': "dateelite.tech",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Account',
     'version': '19.0.1.0.3',
     'depends': ['maintenance_charges'],

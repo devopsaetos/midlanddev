@@ -34,9 +34,12 @@ class DemarcatedArea(models.Model):
     def _plot_inventory(self):
         self.total_area = self.inventory_id.size_id.standard_area
 
-    _sql_constraints = [
-        ('inventory_id_uniq', 'unique (inventory_id)', 'The Demarcated file if this plot is already exist!'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('inventory_id_uniq', 'unique (inventory_id)', 'The Demarcated file if this plot is already exist!'),
+    # ]
 
 
 class PlotDimension(models.Model):

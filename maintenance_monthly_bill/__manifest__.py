@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Maintenance Monthly Bill",
+    'website': "https://www.aetostechnology.com",
     'summary': """
         Monthly utility + electricity (meter reading) bills per file, posted as invoices
         and printed as a 3-copy bill (Customer / Society Office / Bank).""",
-    'author': "Midland Developers",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'category': 'Real Estate',
     'version': '19.0.1.1.1',
     'license': 'LGPL-3',

@@ -8,9 +8,7 @@ class MaintenanceRequest(models.Model):
     def _get_default_value(self):
         return self.env['society'].search([], limit=1).id
 
-    project_type = fields.Selection([
-        ('skyscraper', 'Skyscraper'),
-        ('housing_society', 'Housing Society')], related='society_id.project_type')
+    project_type = fields.Selection(related='society_id.project_type')
     helpdesk_ticket_id = fields.Many2one('helpdesk.ticket')
     # Odoo 19 migration note: 'helpdesk.ticket.type' (and the 'ticket_type_id' field on
     # helpdesk.ticket it related to) was a concept specific to the unavailable

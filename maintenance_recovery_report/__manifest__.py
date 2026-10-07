@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Maintenance Recovery Report",
+    'license': 'LGPL-3',
     'summary': """
         Generate Maintenance Recovery Report based on various filters.""",
     'description': """
        Generate Maintenance Recovery Report based on various filters""",
 
-    'author': "Muhammad Hamza Faizan | Data Elite",
-    'website': "dateelite.tech",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Account',
     'version': '19.0.1.0.1',
     'depends': [

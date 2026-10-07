@@ -8,29 +8,10 @@ class MultiInvoicePayment(models.Model):
     _description = "Multi Invoice Payment"
 
     invoice_id = fields.Many2one('account.move')
-    state = fields.Selection(selection=[
-        ('draft', 'Draft'),
-        ('posted', 'Posted'),
-        ('cancel', 'Cancelled')
-    ], string='Status', related='invoice_id.state', store=True)
-    invoice_payment_state = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid'),
-        ('partial', 'In Payment'),
-        ('reversed', 'Reversed'),
-        ('invoicing_legacy', 'Invoicing App Legacy')],
-        string='Payment State', related='invoice_id.payment_state', store=True)
-    type = fields.Selection(selection=[
-        ('entry', 'Journal Entry'),
-        ('out_invoice', 'Customer Invoice'),
-        ('out_refund', 'Customer Credit Note'),
-        ('in_invoice', 'Vendor Bill'),
-        ('in_refund', 'Vendor Credit Note'),
-        ('out_receipt', 'Sales Receipt'),
-        ('in_receipt', 'Purchase Receipt'),
-    ], string='Type', related='invoice_id.move_type', store=True)
-    active = fields.Boolean('Active', default=True, tracking=True)
+    state = fields.Selection(string='Status', related='invoice_id.state', store=True)
+    invoice_payment_state = fields.Selection(string='Payment State', related='invoice_id.payment_state', store=True)
+    type = fields.Selection(string='Type', related='invoice_id.move_type', store=True)
+    active = fields.Boolean('Active', default=True)
     payment_id = fields.Many2one('account.payment')
     payment_date = fields.Date(related='payment_id.date', store=True)
     partner_id = fields.Many2one('res.partner', related='invoice_id.partner_id', store=True)

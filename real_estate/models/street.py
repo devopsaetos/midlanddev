@@ -15,9 +15,12 @@ class Street(models.Model):
     branch_id = fields.Many2one('res.company', string="Branch", tracking=True)
     plot_inventory_ids = fields.One2many('plot.inventory', 'street_id')
 
-    _sql_constraints = [
-        ('code', 'unique (code)', 'Code must be unique!'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('code', 'unique (code)', 'Code must be unique!'),
+    # ]
 
 
 class StreetType(models.Model):
@@ -27,7 +30,10 @@ class StreetType(models.Model):
     name = fields.Char(required=True)
     code = fields.Char(required=True)
 
-    _sql_constraints = [
-        ('code', 'unique (code)', 'Code must be unique!'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('code', 'unique (code)', 'Code must be unique!'),
+    # ]
 

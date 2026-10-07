@@ -10,10 +10,7 @@ class CrmLeadExt(models.Model):
     crm_lead_building = fields.One2many('crm.lead.line', 'crm_lead_id')
     crm_pipeline_ids = fields.One2many('crm.lead.line', 'crm_pipeline_id')
     society_id = fields.Many2one('society', string='Society',domain=[('is_society','=',True)])
-    project_type = fields.Selection([
-        ('skyscraper', 'Skyscraper'),
-        ('housing_society', 'Housing Society'),
-    ], related='society_id.project_type', store=True)
+    project_type = fields.Selection(related='society_id.project_type', store=True)
     is_existing = fields.Boolean(default=False)
     token_paid = fields.Boolean(default=False)
     plan_locked = fields.Boolean()

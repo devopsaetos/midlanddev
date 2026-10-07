@@ -105,11 +105,11 @@ class ChangeUnitTypeLines(models.Model):
     category_id = fields.Many2one('plot.category', store=True, string='Category', related="inventory_id.category_id", readonly=False)
     size_id = fields.Many2one('unit.size', 'Size', related="inventory_id.size_id", store=True)
     unit_category_type_id = fields.Many2one('unit.category.type', related="inventory_id.unit_category_type_id", store=True)
-    unit_class_id = fields.Many2one('unit.class', related="inventory_id.unit_class_id", store=True, tracking=True)
+    unit_class_id = fields.Many2one('unit.class', related="inventory_id.unit_class_id", store=True)
     tracking_id = fields.Char()
     file_id = fields.Many2one('file', string='File No')
     membership_id = fields.Many2one('res.member', string='Member No')
-    new_unit_class_id = fields.Many2one('unit.class', string="Select Type", tracking=True)
+    new_unit_class_id = fields.Many2one('unit.class', string="Select Type")
     unit_change_type_id = fields.Many2one('change.unit.type', string="Unit Change Type")
 
     @api.onchange('inventory_id', 'unit_change_type_id.street_id', 'unit_change_type_id.sector_id')

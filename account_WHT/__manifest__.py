@@ -13,9 +13,9 @@ Key Features:
 - Dedicated reports and tracking for WHT deductions.
 - Supports both customer and vendor bills.
 """,
-    'author': 'Syed Hamza',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'maintainer': 'Aetos Technology',
-    'website': 'https://www.aetostechnology.com',
+    'website': "https://www.aetostechnology.com",
     'category': 'Accounting',
     'license': 'OPL-1',
     'depends': ['account', 'account_batch_payment'],

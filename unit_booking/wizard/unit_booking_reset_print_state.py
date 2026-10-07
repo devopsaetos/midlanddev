@@ -176,8 +176,8 @@ class UnitBookingResetPrintStateLine(models.TransientModel):
     search_id = fields.Many2one('unit.booking.reset.print.state')
 
     # boolean fields
-    is_printed = fields.Boolean(default=False, related='units_booking_id.is_printed')
-    is_qr_printed = fields.Boolean(default=False, related='units_booking_id.is_qr_printed')
-    is_receipt_printed = fields.Boolean(default=False, related='units_booking_id.is_receipt_printed')
-    is_ledger_printed = fields.Boolean(default=False, related='units_booking_id.is_ledger_printed')
-    state = fields.Selection([], related='units_booking_id.state')
+    is_printed = fields.Boolean(related='units_booking_id.is_printed')
+    is_qr_printed = fields.Boolean(related='units_booking_id.is_qr_printed')
+    is_receipt_printed = fields.Boolean(related='units_booking_id.is_receipt_printed')
+    is_ledger_printed = fields.Boolean(related='units_booking_id.is_ledger_printed')
+    state = fields.Selection(related='units_booking_id.state')

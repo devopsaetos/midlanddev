@@ -14,26 +14,8 @@ class FileInstallmentPayments(models.Model):
     invoice_amount = fields.Float(string='Invoice Amount')
     invoice_residual = fields.Float(string='Balance')
     payment_amount = fields.Float(string='Paid Amount')
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('adv_and_securities', 'Advances and Securities'),
-        ('installment', 'Installment'),
-        ('initial_payment_plus_installment', 'Initial Payment + Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('rent', 'Rent'),
-        ('others', 'Others'), ('token', 'Token'),
-        ('investment', 'Investment'), ('investment_installment', 'Investment Installment'),
-        ('maintenance', 'Maintenance Charges'), ('map_fee', 'Mapping Fee'),
-        ('tax', 'PRA-Tax'), ('236k_sale', '236k-Sale'),
-        ('236k_sale', '236k-Sale'),
-        ('demarcation', 'Demarcation'),
-        ('merger_adjustment', 'Merger Adjustment'),
-    ], string='Invoice Type', related='invoice_id.property_invoice_type')
-    invoice_payment_state = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment State', related='invoice_id.payment_state')
+    property_invoice_type = fields.Selection(string='Invoice Type', related='invoice_id.property_invoice_type')
+    invoice_payment_state = fields.Selection(string='Payment State', related='invoice_id.payment_state')
 
     file_id = fields.Many2one('file')
 
@@ -51,25 +33,7 @@ class FileAdditionalPayments(models.Model):
     invoice_amount = fields.Float(string='Invoice Amount')
     invoice_residual = fields.Float(string='Balance')
     payment_amount = fields.Float(string='Paid Amount')
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('adv_and_securities', 'Advances and Securities'),
-        ('installment', 'Installment'),
-        ('initial_payment_plus_installment', 'Initial Payment + Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('rent', 'Rent'),
-        ('others', 'Others'), ('token', 'Token'),
-        ('investment', 'Investment'), ('investment_installment', 'Investment Installment'),
-        ('maintenance', 'Maintenance Charges'), ('map_fee', 'Mapping Fee'),
-        ('tax', 'PRA-Tax'), ('236k_sale', '236k-Sale'),
-        ('236k_sale', '236k-Sale'),
-        ('demarcation', 'Demarcation'),
-        ('merger_adjustment', 'Merger Adjustment'),
-    ], string='Invoice Type', related='invoice_id.property_invoice_type')
-    invoice_payment_state = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment State', related='invoice_id.payment_state')
+    property_invoice_type = fields.Selection(string='Invoice Type', related='invoice_id.property_invoice_type')
+    invoice_payment_state = fields.Selection(string='Payment State', related='invoice_id.payment_state')
 
     file_id = fields.Many2one('file')

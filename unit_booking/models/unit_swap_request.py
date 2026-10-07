@@ -9,7 +9,7 @@ class UnitBookingSwapRequest(models.Model):
     _description = "Unit Swap Request"
 
     # Char fields
-    name = fields.Char(copy=False, readonly=True, index=True, tracking=True, default=lambda self: _('New'))
+    name = fields.Char(copy=False, readonly=True, index=True, default=lambda self: _('New'))
     # models relational fields
     batch_id = fields.Many2one('unit.batch.generation')
     deal_pack_id = fields.Many2one('deal.pack')
@@ -27,7 +27,7 @@ class UnitBookingSwapRequest(models.Model):
         ('draft', 'Draft'),
         ('approve', 'Approved'),
         ('cancel', 'Cancel')
-    ], default='draft', tracking=True)
+    ], default='draft')
     # Date fields
     request_date = fields.Date()
 

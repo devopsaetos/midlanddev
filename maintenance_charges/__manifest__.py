@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Maintenance Charges",
+    'license': 'LGPL-3',
 
     'summary': """
         This module manages the maintenance charges of society.""",
 
 
-    'author': "Syed Hamza || Axiom World",
-    'website': "http://www.axiomworld.net",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
 
     'category': 'Real Estate',
     'version': '19.0.1.0.8',

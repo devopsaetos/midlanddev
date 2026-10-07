@@ -19,7 +19,7 @@ class UnitsPlatter(models.Model):
     # models relational fields
     unit_batch_id = fields.Many2one('unit.batch.generation', string='Batch')
     platter_line_ids = fields.One2many('units.platter.line', 'unit_platter_id')
-    platter_size = fields.Integer('Platter Size', size=100)
+    platter_size = fields.Integer('Platter Size')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('active', 'Active'),
@@ -106,14 +106,5 @@ class UnitsPlatterLine(models.Model):
     price = fields.Float()
     batch_id = fields.Many2one('unit.batch.generation')
 
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('assignment', 'Assignment'),
-        ('print', 'Print'),
-        ('allotment', 'Allotment'),
-        ('issued', 'Issued'),
-        ('file_created', 'File Created'),
-        ('balloting', 'Balloting')
-    ], related='units_booking_id.state', store=True)
+    state = fields.Selection(related='units_booking_id.state', store=True)
     unit_platter_id = fields.Many2one('units.platter')

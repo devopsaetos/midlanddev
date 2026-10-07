@@ -7,6 +7,7 @@ class MaintenanceRequest(models.Model):
     # (unavailable) 'website_axis_helpdesk' module indirectly via maintenance_team_id etc.
     # 'maintenance.request' itself is core Odoo, unaffected - see helpdesk_ticket.py and
     # __manifest__.py for the helpdesk/issue_requistion dependency notes.
+    _name = 'maintenance.request'
     _inherit = ['maintenance.request']
 
 

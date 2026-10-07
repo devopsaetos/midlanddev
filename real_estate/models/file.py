@@ -60,10 +60,7 @@ class File(models.Model):
     ], string='Payment Type', tracking=True)
     membership_id = fields.Many2one('res.member', string='Member Name',
                                     tracking=True)
-    member_company_type = fields.Selection([('person', 'Individual'),
-                                            ('company', 'Company'),
-                                            ('aop', 'Joint Owner')],
-                                           related='membership_id.company_type', store=True)
+    member_company_type = fields.Selection(related='membership_id.company_type', store=True)
     membership_name = fields.Char(string='Name', store=True, related='membership_id.name', tracking=True)
     user_id = fields.Many2one('res.users', "Sale Person", tracking=True)
     preference_ids = fields.One2many('preference', 'file_id', tracking=True)
@@ -89,7 +86,7 @@ class File(models.Model):
                                     tracking=True)
     price_list_id = fields.Many2one('price.list', compute='_price_list', store=True, readonly=False,
                                     tracking=True)
-    kin_line_ids = fields.One2many('res.kin', 'file_id', ondelete='cascade')
+    kin_line_ids = fields.One2many('res.kin', 'file_id')
     is_downpayment = fields.Selection([
         ('not_paid', 'Not Paid'),
         ('partially_paid', 'Partially Paid'),
@@ -222,9 +219,9 @@ class File(models.Model):
     # payment_id = fields.One2many('payment.detail', 'file_id')
     # cancellation_id = fields.One2many('cancellation.detail', 'file_id')
 
-    history_ids = fields.One2many('file.history', 'file_id', ondelete='cascade', tracking=True)
-    joint_owner_ids = fields.One2many('joint.owner', 'file_id', ondelete='cascade', tracking=True)
-    poa_ids = fields.One2many('power.attorney', 'file_id', ondelete='cascade', tracking=True)
+    history_ids = fields.One2many('file.history', 'file_id', tracking=True)
+    joint_owner_ids = fields.One2many('joint.owner', 'file_id', tracking=True)
+    poa_ids = fields.One2many('power.attorney', 'file_id', tracking=True)
     unit_type = fields.Selection([
         ('plot', 'Plot'),
         ('unit', 'Unit'),
@@ -271,8 +268,7 @@ class File(models.Model):
     grace_period = fields.Integer()
 
     # pricing policy
-    pricing_policy = fields.Selection([('area', 'Area Base'),
-                                       ('unit_base', 'Unit Base')], related='society_id.pricing_policy', store=True)
+    pricing_policy = fields.Selection(related='society_id.pricing_policy', store=True)
     rate_sq_ft = fields.Float(string="Rate/Sq-ft")
 
     # _sql_constraints = [
@@ -2489,19 +2485,10 @@ class InstallmentPlan(models.Model):
     payment_date = fields.Date('Payment Date', store=True, compute='_payment_date', readonly=False)
     # payment_created_date = fields.Date('Payment Create Date', store=True, related='invoice_id.payment_id.create_date', readonly=False)
     # payment_created_by = fields.Char('Payment Created By', store=True, related='invoice_id.payment_id.create_uid.name', readonly=False)
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('installment', 'Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('others', 'Others'),
-    ], related='invoice_id.property_invoice_type', readonly=False, string='Invoice Type')
+    property_invoice_type = fields.Selection(related='invoice_id.property_invoice_type', readonly=False, string='Invoice Type')
     amount_paid = fields.Float('Amount Paid', store=True, compute='_invoice_id_data', readonly=False)
     residual = fields.Float('Amount Due', store=True, compute='_invoice_id_data', readonly=False)
-    payment_status = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment', store=True, readonly=False, copy=False, tracking=True,
+    payment_status = fields.Selection(string='Payment', store=True, readonly=False, copy=False,
         related='invoice_id.payment_state')
     double_check_paid_amount = fields.Boolean(compute="_double_check_paid_amount")
     investor_payment = fields.Boolean()
@@ -2633,23 +2620,13 @@ class FilePaymentHistory(models.Model):
 
     date_invoice = fields.Date('Invoice Date', related='invoice_id.invoice_date')
     payment_date = fields.Date('Payment Date', compute='_payment_date')
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('installment', 'Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('others', 'Others'),
-    ], related='invoice_id.property_invoice_type', string='Invoice Type')
+    property_invoice_type = fields.Selection(related='invoice_id.property_invoice_type', string='Invoice Type')
     # transaction_type = fields.Char('Transaction Type', related = 'invoice_id.transaction_type')
     invoice_id = fields.Many2one('account.move')
     amount_total = fields.Float('Total Amount', compute='_invoice_id_data')
     amount_paid = fields.Float('Amount Paid', compute='_invoice_id_data')
     residual = fields.Float('Amount Due', compute='_invoice_id_data')
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('paid', 'Paid'),
-        ('cancel', 'Cancelled'),
-    ], string='Status', readonly=True, related='invoice_id.state')
+    state = fields.Selection(string='Status', readonly=True, related='invoice_id.state')
 
     file_id = fields.Many2one('file')
 
@@ -2694,7 +2671,7 @@ class FileRequestHistory(models.Model):
         ('cancel', 'Unit Cancellation'),
         ('open_file', 'File Issuance'),
         ('member_swap', 'Member Swap')
-    ], track_visibility='always')
+    ])
     ref_number = fields.Char(string="Request Number")
     old_inventory_id = fields.Many2one('plot.inventory')
     new_inventory_id = fields.Many2one('plot.inventory')
@@ -2767,8 +2744,7 @@ class InvoicePopup(models.TransientModel):
     cheque_no = fields.Char('Cheque No')
     bank_ref = fields.Char('Bank Reference')
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company.id)
-    payment_type = fields.Selection([('osp', 'One Step Payment'),
-                                     ('tsp', 'Two Step Payment')], related='company_id.payment_type')
+    payment_type = fields.Selection(related='company_id.payment_type')
 
     def create_invoice(self):
         file = self.file_id

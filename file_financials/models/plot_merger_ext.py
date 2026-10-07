@@ -20,7 +20,7 @@ class PlotMergerExt(models.TransientModel):
         string='Waive Fee ?',
         selection=[('yes', 'Yes'),
                    ('no', 'No')],
-        default="no", required=False, track_visility='always')
+        default="no", required=False)
     appointment_date = fields.Date(string='Application Date')
     notes = fields.Text(string='Remarks')
 

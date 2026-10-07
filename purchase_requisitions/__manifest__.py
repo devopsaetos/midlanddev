@@ -46,10 +46,10 @@
     material purchase requisition by employee
     material purchase requisition by users
 """,
-    'author': 'Umer Farooq|Axiom World Team',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'price': 39,
     'currency': "EUR",
-    'website': 'http://www.browseinfo.in',
+    'website': "https://www.aetostechnology.com",
     'depends': ['sale_management', 'purchase', 'stock', 'hr'],
     'data': [
         'security/ir.model.access.csv',

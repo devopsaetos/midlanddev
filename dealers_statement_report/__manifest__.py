@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Dealers Statement Report",
+    'license': 'LGPL-3',
     'summary': """
         Generate Dealer Statement Report based on various filters.""",
     'description': """
        Generate Dealer Statement Report based on various filters""",
 
-    'author': "Muhammad Hamza Faizan | Data Elites",
-    'website': "linkedin.com/in/muhammad-hamza-faizan/",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Sales/Real Estate',
     'version': '19.0.1.0.2',
     'depends': ['real_estate', 'file_financials', 'default_payment'],

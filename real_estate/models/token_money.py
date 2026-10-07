@@ -61,14 +61,9 @@ class TokenMoney(models.Model):
     phone_no = fields.Char('Phone Number', store=True, related='partner_id.mobile', readonly=False, tracking=True)
     cp_phone_no = fields.Char('Phone No', store=True, related='partner_id.cp_mobile', readonly=False)
     society_id = fields.Many2one('society', required=True, string='Society', domain=[('is_society', '=', True)])
-    company_type = fields.Selection([('person', 'Individual'),
-                                     ('company', 'Company'),
-                                     ('aop', 'Joint Owner')], related='partner_id.company_type', store=True,
+    company_type = fields.Selection(related='partner_id.company_type', store=True,
                                     readonly=False, tracking=True)
-    project_type = fields.Selection([
-        ('skyscraper', 'Skyscraper'),
-        ('housing_society', 'Housing Society'),
-    ], related='society_id.project_type', store=True)
+    project_type = fields.Selection(related='society_id.project_type', store=True)
     token_line_ids = fields.One2many('token.money.line', 'token_id')
     token_fees = fields.Float(string="Token Money", digits='Product Price', required=True)
     date = fields.Date(required=True, tracking=True)

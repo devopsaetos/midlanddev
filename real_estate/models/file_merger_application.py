@@ -27,16 +27,16 @@ class PlotMergerApplication(models.Model):
 
     name = fields.Char("Request Number", required=True, copy=False, readonly=True, index=True,
                        default=lambda self: _('New'))
-    file_merger_request_id = fields.Many2one('file.merger.request', string="File Merger Request", track_visility='always')
-    membership_id = fields.Many2one('res.member', string='Member No', track_visility='always')
-    membership_merge_to_id = fields.Many2one('res.member', string='Merger Member To', track_visility='always')
-    merger_date = fields.Datetime(string='Merger Date', track_visility='always')
-    merger_fee = fields.Float(string='Merger Fee', track_visility='always')
+    file_merger_request_id = fields.Many2one('file.merger.request', string="File Merger Request")
+    membership_id = fields.Many2one('res.member', string='Member No')
+    membership_merge_to_id = fields.Many2one('res.member', string='Merger Member To')
+    merger_date = fields.Datetime(string='Merger Date')
+    merger_fee = fields.Float(string='Merger Fee')
     knockoff = fields.Boolean(default=False)
     credit_note_created = fields.Boolean(default=False)
     amount_adjust_done = fields.Boolean(default=False)
     adjust = fields.Boolean(default=False)
-    amount_deduction = fields.Float(track_visility='always')
+    amount_deduction = fields.Float()
     total_receive_amount = fields.Float(compute='_amount_to_be_adjusted', store=True)
     total_adjusted_amount = fields.Float(compute='_total_adjusted_amount', store=True)
     net_adjusted = fields.Float()
@@ -49,19 +49,19 @@ class PlotMergerApplication(models.Model):
         string='Merger Fee Type',
         selection=[('net_off', 'Net Off'),
                    ('separate', 'Separate')],
-        required=False, track_visility='always')
+        required=False)
     waive_merger_application = fields.Selection(
         string='Waive Fee ?',
         selection=[('yes', 'Yes'),
                    ('no', 'No')],
-        default="no", required=False, track_visility='always')
-    invoice_create = fields.Boolean(string='Invoice Created ?', default=False, track_visility='always')
+        default="no", required=False)
+    invoice_create = fields.Boolean(string='Invoice Created ?', default=False)
     # Comodel is overridden to 'midland.invoice' in midland_invoicing/models/plot_merger_application_ext.py.
     # Can't declare that comodel here directly: real_estate is a dependency of midland_invoicing
     # (via file_financials), so declaring a field of comodel 'midland.invoice' in this module would
     # be a circular dependency — midland.invoice wouldn't exist yet when this module's models load.
-    merger_fee_invoice_id = fields.Many2one('account.move', string='Merger Fee Invoice', track_visility='always')
-    credit_note_id = fields.Many2many('account.move', 'plot_merger_credit_note_account_move_rel', string='Credit Note', track_visility='always')
+    merger_fee_invoice_id = fields.Many2one('account.move', string='Merger Fee Invoice')
+    credit_note_id = fields.Many2many('account.move', 'plot_merger_credit_note_account_move_rel', string='Credit Note')
     journal_entry_id = fields.Many2one('account.move', string='Journal Entry', track_visility='always')
     show_approved_status = fields.Boolean(string='Show Approved Status', default=False)
     merger_status = fields.Selection([

@@ -22,10 +22,7 @@ class ResConfigSettingsRSMS(models.TransientModel):
     token_partner_id = fields.Many2one('res.partner', readonly=False, related='company_id.token_partner_id')
     account_journal_id = fields.Many2one('account.journal', domain=[('type', '=', 'sale')], readonly=False, related='company_id.account_journal_id')
     merger_advance_account_id = fields.Many2one('account.account', readonly=False, related='company_id.merger_advance_account_id')
-    payment_type = fields.Selection([
-        ('osp', 'One Step Payment'),
-        ('tsp', 'Two Step Payment'),
-    ], readonly=False, related='company_id.payment_type')
+    payment_type = fields.Selection(readonly=False, related='company_id.payment_type')
     transfer_fee = fields.Float(readonly=False, related='company_id.transfer_fee')
     allow_bank_finance = fields.Boolean(readonly=False, related='company_id.allow_bank_finance')
     payment_terms_installment_id = fields.Many2one('account.payment.term', readonly=False, related='company_id.payment_terms_installment_id')

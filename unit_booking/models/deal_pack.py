@@ -7,10 +7,10 @@ class DealPack(models.Model):
     _description = 'Deal Pack'
 
     deal_pack_name = fields.Char(string='Name')
-    name = fields.Char(copy=False, readonly=True, index=True, tracking=True, default=lambda self: _('New'))
-    start_date = fields.Date('Start date', required=True, tracking=True,
+    name = fields.Char(copy=False, readonly=True, index=True, default=lambda self: _('New'))
+    start_date = fields.Date('Start date', required=True,
                              default=fields.Date.today())
-    end_date = fields.Date('End date', required=True, tracking=True, default=fields.Date.today())
+    end_date = fields.Date('End date', required=True, default=fields.Date.today())
     launch_type = fields.Selection([
         ('pre_launch', 'Pre Launch'),
         ('on_launch', 'On Launch'),
@@ -74,8 +74,8 @@ class DealPackLines(models.Model):
     _name = 'deal.pack.lines'
     _description = 'Deal Pack line'
 
-    sector_id = fields.Many2one('sector', tracking=True)
-    category_id = fields.Many2one('plot.category', 'Category', tracking=True)
+    sector_id = fields.Many2one('sector')
+    category_id = fields.Many2one('plot.category', 'Category')
     unit_category_type_id = fields.Many2one('unit.category.type')
     quantity = fields.Integer()
 

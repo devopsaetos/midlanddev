@@ -1,9 +1,10 @@
 {
     'name': 'Construction Subcontracting',
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Manage subcontracting for construction job orders',
-    'author': 'NCP',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'license': 'LGPL-3',
     'depends': [
         'project',

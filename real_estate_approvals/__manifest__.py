@@ -15,8 +15,8 @@ Connects the custom res.investor workflow with the Odoo Enterprise Approvals app
 * Adds an 'Approvals' tab on the investor form showing linked approval requests
   with their current status.
 """,
-    'author': 'DevFusion',
-    'website': 'https://devfusion.tech',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
     'depends': [
         'real_estate',

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "maintenance_realestate_specific",
+    'license': 'LGPL-3',
 
     'summary': """
         Maintenance For Real Estate""",
@@ -9,8 +10,8 @@
         This module is build to deal with the maintenance issue is related to Real Estate
     """,
 
-    'author': "Mudassar Ali Syed|| Axiom Team",
-    'website': "https://www.axm.app",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Help Desk',
     'version': '19.0.1.0.4',
 

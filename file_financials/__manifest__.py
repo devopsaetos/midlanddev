@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Real Estate Files Financials",
+    'license': 'LGPL-3',
 
     'summary': """
         Real Estate Files Financials Management System.""",
@@ -9,8 +10,8 @@
         This module is developed to manage financials changes of Files.
     """,
 
-    'author': "Ateeb Shahid",
-    'website': "",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
     'version': '19.0.1.0.4',
 

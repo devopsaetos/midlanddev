@@ -9,8 +9,8 @@
         This module is developed to manage all the real estate operations.
     """,
 
-    'author': "Wahab Ali Malik || Syed Hamza || Mudassir Ali Zaidi || Axiom Team",
-    'website': "https://www.axiomworld.net",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Sales/Real Estate',
     'version': '19.0.1.0.7',
     'license': 'OEEL-1',

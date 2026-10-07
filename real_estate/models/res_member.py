@@ -189,13 +189,13 @@ class ResMember(models.Model):
     ], string='Gender')
     dob = fields.Date('Date of Birth ')
 
-    file_line_ids = fields.One2many('file', 'membership_id', string='File Lines', ondelete='restrict')
+    file_line_ids = fields.One2many('file', 'membership_id', string='File Lines')
     realestate_file_line_ids = fields.One2many('file', 'membership_id', string='Real Estate Files',
         domain=[('project_type', 'in', ['housing_society', False])])
     project_file_line_ids = fields.One2many('file', 'membership_id', string='Building Files',
         domain=[('project_type', '=', 'skyscraper')])
-    authorised_representative_ids = fields.One2many('authorised.representative', 'member_id', ondelete='cascade')
-    authorized_user_ids = fields.One2many('partner.authorized.user', 'member_id', ondelete='cascade')
+    authorised_representative_ids = fields.One2many('authorised.representative', 'member_id')
+    authorized_user_ids = fields.One2many('partner.authorized.user', 'member_id')
 
     company_ids = fields.Many2many('res.company', string='Allowed Companies',
                                    default=lambda self: self.env.user.company_id)
@@ -1164,8 +1164,8 @@ class AuthorizedUsers(models.Model):
     name = fields.Char(string="Name", required=True)
     mobile = fields.Char(string="Mobile")
     cnic = fields.Char(string="CNIC")
-    login = fields.Char("User Name", required=True, tracking=True)
-    password = fields.Char(required=True, tracking=True)
+    login = fields.Char("User Name", required=True)
+    password = fields.Char(required=True)
     status = fields.Selection([
         ('active', 'Active'),
         ('expire', 'Expire')

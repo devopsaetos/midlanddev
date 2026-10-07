@@ -120,20 +120,13 @@ class SearchDealerLine(models.TransientModel):
     _description = 'Search Dealer Line'
 
     is_checked = fields.Boolean(default=False)
-    state = fields.Selection([
-        ('draft', "Draft"),
-        ('in_process', 'In Process'),
-        ('invoice', 'Invoice'),
-        ('approve', "Approve"), ('renewal', 'Renewal')], default='draft', related='dealer_id.state')
-    unit_booking_agent_type = fields.Selection([
-        ('main_agent', "Main Dealer"),
-        ('sub_agent', "Sub Dealer")],
-        string="Dealer Type",
+    state = fields.Selection(related='dealer_id.state')
+    unit_booking_agent_type = fields.Selection(string="Dealer Type",
         help="""Type of the Dealer. Either the Main Dealer or the Sub Dealer""",
         related='dealer_id.unit_booking_agent_type'
     )
     dealer_id = fields.Many2one('res.partner')
-    dealer_category_id = fields.Many2one('dealer.category', tracking=True, related='dealer_id.dealer_category_id')
+    dealer_category_id = fields.Many2one('dealer.category', related='dealer_id.dealer_category_id')
     registration_fee = fields.Float(related='dealer_id.registration_fee')
     security_fee = fields.Float(related='dealer_id.security_fee')
     valid_till = fields.Date(related='dealer_id.valid_till')

@@ -43,7 +43,6 @@ class IssueRequistionLine(models.Model):
         string='Cost Sheet',
         store=True,
         domain="[('task_id', '=', parent.task_id)]",
-        options="{'no_quick_create': True, 'no_create_edit': True}",
     )
 
     @api.onchange('task_cost_sheet_id')

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Midland Invoicing',
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.1.0.1',
     'category': 'Real Estate',
-    'author': 'Midland',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'license': 'OEEL-1',
     'depends': ['file_financials', 'land_development', 'account'],
     'data': [

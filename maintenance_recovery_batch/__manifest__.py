@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Maintenance Recovery Batch",
+    'license': 'LGPL-3',
 
     'summary': """
     This module for to save daily record of maintenance invoice on daily basis
@@ -11,8 +12,8 @@
 
     """,
 
-    'author': "Yasir Ali",
-    'website': "http://www.necityparadise.com",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
 
     # Categories can be used to filter modules in modules listing
     # Check https://github.com/odoo/odoo/blob/13.0/odoo/addons/base/data/ir_module_category_data.xml

@@ -71,9 +71,12 @@ class ApprovalHierarchyLine(models.Model):
             if self.max_limit < self.min_limit:
                 raise UserError(_("Maximum limit can't be less than minimum limit."))
 
-    _sql_constraints = [
-        ('uniq_user', 'unique (approval_hierarchy_id,user_id)', 'User Must be Unique!')
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('uniq_user', 'unique (approval_hierarchy_id,user_id)', 'User Must be Unique!')
+    # ]
 
     @api.onchange('user_id')
     def user_validation(self):

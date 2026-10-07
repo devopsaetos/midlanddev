@@ -12,14 +12,15 @@ class UnitSwappingRequestExt(models.Model):
     _inherit = 'unit.swapping.request'
     _description = "Unit Swapping Request"
 
-    state = fields.Selection([
-        ('draft', 'Draft'),
+    # Same list as before (draft, in_process 'Confirmed', printed, approve 'In Process',
+    # file_printed, delivered, cancel), declared as an extension of real_estate's selection.
+    state = fields.Selection(selection_add=[
         ('in_process', 'Confirmed'),
         ('printed', 'Request Printed'),
         ('approve', 'In Process'),
         ('file_printed', 'File Printed'),
         ('delivered', 'Delivered'),
-        ('cancel', 'Cancel')
+        ('cancel',),
     ], default='draft', tracking=True)
     paid_to = fields.Selection([
         ('company', 'Company'),

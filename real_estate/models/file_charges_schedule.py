@@ -86,22 +86,22 @@ class FileChargesScheduleLine(models.Model):
 class RequiredTaxesLineExt(models.Model):
     _inherit = 'required.taxes.line'
 
-    file_charges_schedule_id = fields.Many2one('file.charges.schedule', tracking=True)
-    category_id = fields.Many2one('plot.category', string='Category', tracking=True)
-    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product', tracking=True)
+    file_charges_schedule_id = fields.Many2one('file.charges.schedule')
+    category_id = fields.Many2one('plot.category', string='Category')
+    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product')
 
 
 class RequiredDocumentsExt(models.Model):
     _inherit = 'required.documents.line'
 
-    file_charges_schedule_id = fields.Many2one('file.charges.schedule', string="File Charges Schedule", tracking=True)
-    category_id = fields.Many2one('plot.category', string='Category', tracking=True)
-    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product', tracking=True)
+    file_charges_schedule_id = fields.Many2one('file.charges.schedule', string="File Charges Schedule")
+    category_id = fields.Many2one('plot.category', string='Category')
+    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product')
 
 
 class OtherChargesExt(models.Model):
     _inherit = 'other.charges'
 
-    file_charges_schedule_id = fields.Many2one('file.charges.schedule', string="File Charges Schedule", tracking=True)
-    category_id = fields.Many2one('plot.category', string='Category', tracking=True)
-    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product', tracking=True)
+    file_charges_schedule_id = fields.Many2one('file.charges.schedule', string="File Charges Schedule")
+    category_id = fields.Many2one('plot.category', string='Category')
+    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product')

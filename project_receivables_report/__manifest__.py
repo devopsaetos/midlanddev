@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Project Receivables Report",
+    'website': "https://www.aetostechnology.com",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'summary': "Month-wise member receivables report (Excel / PDF), one menu, project picked in the wizard.",
     'description': """
         Real Estate > Reports > Member (Receivables): the user picks the project

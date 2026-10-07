@@ -11,9 +11,7 @@ class HelpDeskTicket(models.Model):
     def _default_value(self):
         return self.env['society'].search([], limit=1).id
 
-    project_type = fields.Selection([
-        ('skyscraper', 'Skyscraper'),
-        ('housing_society', 'Housing Society')], related='society_id.project_type', store=True)
+    project_type = fields.Selection(related='society_id.project_type', store=True)
     file_id = fields.Many2one('file')
     partner_id = fields.Many2one('res.partner', string="Member", store=True)  # domain="[('is_member','=',1)]" removed: is_member is not a field on res.partner anywhere in this project
     customer_name = fields.Char(string='Name', store=True, related='partner_id.name')

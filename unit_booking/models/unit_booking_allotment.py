@@ -34,11 +34,7 @@ class UnitBookingAllotment(models.Model):
         ('open', 'Open'),
         ('close', 'Close'),
     ], default='draft', tracking=True)
-    launch_type = fields.Selection([
-        ('pre_launch', 'Pre Launch'),
-        ('on_launch', 'On Launch'),
-        ('post_launch', 'Post Launch'),
-    ], related='unit_batch_id.launch_type', store=True)
+    launch_type = fields.Selection(related='unit_batch_id.launch_type', store=True)
     issue_to_subagent = fields.Boolean()
     society_id = fields.Many2one('society', domain=[('is_society', '=', True)],
                                  tracking=True, related='unit_batch_id.society_id', readonly=False,
@@ -1182,19 +1178,10 @@ class BookingAllotmentPlan(models.Model):
     invoice = fields.Char(related='invoice_id.name', store=True, readonly=False)
 
     payment_date = fields.Date('Payment Date', store=True, compute='_payment_date', readonly=False)
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('installment', 'Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('others', 'Others'),
-    ], related='invoice_id.property_invoice_type', store=True, readonly=False, string='Invoice Type')
+    property_invoice_type = fields.Selection(related='invoice_id.property_invoice_type', store=True, readonly=False, string='Invoice Type')
     amount_paid = fields.Float('Amount Paid', store=True, compute='_invoice_id_data', readonly=False)
     residual = fields.Float('Amount Due', store=True, compute='_invoice_id_data', readonly=False)
-    payment_status = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment', store=True, readonly=False, copy=False, tracking=True,
+    payment_status = fields.Selection(string='Payment', store=True, readonly=False, copy=False,
         related='invoice_id.payment_state')
     file_adjusted_amount = fields.Float()
     adjustment_amount = fields.Float()
@@ -1284,16 +1271,7 @@ class UnitBookingAllotmentLine(models.Model):
     batch_id = fields.Many2one('unit.batch.generation')
 
     unit_booking_allotment_id = fields.Many2one('unit.booking.allotment')
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('assignment', 'Assignment'),
-        ('print', 'Print'),
-        ('allotment', 'Allotment'),
-        ('issued', 'Issued'),
-        ('file_created', 'File Created'),
-        ('balloting', 'Balloting')
-    ], related='units_booking_id.state', store=True)
+    state = fields.Selection(related='units_booking_id.state', store=True)
 
 
 class UnitSwapCancelHistory(models.Model):
@@ -1323,14 +1301,14 @@ class RebateOnAllotment(models.Model):
     _description = 'Rebate On Allotment'
 
     # selection fields
-    settlement_option = fields.Selection([('net_off', 'Net Off'), ('separate', 'Separate')], tracking=True)
-    calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')], tracking=True)
-    rate_calculation = fields.Selection([('per_marla', 'Per Marla'), ('per_file', 'Per File')], tracking=True)
+    settlement_option = fields.Selection([('net_off', 'Net Off'), ('separate', 'Separate')])
+    calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')])
+    rate_calculation = fields.Selection([('per_marla', 'Per Marla'), ('per_file', 'Per File')])
 
     # Numerical fields
-    total_rebate = fields.Float(tracking=True)
-    rebate_at_deal = fields.Float(tracking=True)
-    rebate_at_sale = fields.Float(tracking=True)
+    total_rebate = fields.Float()
+    rebate_at_deal = fields.Float()
+    rebate_at_sale = fields.Float()
 
     # relational fields
     unit_booking_allotment_id = fields.Many2one('unit.booking.allotment')

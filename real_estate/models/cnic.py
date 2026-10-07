@@ -40,7 +40,7 @@ class Cnic(models.Model):
             data = self.search([('id', '!=', rec.id), ('cnic', '=', rec.cnic)])
             if data:
                 raise ValidationError(_('CNIC must be unique'))
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(rec.cnic) is not None:
                 raise ValidationError(_('Please enter complete CNIC Number'))
 

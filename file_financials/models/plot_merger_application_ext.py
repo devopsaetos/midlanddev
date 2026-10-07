@@ -9,10 +9,10 @@ class PlotMergerApplicationExt(models.Model):
         string='Waive Fee ?',
         selection=[('yes', 'Yes'),
                    ('no', 'No')],
-        default="no", required=False, track_visility='always')
-    merger_date = fields.Datetime(string='Merger Date', track_visility='always')
+        default="no", required=False)
+    merger_date = fields.Datetime(string='Merger Date')
     merger_fee = fields.Float(string='Merger Fee', compute='_compute_merger_fee', store=True)
-    invoice_create = fields.Boolean(string='Invoice Created ?', default=False, track_visility='always')
+    invoice_create = fields.Boolean(string='Invoice Created ?', default=False)
     appointment_date = fields.Date(string='Application Date')
     membership_merge_to_id = fields.Many2one('res.member', string='Merger Member To')
     merger_request = fields.Boolean(string='Merger Request', default=False)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Maintenance Invoice Report",
+    'license': 'LGPL-3',
 
     'summary': """
         This module to print Maintenance Invoice Report""",
@@ -8,8 +9,8 @@
     'description': """
     """,
 
-    'author': "Yasir Ali || Axiom Team",
-    'website': "http://www.axm.app",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
     'version': '19.0.1.0.2',
 

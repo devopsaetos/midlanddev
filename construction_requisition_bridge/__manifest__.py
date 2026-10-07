@@ -1,9 +1,10 @@
 {
     'name': 'Construction Requisition Bridge',
+    'website': "https://www.aetostechnology.com",
     'version': '19.0.1.0.1',
     'category': 'Construction',
     'summary': 'Links Purchase Requisitions to construction projects, tasks, and cost sheets',
-    'author': 'NCP',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'license': 'LGPL-3',
     'depends': [
         'purchase_requisitions',

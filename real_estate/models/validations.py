@@ -9,70 +9,70 @@ class Partner(models.Model):
     @api.onchange('vat')
     def check_special_char_vat(self):
         if self.vat:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]')
             if regex.search(self.vat) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed'))
 
     @api.constrains('vat')
     def check_constrain_special_char_vat(self):
         if self.vat:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]')
             if regex.search(self.vat) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed'))
 
     @api.onchange('city')
     def check_special_char_city(self):
         if self.city:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
             if regex.search(self.city) is not None:
                 raise ValidationError(_('Special Characters And Numbers Are Not Allowed in City'))
 
     @api.constrains('city')
     def check_constrain_special_char_city(self):
         if self.city:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
             if regex.search(self.city) is not None:
                 raise ValidationError(_('Special Characters And Numbers Are Not Allowed in City'))
 
     @api.onchange('zip')
     def check_special_char_zip(self):
         if self.zip:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.zip) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed in Zip'))
 
     @api.constrains('zip')
     def check_constrain_special_char_zip(self):
         if self.zip:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.zip) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed in Zip'))
 
     @api.onchange('function')
     def check_special_char_function(self):
         if self.function:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
             if regex.search(self.function) is not None:
                 raise ValidationError(_('Special Characters And Numbers Are Not Allowed in Job Position'))
 
     @api.constrains('function')
     def check_constrain_special_char_function(self):
         if self.function:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[0-9]')
             if regex.search(self.function) is not None:
                 raise ValidationError(_('Special Characters And Numbers Are Not Allowed in Job Position'))
 
     @api.onchange('phone')
     def check_special_char_phone(self):
         if self.phone:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.phone) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed in Phone'))
 
     @api.constrains('phone')
     def check_constrain_special_char_phone(self):
         if self.phone:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.phone) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed in Phone'))
 
@@ -86,7 +86,7 @@ class Partner(models.Model):
     @api.constrains('mobile')
     def check_constrain_special_char_mobile(self):
         if self.mobile:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.mobile) is not None:
                 raise ValidationError(_('Please enter complete mobile number'))
 
@@ -129,14 +129,14 @@ class ResCity(models.Model):
     @api.onchange('zip')
     def check_special_char_zip(self):
         if self.zip:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.zip) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed in Zip'))
 
     @api.constrains('zip')
     def check_constrain_special_char_zip(self):
         if self.zip:
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
+            regex = re.compile(r'[@_!#$%^&*()<>?/\|}{~:;.=""]|[a-z]')
             if regex.search(self.zip) is not None:
                 raise ValidationError(_('Only Numbers Are Allowed in Zip'))
 

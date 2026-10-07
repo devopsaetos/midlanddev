@@ -765,19 +765,10 @@ class UnitBookingPlan(models.Model):
     invoice = fields.Char(related='invoice_id.name', store=True, readonly=False)
 
     payment_date = fields.Date('Payment Date', store=True, readonly=False)
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('installment', 'Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('others', 'Others'),
-    ], related='invoice_id.property_invoice_type', readonly=False, string='Invoice Type')
+    property_invoice_type = fields.Selection(related='invoice_id.property_invoice_type', readonly=False, string='Invoice Type')
     amount_paid = fields.Float('Amount Paid', store=True, readonly=False)
     residual = fields.Float('Amount Due', store=True, readonly=False)
-    payment_status = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment', store=True, readonly=False, copy=False, tracking=True,
+    payment_status = fields.Selection(string='Payment', store=True, readonly=False, copy=False,
         related='invoice_id.payment_state')
     double_check_paid_amount = fields.Boolean()
     investor_payment = fields.Boolean()

@@ -48,7 +48,6 @@ class FileInstallmentPaymentExt(models.Model):
         compute='_compute_midland_display', store=True, readonly=False,
     )
     property_invoice_type = fields.Selection(
-        selection=_INVOICE_TYPE_SELECTION,
         string='Invoice Type',
         compute='_compute_midland_display', store=True, readonly=False,
     )

@@ -101,7 +101,7 @@ class Investment(models.Model):
     allowed_credit = fields.Boolean(string="Allow Credit")
     payment_date = fields.Date()
     payment_term_id = fields.Many2one('account.payment.term', string='Payment Terms',
-                                      readonly=True, states={'draft': [('readonly', False)]})
+                                      readonly=True)
     mode_of_payment = fields.One2many('investment.payment.mode', 'investment_id')
 
     notes = fields.Text('Internal Notes')
@@ -1791,11 +1791,7 @@ class InvestmentLine(models.Model):
     price_list_id = fields.Many2one('price.list', compute='_price_list', store=True, readonly=False)
     investor_price = fields.Float(store=True, readonly=False)
     deal_price = fields.Float(compute='_compute_deal_price', store=True, readonly=False)
-    reservation_type = fields.Selection([
-        ('unit', 'Unit Reservation'),
-        ('bulk', 'Bulk Reservation'),
-        ('both', 'Both')
-    ], related='investment_id.reservation_type', store=True)
+    reservation_type = fields.Selection(related='investment_id.reservation_type', store=True)
 
     investment_id = fields.Many2one('investment')
 
@@ -1923,19 +1919,10 @@ class InvestmentPlan(models.Model):
     invoice = fields.Char(related='invoice_id.name', store=True, readonly=False)
 
     payment_date = fields.Date('Payment Date', store=True, compute='_payment_date', readonly=False)
-    property_invoice_type = fields.Selection([
-        ('initial_payment', 'Initial Payment'),
-        ('installment', 'Installment'),
-        ('transfer_application', 'Transfer Application'),
-        ('others', 'Others'),
-    ], related='invoice_id.property_invoice_type', store=True, readonly=False, string='Invoice Type')
+    property_invoice_type = fields.Selection(related='invoice_id.property_invoice_type', store=True, readonly=False, string='Invoice Type')
     amount_paid = fields.Float('Amount Paid', store=True, compute='_invoice_id_data', readonly=False)
     residual = fields.Float('Amount Due', store=True, compute='_invoice_id_data', readonly=False)
-    payment_status = fields.Selection(selection=[
-        ('not_paid', 'Not Paid'),
-        ('in_payment', 'In Payment'),
-        ('paid', 'Paid')],
-        string='Payment', store=True, readonly=False, copy=False, tracking=True,
+    payment_status = fields.Selection(string='Payment', store=True, readonly=False, copy=False,
         related='invoice_id.payment_state')
     file_adjusted_amount = fields.Float()
     adjustment_amount = fields.Float()

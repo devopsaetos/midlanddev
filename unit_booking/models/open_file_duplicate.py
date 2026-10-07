@@ -10,19 +10,11 @@ class OpenFileDuplicate(models.Model):
 
     # Selection Field
 
-    project_type = fields.Selection([
-        ('skyscraper', 'Skyscraper'),
-        ('housing_society', 'Housing Society')], related='units_booking_id.project_type')
+    project_type = fields.Selection(related='units_booking_id.project_type')
 
-    payment_type = fields.Selection([
-        ('installments', 'Installment'),
-        ('lump_sum', 'Lump Sum')], string='Payment Type', related='units_booking_id.payment_type')
+    payment_type = fields.Selection(string='Payment Type', related='units_booking_id.payment_type')
 
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', readonly=False, related='units_booking_id.payment_states')
+    payment_states = fields.Selection(default='draft', readonly=False, related='units_booking_id.payment_states')
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -98,28 +90,20 @@ class OpenFileDuplicate(models.Model):
 
     # installment and payment details
     include_installment = fields.Boolean(related='units_booking_id.include_installment')
-    plan_type = fields.Selection([
-        ('custom', 'Custom'),
-        ('predefine', 'Predefine'),
-    ], default='custom', related='units_booking_id.plan_type')
+    plan_type = fields.Selection(related='units_booking_id.plan_type')
     invoice_generated_for = fields.Selection([
         ('customer', 'Customer'),
         ('dealer', 'Dealer')])
     predefine_plan_id = fields.Many2one('predefine.plan', related='units_booking_id.predefine_plan_id')
-    installment_created = fields.Boolean(default=False, related='units_booking_id.installment_created')
+    installment_created = fields.Boolean(related='units_booking_id.installment_created')
 
-    create_manually = fields.Boolean(default=False, related='units_booking_id.create_manually')
+    create_manually = fields.Boolean(related='units_booking_id.create_manually')
     custom_sale_amount = fields.Float('Sale Amount ', related='units_booking_id.custom_sale_amount')
     add_custom_value = fields.Boolean(related='units_booking_id.add_custom_value')
     factor_amount = fields.Float(related='units_booking_id.factor_amount')
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='units_booking_id.discount_type')
-    initial_calculation_basis = fields.Selection([('percentage', 'Percentage'),
-                                                  ('fix', 'Fix')], related='units_booking_id.initial_calculation_basis')
-    balloting_calculation_basis = fields.Selection([('percentage', 'Percentage'), ('fix', 'Fix')],
-                                                   default='percentage', string='Final Calculation Basis',
+    discount_type = fields.Selection(related='units_booking_id.discount_type')
+    initial_calculation_basis = fields.Selection(related='units_booking_id.initial_calculation_basis')
+    balloting_calculation_basis = fields.Selection(string='Final Calculation Basis',
                                                    related='units_booking_id.balloting_calculation_basis')
     discount_amount = fields.Float(store=True, readonly=False, related='units_booking_id.discount_amount',
                                    tracking=True)

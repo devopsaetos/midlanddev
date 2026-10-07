@@ -10,4 +10,4 @@ class PredefinePlanExt(models.Model):
         ('days', 'Day(s)'),
         ('months', 'Month(s)'),
         ('years', 'Year(s)'),
-    ], default='days', tracking=True, required=True)
+    ], default='days', required=True)

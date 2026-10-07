@@ -65,12 +65,12 @@ class RequisitionOrder(models.Model):
     rfq_type = fields.Selection([('standard', 'Standard'), ('bid', 'Bid RFQ')], string='RFQ Type', default='bid')
     issue_date = fields.Datetime('Issue Date', default=fields.Datetime.now)
     creation_date = fields.Datetime('Creation Date', default=fields.Datetime.now)
-    closure_date = fields.Datetime('RFQ Validity Date', states=READONLY_STATES, index=True, copy=False,
+    closure_date = fields.Datetime('RFQ Validity Date', index=True, copy=False,
                                    help="Depicts the date where the Quotation should be validated and converted into a requisition order.")
-    date_approve = fields.Date('Approval Date', readonly=1, index=True, copy=False)
-    partner_id = fields.Many2many('res.partner', string='Vendor', required=True, states=READONLY_STATES,
-                                  change_default=True, track_visibility='always')
-    currency_id = fields.Many2one('res.currency', 'Currency', states=READONLY_STATES, \
+    date_approve = fields.Date('Approval Date', readonly=True, index=True, copy=False)
+    partner_id = fields.Many2many('res.partner', string='Vendor', required=True,
+                                  change_default=True)
+    currency_id = fields.Many2one('res.currency', 'Currency', \
                                   default=lambda self: self.env.user.company_id.currency_id.id)
     # branch_id = fields.Many2one('res.branch', string="Central Branch")
     # operation_type = fields.Selection(related='company_id.operation_type', store=True)
@@ -80,7 +80,7 @@ class RequisitionOrder(models.Model):
         ('approved', 'Approved'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
-    ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
+    ], string='Status', readonly=True, index=True, copy=False, default='draft')
     order_line_ids = fields.One2many('requisition.order.line', 'order_id', string='Order Lines')
     order_line = fields.One2many('requisition.order.line', 'order_id', string='Order Line', related='order_line_ids', readonly=False)
 
@@ -94,8 +94,7 @@ class RequisitionOrder(models.Model):
     requisition_responsible_id = fields.Many2one('res.users', string="Requester", readonly=True,
                                                  default=lambda self: self.env.user and self.env.user.id or False)
     quotation_order_count = fields.Integer('Quotation Order', compute='_get_rfq_order_count')
-    amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True,
-                                     track_visibility='onchange')
+    amount_untaxed = fields.Monetary(string='Untaxed Amount', store=True, readonly=True)
     amount_tax = fields.Monetary(string='Tax', store=True, readonly=True)
     amount_total = fields.Monetary(string='Total', store=True, readonly=True)
     payment_terms = fields.Many2one('account.payment.term', string='Payment Terms')
@@ -107,7 +106,7 @@ class RequisitionOrder(models.Model):
         string='Member Committee',
         required=False)
 
-    evaluation_criteria_ids = fields.One2many('evaluation.connector', 'requisition_order_id', ondelete="cascade")
+    evaluation_criteria_ids = fields.One2many('evaluation.connector', 'requisition_order_id')
 
     @api.onchange('creation_date')
     def default_date_validity(self):

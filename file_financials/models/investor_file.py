@@ -79,15 +79,14 @@ class InvestorFileExt(models.Model):
 
     qr_code = fields.Binary("QR Code", compute='generate_qr_code', attachment=True, store=True)
     file_id = fields.Many2one('file', string="File #")  # When File is Created, It's ID will be passed in this field for cross-referencing
-    state = fields.Selection([
-        ('open', 'Open'),
-        ('selected', 'Selected'),
-        ('in_process', 'In Process'),
+    # Same list as before (open, selected, in_process, issued 'File Created', file_printed,
+    # delivered, received, cancel), declared as an extension of real_estate's selection.
+    state = fields.Selection(selection_add=[
         ('issued', 'File Created'),
         ('file_printed', 'File Printed'),
         ('delivered', 'Delivered'),
         ('received', 'Received'),
-        ('cancel', 'Cancelled'),
+        ('cancel',),
     ], default='open')
     # state = fields.Selection(selection_add=[('delivered', 'Delivered'), ('received', 'Received')])
     history_ids = fields.One2many('open.file.history', 'investor_file_id', tracking=True)
@@ -1577,7 +1576,7 @@ class InstallmentPlanExt(models.Model):
     net_payment = fields.Float(string="Net Payment")
     rebate_adjustment = fields.Float(string="Rebate Adjustment")
 
-    payment_journal_id = fields.Many2one('account.journal', string="Payment Journal", tracking=True)
+    payment_journal_id = fields.Many2one('account.journal', string="Payment Journal")
     # Fields for Amount Revision
     price_revised = fields.Boolean(default=False)
     previous_amount = fields.Float(string="Prev. Amount")

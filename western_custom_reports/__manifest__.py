@@ -1,5 +1,7 @@
 {
     'name': "Midland Custom Reports",
+    'website': "https://www.aetostechnology.com",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'version': '19.0.0.3',
     'depends': ['base', 'sale', 'account', 'purchase', 'stock'],
     'data': [

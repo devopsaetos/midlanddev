@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Real Estate Report",
+    'website': "https://www.aetostechnology.com",
     'summary': """
         Statement Of Account, Files Labels, Payment/Confirmation Customer Receipt
         and Duplicate Membership Form PDF reports for a real estate file.""",
@@ -8,7 +9,7 @@
         Statement Of Account, Files Labels, Payment/Confirmation Customer Receipt
         and Duplicate Membership Form PDF reports for a real estate file.
     """,
-    'author': "Axiom World",
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'category': 'Real Estate',
     'version': '19.0.1.0.0',
     'license': 'OEEL-1',

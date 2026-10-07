@@ -19,9 +19,12 @@ class UnitBucket(models.Model):
     plot_inventory_ids = fields.One2many('plot.inventory', 'bucket_id', string='Units')
     total_units = fields.Integer(compute='_compute_total_units')
 
-    _sql_constraints = [
-        ('code_uniq', 'unique(code)', 'Code must be unique'),
-    ]
+    # Odoo 19 ignores _sql_constraints (startup warning) and this constraint does not exist in the
+    # database, so it is not enforced. Kept as a note; enabling it (models.Constraint) would start
+    # rejecting duplicates, which is a behaviour change.
+    # _sql_constraints = [
+    #     ('code_uniq', 'unique(code)', 'Code must be unique'),
+    # ]
 
     @api.depends('plot_inventory_ids')
     def _compute_total_units(self):

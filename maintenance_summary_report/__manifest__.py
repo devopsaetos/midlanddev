@@ -1,5 +1,6 @@
 {
     'name': "Maintenance Summary Report",
+    'license': 'LGPL-3',
 
     'summary': 'Maintenance Summary Report ',
 
@@ -7,8 +8,8 @@
         This module would be used to generate the Maintenance Summary Report in Excel
     """,
 
-    'author': "Siddiq Chauhdry",
-    'website': 'https://siddiqchauhdry.com',
+    'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
+    'website': "https://www.aetostechnology.com",
 
     'category': 'Real Estate',
     'version': '19.0.1.0.2',

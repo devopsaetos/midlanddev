@@ -35,10 +35,7 @@ class UnitSwapping(models.TransientModel):
 
     unit_swapping_line = fields.One2many('unit.swapping.line', 'unit_swapping_id')
     unit_swapping_investment_lines = fields.One2many('unit.swapping.investment.line', 'unit_swapping_id')
-    reservation_type = fields.Selection([
-        ('unit', 'Unit Reservation'),
-        ('bulk', 'Bulk Reservation')
-    ], related='investment_id.reservation_type')
+    reservation_type = fields.Selection(related='investment_id.reservation_type')
 
     def search_related_records(self):
         self.unit_swapping_line.unlink()
@@ -449,18 +446,11 @@ class UnitSwappingLine(models.TransientModel):
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
     starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
-    payment_states = fields.Selection([
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('close', 'Close'),
-    ], default='draft', related='file_id.payment_states', readonly=True)
+    payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
     ttl_sale_amount = fields.Float('Total Sale Amount', related='file_id.ttl_sale_amount', readonly=True)
-    discount_type = fields.Selection([
-        ('percentage', 'Percentage'),
-        ('fix', 'Fix')
-    ], default='percentage', related='file_id.discount_type', readonly=True)
+    discount_type = fields.Selection(related='file_id.discount_type', readonly=True)
     discount_amount = fields.Float(related='file_id.discount_amount', readonly=True)
     net_sale_amount = fields.Float('Net Sale Amount', related='file_id.net_sale_amount', readonly=True)
     balloting_amount = fields.Float('Balloting Amount', related='file_id.balloting_amount')

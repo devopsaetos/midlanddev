@@ -92,14 +92,14 @@ class DealerRebateLine(models.Model):
     _description = 'Dealer Rebate Line'
 
     # selection fields
-    settlement_option = fields.Selection([('net_off', 'Net Off'), ('separate', 'Separate')], tracking=True)
-    calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')], tracking=True)
-    rate_calculation = fields.Selection([('per_marla', 'Per Marla'), ('per_file', 'Per File')], tracking=True)
+    settlement_option = fields.Selection([('net_off', 'Net Off'), ('separate', 'Separate')])
+    calculation_basis = fields.Selection([('fix', 'Fix'), ('percentage', 'Percentage')])
+    rate_calculation = fields.Selection([('per_marla', 'Per Marla'), ('per_file', 'Per File')])
 
     # Numerical fields
-    total_rebate = fields.Float(tracking=True)
-    rebate_at_deal = fields.Float(tracking=True)
-    rebate_at_sale = fields.Float(tracking=True)
+    total_rebate = fields.Float()
+    rebate_at_deal = fields.Float()
+    rebate_at_sale = fields.Float()
 
     # relational fields
     rebate_id = fields.Many2one('dealer.rebate')
