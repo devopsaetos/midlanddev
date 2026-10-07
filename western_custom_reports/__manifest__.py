@@ -1,6 +1,6 @@
 {
     'name': "Midland Custom Reports",
-    'version': '19.0.0.1',
+    'version': '19.0.0.2',
     'depends': ['base', 'sale', 'account', 'purchase', 'stock'],
     'data': [
         'reports/sale_order_report.xml',
@@ -10,6 +10,8 @@
         'reports/inovoice_report.xml',
         # 'reports/general_itmes_report.xml',
         'reports/payable_voucher_report.xml',
+        'reports/vendor_payment_report.xml',
+        'views/payment_view.xml',
         'reports/good_recived_report.xml',
         # 'reports/delivery_note_report.xml',
         # 'reports/pick_list_report.xml',

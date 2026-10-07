@@ -9,3 +9,4 @@ from . import vendor
 from . import sale_order_line
 # from . import ir_action_report
 
+from . import payment
