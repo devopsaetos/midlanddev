@@ -26,6 +26,8 @@
 
     <template id="maintenance_statement_inquiry.maintenance_customized_footer">
         <div class="footer">
+            <!-- the footer is rendered as its own page by wkhtmltopdf: it needs its own style -->
+            <style>.mq-foot, .mq-foot tbody, .mq-foot tr, .mq-foot td { border: 0 !important; background: none !important; }</style>
             <table class="mq-foot" style="width: 100%; font-size: 11px; font-family: 'Roboto', sans-serif; color: #2b4c7e;">
                 <tr>
                     <td style="width: 50%;">Printed By: <u t-out="user.name"/></td>
@@ -48,10 +50,13 @@
                     <t t-set="fmt" t-value="lambda v: '{:,.2f}'.format(v or 0.0)"/>
                     <style>
                         .mq { font-family: 'Roboto', sans-serif; color: #000; }
-                        .mq-head, .mq-head td, .mq-foot, .mq-foot td, .mq-sign, .mq-sign td { border: 0 !important; background: none !important; }
+                        /* rows and sections too: wkhtmltopdf draws a line for Bootstrap's "tr { border-style: solid }" */
+                        .mq-head, .mq-head tbody, .mq-head tr, .mq-head td,
+                        .mq-foot, .mq-foot tbody, .mq-foot tr, .mq-foot td,
+                        .mq-sign, .mq-sign tbody, .mq-sign tr, .mq-sign td { border: 0 !important; background: none !important; }
                         .mq-head { margin-bottom: 6px; border-bottom: 2px solid #2b4c7e !important; }
                         .mq-head td { padding: 0 0 8px 0; }
-                        .mq-info, .mq-info td { border: 0 !important; background: none !important; }
+                        .mq-info, .mq-info tbody, .mq-info tr, .mq-info td { border: 0 !important; background: none !important; }
                         .mq-info { width: 100%; table-layout: fixed; margin: 10px 0 14px 0; }
                         .mq-info td { font-size: 14px; padding: 3px 4px; vertical-align: top; }
                         .mq-info td.lbl { font-weight: bold; width: 14%; }
