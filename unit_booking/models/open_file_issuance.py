@@ -80,7 +80,7 @@ class OpenFileIssuanceRequest(models.Model):
     agent_id = fields.Many2one('res.partner', string="Dealer", related='units_booking_id.agent_id')
     other_agent_id = fields.Many2one('res.partner', string="Other Dealer")
     other_sub_agent_id = fields.Many2one('res.partner', string='Other Sub Dealer')
-    other_main_sub_agent_id = fields.Many2one('res.partner', string='Other Sub Dealer')
+    other_main_sub_agent_id = fields.Many2one('res.partner', string='Other Sub Dealer (Main Dealer)')
     sub_agent_id = fields.Many2one('res.partner', string='Sub Dealer', related='units_booking_id.sub_agent_id')
 
     # computed field

@@ -12,7 +12,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
-    'version': '19.0.1.0.2',
+    'version': '19.0.1.0.3',
 
     'depends': [
         'file_financials',
@@ -20,6 +20,7 @@
         # 'accounting_pdf_reports',  # not available in Odoo 19 project (only exists in old Odoo 13/17 source trees)
     ],
     'data': [
+        'security/ir.model.access.csv',
         'wizard/maintenance_charges_wizard.xml',
         'views/account_move_ext.xml',
         'report/maintenance_charges_report.xml',

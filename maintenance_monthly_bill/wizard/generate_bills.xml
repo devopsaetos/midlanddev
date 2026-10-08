@@ -31,6 +31,9 @@
                             <field name="unit_rate"/>
                         </group>
                     </group>
+                    <group string="Charges per House (from Maintenance Charges, by size)" invisible="bill_type != 'utility' or not society_id">
+                        <field name="rule_preview" nolabel="1" colspan="2" readonly="1"/>
+                    </group>
                     <group string="Import Readings from Excel" invisible="bill_type != 'electricity'">
                         <div class="text-muted" colspan="2">
                             1. Choose the society (and phase or houses), month and rate above, then click

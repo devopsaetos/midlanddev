@@ -127,7 +127,7 @@ class MaintenanceInquiryLines(models.TransientModel):
     invoice_created = fields.Boolean(default=False)
     invoice_id = fields.Many2one('account.move', string="Invoice#")
     description = fields.Char()
-    state = fields.Char(string='Status')
+    state = fields.Char(string='Invoice Status')
     payment_date = fields.Date('Payment Date')
     amount_paid = fields.Float('Amount Paid')
     residual = fields.Float('Amount Due')

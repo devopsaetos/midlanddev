@@ -7,7 +7,7 @@
         and printed as a 3-copy bill (Customer / Society Office / Bank).""",
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'category': 'Real Estate',
-    'version': '19.0.1.1.2',
+    'version': '19.0.1.1.4',
     'license': 'LGPL-3',
     'depends': ['maintenance_charges', 'account'],
     'data': [

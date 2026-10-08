@@ -12,7 +12,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Sales/Real Estate',
-    'version': '19.0.1.0.7',
+    'version': '19.0.1.0.8',
     'license': 'OEEL-1',
     'pre_init_hook': 'pre_init_hook',
 

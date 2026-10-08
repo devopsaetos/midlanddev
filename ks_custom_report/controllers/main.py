@@ -3,7 +3,7 @@ from odoo.http import request
 
 
 class GoogleCalendarController(http.Controller):
-    @http.route('/ks_custom_report/get_model_name', type='json', auth='user')
+    @http.route('/ks_custom_report/get_model_name', type='jsonrpc', auth='user')
     def get_model_domain(self, model, **kw):
         ks_custom_report = request.env['ks_custom_report.ks_report']
 

@@ -6,7 +6,7 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <xpath expr="//div[@name='button_box']" position="inside">
                     <button
                             name="print_maintenance_charges_invoice"
                             type="object"

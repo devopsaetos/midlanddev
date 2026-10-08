@@ -11,7 +11,7 @@ class FileExt(models.Model):
     booking_sub_agent_id = fields.Many2one('res.partner', 'Sub-dealer')
     other_agent_id = fields.Many2one('res.partner', string="Other Dealer")
     other_sub_agent_id = fields.Many2one('res.partner', string='Other Sub Dealer')
-    other_main_sub_agent_id = fields.Many2one('res.partner', string='Other Sub Dealer')
+    other_main_sub_agent_id = fields.Many2one('res.partner', string='Other Sub Dealer (Main Dealer)')
     free_lance_detail = fields.Char(string='Free Lancer')
     processed_by = fields.Selection([('main_agent', 'Main Dealer'),
                                      ('main_other_sub_agent', 'Main Dealer And Other Sub Dealer'),

@@ -67,6 +67,7 @@
                     <field name="bill_month" widget="date" readonly="1" optional="show"/>
                     <field name="unit_number" readonly="1"/>
                     <field name="member_name" readonly="1"/>
+                    <field name="maintenance_charges_type_id" readonly="state != 'draft'" optional="show" options="{'no_create': True}"/>
                     <field name="utility_amount" readonly="state != 'draft'" sum="Total"/>
                     <field name="arrears_utility" readonly="1" sum="Total" string="Arrears"/>
                     <field name="due_amount" readonly="1" sum="Total"/>
@@ -130,6 +131,7 @@
                                 <field name="electricity_invoice_id" invisible="invoice_id or not electricity_invoice_id"/>
                             </group>
                             <group string="Utility" invisible="bill_type == 'electricity'">
+                                <field name="maintenance_charges_type_id" readonly="state != 'draft'" options="{'no_create': True}"/>
                                 <field name="utility_amount" readonly="state != 'draft'"/>
                                 <field name="utility_product_id" readonly="state != 'draft'"/>
                                 <field name="utility_invoice_id" invisible="invoice_id or not utility_invoice_id"/>

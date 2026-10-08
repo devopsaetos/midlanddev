@@ -47,6 +47,8 @@ class MaintenanceBill(models.Model):
     issue_date = fields.Date(default=fields.Date.context_today)
     due_date = fields.Date(required=True)
 
+    maintenance_charges_type_id = fields.Many2one('maintenance.charges.type', string='Charge Type', tracking=True,
+                                                  help='Maintenance Charges type of the house (by size), e.g. 5 Marla.')
     utility_product_id = fields.Many2one('product.product')
     utility_amount = fields.Monetary(string='Utility Charges', tracking=True)
 
@@ -104,6 +106,15 @@ class MaintenanceBill(models.Model):
                 rec.payment_state = 'partial'
             else:
                 rec.payment_state = 'not_paid'
+
+    @api.onchange('maintenance_charges_type_id')
+    def _onchange_maintenance_charges_type(self):
+        """Choosing another charge type on a draft bill takes its product and amount."""
+        lines = self.maintenance_charges_type_id.maintenance_charges_type_line_ids
+        charge = lines.filtered(lambda l: l.product_id == self.utility_product_id)[:1] or lines[:1]
+        if charge:
+            self.utility_product_id = charge.product_id
+            self.utility_amount = charge.amount
 
     def _has_utility(self):
         return self.bill_type in ('utility', 'combined')
@@ -188,7 +199,8 @@ class MaintenanceBill(models.Model):
                 raise UserError(_('%s: set the Utility product first.') % self.name)
             lines.append(('utility', {
                 'product_id': self.utility_product_id.id,
-                'name': _('Utility / Maintenance Charges %s') % month,
+                'name': _('%(charge)s %(month)s', charge=self.maintenance_charges_type_id.name, month=month)
+                if self.maintenance_charges_type_id else _('Utility / Maintenance Charges %s') % month,
                 'quantity': 1,
                 'price_unit': self.utility_amount,
                 'tax_ids': [(6, 0, [])],
@@ -336,7 +348,8 @@ class MaintenanceBill(models.Model):
         # Always the same rows for a bill type, so every printed bill has the same layout.
         lines = []
         if self._has_utility():
-            lines.append((_('Utility Charges'), self.utility_amount))
+            lines.append((_('Utility Charges (%s)', self.maintenance_charges_type_id.name)
+                          if self.maintenance_charges_type_id else _('Utility Charges'), self.utility_amount))
         if self._has_electricity():
             lines.append((_('Electricity (%(units)s units @ %(rate)s)', units=int(self.units), rate=self.unit_rate),
                           self.electricity_amount))

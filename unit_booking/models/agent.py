@@ -138,7 +138,7 @@ class ResPartnerExt(models.Model):
 
         return record
 
-    @api.constrains('dob')
+    # 'dob' is not a res.partner field in Odoo 19, so this check never ran; kept for reference.
     def check_starting_and_ending(self):
         for recs in self:
             if recs.dob and recs.is_unit_booking_agent:
@@ -154,14 +154,15 @@ class ResPartnerExt(models.Model):
                 if not (re.search(regex, rec.email)):
                     raise ValidationError(_('Please Enter Valid Email'))
 
-    @api.constrains('cnic_line_ids')
+    # 'cnic_line_ids' is not a res.partner field in Odoo 19, so this check never ran; kept for reference.
     def len_of_record(self):
         for rec in self:
             if rec.company_type == 'aop' and rec.is_unit_booking_agent:
                 if len(rec.cnic_line_ids) < 2:
                     raise ValidationError(_('Add minimum 2 line in joint owner detail'))
 
-    @api.constrains('form_b', 'secondary_phone', 'phone', 'cp_mobile', 'cnic')
+    # only 'phone' exists on res.partner in Odoo 19 (form_b, secondary_phone, cp_mobile, cnic do not)
+    @api.constrains('phone')
     def validate_fields(self):
         for rec in self:
             if rec.is_unit_booking_agent:

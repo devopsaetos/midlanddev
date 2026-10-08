@@ -2,8 +2,11 @@
 
 import base64
 import io
+import re
 
 from dateutil.relativedelta import relativedelta
+
+from markupsafe import Markup, escape
 
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -21,7 +24,7 @@ class MaintenanceBillGenerate(models.TransientModel):
                                  required=True, default=lambda self: self.env.context.get('default_bill_type') or 'utility')
     society_id = fields.Many2one('society', required=True, domain="[('is_society', '=', True)]")
     phase_id = fields.Many2one('society', domain="[('is_society', '!=', True), ('society_id', '=', society_id)]")
-    unit_numbers = fields.Char(string='Only These Houses',
+    unit_numbers = fields.Char(string='House Numbers',
                                help='Plot / house numbers separated by commas, e.g. CV2-R-42, CV2-R-43. '
                                     'Leave empty to bill every file of the society/phase that has a member.')
     file_ids = fields.Many2many('file', string='Only These Houses',
@@ -34,7 +37,9 @@ class MaintenanceBillGenerate(models.TransientModel):
     utility_product_id = fields.Many2one('product.product',
                                          default=lambda self: self._default_product('Maintenance Charges'))
     default_utility_amount = fields.Float(
-        string='Utility Charges', help='Used when no Maintenance Charges rule matches the file.')
+        string='Utility Charges (no rule)', help='Used only for houses that no Maintenance Charges rule matches.')
+    rule_preview = fields.Html(string='Charges per House', compute='_compute_rule_preview', sanitize=False,
+                               help='Charge type and amount each house gets from Maintenance Charges (by size).')
     electricity_product_id = fields.Many2one('product.product',
                                              default=lambda self: self._default_product('Electricity'))
     unit_rate = fields.Float(string='Electricity Rate / Unit', digits=(16, 2))
@@ -78,33 +83,96 @@ class MaintenanceBillGenerate(models.TransientModel):
         if self.phase_id:
             self.file_ids = self.file_ids.filtered(lambda f: f.phase_id == self.phase_id)
 
-    def _utility_amount_for(self, file_rec):
-        """Same matching as the existing maintenance cron: rule line by category, unit class
-        and marla range, then the type line for the utility product."""
-        lines = self.env['maintenance.charges.line'].search([
-            ('maintenance_charges_id.society_id', '=', file_rec.society_id.id),
-            ('maintenance_charges_id.phase_id', '=', file_rec.phase_id.id),
-            ('maintenance_charges_id.date_from', '<=', self.bill_month),
-            ('maintenance_charges_id.date_to', '>=', self.bill_month),
-            ('category_id', '=', file_rec.category_id.id),
-        ])
-        marla = round(file_rec.unit_category_type_id.area_marla or 0)
-        for line in lines:
-            if line.from_no <= marla <= line.to_no:
-                rule = line.maintenance_charges_type_id.maintenance_charges_type_line_ids.filtered(
-                    lambda l: l.product_id == self.utility_product_id)[:1]
-                if rule:
-                    return self._apply_exemption(file_rec, rule.amount)
-        return self._apply_exemption(file_rec, self.default_utility_amount)
+    def _utility_rules(self):
+        """Maintenance Charges rule lines of the society / phase in force during the billed month."""
+        month = self.bill_month.replace(day=1)
+        month_end = month + relativedelta(months=1, days=-1)
+        domain = [
+            ('maintenance_charges_id.society_id', '=', self.society_id.id),
+            ('maintenance_charges_id.date_from', '<=', month_end),
+            ('maintenance_charges_id.date_to', '>=', month),
+            ('maintenance_charges_type_id', '!=', False),
+        ]
+        if self.phase_id:
+            domain.append(('maintenance_charges_id.phase_id', '=', self.phase_id.id))
+        return self.env['maintenance.charges.line'].search(domain)
 
-    def _apply_exemption(self, file_rec, amount):
+    @staticmethod
+    def _house_marla(file_rec):
+        """Size of the house in marla: Area (Marla) of its size, or the number in the size name
+        ("10 Marla") when that area is not filled in."""
+        size = file_rec.unit_category_type_id
+        if size.area_marla:
+            return size.area_marla
+        found = re.search(r'(\d+(?:\.\d+)?)\s*marla', size.name or '', re.IGNORECASE)
+        return float(found.group(1)) if found else 0.0
+
+    def _utility_rule_for(self, file_rec, rules=None):
+        """(charge type, charge type line) of the house, from Maintenance Charges: same phase,
+        sector (when the rule lists sectors), category, type (Plot / House / Shop) and the house
+        size in marla within From / To (3.5 marla counts as 3). When ranges overlap (1-3, 1-4,
+        1-5) the narrowest one wins, so a 3 marla house gets the 3 marla charge."""
+        rules = self._utility_rules() if rules is None else rules
+        area = self._house_marla(file_rec)
+        matching = rules.filtered(lambda l: (
+            l.maintenance_charges_id.phase_id == file_rec.phase_id
+            and (not l.maintenance_charges_id.sector_ids or file_rec.sector_id in l.maintenance_charges_id.sector_ids)
+            and l.category_id == file_rec.category_id
+            and (not l.unit_class_id or l.unit_class_id == file_rec.unit_class_id)
+            and l.from_no <= area < l.to_no + 1))
+        for line in matching.sorted(lambda l: (l.to_no - l.from_no, -l.maintenance_charges_id.date_from.toordinal(), -l.id)):
+            charges = line.maintenance_charges_type_id.maintenance_charges_type_line_ids
+            charge = charges.filtered(lambda c: c.product_id == self.utility_product_id)[:1] or charges[:1]
+            if charge:
+                return line.maintenance_charges_type_id, charge
+        return self.env['maintenance.charges.type'], self.env['maintenance.charges.type.lines']
+
+    def _utility_values_for(self, file_rec, rules=None):
+        """Charge type, product and amount (after exemption) of the house's utility bill."""
+        charge_type, charge = self._utility_rule_for(file_rec, rules)
+        product = charge.product_id or self.utility_product_id
+        amount = charge.amount if charge else self.default_utility_amount
+        return charge_type, product, self._apply_exemption(file_rec, amount, product)
+
+    @api.depends('bill_type', 'society_id', 'phase_id', 'file_ids', 'bill_month', 'utility_product_id',
+                 'default_utility_amount')
+    def _compute_rule_preview(self):
+        for wizard in self:
+            wizard.rule_preview = False
+            if wizard.bill_type != 'utility' or not wizard.society_id or not wizard.bill_month:
+                continue
+            if wizard.file_ids:
+                files = wizard.file_ids
+            else:
+                domain = [('society_id', '=', wizard.society_id.id), ('membership_id', '!=', False)]
+                if wizard.phase_id:
+                    domain.append(('phase_id', '=', wizard.phase_id.id))
+                files = self.env['file'].search(domain)
+            rules = wizard._utility_rules()
+            groups = {}
+            for file_rec in files:
+                charge_type, charge = wizard._utility_rule_for(file_rec, rules)
+                key = (charge_type.name or _('No rule found: Utility Charges below'),
+                       charge.amount if charge else wizard.default_utility_amount)
+                groups.setdefault(key, []).append(file_rec.unit_number or file_rec.name or '')
+            rows = ''.join(
+                '<tr><td>%s</td><td class="text-end">%s</td><td class="text-end">%s</td><td class="text-muted">%s</td></tr>' % (
+                    escape(name), len(units), escape('{:,.0f}'.format(amount)),
+                    escape(', '.join(sorted(units)[:6]) + (' ...' if len(units) > 6 else '')))
+                for (name, amount), units in sorted(groups.items()))
+            wizard.rule_preview = Markup(
+                '<table class="table table-sm mb-0"><thead><tr><th>Charge Type</th><th class="text-end">Houses</th>'
+                '<th class="text-end">Amount</th><th>e.g.</th></tr></thead><tbody>%s</tbody></table>' % rows
+            ) if rows else False
+
+    def _apply_exemption(self, file_rec, amount, product=None):
         """Approved Maintenance Exemption of the file that covers the billed month."""
         if 'maintenance.exemption.history' not in self.env:
             return amount
         month_end = self.bill_month.replace(day=1) + relativedelta(months=1, days=-1)
         exemption = self.env['maintenance.exemption.history'].search([
             ('file_id', '=', file_rec.id), ('exemption_state', '=', 'active'),
-            ('product_id', '=', self.utility_product_id.id),
+            ('product_id', '=', (product or self.utility_product_id).id),
             ('from_date', '<=', month_end), ('to_date', '>=', self.bill_month.replace(day=1)),
         ], limit=1)
         if not exemption:
@@ -128,8 +196,9 @@ class MaintenanceBillGenerate(models.TransientModel):
             'payment_note': self.payment_note,
         }
         if self.bill_type == 'utility':
-            amount = self._utility_amount_for(file_rec)
-            vals['utility_product_id'] = self.utility_product_id.id
+            charge_type, product, amount = self._utility_values_for(file_rec)
+            vals['maintenance_charges_type_id'] = charge_type.id
+            vals['utility_product_id'] = product.id
             # an amount typed on the draft is kept when nothing better is known
             if not draft or amount:
                 vals['utility_amount'] = amount

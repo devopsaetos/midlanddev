@@ -62,7 +62,7 @@ class PlotMergerApplication(models.Model):
     # be a circular dependency — midland.invoice wouldn't exist yet when this module's models load.
     merger_fee_invoice_id = fields.Many2one('account.move', string='Merger Fee Invoice')
     credit_note_id = fields.Many2many('account.move', 'plot_merger_credit_note_account_move_rel', string='Credit Note')
-    journal_entry_id = fields.Many2one('account.move', string='Journal Entry', track_visility='always')
+    journal_entry_id = fields.Many2one('account.move', string='Journal Entry')
     show_approved_status = fields.Boolean(string='Show Approved Status', default=False)
     merger_status = fields.Selection([
         ('submit', 'Submit'),
