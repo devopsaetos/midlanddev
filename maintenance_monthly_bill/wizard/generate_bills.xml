@@ -31,12 +31,27 @@
                             <field name="unit_rate"/>
                         </group>
                     </group>
+                    <group string="Import Readings from Excel" invisible="bill_type != 'electricity'">
+                        <div class="text-muted" colspan="2">
+                            1. Choose the society (and phase or houses), month and rate above, then click
+                            <b>Download Template</b>: an Excel sheet of those houses with their meter and previous reading.<br/>
+                            2. Fill the <b>Current Reading</b> column (Meter No / Rate only if they changed) and save.<br/>
+                            3. Upload the file here and click <b>Import &amp; Generate</b>: one electricity draft bill per house.
+                        </div>
+                        <button name="action_download_template" string="Download Template" type="object"
+                                icon="fa-download" class="btn-secondary" colspan="2"/>
+                        <field name="import_filename" invisible="1"/>
+                        <field name="import_file" filename="import_filename"/>
+                    </group>
                     <group string="Printed on the Bill">
                         <field name="bank_note"/>
                         <field name="payment_note"/>
                     </group>
                     <footer>
-                        <button name="action_generate" string="Generate Draft Bills" type="object" class="btn-primary"/>
+                        <button name="action_generate" string="Generate Draft Bills" type="object" class="btn-primary"
+                                invisible="bill_type == 'electricity' and import_file"/>
+                        <button name="action_import_readings" string="Import &amp; Generate" type="object" class="btn-primary"
+                                icon="fa-upload" invisible="bill_type != 'electricity' or not import_file"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
