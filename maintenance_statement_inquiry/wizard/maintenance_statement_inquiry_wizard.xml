@@ -79,9 +79,9 @@
         <menuitem
                 name="Maintenance Inquiry"
                 id="maintenance_statement_inquiry_wizard_menu"
-                parent="maintenance_charges.maintenance_charges_main_menu"
+                parent="maintenance_charges.menu_maintenance_payments_root"
                 action="maintenance_statement_inquiry_wizard_action"
-                sequence="2"
+                sequence="3"
         />
     </data>
 </odoo>

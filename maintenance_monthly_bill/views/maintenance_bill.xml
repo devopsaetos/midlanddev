@@ -237,6 +237,11 @@
             <field name="code">records.action_post()</field>
         </record>
 
+        <!-- the app opens on the Utility Bills list (its first menu, Generate Utility Bills, is a popup) -->
+        <record id="maintenance_charges.maintenance_charges_main_menu" model="ir.ui.menu">
+            <field name="action" ref="action_maintenance_bill_utility"/>
+        </record>
+
         <menuitem id="menu_maintenance_bill_root" name="Monthly Bills"
                   parent="maintenance_charges.maintenance_charges_main_menu" sequence="5"/>
         <menuitem id="menu_maintenance_bill_utility" name="Utility Bills" action="action_maintenance_bill_utility"

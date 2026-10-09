@@ -10,7 +10,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Account',
-    'version': '19.0.1.0.1',
+    'version': '19.0.1.0.2',
     'depends': [
         'base', 'account',
         # 'axiom_recovery_report',  # Odoo 19: not available anywhere in this project (only

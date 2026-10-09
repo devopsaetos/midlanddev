@@ -74,19 +74,14 @@
             <field name="view_mode">list,form</field>
         </record>
 
-        <menuitem
-                id="maintenance_realestate_specific.maintenance_exemption_parent_menu"
-                name="Exemption/Withdrawal"
-                parent="maintenance_charges.maintenance_charges_main_menu"
-                sequence='2'
-        />
+        <!-- under Houses (maintenance_charges.menu_maintenance_houses_root) -->
 
         <menuitem
                 id="maintenance_realestate_specific.maintenance_exemption_menu"
                 name="Maintenance Exemption"
-                parent="maintenance_realestate_specific.maintenance_exemption_parent_menu"
+                parent="maintenance_charges.menu_maintenance_houses_root"
                 action="maintenance_realestate_specific.action_maintenance_exemption"
-                sequence='1'
+                sequence='3'
         />
     </data>
 </odoo>

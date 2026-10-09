@@ -53,9 +53,8 @@
         <field name="target">current</field>
         <field name="context">{'module' : 'maintenance_recovery_batch'}</field>
     </record>
-    <menuitem id="maintenance_recovery_batch.menu_maintenance_charges_configuration" name="Configuration" parent="maintenance_charges.maintenance_charges_main_menu"
-              sequence="100"/>
-    <menuitem id="maintenance_recovery_batch.menu_maintenance_charges_settings" name="Settings" parent="maintenance_recovery_batch.menu_maintenance_charges_configuration"
-              sequence="1"
+    <!-- Configuration menu: maintenance_charges.menu_maintenance_config_root -->
+    <menuitem id="maintenance_recovery_batch.menu_maintenance_charges_settings" name="Settings" parent="maintenance_charges.menu_maintenance_config_root"
+              sequence="10"
               action="maintenance_recovery_batch.maintenance_configs_action"/>
 </odoo>

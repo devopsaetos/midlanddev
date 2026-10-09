@@ -12,7 +12,7 @@
     'website': "https://www.aetostechnology.com",
 
     'category': 'Real Estate',
-    'version': '19.0.1.0.2',
+    'version': '19.0.1.0.3',
 
     # any module necessary for this one to work correctly
     'depends': ['file_financials', 'maintenance_charges', 'maintenance_collection_report'],

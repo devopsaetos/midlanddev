@@ -64,9 +64,9 @@
                 id="maintenance_charges.maintenance_charges_type_menu"
                 name="Maintenance Charges Type"
                 groups="maintenance_charges.group_maintenance_payment_manager"
-                parent="maintenance_charges.maintenance_charges_main_menu"
+                parent="maintenance_charges.menu_maintenance_config_root"
                 action="maintenance_charges.action_maintenance_charges_type"
-                sequence='2'
+                sequence="2"
         />
     </data>
 </odoo>

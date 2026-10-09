@@ -78,12 +78,12 @@
          external ID. Re-parented to maintenance_charges's own main menu
          (maintenance_charges.maintenance_charges_main_menu), the same anchor used by the sibling
          maintenance_recovery_batch and maintenance_invoice_report modules converted in this
-         batch. -->
+         batch. Now under Reports (maintenance_charges.menu_maintenance_reports_root). -->
     <menuitem
             name="Maintenance Recovery"
             id="maintenance_recovery_report_wizards_menu"
-            parent="maintenance_charges.maintenance_charges_main_menu"
+            parent="maintenance_charges.menu_maintenance_reports_root"
             action="maintenance_recovery_report_wizards_action"
-            sequence="6"
+            sequence="7"
     />
 </odoo>

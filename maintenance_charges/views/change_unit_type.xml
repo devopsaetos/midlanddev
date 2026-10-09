@@ -148,9 +148,9 @@
                 id="maintenance_charges.change_unit_type"
                 name="Change Unit Type"
                 groups="maintenance_charges.group_maintenance_payment_collector,maintenance_charges.group_maintenance_payment_manager"
-                parent="maintenance_charges.maintenance_charges_main_menu"
+                parent="maintenance_charges.menu_maintenance_houses_root"
                 action="action_change_unit_type"
-                sequence='5'
+                sequence="2"
         />
     </data>
 </odoo>

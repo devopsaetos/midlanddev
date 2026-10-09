@@ -10,7 +10,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Account',
-    'version': '19.0.1.0.3',
+    'version': '19.0.1.0.4',
     'depends': ['maintenance_charges'],
     'data': [
         'security/ir.model.access.csv',

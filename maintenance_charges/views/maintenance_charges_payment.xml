@@ -195,9 +195,9 @@
                 id="maintenance_charges.maintenance_charges_payment"
                 name="Maintenance Charges Payment"
                 groups="maintenance_charges.group_maintenance_payment_collector,maintenance_charges.group_maintenance_payment_manager"
-                parent="maintenance_charges.maintenance_charges_main_menu"
+                parent="maintenance_charges.menu_maintenance_payments_root"
                 action="action_maintenance_charges_payment"
-                sequence='3'
+                sequence="1"
         />
     </data>
 </odoo>

@@ -54,7 +54,7 @@
         <menuitem
                 name="Maintenance Month Wise Summary"
                 id="maintenance_month_wise_report_wizard_menu"
-                parent="maintenance_collection_report.menu_maintenance_charges_report_root"
+                parent="maintenance_charges.menu_maintenance_reports_root"
                 action="month_wise_report_wizard_action"
                 sequence="5"
         />

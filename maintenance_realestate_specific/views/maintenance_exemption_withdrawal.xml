@@ -69,9 +69,9 @@
         <menuitem
                 id="maintenance_realestate_specific.maintenance_exemption_withdrawal_menu"
                 name="Maintenance Exemption Withdrawal"
-                parent="maintenance_realestate_specific.maintenance_exemption_parent_menu"
+                parent="maintenance_charges.menu_maintenance_houses_root"
                 action="maintenance_realestate_specific.action_maintenance_exemption_withdrawal"
-                sequence='2'
+                sequence='4'
         />
     </data>
 </odoo>

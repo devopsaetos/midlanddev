@@ -44,7 +44,7 @@
         <menuitem
                 name="Maintenance Summary Report"
                 id="maintenance_summary_report_wizard_menu"
-                parent="maintenance_collection_report.menu_maintenance_charges_report_root"
+                parent="maintenance_charges.menu_maintenance_reports_root"
                 action="maintenance_summary_report_wizard_action"
                 sequence="2"
         />

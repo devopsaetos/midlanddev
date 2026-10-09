@@ -13,7 +13,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Help Desk',
-    'version': '19.0.1.0.4',
+    'version': '19.0.1.0.5',
 
     # any module necessary for this one to work correctly
     # Odoo 19 migration note: 'website_axis_helpdesk' (an old Odoo 13/17 third-party

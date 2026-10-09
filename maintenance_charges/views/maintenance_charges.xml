@@ -79,13 +79,24 @@
                 sequence='1'
         />
 
+        <!-- Top bar of the app: Monthly Bills (maintenance_monthly_bill, sequence 5), Payments,
+             Houses, Reports, Configuration. Other maintenance modules put their menus in these. -->
+        <menuitem id="maintenance_charges.menu_maintenance_payments_root" name="Payments"
+                  parent="maintenance_charges.maintenance_charges_main_menu" sequence="20"/>
+        <menuitem id="maintenance_charges.menu_maintenance_houses_root" name="Houses"
+                  parent="maintenance_charges.maintenance_charges_main_menu" sequence="30"/>
+        <menuitem id="maintenance_charges.menu_maintenance_reports_root" name="Reports"
+                  parent="maintenance_charges.maintenance_charges_main_menu" sequence="40"/>
+        <menuitem id="maintenance_charges.menu_maintenance_config_root" name="Configuration"
+                  parent="maintenance_charges.maintenance_charges_main_menu" sequence="100"/>
+
         <menuitem
                 id="maintenance_charges.maintenance_charges_menu"
                 name="Maintenance Charges"
                 groups="maintenance_charges.group_maintenance_payment_manager"
-                parent="maintenance_charges.maintenance_charges_main_menu"
+                parent="maintenance_charges.menu_maintenance_config_root"
                 action="maintenance_charges.action_maintenance_charges"
-                sequence='1'
+                sequence="1"
         />
     </data>
 </odoo>

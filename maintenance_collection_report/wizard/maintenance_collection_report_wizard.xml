@@ -40,15 +40,11 @@
             <field name="context">{'current_view': 'maintenance_collection'}</field>
             <field name="target">new</field>
         </record>
-        <menuitem
-                name="Reports"
-                id="menu_maintenance_charges_report_root"
-                parent="maintenance_charges.maintenance_charges_main_menu"
-        />
+        <!-- Reports menu: maintenance_charges.menu_maintenance_reports_root -->
         <menuitem
                 name="Maintenance Collection Report"
                 id="maintenance_collection_report"
-                parent="maintenance_collection_report.menu_maintenance_charges_report_root"
+                parent="maintenance_charges.menu_maintenance_reports_root"
                 action="maintenance_collection_report.action_maintenance_collection_report_wizard"
                 sequence="1"
         />

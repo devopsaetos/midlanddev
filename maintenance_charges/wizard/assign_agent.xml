@@ -53,8 +53,9 @@
 
     <menuitem id="maintenance_charges.menu_maintenance_agent"
               name="Assign Agent"
-              parent="maintenance_charges.maintenance_charges_main_menu"
+              parent="maintenance_charges.menu_maintenance_houses_root"
               action="action_maintenance_agent_wizard"
-    />
+                sequence="1"
+        />
 
 </odoo>
