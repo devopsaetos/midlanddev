@@ -101,6 +101,8 @@
                                    invisible="1"/>
                             <field name="remarks"
                                    readonly="state != 'draft'"/>
+                            <field name="reference"
+                                   readonly="state != 'draft'"/>
                             <field name="recovery_reference"
                                    readonly="state != 'draft'"
                                    invisible="1"/>

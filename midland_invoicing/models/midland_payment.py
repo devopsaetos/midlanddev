@@ -95,6 +95,8 @@ class MidlandPayment(models.Model):
     override_wht = fields.Boolean(string='Override WHT')
     wht = fields.Float(string='WHT')
     remarks = fields.Char(string='Remarks', tracking=True)
+    # typed by the user; printed in the Reference column of the Dealer Statement
+    reference = fields.Char(string='Reference', tracking=True, copy=False)
     recovery_reference = fields.Char(string='Recovery Reference')
     internal_notes = fields.Text(string='Internal Notes')
 
