@@ -96,7 +96,7 @@ class MidlandPayment(models.Model):
     wht = fields.Float(string='WHT')
     remarks = fields.Char(string='Remarks', tracking=True)
     # typed by the user; printed in the Reference column of the Dealer Statement
-    reference = fields.Char(string='Reference', tracking=True, copy=False)
+    reference = fields.Char(string='Reference No', tracking=True, copy=False)
     recovery_reference = fields.Char(string='Recovery Reference')
     internal_notes = fields.Text(string='Internal Notes')
 

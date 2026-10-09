@@ -10,7 +10,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Sales/Real Estate',
-    'version': '19.0.1.0.3',
+    'version': '19.0.1.0.4',
     'depends': ['real_estate', 'file_financials', 'default_payment'],
     'data': [
         'security/ir.model.access.csv',

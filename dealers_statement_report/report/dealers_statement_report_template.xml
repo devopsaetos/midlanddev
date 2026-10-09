@@ -341,7 +341,7 @@
                                                 <th style="color:#000;white-space: nowrap;">Amount Paid</th>
                                                 <th style="color:#000;white-space: nowrap;">Bank</th>
                                                 <th style="color:#000;white-space: nowrap;">Payment Method</th>
-                                                <th style="color:#000;white-space: nowrap;">Reference</th>
+                                                <th style="color:#000;white-space: nowrap;">Reference No</th>
                                             </tr>
                                         </thead>
                                         <tbody>
