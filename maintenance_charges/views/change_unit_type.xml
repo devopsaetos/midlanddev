@@ -103,12 +103,17 @@
             <field name="arch" type="xml">
                 <list>
                     <field name="name"/>
-                    <field name="file_id" options="{'no_create': True, 'no_open': True}"/>
-                    <field name="membership_id" options="{'no_create': True, 'no_open': True}"/>
-                    <field name="category_id" options="{'no_create': True, 'no_open': True}"/>
-                    <field name="unit_category_type_id" string="Product" options="{'no_create': True, 'no_open': True}"/>
-                    <field name="size_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="unit_numbers" string="Unit No."/>
+                    <field name="file_numbers" string="File No"/>
+                    <field name="member_names" string="Member No"/>
+                    <field name="category_names" string="Category"/>
+                    <field name="product_names" string="Product"/>
+                    <field name="size_names" string="Size"/>
+                    <field name="type_names" string="Type" optional="show"/>
+                    <field name="new_type_names" string="New Type" optional="show"/>
                     <field name="date"/>
+                    <field name="state" widget="badge" decoration-success="state == 'approve'" decoration-info="state == 'submit'"
+                           decoration-muted="state == 'cancel'" optional="show"/>
                 </list>
             </field>
         </record>
@@ -119,11 +124,13 @@
             <field name="arch" type="xml">
                 <search>
                     <field name="name" string="Serial #"/>
-                    <field name="file_id"/>
+                    <field name="unit_numbers" string="Unit No."/>
+                    <field name="file_numbers" string="File No"/>
+                    <field name="member_names" string="Member"/>
                     <field name="sector_id"/>
-                    <field name="category_id"/>
-                    <field name="unit_category_type_id" string="Product"/>
-                    <field name="size_id"/>
+                    <field name="category_names" string="Category"/>
+                    <field name="product_names" string="Product"/>
+                    <field name="size_names" string="Size"/>
                     <field name="date" string="Date"/>
                     <!-- Odoo 19: <group> in search views no longer accepts expand="0"/string="Group By" attributes -->
                     <group>

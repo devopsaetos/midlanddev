@@ -32,10 +32,41 @@ class ChangeUnitType(models.Model):
     unit_class_id = fields.Many2one('unit.class', related="inventory_id.unit_class_id", store=True, tracking=True)
     new_unit_class_id = fields.Many2one('unit.class', string="Select Type", tracking=True)
     unit_change_typy_line_ids = fields.One2many('change.unit.type.lines', 'unit_change_type_id', string='Change Type')
+    # list columns: the plots are kept in File Details (lines); app requests keep them on the record itself
+    unit_numbers = fields.Char('Unit Nos', compute='_compute_line_summary', store=True)
+    file_numbers = fields.Char('File Nos', compute='_compute_line_summary', store=True)
+    member_names = fields.Char('Members', compute='_compute_line_summary', store=True)
+    category_names = fields.Char('Categories', compute='_compute_line_summary', store=True)
+    product_names = fields.Char('Products', compute='_compute_line_summary', store=True)
+    size_names = fields.Char('Sizes', compute='_compute_line_summary', store=True)
+    type_names = fields.Char('Types', compute='_compute_line_summary', store=True)
+    new_type_names = fields.Char('New Types', compute='_compute_line_summary', store=True)
 
     from_app = fields.Boolean()
     submit_app = fields.Boolean(default=False)
     approved_app = fields.Boolean(default=False)
+
+    @api.depends('inventory_id', 'file_id', 'membership_id', 'category_id', 'unit_category_type_id', 'size_id',
+                 'unit_class_id', 'new_unit_class_id',
+                 'unit_change_typy_line_ids.inventory_id', 'unit_change_typy_line_ids.file_id',
+                 'unit_change_typy_line_ids.membership_id', 'unit_change_typy_line_ids.category_id',
+                 'unit_change_typy_line_ids.unit_category_type_id', 'unit_change_typy_line_ids.size_id',
+                 'unit_change_typy_line_ids.unit_class_id', 'unit_change_typy_line_ids.new_unit_class_id')
+    def _compute_line_summary(self):
+        for rec in self:
+            src = rec.unit_change_typy_line_ids or rec
+
+            def names(field):
+                return ', '.join(dict.fromkeys(n for n in src.mapped(lambda r: r[field].display_name) if n)) or False
+
+            rec.unit_numbers = names('inventory_id')
+            rec.file_numbers = names('file_id')
+            rec.member_names = names('membership_id')
+            rec.category_names = names('category_id')
+            rec.product_names = names('unit_category_type_id')
+            rec.size_names = names('size_id')
+            rec.type_names = names('unit_class_id')
+            rec.new_type_names = names('new_unit_class_id')
 
     @api.onchange('society_id', 'phase_id', 'sector_id', 'street_id')
     def _phase_domain(self):

@@ -11,7 +11,7 @@
     'website': "https://www.aetostechnology.com",
 
     'category': 'Real Estate',
-    'version': '19.0.1.0.10',
+    'version': '19.0.1.0.11',
 
     # any module necessary for this one to work correctly
     'depends': [
