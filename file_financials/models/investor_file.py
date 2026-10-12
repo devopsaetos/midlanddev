@@ -1605,9 +1605,9 @@ class InstallmentPlanExt(models.Model):
         ('not_paid', 'Not Paid'),
         ('in_payment', 'In Payment'),
         ('paid', 'Paid')],
-        string='Status', compute='_compute_display_payment')
-    display_amount_paid = fields.Float(string='Amount Paid', compute='_compute_display_payment')
-    display_residual = fields.Float(string='Amount Due', compute='_compute_display_payment')
+        string='Status (Shown)', compute='_compute_display_payment')
+    display_amount_paid = fields.Float(string='Amount Paid (Shown)', compute='_compute_display_payment')
+    display_residual = fields.Float(string='Amount Due (Shown)', compute='_compute_display_payment')
 
     @api.depends('payment_status', 'amount_paid', 'residual', 'installment_type', 'investor_file_id.state')
     def _compute_display_payment(self):

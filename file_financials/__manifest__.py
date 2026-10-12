@@ -13,7 +13,7 @@
     'author': "Hassan Raza, Mubeen Amanat, Ateeb Shahid Baig",
     'website': "https://www.aetostechnology.com",
     'category': 'Real Estate',
-    'version': '19.0.1.0.4',
+    'version': '19.0.1.0.5',
 
     'depends': [
         'crm',

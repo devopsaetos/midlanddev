@@ -319,7 +319,7 @@
                            invisible="applicable_on != 'file'">
                         <group>
                             <field name="booking_date"/>
-                            <field name="starting_date"/>
+                            <field name="starting_date" string="Installment Starting Date"/>
                             <field name="payment_states"/>
                             <field name="interval_id"/>
                         </group>

@@ -54,7 +54,7 @@ class UnitsBooking(models.Model):
                                          readonly=False)
     transferee_relation_name = fields.Char(store=True, related='transferee_partner_id.relation_name', readonly=False,
                                            string="Transferee Relation Name:")
-    prefix = fields.Char(string='Prefix')
+    prefix = fields.Char(string='Prefix Code')
 
     plan_description = fields.Char('Plan Description', store=True, readonly=False)
     transferee_name = fields.Char('Transferee Name')
@@ -122,7 +122,7 @@ class UnitsBooking(models.Model):
     installment_created = fields.Boolean(default=False)
 
     create_manually = fields.Boolean(default=False)
-    custom_sale_amount = fields.Float('Sale Amount')
+    custom_sale_amount = fields.Float('Custom Sale Amount')
     add_custom_value = fields.Boolean()
     factor_amount = fields.Float()
     discount_type = fields.Selection([

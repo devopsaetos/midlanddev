@@ -36,7 +36,7 @@ class FileInstallmentPaymentExt(models.Model):
         'midland.payment.line', string='Midland Payment Line',
         ondelete='cascade', index=True,
     )
-    midland_invoice_ref = fields.Char(string='Invoice #', readonly=True)
+    midland_invoice_ref = fields.Char(string='Midland Invoice #', readonly=True)
 
     # Override related fields to support midland payments (no account.move/account.payment)
     invoice_date = fields.Date(

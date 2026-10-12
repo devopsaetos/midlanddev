@@ -67,7 +67,7 @@ class ResMember(models.Model):
     street = fields.Char(tracking=True)
     street2 = fields.Char(tracking=True)
     zip = fields.Char(tracking=True)
-    city = fields.Char(tracking=True)
+    city = fields.Char(string='City (Text)', tracking=True)
     state_id = fields.Many2one("res.country.state", string='State', ondelete='restrict',
                                domain="[('country_id', '=?', country_id)]", tracking=True)
     country_id = fields.Many2one('res.country', string='Country', ondelete='restrict', tracking=True)

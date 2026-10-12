@@ -45,7 +45,7 @@ class UnitBookingAllotment(models.Model):
     category_id = fields.Many2one('plot.category', 'Category', tracking=True)
     partner_id = fields.Many2one('res.partner', string='Dealer', tracking=True)
     partner_subagent_id = fields.Many2one('res.partner', string='Sub Dealer', tracking=True)
-    main_dealer = fields.Many2one('res.partner', string='Dealer', tracking=True)
+    main_dealer = fields.Many2one('res.partner', string='Main Dealer', tracking=True)
     booking_date = fields.Date('Allotment Date', tracking=True, default=fields.Date.today())
     installment_starting_date = fields.Date('Plan Starting Date', tracking=True)
     start_date = fields.Date('Start date', tracking=True, store=True)

@@ -6,7 +6,7 @@ class DealPack(models.Model):
     _name = 'deal.pack'
     _description = 'Deal Pack'
 
-    deal_pack_name = fields.Char(string='Name')
+    deal_pack_name = fields.Char(string='Deal Pack Name')
     name = fields.Char(copy=False, readonly=True, index=True, default=lambda self: _('New'))
     start_date = fields.Date('Start date', required=True,
                              default=fields.Date.today())

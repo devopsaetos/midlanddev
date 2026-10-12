@@ -17,7 +17,7 @@ class InvestmentExt(models.Model):
     # rebate portion
     rebate_id = fields.Many2one('dealer.rebate')
     rebate_on_allotment_ids = fields.One2many('rebate.on.allotment', 'investment_id')
-    rebate_amount = fields.Float(tracking=True, compute='calculate_rebate')
+    rebate_amount = fields.Float(tracking=True, compute='_compute_rebate_amount')
     separate_rebate = fields.Float(tracking=True)
     net_of_rebate = fields.Float(tracking=True)
     settlement_date = fields.Date()
@@ -605,6 +605,14 @@ class InvestmentExt(models.Model):
                     file.is_sale_rebate_applied = True
         return calculated_rebate
 
+    def _compute_rebate_amount(self):
+        # Own compute (not calculate_rebate) because rebate_amount is not stored: one method for
+        # stored and non-stored fields is not allowed. Reading it (the investment form does) still
+        # refreshes the stored rebate totals through calculate_rebate, as before.
+        self.calculate_rebate()
+        for rec in self:
+            rec.rebate_amount = rec.deal_rebate_amount + rec.sale_rebate_amount
+
     def calculate_rebate(self):
         for recs in self:
             recs.net_of_rebate = recs.separate_rebate = 0
@@ -679,7 +687,6 @@ class InvestmentExt(models.Model):
                     lambda l: l.agent_type == 'marketing_company').mapped('rebate_amount'))
             recs.deal_rebate_amount = deal_rebate
             recs.sale_rebate_amount = files_rebate
-            recs.rebate_amount = deal_rebate + files_rebate
             recs.dealer_rebate_amount = dealer_rebate
             recs.marketing_rebate_amount = marketing_rebate
             recs.total_rebate_amount = dealer_rebate + marketing_rebate

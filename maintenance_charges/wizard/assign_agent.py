@@ -16,7 +16,7 @@ class MaintenanceAgentWizard(models.TransientModel):
     unit_category_type_id = fields.Many2one('unit.category.type', 'Product')
     size_id = fields.Many2one('unit.size', string='Size')
     unit_class_id = fields.Many2one('unit.class', string='Type')
-    street_ids = fields.Many2many('street')
+    street_ids = fields.Many2many('street', string='Streets')
 
     @api.onchange('society_id', 'phase_id', 'sector_id', 'street_id', 'category_id', 'unit_category_type_id', 'size_id', 'unit_class_id')
     def _phase_domain(self):

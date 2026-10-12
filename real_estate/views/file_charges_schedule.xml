@@ -47,7 +47,7 @@
                                 <field name="required_taxes_line_ids" nolabel="1">
                                     <list editable="bottom">
                                         <field name="category_id" required="1" options="{'no_create':True, 'no_open':True}"/>
-                                        <field name="unit_category_type_ids" widget="many2many_tags" required="1"/>
+                                        <field name="unit_category_type_ids" string="Product" widget="many2many_tags" required="1"/>
                                         <field name="product_id" string="Invoice Product" required="1" options="{'no_create':True, 'no_open':True}"/>
                                         <field name="rate" required="1" string="Rate(%)"/>
                                     </list>
@@ -57,7 +57,7 @@
                                 <field name="other_charges_line_ids" nolabel="1">
                                     <list editable="bottom">
                                         <field name="category_id" required="1" options="{'no_create':True, 'no_open':True}"/>
-                                        <field name="unit_category_type_ids" widget="many2many_tags" required="1"/>
+                                        <field name="unit_category_type_ids" string="Product" widget="many2many_tags" required="1"/>
                                         <field name="product_id" string="Invoice Product" required="1" options="{'no_create':True, 'no_open':True}"/>
                                         <field name="amount" required="1"/>
                                     </list>
@@ -67,7 +67,7 @@
                                 <field name="required_documents_line_ids" nolabel="1">
                                     <list editable="bottom">
                                         <field name="category_id" required="1" options="{'no_create':True, 'no_open':True}"/>
-                                        <field name="unit_category_type_ids" widget="many2many_tags" required="1"/>
+                                        <field name="unit_category_type_ids" string="Product" widget="many2many_tags" required="1"/>
                                         <field name="name" force_save="1" required="1"/>
                                     </list>
                                 </field>

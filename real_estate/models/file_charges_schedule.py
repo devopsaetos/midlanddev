@@ -88,7 +88,7 @@ class RequiredTaxesLineExt(models.Model):
 
     file_charges_schedule_id = fields.Many2one('file.charges.schedule')
     category_id = fields.Many2one('plot.category', string='Category')
-    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product')
+    unit_category_type_ids = fields.Many2many('unit.category.type', string='Unit Category Types')
 
 
 class RequiredDocumentsExt(models.Model):
@@ -96,7 +96,7 @@ class RequiredDocumentsExt(models.Model):
 
     file_charges_schedule_id = fields.Many2one('file.charges.schedule', string="File Charges Schedule")
     category_id = fields.Many2one('plot.category', string='Category')
-    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product')
+    unit_category_type_ids = fields.Many2many('unit.category.type', string='Unit Category Types')
 
 
 class OtherChargesExt(models.Model):
@@ -104,4 +104,4 @@ class OtherChargesExt(models.Model):
 
     file_charges_schedule_id = fields.Many2one('file.charges.schedule', string="File Charges Schedule")
     category_id = fields.Many2one('plot.category', string='Category')
-    unit_category_type_ids = fields.Many2many('unit.category.type', string='Product')
+    unit_category_type_ids = fields.Many2many('unit.category.type', string='Unit Category Types')

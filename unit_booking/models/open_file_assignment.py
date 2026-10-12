@@ -10,7 +10,7 @@ class OpenFileAssignment(models.Model):
     # Char fields
     name = fields.Char('Serial Number', required=True, copy=False, readonly=True, index=True,
                        default=lambda self: _('New'))
-    prefix = fields.Char(string='Prefix', related='prefix_id.prefix', store=True)
+    prefix = fields.Char(string='Prefix Code', related='prefix_id.prefix', store=True)
     prefix_id = fields.Many2one('unit.batch.generation.line')
     # models relational fields
     batch_id = fields.Many2one('unit.batch.generation')

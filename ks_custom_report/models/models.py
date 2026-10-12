@@ -238,6 +238,9 @@ class KsCustomReport(models.Model):
             'state': 'manual',
             'ks_is_custom_model': True,
         })
+        # Odoo adds a hidden x_name field labelled "Name"; a report column called Name (x_ks_name)
+        # then gives a "Two fields have the same label" warning on every start
+        rec.ks_cr_model_id.field_id.filtered(lambda f: f.name == 'x_name').field_description = 'Record Name'
 
     def _ks_cr_fields(self, rec, column_id, field_name, ir_field_id, display_name=False):
         ttype = 'float' if ir_field_id.ttype == 'monetary' else ir_field_id.ttype

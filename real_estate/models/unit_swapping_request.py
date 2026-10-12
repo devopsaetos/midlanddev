@@ -100,7 +100,7 @@ class UnitSwappingRequest(models.Model):
     plan_description = fields.Char('Plan Description', related='file_id.plan_description', readonly=True)
     interval_id = fields.Many2one('payment.interval', 'Payment Interval', related='file_id.interval_id', readonly=True)
     total_installment = fields.Integer('No of Installment', related='file_id.total_installment', readonly=True)
-    starting_date = fields.Date('Installment Starting Date', related='file_id.starting_date', readonly=True)
+    starting_date = fields.Date('Installment Starting Date (File)', related='file_id.starting_date', readonly=True)
     payment_states = fields.Selection(related='file_id.payment_states', readonly=True)
     sale_amount = fields.Float('Sale Amount', related='file_id.sale_amount', readonly=True)
     factor_amount = fields.Float(related='file_id.factor_amount', readonly=True)
@@ -166,12 +166,12 @@ class UnitSwappingRequest(models.Model):
     # Correspondence Address
     transferee_secondary_mobile = fields.Char(string='Secondary Mobile', tracking=True)
     is_same = fields.Boolean('Same Address')
-    corespondence_street = fields.Char(string='Street')
+    corespondence_street = fields.Char(string='Correspondence Street')
     corespondence_street2 = fields.Char(string='Street 2')
-    corespondence_city_id = fields.Many2one('city', change_default=True, string='City')
+    corespondence_city_id = fields.Many2one('city', change_default=True, string='Correspondence City')
     corespondence_zip = fields.Char(change_default=True, store=True, related='corespondence_city_id.zip', string='Zip')
-    corespondence_state_id = fields.Many2one("res.country.state", string='State', store=True, ondelete='restrict', related='corespondence_city_id.state_id')
-    corespondence_country_id = fields.Many2one('res.country', string='Country', store=True, ondelete='restrict', related='corespondence_state_id.country_id')
+    corespondence_state_id = fields.Many2one("res.country.state", string='Correspondence State', store=True, ondelete='restrict', related='corespondence_city_id.state_id')
+    corespondence_country_id = fields.Many2one('res.country', string='Correspondence Country', store=True, ondelete='restrict', related='corespondence_state_id.country_id')
     # Next of Kin fields
     kin_name = fields.Char(tracking=True)
     kin_cnic = fields.Char(string='CNIC', tracking=True)
@@ -190,7 +190,7 @@ class UnitSwappingRequest(models.Model):
     other_relation = fields.Char('Relation ', tracking=True)
 
     # Address Fields for authorised person
-    street = fields.Char()
+    street = fields.Char(string='Street (Text)')
     city = fields.Char()
     province = fields.Char()
     country = fields.Char()

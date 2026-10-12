@@ -411,16 +411,16 @@ class UnitSwappingLine(models.TransientModel):
 
     # New unit details
     new_inventory_id = fields.Many2one('plot.inventory')
-    new_society_id = fields.Many2one('society', 'Society', domain="[('is_society','=',True)]",
+    new_society_id = fields.Many2one('society', 'New Society', domain="[('is_society','=',True)]",
                                      related='new_inventory_id.society_id')
-    new_phase_id = fields.Many2one('society', 'Phase', domain="[('is_society','!=',True)]",
+    new_phase_id = fields.Many2one('society', 'New Phase', domain="[('is_society','!=',True)]",
                                    related='new_inventory_id.phase_id')
-    new_sector_id = fields.Many2one('sector', related='new_inventory_id.sector_id')
-    new_category_id = fields.Many2one('plot.category', string='Plot Category', related='new_inventory_id.category_id')
-    new_street_id = fields.Many2one('street', related='new_inventory_id.street_id')
-    new_size_id = fields.Many2one('unit.size', 'Unit Size', related='new_inventory_id.size_id')
-    new_unit_category_type_id = fields.Many2one('unit.category.type', related='new_inventory_id.unit_category_type_id')
-    new_unit_class_id = fields.Many2one('unit.class', related='new_inventory_id.unit_class_id')
+    new_sector_id = fields.Many2one('sector', related='new_inventory_id.sector_id', string='New Sector')
+    new_category_id = fields.Many2one('plot.category', string='New Plot Category', related='new_inventory_id.category_id')
+    new_street_id = fields.Many2one('street', related='new_inventory_id.street_id', string='New Street')
+    new_size_id = fields.Many2one('unit.size', 'New Unit Size', related='new_inventory_id.size_id')
+    new_unit_category_type_id = fields.Many2one('unit.category.type', related='new_inventory_id.unit_category_type_id', string='New Unit Category Type')
+    new_unit_class_id = fields.Many2one('unit.class', related='new_inventory_id.unit_class_id', string='New Unit Class')
     new_membership_id = fields.Many2one('res.member', string='New Member No')
 
     transaction_type = fields.Selection([

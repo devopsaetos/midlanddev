@@ -19,7 +19,7 @@ class ResPartnerExt(models.Model):
         ('draft', "Draft"),
         ('in_process', 'In Process'),
         ('invoice', 'Invoice'),
-        ('approve', "Approve"), ('renewal', 'Renewal'), ('cancel', 'Cancel')], default='draft', tracking=True)
+        ('approve', "Approve"), ('renewal', 'Renewal'), ('cancel', 'Cancel')], string='Status', default='draft', tracking=True)
     # authorised_representative = fields.One2many('authorised.representative', 'agent_id')
     unit_booking_agent_id = fields.Many2one('res.partner', domain=[('unit_booking_agent_type', '=', 'main_agent')])
     identification_type = fields.Selection([
