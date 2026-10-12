@@ -37,6 +37,26 @@
                             <field name="maintenance_payment_journal_id" string="Maintenance Payment Journal" options="{'no_create': True}"/>
                         </setting>
                     </block>
+                    <!-- fields from maintenance_monthly_bill (scheduled action "Generate Monthly Utility Bills") -->
+                    <block title="Automatic Utility Bills">
+                        <setting help="Every month, make the Draft utility bills of every house of each society / phase that has a Maintenance Charges rule for the month. Houses that already have the month's bill, or that no rule matches, are skipped.">
+                            <field name="auto_utility_bills"/>
+                            <div class="mt8" invisible="not auto_utility_bills">
+                                <div class="row">
+                                    <label for="auto_utility_day" class="col-lg-4 o_light_label"/>
+                                    <field name="auto_utility_day" class="col-lg-2"/>
+                                </div>
+                                <div class="row">
+                                    <label for="auto_utility_due_day" class="col-lg-4 o_light_label"/>
+                                    <field name="auto_utility_due_day" class="col-lg-2"/>
+                                </div>
+                            </div>
+                            <div class="mt8">
+                                <button name="action_generate_utility_bills_now" type="object" icon="oi-arrow-right"
+                                        string="Generate This Month's Bills Now" class="btn-link"/>
+                            </div>
+                        </setting>
+                    </block>
                 </app>
             </form>
         </field>

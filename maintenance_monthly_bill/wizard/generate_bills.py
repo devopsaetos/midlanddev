@@ -64,10 +64,7 @@ class MaintenanceBillGenerate(models.TransientModel):
     def _onchange_society(self):
         """Default to the sales journal of the company named like the society (CV-I -> Canal Valley-I)."""
         if self.society_id:
-            company = self.env['res.company'].search([('name', '=', self.society_id.name)], limit=1) \
-                or self.society_id.company_id
-            self.journal_id = self.env['account.journal'].search(
-                [('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
+            company, self.journal_id = self._society_journal(self.society_id)
             self.phase_id = False
             self.file_ids = False
             if not self.journal_id:
@@ -76,6 +73,13 @@ class MaintenanceBillGenerate(models.TransientModel):
                     'message': _('No sales journal found for %s. Tick that company in the company '
                                  'switcher (top right), then choose the society again.') % company.name,
                 }}
+
+    @api.model
+    def _society_journal(self, society):
+        """(company, sales journal) of a society: the company named like it (CV-I -> Canal Valley-I)."""
+        company = self.env['res.company'].search([('name', '=', society.name)], limit=1) or society.company_id
+        journal = self.env['account.journal'].search([('type', '=', 'sale'), ('company_id', '=', company.id)], limit=1)
+        return company, journal
 
     @api.onchange('phase_id')
     def _onchange_phase(self):
@@ -252,9 +256,10 @@ class MaintenanceBillGenerate(models.TransientModel):
         if self.journal_id.type != 'sale':
             raise UserError(_('Pick a Sales journal.'))
 
-    def _generate_bills(self, files, overrides=None):
+    def _generate_bills(self, files, overrides=None, refresh_drafts=True):
         """Create this month's bills of this type for files, or refresh their drafts.
         overrides = {file id: values} written over the generated values (readings from Excel).
+        refresh_drafts=False leaves existing drafts as they are (monthly cron).
         Returns (new bills, refreshed drafts, existing bills of the month)."""
         self._check_settings()
         overrides = overrides or {}
@@ -265,7 +270,8 @@ class MaintenanceBillGenerate(models.TransientModel):
         # here (rate, charges, dates), so generating again after a mistake fixes the drafts.
         existing = Bill.search([('file_id', 'in', files.ids), ('bill_month', '=', month), ('state', '!=', 'cancel'),
                                 ('bill_type', 'in', (self.bill_type, 'combined'))])
-        drafts = existing.filtered(lambda b: b.state == 'draft' and b.bill_type == self.bill_type)
+        drafts = existing.filtered(lambda b: b.state == 'draft' and b.bill_type == self.bill_type) \
+            if refresh_drafts else Bill
         vals_list = []
         for file_rec in files - existing.mapped('file_id'):
             vals = dict(self._bill_vals(file_rec, month), bill_type=self.bill_type, file_id=file_rec.id, bill_month=month)
@@ -298,6 +304,77 @@ class MaintenanceBillGenerate(models.TransientModel):
         self.ensure_one()
         bills, drafts, existing = self._generate_bills(self._selected_files())
         return self._bills_action(bills, drafts, existing)
+
+    # ------------------------------------------------------------------ monthly cron
+    @api.model
+    def _cron_generate_utility_bills(self, force=False):
+        """Scheduled action "Generate Monthly Utility Bills" (runs daily). On the day set in
+        Settings it makes this month's Draft utility bills of every house of each society / phase
+        that has a Maintenance Charges rule for the month. A house that already has this month's
+        utility bill (draft or posted) or that no rule matches is skipped. force=True runs it
+        whatever the day / setting (Run Manually)."""
+        params = self.env['ir.config_parameter'].sudo()
+        today = fields.Date.context_today(self)
+        month = today.replace(day=1)
+        last_day = (month + relativedelta(months=1, days=-1)).day
+        run_day = min(max(int(params.get_param('maintenance_monthly_bill.auto_utility_day', 1) or 1), 1), last_day)
+        if not force and (not params.get_param('maintenance_monthly_bill.auto_utility_bills') or today.day != run_day):
+            return
+        due_day = min(max(int(params.get_param('maintenance_monthly_bill.auto_utility_due_day', 10) or 10), 1), last_day)
+
+        lines = self.env['maintenance.charges.line'].search([
+            ('maintenance_charges_id.date_from', '<=', month + relativedelta(months=1, days=-1)),
+            ('maintenance_charges_id.date_to', '>=', month),
+            ('maintenance_charges_type_id', '!=', False),
+        ])
+        report = []
+        for society, phase in sorted({(l.maintenance_charges_id.society_id, l.maintenance_charges_id.phase_id) for l in lines},
+                                     key=lambda sp: (sp[0].name or '', sp[1].name or '')):
+            where = '%s / %s' % (society.name, phase.name)
+            company, journal = self._society_journal(society)
+            if not journal:
+                report.append(_('%s: skipped, no sales journal in company %s.', where, company.name))
+                continue
+            wizard = self.with_company(company).create({
+                'bill_type': 'utility', 'society_id': society.id, 'phase_id': phase.id, 'journal_id': journal.id,
+                'bill_month': month, 'due_date': month.replace(day=due_day),
+            })
+            try:
+                files = wizard._selected_files()
+            except UserError:
+                report.append(_('%s: no houses with a member.', where))
+                continue
+            rules = wizard._utility_rules()
+            billed = files.filtered(lambda f: wizard._utility_rule_for(f, rules)[0])
+            no_rule = files - billed
+            bills = existing = self.env['maintenance.bill']
+            if billed:
+                try:
+                    with self.env.cr.savepoint():   # one society failing does not stop the others
+                        bills, _drafts, existing = wizard._generate_bills(billed, refresh_drafts=False)
+                except UserError as error:
+                    report.append(_('%(where)s: not generated: %(error)s', where=where, error=error.args[0]))
+                    continue
+            line = _('%(where)s: %(new)s draft bills created, %(old)s already had a bill',
+                     where=where, new=len(bills), old=len(existing))
+            if no_rule:
+                units = sorted(no_rule.mapped(lambda f: f.unit_number or f.name or ''))
+                line += _(', %(count)s without a rule (skipped): %(units)s', count=len(no_rule),
+                          units=', '.join(units[:15]) + (' ...' if len(units) > 15 else ''))
+            report.append(line)
+        if not report:
+            report.append(_('No Maintenance Charges rule in force for %s.', month.strftime('%B %Y')))
+        managers = self.env.ref('maintenance_charges.group_maintenance_payment_manager').all_user_ids
+        if managers:
+            self.env['mail.thread'].sudo().message_notify(
+                partner_ids=managers.partner_id.ids,
+                subject=_('Utility bills %s', month.strftime('%b %Y')),
+                body=Markup('<p>%s</p><ul>%s</ul><p>%s</p>') % (
+                    _('Monthly utility bills for %s (Draft):', month.strftime('%B %Y')),
+                    Markup('').join(Markup('<li>%s</li>') % r for r in report),
+                    _('Review them in Monthly Bills > Utility Bills, then Post and Print.')),
+            )
+        return report
 
     # ------------------------------------------------------------------ electricity readings from Excel
     # (column header, key). House No and Current Reading are required; an empty Meter No, Previous
