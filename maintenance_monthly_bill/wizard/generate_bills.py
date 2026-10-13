@@ -114,8 +114,9 @@ class MaintenanceBillGenerate(models.TransientModel):
     def _utility_rule_for(self, file_rec, rules=None):
         """(charge type, charge type line) of the house, from Maintenance Charges: same phase,
         sector (when the rule lists sectors), category, type (Plot / House / Shop) and the house
-        size in marla within From / To (3.5 marla counts as 3). When ranges overlap (1-3, 1-4,
-        1-5) the narrowest one wins, so a 3 marla house gets the 3 marla charge."""
+        size in marla within From / To (3.5 marla counts as 3). When ranges overlap, the one whose
+        From is closest to the size wins (4-5 and 5-9: a 5 marla house gets the 5-9 charge), then
+        the narrowest (1-3, 1-4, 1-5: a 3 marla house gets the 3 marla charge)."""
         rules = self._utility_rules() if rules is None else rules
         area = self._house_marla(file_rec)
         matching = rules.filtered(lambda l: (
@@ -124,7 +125,7 @@ class MaintenanceBillGenerate(models.TransientModel):
             and l.category_id == file_rec.category_id
             and (not l.unit_class_id or l.unit_class_id == file_rec.unit_class_id)
             and l.from_no <= area < l.to_no + 1))
-        for line in matching.sorted(lambda l: (l.to_no - l.from_no, -l.maintenance_charges_id.date_from.toordinal(), -l.id)):
+        for line in matching.sorted(lambda l: (-l.from_no, l.to_no - l.from_no, -l.maintenance_charges_id.date_from.toordinal(), -l.id)):
             charges = line.maintenance_charges_type_id.maintenance_charges_type_line_ids
             charge = charges.filtered(lambda c: c.product_id == self.utility_product_id)[:1] or charges[:1]
             if charge:
