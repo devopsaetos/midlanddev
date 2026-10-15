@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_petty_cash_request_list" model="ir.ui.view">
+        <field name="name">view.petty.cash.request.list</field>
+        <field name="model">petty.cash.request</field>
+        <field name="arch" type="xml">
+            <list string="Petty Cash" decoration-muted="state in ('cancel', 'reject')" decoration-info="state == 'request'">
+                <field name="name"/>
+                <field name="request_to" optional="show"/>
+                <field name="request_by" optional="show"/>
+                <field name="date"/>
+                <field name="payment_journal_id" optional="hide"/>
+                <field name="petty_journal_id" optional="show"/>
+                <field name="request_amount" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'approve'" decoration-info="state == 'request'" decoration-danger="state in ('cancel', 'reject')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_petty_cash_request_form" model="ir.ui.view">
+        <field name="name">view.petty.cash.request.form</field>
+        <field name="model">petty.cash.request</field>
+        <field name="arch" type="xml">
+            <form string="Petty Cash">
+                <header>
+                    <button name="action_request" string='Request Cash'
+                            type='object' class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" string='Approve Request'
+                            type='object' class="oe_highlight" invisible="state != 'request'"
+                            groups="dev_petty_cash.group_petty_manager"
+                            help="Pays the amount from the payment journal into the petty cash journal (Dr Petty Cash / Cr Bank)."/>
+
+                    <button name="action_draft" string='Set To Draft'
+                            type='object' invisible="state not in ('cancel', 'reject')"/>
+
+                    <button name="action_reject" string='Reject'
+                            type='object' invisible="state != 'request'" groups="dev_petty_cash.group_petty_manager"/>
+
+                    <button name="action_cancel" string='Cancel'
+                            type='object' invisible="state != 'request'"/>
+
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,request,approve"/>
+                </header>
+                <sheet>
+                    <h3>
+                        <field name="name" readonly="1"/>
+                    </h3>
+                    <group>
+                        <group>
+                            <field name="request_to" required='1' readonly="state!='draft'"/>
+                            <field name="request_by" required='1' readonly="state!='draft'"/>
+                            <field name="payment_journal_id" required='1' readonly="state!='draft'"/>
+                            <field name="petty_journal_id" required='1' readonly="state!='draft'"/>
+                        </group>
+                        <group>
+                            <field name="date" required='1' readonly="state!='draft'"/>
+                            <field name="request_amount" required='1' widget="monetary" readonly="state!='draft'"/>
+                            <field name="user_id" required='1' readonly="1"/>
+                            <field name="company_id" required='1' readonly="state!='draft'"/>
+                            <field name="payment_id" readonly="1" invisible="not payment_id"/>
+                            <field name="balance" invisible="1" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="note" placeholder="Description......" readonly="state not in ['draft']"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                 <chatter/>
+            </form>
+        </field>
+    </record>
+
+
+<record id="dev_petty_cash_request_filter" model="ir.ui.view">
+        <field name="name">petty.cash.request.filter</field>
+        <field name="model">petty.cash.request</field>
+        <field name="arch" type="xml">
+            <search string="Petty Cash Request">
+                <field name="name" string="Petty Cash Request"/>
+                <field name="request_by"/>
+                <field name="request_to"/>
+                <field name="petty_journal_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Requested" name="request" domain="[('state', '=', 'request')]"/>
+                <filter string="Approved" name="approve" domain="[('state', '=', 'approve')]"/>
+                <filter string="Rejected / Cancelled" name="cancel" domain="[('state', 'in', ('cancel', 'reject'))]"/>
+                <separator/>
+                <filter string="Date" name="filter_date" date="date"/>
+                <group>
+                    <filter name="group_request_by" string="Request By" context="{'group_by': 'request_by'}"/>
+                    <filter name="group_request_to" string="Request To" context="{'group_by': 'request_to'}"/>
+                    <filter name="group_payment_journal_id" string="Payment Journal" context="{'group_by': 'payment_journal_id'}"/>
+                    <filter name="group_petty_journal_id" string="Petty Cash Journal" context="{'group_by': 'petty_journal_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Month" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_company_id" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_petty_cash_request_pivot" model="ir.ui.view">
+        <field name="name">petty.cash.request.pivot</field>
+        <field name="model">petty.cash.request</field>
+        <field name="arch" type="xml">
+            <pivot string="Petty Cash Request" sample="1">
+                <field name="request_by" type="row"/>
+                <field name="state" type="col"/>
+                <field name="request_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_petty_cash_request_graph" model="ir.ui.view">
+        <field name="name">petty.cash.request.graph</field>
+        <field name="model">petty.cash.request</field>
+        <field name="arch" type="xml">
+            <graph string="Petty Cash Request" type="bar" sample="1">
+                <field name="date" interval="month"/>
+                <field name="request_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+
+    <record id="action_petty_cash_request" model="ir.actions.act_window">
+        <field name="name">Petty Cash Request</field>
+        <field name="res_model">petty.cash.request</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add Petty Cash Request
+            </p>
+        </field>
+    </record>
+
+
+    <!--Menus-->
+
+    <menuitem name="Petty Cash" id="dev_petty_cash_menu"
+              sequence="5" groups="dev_petty_cash.group_petty_user" web_icon="dev_petty_cash,static/description/icon.png"/>
+
+    <menuitem name="Petty Cash Request" id="dev_petty_cash_request_menu"
+              parent='dev_petty_cash_menu'
+              action="action_petty_cash_request" sequence="2" groups="dev_petty_cash.group_petty_user"/>
+
+</odoo>

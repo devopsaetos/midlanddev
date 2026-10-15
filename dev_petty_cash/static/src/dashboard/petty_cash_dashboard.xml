@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dev_petty_cash.PettyCashDashboard">
+        <div class="o_pc_dashboard h-100 overflow-auto">
+            <div t-if="state.loading" class="text-center text-muted py-5">Loading...</div>
+            <t t-else="">
+                <t t-set="kpi" t-value="data.kpi"/>
+
+                <!-- Toolbar -->
+                <div class="o_pc_toolbar d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom bg-white">
+                    <h4 class="mb-0 me-3">Petty Cash Dashboard</h4>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <t t-foreach="periods" t-as="p" t-key="p[0]">
+                            <button t-attf-class="btn {{state.period === p[0] ? 'btn-primary' : 'btn-outline-secondary'}} o_pc_period"
+                                    t-att-data-period="p[0]" t-on-click="() => this.setPeriod(p[0])">
+                                <t t-esc="p[1]"/>
+                            </button>
+                        </t>
+                    </div>
+                    <select class="form-select form-select-sm w-auto o_pc_journal_filter" t-on-change="onJournalChange">
+                        <option value="">All Petty Cash Funds</option>
+                        <t t-foreach="data.journals" t-as="j" t-key="j.id">
+                            <option t-att-value="j.id" t-att-selected="state.journalId === j.id"><t t-esc="j.name"/></option>
+                        </t>
+                    </select>
+                    <span class="flex-grow-1"/>
+                    <button class="btn btn-sm btn-primary o_pc_new_request" t-on-click="() => this.newDocument('petty.cash.request')">
+                        <i class="fa fa-plus me-1"/>Request Cash
+                    </button>
+                    <button class="btn btn-sm btn-secondary o_pc_new_expense" t-on-click="() => this.newDocument('petty.cash.expense')">
+                        <i class="fa fa-plus me-1"/>Record Expense
+                    </button>
+                    <button class="btn btn-sm btn-secondary o_pc_reports" t-on-click="() => this.openReport()">
+                        <i class="fa fa-print me-1"/>Reports
+                    </button>
+                    <button class="btn btn-sm btn-light" title="Refresh" t-on-click="() => this.load()"><i class="fa fa-refresh"/></button>
+                </div>
+
+                <!-- KPI cards -->
+                <div class="o_pc_kpis d-flex flex-wrap gap-3 p-3">
+                    <div class="o_pc_kpi o_pc_kpi_funded" t-on-click="() => this.openList('petty.cash.request', 'Approved Requests', [['state', '=', 'approve']])">
+                        <i class="fa fa-arrow-circle-down o_pc_kpi_icon"/>
+                        <div class="o_pc_kpi_label">Funded</div>
+                        <div class="o_pc_kpi_value" data-kpi="funded"><t t-esc="fmt(kpi.funded)"/></div>
+                        <div class="o_pc_kpi_sub"><t t-esc="kpi.funded_count"/> approved request(s)</div>
+                    </div>
+                    <div class="o_pc_kpi o_pc_kpi_spent" t-on-click="() => this.openList('petty.cash.expense', 'Posted Expenses', [['state', 'in', ['payment', 'done']]])">
+                        <i class="fa fa-arrow-circle-up o_pc_kpi_icon"/>
+                        <div class="o_pc_kpi_label">Spent</div>
+                        <div class="o_pc_kpi_value" data-kpi="spent"><t t-esc="fmt(kpi.spent)"/></div>
+                        <div class="o_pc_kpi_sub"><t t-esc="kpi.spent_count"/> posted expense(s)</div>
+                    </div>
+                    <div class="o_pc_kpi o_pc_kpi_hand">
+                        <i class="fa fa-money o_pc_kpi_icon"/>
+                        <div class="o_pc_kpi_label">Cash in Hand</div>
+                        <div class="o_pc_kpi_value" data-kpi="in_hand"><t t-esc="fmt(kpi.in_hand)"/></div>
+                        <div class="o_pc_kpi_sub">Available after confirmed: <t t-esc="fmt(kpi.available)"/></div>
+                    </div>
+                    <div class="o_pc_kpi o_pc_kpi_pending" t-on-click="() => this.openList('petty.cash.request', 'Requests Awaiting Approval', [['state', '=', 'request']])">
+                        <i class="fa fa-hourglass-half o_pc_kpi_icon"/>
+                        <div class="o_pc_kpi_label">Awaiting Approval</div>
+                        <div class="o_pc_kpi_value" data-kpi="pending_requests"><t t-esc="fmt(kpi.pending_requests)"/></div>
+                        <div class="o_pc_kpi_sub"><t t-esc="kpi.pending_request_count"/> request(s), <t t-esc="kpi.draft_request_count"/> draft</div>
+                    </div>
+                    <div class="o_pc_kpi o_pc_kpi_expense" t-on-click="() => this.openList('petty.cash.expense', 'Open Expenses', [['state', 'in', ['draft', 'confirm']]])">
+                        <i class="fa fa-file-text-o o_pc_kpi_icon"/>
+                        <div class="o_pc_kpi_label">Open Expenses</div>
+                        <div class="o_pc_kpi_value" data-kpi="pending_expenses"><t t-esc="fmt(kpi.pending_expenses)"/></div>
+                        <div class="o_pc_kpi_sub"><t t-esc="kpi.pending_expense_count"/> draft / confirmed</div>
+                    </div>
+                    <div class="o_pc_kpi o_pc_kpi_util d-flex align-items-center gap-3">
+                        <div class="o_pc_ring" t-att-style="utilisationStyle">
+                            <span data-kpi="utilisation"><t t-esc="kpi.utilisation"/>%</span>
+                        </div>
+                        <div>
+                            <div class="o_pc_kpi_label">Utilisation</div>
+                            <div class="o_pc_kpi_sub">Spent / funded in the period</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="o_pc_row d-flex flex-wrap gap-3 px-3 pb-3">
+                    <div class="o_pc_card flex-grow-1 o_pc_card_wide">
+                        <div class="o_pc_card_title">Funded vs Spent - last 12 months</div>
+                        <div class="o_pc_legend small mb-2">
+                            <span class="o_pc_dot o_pc_bg_funded"/> Funded
+                            <span class="o_pc_dot o_pc_bg_spent ms-3"/> Spent
+                        </div>
+                        <div class="o_pc_month_chart d-flex align-items-end gap-1">
+                            <t t-foreach="data.monthly" t-as="m" t-key="m.key">
+                                <div class="o_pc_month d-flex flex-column align-items-center flex-grow-1">
+                                    <div class="o_pc_month_bars d-flex align-items-end gap-1">
+                                        <div class="o_pc_vbar o_pc_bg_funded" t-att-style="'height:' + (m.funded ? pct(m.funded, monthlyMax) : 0) + '%'"
+                                             t-att-title="'Funded ' + fmt(m.funded)"/>
+                                        <div class="o_pc_vbar o_pc_bg_spent" t-att-style="'height:' + (m.spent ? pct(m.spent, monthlyMax) : 0) + '%'"
+                                             t-att-title="'Spent ' + fmt(m.spent)"/>
+                                    </div>
+                                    <div class="o_pc_month_label"><t t-esc="m.label"/></div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="o_pc_card flex-grow-1">
+                        <div class="o_pc_card_title">Top Expense Heads</div>
+                        <div t-if="!data.heads.length" class="text-muted small py-4 text-center">No posted expenses in this period.</div>
+                        <t t-foreach="data.heads" t-as="h" t-key="h.id">
+                            <div class="o_pc_hbar_row">
+                                <div class="d-flex justify-content-between small">
+                                    <span t-esc="h.name"/><span class="fw-bold" t-esc="fmt(h.amount)"/>
+                                </div>
+                                <div class="o_pc_hbar_track"><div class="o_pc_hbar o_pc_bg_spent" t-att-style="'width:' + pct(h.amount, headsMax) + '%'"/></div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Funds + employees -->
+                <div class="o_pc_row d-flex flex-wrap gap-3 px-3 pb-3">
+                    <div class="o_pc_card flex-grow-1 o_pc_card_wide">
+                        <div class="o_pc_card_title">Petty Cash Funds</div>
+                        <div t-if="!data.journals.length" class="text-muted small py-3">
+                            No petty cash journal yet. Tick "Is Petty Cash" on a cash journal (Accounting &gt; Configuration &gt; Journals).
+                        </div>
+                        <table t-else="" class="table table-sm table-hover mb-0 o_pc_funds">
+                            <thead>
+                                <tr>
+                                    <th>Fund</th><th class="text-end">Funded</th><th class="text-end">Spent</th>
+                                    <th class="text-end">Balance</th>
+                                    <th t-if="data.journals[0].ledger !== null" class="text-end">Ledger Balance</th>
+                                    <th class="text-center">Open Exp.</th><th/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="data.journals" t-as="j" t-key="j.id">
+                                    <td><div class="fw-bold" t-esc="j.name"/><div class="small text-muted" t-esc="j.account"/></td>
+                                    <td class="text-end" t-esc="fmt(j.funded)"/>
+                                    <td class="text-end" t-esc="fmt(j.spent)"/>
+                                    <td t-attf-class="text-end fw-bold {{j.balance &lt; 0 ? 'text-danger' : ''}}" t-esc="fmt(j.balance)"/>
+                                    <td t-if="j.ledger !== null" class="text-end">
+                                        <a href="#" t-on-click.prevent="() => this.openJournalEntries(j.id)" t-esc="fmt(j.ledger)"/>
+                                    </td>
+                                    <td class="text-center"><span class="badge text-bg-light" t-esc="j.pending_count"/></td>
+                                    <td class="text-end text-nowrap">
+                                        <button class="btn btn-link btn-sm p-0 me-2" t-on-click="() => this.newDocument('petty.cash.request', j.id)">Request</button>
+                                        <button class="btn btn-link btn-sm p-0" t-on-click="() => this.newDocument('petty.cash.expense', j.id)">Expense</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="o_pc_card flex-grow-1">
+                        <div class="o_pc_card_title">Employee Balances</div>
+                        <div t-if="!data.employees.length" class="text-muted small py-4 text-center">No approved requests yet.</div>
+                        <t t-foreach="data.employees" t-as="e" t-key="e.id">
+                            <div class="o_pc_hbar_row o_pc_employee">
+                                <div class="d-flex justify-content-between small">
+                                    <span class="fw-bold" t-esc="e.name"/>
+                                    <span>Balance <b t-attf-class="{{e.balance &lt; 0 ? 'text-danger' : ''}}" t-esc="fmt(e.balance)"/></span>
+                                </div>
+                                <div class="o_pc_hbar_track" t-att-title="'Funded ' + fmt(e.funded) + ' / Spent ' + fmt(e.spent)">
+                                    <div class="o_pc_hbar o_pc_bg_funded" t-att-style="'width:' + pct(e.funded, employeesMax) + '%'">
+                                        <div class="o_pc_hbar o_pc_bg_spent" t-att-style="'width:' + spentShare(e) + '%'"/>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Spent <t t-esc="fmt(e.spent)"/></span><span>Funded <t t-esc="fmt(e.funded)"/></span>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Approvals + recent -->
+                <div class="o_pc_row d-flex flex-wrap gap-3 px-3 pb-3">
+                    <div class="o_pc_card flex-grow-1">
+                        <div class="o_pc_card_title">Requests Awaiting Approval</div>
+                        <div t-if="!data.to_approve.length" class="text-muted small py-3 text-center">Nothing waiting for approval.</div>
+                        <table t-else="" class="table table-sm table-hover mb-0 o_pc_to_approve">
+                            <tbody>
+                                <tr t-foreach="data.to_approve" t-as="r" t-key="r.id">
+                                    <td><a href="#" t-on-click.prevent="() => this.openRecord('petty.cash.request', r.id)" t-esc="r.name"/></td>
+                                    <td t-esc="r.employee"/>
+                                    <td class="small text-muted" t-esc="r.journal"/>
+                                    <td class="text-end fw-bold" t-esc="fmt(r.amount)"/>
+                                    <td class="text-end">
+                                        <button t-if="data.is_manager" class="btn btn-sm btn-success o_pc_approve" t-on-click="() => this.approve(r)">Approve</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="o_pc_card flex-grow-1 o_pc_card_wide">
+                        <div class="o_pc_card_title">Recent Activity</div>
+                        <div t-if="!data.recent.length" class="text-muted small py-3 text-center">No petty cash documents yet.</div>
+                        <table t-else="" class="table table-sm table-hover mb-0 o_pc_recent">
+                            <tbody>
+                                <tr t-foreach="data.recent" t-as="r" t-key="r.model + r.id" class="o_pc_clickable"
+                                    t-on-click="() => this.openRecord(r.model, r.id)">
+                                    <td class="small text-muted" t-esc="r.date"/>
+                                    <td><i t-attf-class="fa {{r.model === 'petty.cash.request' ? 'fa-arrow-down text-success' : 'fa-arrow-up text-danger'}} me-1"/><t t-esc="r.name"/></td>
+                                    <td t-esc="r.type"/>
+                                    <td t-esc="r.employee"/>
+                                    <td class="text-end" t-esc="fmt(r.amount)"/>
+                                    <td class="text-end"><span t-attf-class="badge {{stateBadge[r.state] || 'text-bg-light'}}" t-esc="r.state_label"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

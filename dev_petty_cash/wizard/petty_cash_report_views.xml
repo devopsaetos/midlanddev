@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="petty_cash_report_form" model="ir.ui.view">
+        <field name="name">petty.cash.report.form</field>
+        <field name="model">petty.cash.report</field>
+        <field name="arch" type="xml">
+            <form string="Petty Cash Report">
+                <group>
+                    <group string="Period">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    <group string="Filters">
+                        <field name="journal_ids" widget="many2many_tags" options="{'no_create': True}" placeholder="All funds"/>
+                        <field name="employee_ids" widget="many2many_tags" options="{'no_create': True}" placeholder="All employees"/>
+                        <field name="include_confirmed"/>
+                    </group>
+                </group>
+                <group>
+                    <group string="Report">
+                        <field name="report_type" widget="radio"/>
+                        <field name="group_by" invisible="report_type not in ('full', 'detail')"/>
+                    </group>
+                    <group string="Contents">
+                        <div colspan="2" class="text-muted">
+                            <p><b>Summary</b>: opening / funded / spent / closing per fund and per employee,
+                                spending by expense head and by account.</p>
+                            <p><b>Cash Book</b>: one statement per fund - opening balance, every funding and
+                                expense in date order with a running balance, closing balance.</p>
+                            <p class="mb-0"><b>Expense Detail</b>: every expense line (head, description,
+                                account, analytic) with subtotals per group.</p>
+                        </div>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_pdf" string="Print PDF" type="object" class="btn-primary" icon="fa-file-pdf-o" data-hotkey="q"/>
+                    <button name="action_export_xlsx" string="Export Excel" type="object" class="btn-primary" icon="fa-file-excel-o" data-hotkey="w"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_petty_cash_report" model="ir.actions.act_window">
+        <field name="name">Petty Cash Report</field>
+        <field name="res_model">petty.cash.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem name="Reporting" id="dev_petty_cash_reporting_menu"
+              parent="dev_petty_cash_menu" sequence="20" groups="dev_petty_cash.group_petty_user"/>
+    <menuitem name="Petty Cash Report" id="dev_petty_cash_report_menu"
+              parent="dev_petty_cash_reporting_menu" action="action_petty_cash_report"
+              sequence="1" groups="dev_petty_cash.group_petty_user"/>
+</odoo>

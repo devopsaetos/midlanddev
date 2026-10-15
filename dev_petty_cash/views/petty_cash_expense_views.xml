@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_petty_cash_expense_list" model="ir.ui.view">
+        <field name="name">view.petty.cash.expense.list</field>
+        <field name="model">petty.cash.expense</field>
+        <field name="arch" type="xml">
+            <list string="Petty Cash Expense" decoration-muted="state == 'cancel'" decoration-info="state in ('draft', 'confirm')">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="petty_journal_id" optional="show"/>
+                <field name="company_id" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="expense_amount" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state in ('draft', 'confirm')" decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_petty_cash_expense_form" model="ir.ui.view">
+        <field name="name">view.petty.cash.expense.form</field>
+        <field name="model">petty.cash.expense</field>
+        <field name="arch" type="xml">
+            <form string="Petty Cash Expense">
+                <header>
+                    <button name="action_cofirm" string='Confirm'
+                            type='object' class="oe_highlight"
+                            invisible="state!='draft'"/>
+
+                    <button name="action_post_expense" string='Post Expense'
+                            type='object' class="oe_highlight" invisible="state != 'confirm'"
+                            groups="dev_petty_cash.group_petty_manager"
+                            help="Posts Dr expense accounts / Cr petty cash in the petty cash journal."/>
+
+                    <button name="action_draft" string='Set To Draft'
+                            type='object' invisible="state not in ['cancel','confirm']"/>
+
+                    <button name="action_cancel" string='Cancel'
+                            type='object' invisible="state not in ['confirm','payment','done']"
+                            confirm="Cancelling a posted expense cancels its journal entry. Continue?"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_move"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-book"
+                                invisible="not move_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Journal Entry</span>
+                            </div>
+                        </button>
+                        <button name="action_view_payment"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                invisible="payment_count==0">
+                            <field name="payment_count" widget="statinfo" string="Payments"/>
+                        </button>
+                    </div>
+                    <h3>
+                        <field name="name" readonly="1"/>
+                    </h3>
+                    <group>
+                        <group>
+                            <field name="employee_id" required='1' readonly="state!='draft'"/>
+                            <field name="petty_journal_id" required='1' readonly="state!='draft'"/>
+                            <field name="payment_journal_id" invisible="1"/>
+                            <field name="move_id" invisible="not move_id"/>
+                        </group>
+                        <group>
+                            <field name="date" required='1' readonly="state!='draft'"/>
+                            <field name="currency_id" invisible='1'/>
+                            <field name="user_id" required='1' readonly="1"/>
+                            <field name="company_id" required='1' readonly="state!='draft'"/>
+                            <field name="payment_ids" widget="many2many_tags" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string='Expense Lines'>
+                            <field name="expense_lines" context="{'default_currency_id':currency_id}">
+                                <list editable="bottom">
+                                    <field name="product_id" required="1"/>
+                                    <field name='account_id' required="1"/>
+                                    <field name="analytic_account_id"/>
+                                    <field name="name" optional="show"/>
+                                    <field name="amount" widget="monetary" required="1" sum="Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="product_id"/>
+                                            <field name='account_id'/>
+                                        </group>
+                                        <group>
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="analytic_account_id"/>
+                                            <field name='amount' widget="monetary"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                            <group name="note_group" col="6" class="mt-2 mt-md-0">
+                                <group colspan="4">
+                                    <field name="note" colspan="2" nolabel="1" placeholder="Terms and conditions..."/>
+                                </group>
+                                <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                                    <field name="balance" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="expense_amount" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                        <label for="remaining_balance"/>
+                                    </div>
+                                    <field name="remaining_balance" nolabel="1" class="oe_subtotal_footer_separator"
+                                           widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <div class="oe_clear"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+
+<record id="dev_petty_cash_expense_filter" model="ir.ui.view">
+        <field name="name">petty.cash.expense.filter</field>
+        <field name="model">petty.cash.expense</field>
+        <field name="arch" type="xml">
+            <search string="Petty Cash Expense">
+                <field name="name" string="Petty Cash Expense"/>
+                <field name="employee_id"/>
+                <field name="petty_journal_id"/>
+                <field name="expense_lines" string="Particulars" filter_domain="[('expense_lines.product_id', 'ilike', self)]"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirm" domain="[('state', '=', 'confirm')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Cancelled" name="cancel" domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Date" name="filter_date" date="date"/>
+                <group>
+                    <filter name="group_employee_id" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_petty_journal_id" string="Petty Cash Journal" context="{'group_by': 'petty_journal_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Month" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_company_id" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_petty_cash_expense_pivot" model="ir.ui.view">
+        <field name="name">petty.cash.expense.pivot</field>
+        <field name="model">petty.cash.expense</field>
+        <field name="arch" type="xml">
+            <pivot string="Petty Cash Expense" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="expense_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_petty_cash_expense_graph" model="ir.ui.view">
+        <field name="name">petty.cash.expense.graph</field>
+        <field name="model">petty.cash.expense</field>
+        <field name="arch" type="xml">
+            <graph string="Petty Cash Expense" type="bar" sample="1">
+                <field name="date" interval="month"/>
+                <field name="expense_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+
+    <record id="action_petty_cash_expense" model="ir.actions.act_window">
+        <field name="name">Petty Cash Expense</field>
+        <field name="res_model">petty.cash.expense</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add Petty Cash Expense
+            </p>
+        </field>
+    </record>
+
+
+    <!--Menus-->
+
+    <menuitem name="Petty Cash Expense" id="dev_petty_cash_expense_menu"
+              parent='dev_petty_cash_menu'
+              action="action_petty_cash_expense" sequence="3" groups="dev_petty_cash.group_petty_user"/>
+
+</odoo>

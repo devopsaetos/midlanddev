@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- own header (~24 mm) and footer: the company's external layout has a tall address
+         block that overlapped the report body -->
+    <record id="paperformat_petty_cash_landscape" model="report.paperformat">
+        <field name="name">Petty Cash Report (A4 Landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">32</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">27</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_petty_cash_summary" model="ir.actions.report">
+        <field name="name">Petty Cash Report</field>
+        <field name="model">petty.cash.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dev_petty_cash.report_petty_cash_summary</field>
+        <field name="report_file">dev_petty_cash.report_petty_cash_summary</field>
+        <field name="print_report_name">'Petty Cash Report %s - %s' % (object.date_from, object.date_to)</field>
+        <field name="paperformat_id" ref="paperformat_petty_cash_landscape"/>
+    </record>
+
+    <template id="report_petty_cash_layout">
+        <!-- header / footer are rendered by wkhtmltopdf as separate pages: styles inline -->
+        <div class="header" style="font-family: Arial, Helvetica, sans-serif; color: #333;">
+            <table class="table-borderless" style="width: 100%; border-collapse: collapse; border: none; border-bottom: 3px solid #1F4E79;">
+                <tr style="border: none;">
+                    <td style="border: none; width: 70px; vertical-align: middle; padding: 0 10px 6px 0;">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 55px; max-width: 70px;" alt="Logo"/>
+                    </td>
+                    <td style="border: none; vertical-align: middle; padding-bottom: 6px;">
+                        <div style="font-size: 17px; font-weight: bold; color: #1F4E79;" t-out="company.name"/>
+                        <div style="font-size: 10px; color: #666;" t-out="d['company_address']"/>
+                        <div style="font-size: 10px; color: #666;" t-if="company.vat">NTN / Tax ID: <t t-out="company.vat"/></div>
+                    </td>
+                    <td style="border: none; text-align: right; vertical-align: middle; padding-bottom: 6px;">
+                        <div style="font-size: 19px; font-weight: bold; color: #1F4E79; letter-spacing: 1px;">PETTY CASH REPORT</div>
+                        <div style="font-size: 11px;">Period: <b t-out="d['date_from']"/> to <b t-out="d['date_to']"/></div>
+                        <div style="font-size: 10px; color: #666;"><t t-out="d['funds_label']"/>  |  <t t-out="d['employees_label']"/></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="article" t-att-data-oe-model="wiz._name" t-att-data-oe-id="wiz.id" t-att-data-oe-lang="wiz.env.context.get('lang')">
+            <t t-out="0"/>
+        </div>
+
+        <div class="footer" style="font-family: Arial, Helvetica, sans-serif; font-size: 9.5px; color: #666;">
+            <table class="table-borderless" style="width: 100%; border-collapse: collapse; border: none; border-top: 1px solid #1F4E79;">
+                <tr style="border: none;">
+                    <td style="border: none; width: 33%; padding-top: 4px;">Printed by <t t-out="d['printed_by']"/> on <t t-out="d['printed_at']"/></td>
+                    <td style="border: none; width: 34%; padding-top: 4px; text-align: center;" t-out="d['company_contact']"/>
+                    <td style="border: none; width: 33%; padding-top: 4px; text-align: right;">Page <span class="page"/> of <span class="topage"/></td>
+                </tr>
+                <tr style="border: none;">
+                    <td colspan="3" style="border: none; text-align: center; font-size: 8.5px; color: #999; padding-top: 1px;">
+                        System generated report - <t t-out="d['spent_label']"/> count as spent; amounts in <t t-out="d['currency'].name"/>.
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <template id="report_petty_cash_summary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wiz">
+                <t t-set="d" t-value="report_data[wiz.id]"/>
+                <t t-set="company" t-value="d['company']"/>
+                <t t-set="m" t-value="{'widget': 'monetary', 'display_currency': d['currency']}"/>
+                <t t-call="dev_petty_cash.report_petty_cash_layout">
+                    <div class="page o_pc_report">
+                        <style>
+                            .o_pc_report { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #222; }
+                            .o_pc_report .o_pc_h { font-size: 14px; font-weight: bold; color: #1F4E79; border-bottom: 2px solid #1F4E79;
+                                                   padding-bottom: 3px; margin: 14px 0 6px 0; }
+                            .o_pc_report .o_pc_h small { font-size: 11px; font-weight: normal; color: #777; }
+                            .o_pc_report table.o_pc_t { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+                            .o_pc_report table.o_pc_t th { background: #1F4E79; color: #fff; padding: 5px 6px; border: 1px solid #1F4E79;
+                                                           text-align: left; font-weight: bold; }
+                            .o_pc_report table.o_pc_t td { padding: 4px 6px; border: 1px solid #d9d9d9; vertical-align: top; }
+                            .o_pc_report table.o_pc_t tbody tr:nth-child(even) td { background: #f7f9fc; }
+                            .o_pc_report table.o_pc_t tr.o_pc_total td { font-weight: bold; background: #e7edf5; border-top: 2px solid #1F4E79; }
+                            .o_pc_report table.o_pc_t tr.o_pc_open td { font-style: italic; background: #fff6d9; }
+                            .o_pc_report table.o_pc_t tr.o_pc_group td { font-weight: bold; background: #ddebf7; color: #1F4E79; }
+                            .o_pc_report table.o_pc_t tr { page-break-inside: avoid; }
+                            .o_pc_report thead { display: table-header-group; }
+                            .o_pc_report .o_pc_r { text-align: right !important; white-space: nowrap; }
+                            .o_pc_report .o_pc_c { text-align: center !important; }
+                            .o_pc_report .o_pc_neg { color: #c00000; }
+                            .o_pc_report .o_pc_muted { color: #777; }
+                            .o_pc_report table.o_pc_layout { width: 100%; border-collapse: collapse; }
+                            .o_pc_report table.o_pc_layout, .o_pc_report table.o_pc_layout > tbody, .o_pc_report table.o_pc_layout > tbody > tr,
+                            .o_pc_report table.o_pc_layout > tbody > tr > td { border: 0 none !important; background: transparent !important; }
+                            .o_pc_report table.o_pc_layout > tbody > tr > td { vertical-align: top; padding: 0; }
+                            .o_pc_report .o_pc_kpi { border: 1px solid #d9d9d9; border-top: 4px solid #1F4E79; padding: 7px 10px; background: #fafbfd; }
+                            .o_pc_report .o_pc_kpi .o_pc_kpi_l { font-size: 10px; text-transform: uppercase; color: #777; letter-spacing: .5px; }
+                            .o_pc_report .o_pc_kpi .o_pc_kpi_v { font-size: 16px; font-weight: bold; margin-top: 2px; }
+                            .o_pc_report .o_pc_bar_bg { background: #e9eef5; height: 9px; width: 70%; display: inline-block; vertical-align: middle; }
+                            .o_pc_report .o_pc_bar { background: #5b9bd5; height: 9px; display: block; }
+                        </style>
+
+                        <!-- ═════════ Summary ═════════ -->
+                        <t t-if="d['show']['summary']">
+                            <div class="o_pc_h" style="margin-top: 0;">Summary</div>
+                            <table class="table-borderless o_pc_layout"><tbody><tr>
+                                <t t-foreach="[('Opening Balance', 'opening', '#7f7f7f'), ('Funded', 'funded', '#2e7d32'), ('Spent', 'spent', '#c62828'), ('Closing Balance', 'closing', '#1F4E79')]" t-as="k">
+                                    <td t-attf-style="width: 25%; padding-right: {{'0' if k_last else '8px'}};">
+                                        <div class="o_pc_kpi" t-attf-style="border-top-color: {{k[2]}};">
+                                            <div class="o_pc_kpi_l" t-out="k[0]"/>
+                                            <div t-attf-class="o_pc_kpi_v {{'o_pc_neg' if d['kpi'][k[1]] &lt; 0 else ''}}" t-out="d['kpi'][k[1]]" t-options="m"/>
+                                        </div>
+                                    </td>
+                                </t>
+                            </tr></tbody></table>
+                            <div class="o_pc_muted" style="margin-top: 4px;"><t t-out="d['kpi']['request_count']"/> funding request(s) and
+                                <t t-out="d['kpi']['expense_count']"/> expense(s) in the period.</div>
+
+                            <div class="o_pc_h">By Petty Cash Fund</div>
+                            <table class="o_pc_t">
+                                <thead><tr>
+                                    <th>Fund</th><th>Account</th>
+                                    <th class="o_pc_r">Opening</th><th class="o_pc_r">Funded</th>
+                                    <th class="o_pc_r">Spent</th><th class="o_pc_r">Closing</th>
+                                </tr></thead>
+                                <tbody>
+                                    <tr t-foreach="d['cashbook']" t-as="f">
+                                        <td t-out="f['fund']"/><td t-out="f['account']"/>
+                                        <td class="o_pc_r" t-out="f['opening']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="f['received']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="f['paid']" t-options="m"/>
+                                        <td t-attf-class="o_pc_r {{'o_pc_neg' if f['closing'] &lt; 0 else ''}}" t-out="f['closing']" t-options="m"/>
+                                    </tr>
+                                    <tr t-if="not d['cashbook']"><td colspan="6" class="o_pc_muted">No data.</td></tr>
+                                    <tr class="o_pc_total">
+                                        <td colspan="2">Total</td>
+                                        <td class="o_pc_r" t-out="d['kpi']['opening']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="d['kpi']['funded']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="d['kpi']['spent']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="d['kpi']['closing']" t-options="m"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="o_pc_h">By Employee</div>
+                            <table class="o_pc_t">
+                                <thead><tr>
+                                    <th>Employee</th><th class="o_pc_c">Expenses</th>
+                                    <th class="o_pc_r">Opening</th><th class="o_pc_r">Funded</th>
+                                    <th class="o_pc_r">Spent</th><th class="o_pc_r">Closing</th>
+                                </tr></thead>
+                                <tbody>
+                                    <tr t-foreach="d['employees']" t-as="e">
+                                        <td t-out="e['name']"/>
+                                        <td class="o_pc_c" t-out="e['count']"/>
+                                        <td class="o_pc_r" t-out="e['opening']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="e['funded']" t-options="m"/>
+                                        <td class="o_pc_r" t-out="e['spent']" t-options="m"/>
+                                        <td t-attf-class="o_pc_r {{'o_pc_neg' if e['closing'] &lt; 0 else ''}}" t-out="e['closing']" t-options="m"/>
+                                    </tr>
+                                    <tr t-if="not d['employees']"><td colspan="6" class="o_pc_muted">No data.</td></tr>
+                                    <tr t-if="d['employees']" class="o_pc_total">
+                                        <td>Total</td>
+                                        <td class="o_pc_c" t-out="sum(e['count'] for e in d['employees'])"/>
+                                        <td class="o_pc_r" t-out="sum(e['opening'] for e in d['employees'])" t-options="m"/>
+                                        <td class="o_pc_r" t-out="sum(e['funded'] for e in d['employees'])" t-options="m"/>
+                                        <td class="o_pc_r" t-out="sum(e['spent'] for e in d['employees'])" t-options="m"/>
+                                        <td class="o_pc_r" t-out="sum(e['closing'] for e in d['employees'])" t-options="m"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="table-borderless o_pc_layout" style="page-break-inside: avoid;"><tbody><tr>
+                                <t t-foreach="[('By Expense Head', 'Expense Head', d['heads']), ('By Account', 'Account', d['accounts'])]" t-as="sec">
+                                    <td t-attf-style="width: 50%; padding-{{'right' if sec_first else 'left'}}: 8px;">
+                                        <div class="o_pc_h" t-out="sec[0]"/>
+                                        <table class="o_pc_t">
+                                            <thead><tr>
+                                                <th t-out="sec[1]"/><th class="o_pc_c" style="width: 9%;">Lines</th>
+                                                <th class="o_pc_r" style="width: 22%;">Amount</th><th style="width: 26%;">% of Spent</th>
+                                            </tr></thead>
+                                            <tbody>
+                                                <tr t-foreach="sec[2]" t-as="h">
+                                                    <td t-out="h['name']"/>
+                                                    <td class="o_pc_c" t-out="h['count']"/>
+                                                    <td class="o_pc_r" t-out="h['amount']" t-options="m"/>
+                                                    <td style="border: none; white-space: nowrap;">
+                                                        <span class="o_pc_bar_bg"><span class="o_pc_bar" t-attf-style="width: {{max(min(int(h['pct']), 100), 1)}}%;"/></span>
+                                                        <span t-out="'%.1f' % h['pct']"/> %
+                                                    </td>
+                                                </tr>
+                                                <tr t-if="not sec[2]"><td colspan="4" class="o_pc_muted">No expenses.</td></tr>
+                                                <tr class="o_pc_total">
+                                                    <td>Total</td>
+                                                    <td class="o_pc_c" t-out="sum(h['count'] for h in sec[2])"/>
+                                                    <td class="o_pc_r" t-out="d['detail_total']" t-options="m"/>
+                                                    <td/>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </t>
+                            </tr></tbody></table>
+                        </t>
+
+                        <!-- ═════════ Cash Book ═════════ -->
+                        <t t-if="d['show']['cashbook']">
+                            <div t-if="d['show']['summary']" style="page-break-before: always;"/>
+                            <div class="o_pc_h" style="margin-top: 0;">Cash Book</div>
+                            <p t-if="not d['cashbook']" class="o_pc_muted">No petty cash movements for these filters.</p>
+                            <t t-foreach="d['cashbook']" t-as="f">
+                                <div style="margin: 8px 0 4px 0;"><b style="font-size: 12.5px;" t-out="f['fund']"/>
+                                    <span class="o_pc_muted" t-if="f['account']"> - <t t-out="f['account']"/></span></div>
+                                <table class="o_pc_t">
+                                    <thead><tr>
+                                        <th style="width: 8%;">Date</th><th style="width: 10%;">Reference</th>
+                                        <th style="width: 7%;">Type</th><th style="width: 15%;">Employee</th>
+                                        <th>Description</th>
+                                        <th class="o_pc_r" style="width: 11%;">Received</th>
+                                        <th class="o_pc_r" style="width: 11%;">Paid</th>
+                                        <th class="o_pc_r" style="width: 12%;">Balance</th>
+                                    </tr></thead>
+                                    <tbody>
+                                        <tr class="o_pc_open">
+                                            <td colspan="7">Opening Balance</td>
+                                            <td class="o_pc_r" t-out="f['opening']" t-options="m"/>
+                                        </tr>
+                                        <tr t-foreach="f['rows']" t-as="r">
+                                            <td t-out="r['date']" t-options="{'widget': 'date'}"/>
+                                            <td t-out="r['ref']"/>
+                                            <td t-attf-style="color: {{'#2e7d32' if r['received'] else '#c62828'}};" t-out="r['type']"/>
+                                            <td t-out="r['employee']"/>
+                                            <td t-out="r['description']"/>
+                                            <td class="o_pc_r"><t t-if="r['received']" t-out="r['received']" t-options="m"/></td>
+                                            <td class="o_pc_r"><t t-if="r['paid']" t-out="r['paid']" t-options="m"/></td>
+                                            <td t-attf-class="o_pc_r {{'o_pc_neg' if r['balance'] &lt; 0 else ''}}" t-out="r['balance']" t-options="m"/>
+                                        </tr>
+                                        <tr class="o_pc_total">
+                                            <td colspan="5">Closing Balance</td>
+                                            <td class="o_pc_r" t-out="f['received']" t-options="m"/>
+                                            <td class="o_pc_r" t-out="f['paid']" t-options="m"/>
+                                            <td class="o_pc_r" t-out="f['closing']" t-options="m"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </t>
+
+                        <!-- ═════════ Expense Detail ═════════ -->
+                        <t t-if="d['show']['detail']">
+                            <div t-if="d['report_type'] == 'full'" style="page-break-before: always;"/>
+                            <div class="o_pc_h" style="margin-top: 0;">Expense Detail <small>(grouped by <t t-out="d['group_label']"/>)</small></div>
+                            <table class="o_pc_t">
+                                <thead><tr>
+                                    <th style="width: 8%;">Date</th><th style="width: 9%;">Expense</th>
+                                    <th style="width: 12%;">Employee</th><th style="width: 10%;">Fund</th>
+                                    <th style="width: 13%;">Expense Head</th><th>Description</th>
+                                    <th style="width: 15%;">Account</th><th style="width: 11%;">Analytic</th>
+                                    <th class="o_pc_r" style="width: 10%;">Amount</th>
+                                </tr></thead>
+                                <tbody>
+                                    <t t-foreach="d['detail']" t-as="g">
+                                        <tr class="o_pc_group">
+                                            <td colspan="8"><t t-out="g['name']"/> <span style="font-weight: normal;">(<t t-out="len(g['rows'])"/>)</span></td>
+                                            <td class="o_pc_r" t-out="g['amount']" t-options="m"/>
+                                        </tr>
+                                        <tr t-foreach="g['rows']" t-as="r">
+                                            <td t-out="r['date']" t-options="{'widget': 'date'}"/>
+                                            <td t-out="r['ref']"/>
+                                            <td t-out="r['employee']"/>
+                                            <td t-out="r['fund']"/>
+                                            <td t-out="r['product']"/>
+                                            <td t-out="r['description']"/>
+                                            <td t-out="r['account']"/>
+                                            <td t-out="r['analytic']"/>
+                                            <td class="o_pc_r" t-out="r['amount']" t-options="m"/>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="not d['detail']"><td colspan="9" class="o_pc_muted">No expenses for these filters.</td></tr>
+                                    <tr class="o_pc_total">
+                                        <td colspan="8">Total</td>
+                                        <td class="o_pc_r" t-out="d['detail_total']" t-options="m"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <table class="table-borderless o_pc_layout" style="margin-top: 55px; page-break-inside: avoid;"><tbody><tr>
+                            <t t-foreach="['Prepared By', 'Checked By', 'Approved By']" t-as="sign">
+                                <td style="border: none; width: 33%; text-align: center;">
+                                    <div style="border-top: 1px solid #333; margin: 0 45px; padding-top: 4px; font-weight: bold;" t-out="sign"/>
+                                    <div class="o_pc_muted" style="font-size: 10px;">Name / Signature / Date</div>
+                                </td>
+                            </t>
+                        </tr></tbody></table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

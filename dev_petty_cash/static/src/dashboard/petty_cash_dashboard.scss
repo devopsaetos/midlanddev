@@ -1,0 +1,161 @@
+$pc-funded: #21B799;
+$pc-spent: #E4685D;
+
+.o_pc_dashboard {
+    background-color: #f5f6fa;
+
+    .o_pc_bg_funded { background-color: $pc-funded; }
+    .o_pc_bg_spent { background-color: $pc-spent; }
+
+    .o_pc_dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        vertical-align: middle;
+    }
+
+    .o_pc_clickable { cursor: pointer; }
+
+    // ---- KPI cards --------------------------------------------------------
+
+    .o_pc_kpi {
+        flex: 1 1 200px;
+        min-width: 200px;
+        border-radius: 12px;
+        padding: 14px 18px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: box-shadow 0.15s ease-in-out;
+
+        &:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+
+        .o_pc_kpi_icon {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            font-size: 26px;
+            opacity: 0.5;
+        }
+        .o_pc_kpi_label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+        }
+        .o_pc_kpi_value {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+        .o_pc_kpi_sub {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    }
+
+    .o_pc_kpi_funded { background: linear-gradient(135deg, #21B799, #138A72); }
+    .o_pc_kpi_spent { background: linear-gradient(135deg, #E4685D, #BB4136); }
+    .o_pc_kpi_hand { background: linear-gradient(135deg, #5B7FB4, #3D5A8A); cursor: default; }
+    .o_pc_kpi_pending { background: linear-gradient(135deg, #F1A93C, #D6871B); }
+    .o_pc_kpi_expense { background: linear-gradient(135deg, #8E7CC3, #6B4FA3); }
+    .o_pc_kpi_util {
+        background: #fff;
+        color: #374151;
+        cursor: default;
+        border: 1px solid #e5e7eb;
+    }
+
+    .o_pc_ring {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        span {
+            position: relative;
+            font-weight: 700;
+            font-size: 13px;
+        }
+    }
+
+    // ---- cards ------------------------------------------------------------
+
+    .o_pc_card {
+        flex: 1 1 340px;
+        min-width: 320px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px 18px;
+
+        &.o_pc_card_wide { flex-basis: 560px; }
+    }
+
+    .o_pc_card_title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    // ---- monthly bar chart ------------------------------------------------
+
+    .o_pc_month_chart {
+        height: 200px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 2px;
+    }
+    .o_pc_month {
+        height: 100%;
+        justify-content: flex-end;
+        min-width: 0;
+    }
+    .o_pc_month_bars {
+        height: calc(100% - 18px);
+        width: 100%;
+        justify-content: center;
+    }
+    .o_pc_vbar {
+        width: 40%;
+        max-width: 18px;
+        border-radius: 3px 3px 0 0;
+        min-height: 0;
+    }
+    .o_pc_month_label {
+        font-size: 10px;
+        color: #6b7280;
+        height: 18px;
+        line-height: 18px;
+        white-space: nowrap;
+    }
+
+    // ---- horizontal bars ----------------------------------------------------
+
+    .o_pc_hbar_row { margin-bottom: 10px; }
+    .o_pc_hbar_track {
+        height: 10px;
+        background: #f1f2f6;
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 3px 0;
+    }
+    .o_pc_hbar {
+        height: 100%;
+        border-radius: 5px;
+    }
+}
